@@ -227,7 +227,6 @@ MEM Dashboard/
 ├── Project Configuration
 │   ├── .env.example                        # Environment variables template
 │   ├── .gitignore                          # Git ignore rules
-│   ├── .vercelignore                       # Vercel ignore rules
 │   ├── requirements.txt                    # Python dependencies
 │   ├── runtime.txt                         # Python runtime version
 │   ├── pyrightconfig.json                  # Python type checking config
@@ -237,13 +236,8 @@ MEM Dashboard/
 ├── API Configuration (config/)
 │   ├── api_config.js                       # Main API config (Django)
 │   ├── api_config_django_only.js           # Django-only configuration
-│   ├── api_config_flask_backup.js          # Flask backup configuration
 │   ├── db_config.py                        # Database configuration
-│   ├── fred_db_manager.py                  # FRED database manager
-│   ├── bea_config_expansion.sql            # BEA config expansion SQL
-│   ├── bea_dynamic_config_schema.sql       # BEA dynamic config schema
-│   ├── bea_schema.sql                      # BEA database schema
-│   └── fred_schema.sql                     # FRED database schema
+│   └── fred_db_manager.py                  # FRED database manager
 │
 ├── Django API (src/django_api/)
 │   ├── manage.py                           # Django management script
@@ -319,13 +313,13 @@ MEM Dashboard/
 
 ## 📊 File Statistics
 
-### **Total Project Files**: 66
+### **Total Project Files**: 60
 
 - **Python Files**: 39 (Django apps, configurations, API endpoints)
-- **JavaScript Files**: 11 (core modules, utilities, UI components)  
+- **JavaScript Files**: 10 (core modules, utilities, UI components)  
 - **Frontend Files**: 3 (HTML pages, CSS stylesheets)
-- **Database Files**: 4 (SQL schemas for FRED, BEA)
-- **Configuration Files**: 9 (project config, environment, documentation)
+- **Configuration Files**: 6 (project config, environment, documentation)
+- **Other Files**: 2 (README.md, .gitignore)
 
 ## 🚀 Quick Start
 
