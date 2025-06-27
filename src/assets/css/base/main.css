@@ -1,0 +1,1183 @@
+/* MEM Dashboard Styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+}
+
+.header-nav {
+    background: linear-gradient(135deg, #2a2a2c 0%, #2a2a2c 100%);
+    color: white;
+    padding: 12px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.breadcrumb {
+    background-color: #e5e7eb;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px solid #d1d5db;
+}
+
+.indicator-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    overflow: visible;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.indicator-header {
+    background: #f8f9fa;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 16px;
+}
+
+.indicator-content {
+    padding: 16px;
+    overflow: visible;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+}
+
+.metric-row:last-child {
+    border-bottom: none;
+}
+
+.metric-label {
+    color: #6b7280;
+    flex: 1;
+}
+
+.metric-value {
+    font-weight: 500;
+    color: #111827;
+    text-align: right;
+    min-width: 80px;
+}
+
+.metric-change-positive {
+    color: #059669;
+    font-weight: 500;
+}
+
+.metric-change-negative {
+    color: #dc2626;
+    font-weight: 500;
+}
+
+.section-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+/* GDP Components Styles */
+.gdp-overview {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 32px 24px;
+    margin-bottom: 28px;
+}
+
+.gdp-components-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 20px;
+}
+
+.gdp-component-item {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.operation-symbol {
+    font-size: 36px;
+    font-weight: 700;
+    color: #6e6e73;
+    margin-top: -18px;
+    padding-bottom: 32px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.operation-symbol.negative {
+    color: #bf4800;
+}
+
+.gdp-component-percentage {
+    font-size: 42px;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 8px;
+    color: #1d1d1f;
+}
+
+.gdp-component-name {
+    font-size: 16px;
+    color: #6e6e73;
+    font-weight: 400;
+}
+
+.gdp-component-subtitle {
+    font-size: 12px;
+    color: #86868b;
+    font-weight: 400;
+    margin-top: 4px;
+}
+
+.gdp-component-value {
+    font-size: 14px;
+    color: #1d1d1f;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.gdp-component-change {
+    font-size: 11px;
+    color: #6e6e73;
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+.gdp-component-change.positive {
+    color: #166534;
+    background-color: #dcfce7;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.gdp-component-change.negative {
+    color: #dc2626;
+    background-color: #fef2f2;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.gdp-subtract {
+    color: #bf4800;
+}
+
+/* Component Cards */
+.component-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.component-title {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 12px;
+    font-size: 14px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Navigation Styles */
+.nav-menu {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.nav-item {
+    padding: 12px 24px;
+    color: #6b7280;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.nav-item:hover {
+    color: #1f2937;
+    background-color: #f9fafb;
+}
+
+.nav-item.active {
+    color: #101010;
+    border-bottom-color: #1d1e1f;
+    background-color: #eff6ff;
+}
+
+/* Investment Card Pagination */
+.investment-card-container {
+    position: relative;
+}
+
+.card-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    gap: 8px;
+    border: none;
+    margin: 0;
+    position: static;
+    background: transparent;
+}
+
+.pagination-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #d1d5db;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pagination-dot.active {
+    background-color: #374151;
+    transform: scale(1.2);
+}
+
+.pagination-dot:hover {
+    background-color: #6b7280;
+}
+
+.card-page {
+    display: none;
+    padding-bottom: 0;
+}
+
+.card-page.active {
+    display: block;
+}
+
+/* Risk Indicators */
+.risk-indicator {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+    position: relative;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.risk-indicator.risk {
+    background: radial-gradient(circle at 30% 30%, #ef4444, #dc2626);
+    box-shadow: 0 0 6px rgba(220, 38, 38, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.risk-indicator.opportunity {
+    background: radial-gradient(circle at 30% 30%, #10b981, #059669);
+    box-shadow: 0 0 6px rgba(5, 150, 105, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.risk-indicator.mixed {
+    background: radial-gradient(circle at 30% 30%, #fbbf24, #f59e0b);
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Hover Cards */
+.metric-hover {
+    position: relative;
+    cursor: pointer;
+}
+
+.hover-card {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    padding: 16px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    margin-top: 8px;
+}
+
+.metric-hover:hover .hover-card {
+    opacity: 1;
+    visibility: visible;
+}
+
+.hover-card::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid #e5e7eb;
+}
+
+.hover-card::after {
+    content: '';
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid white;
+}
+
+.hover-card-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 12px;
+    font-size: 14px;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 8px;
+}
+
+.hover-card-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.hover-card-row:last-child {
+    margin-bottom: 0;
+}
+
+.hover-card-label {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.hover-card-value {
+    color: #374151;
+    font-weight: 500;
+    text-align: right;
+    max-width: 180px;
+}
+
+/* Style for full-width description and importance text in hover cards */
+.hover-card-description,
+.hover-card-importance {
+    color: #374151;
+    font-weight: 500;
+    text-align: left;
+    margin-bottom: 10px;
+    width: 100%;
+    display: block;
+}
+
+/* Hover card breakdown styles for subsub categories */
+.hover-card-breakdown {
+    margin: 8px 0;
+    padding: 8px 0;
+    border-top: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.hover-card-sub-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    padding: 2px 0;
+}
+
+.hover-card-sub-item:last-child {
+    margin-bottom: 0;
+}
+
+.hover-card-sub-label {
+    color: #6b7280;
+    font-weight: 500;
+    font-size: 11px;
+    flex: 1;
+}
+
+.hover-card-sub-value {
+    color: #374151;
+    font-weight: 600;
+    font-size: 11px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* Status Colors */
+.status-bad {
+    color: #dc2626 !important;
+}
+
+.status-good {
+    color: #059669 !important;
+}
+
+.status-neutral {
+    color: #6b7280 !important;
+}
+
+/* Badges */
+.stats-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+.risk-badge {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.opportunity-badge {
+    background-color: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+/* Central Bank Styles */
+.central-bank-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.central-bank-label {
+    background: #f3f4f6;
+    border: 2px solid #9ca3af;
+    border-radius: 4px;
+    padding: 12px 24px;
+    font-weight: 700;
+    color: #374151;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.tools-mandate-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* Overview Section Styles */
+.overview-section {
+    margin-bottom: 24px;
+}
+
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.overview-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.overview-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+.overview-icon {
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.overview-content {
+    flex: 1;
+}
+
+.overview-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.overview-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.overview-change {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.overview-change.positive {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.overview-change.negative {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
+/* Government Deficit Indicator Styles */
+.deficit-indicator {
+    grid-column: 1 / -1; /* Span across all columns in the grid */
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 2px solid #dc2626;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.deficit-indicator::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #dc2626, #ef4444, #dc2626);
+    background-size: 200% 100%;
+    animation: deficitPulse 3s ease-in-out infinite;
+}
+
+@keyframes deficitPulse {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.deficit-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.deficit-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #dc2626;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.deficit-value {
+    font-size: 36px;
+    font-weight: 800;
+    color: #dc2626;
+    margin-bottom: 16px;
+    text-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
+}
+
+.deficit-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.deficit-calculation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    flex-wrap: wrap;
+}
+
+.revenue-amount {
+    color: #059669;
+    background: #ecfdf5;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.expenditure-amount {
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.minus-symbol, .equals-symbol {
+    font-size: 16px;
+    font-weight: 700;
+    color: #6b7280;
+}
+
+.deficit-result {
+    color: #dc2626;
+    background: #fee2e2;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.deficit-percentage {
+    font-size: 12px;
+    color: #6b7280;
+    font-style: italic;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .tools-mandate-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .central-bank-label {
+        transform: none !important;
+    }
+    
+    .hover-card {
+        width: 280px;
+        left: 0;
+        transform: none;
+    }
+    
+    .hover-card::after,
+    .hover-card::before {
+        left: 32px;
+        transform: none;
+    }
+    
+    .gdp-components-container {
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    
+    .gdp-component-percentage {
+        font-size: 32px;
+    }
+    
+    .operation-symbol {
+        font-size: 24px;
+        margin-top: 0;
+        padding-bottom: 16px;
+    }
+    
+    /* Citation hover card styles */
+    .hover-citation {
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .citation-hover-card {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        min-width: 400px;
+        max-width: 500px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-5px);
+        transition: all 0.2s ease-in-out;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    
+    .hover-citation:hover .citation-hover-card {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    
+    .citation-title {
+        font-weight: 600;
+        font-size: 13px;
+        color: #374151;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .citation-text {
+        color: #6b7280;
+        font-style: italic;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+    
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal Content */
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    transform: scale(0.9);
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-title {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 18px;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px;
+    color: #6b7280;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+/* Modal Body */
+.modal-body {
+    color: #374151;
+    line-height: 1.6;
+}
+
+.modal-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.modal-label {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.modal-value {
+    color: #374151;
+    font-weight: 500;
+    text-align: right;
+    max-width: 180px;
+}
+
+.modal-description,
+.modal-importance {
+    color: #374151;
+    font-weight: 400;
+    text-align: left;
+    margin-bottom: 12px;
+    width: 100%;
+    display: block;
+    font-size: 14px;
+}
+
+.modal-breakdown {
+    margin: 12px 0;
+    padding: 12px 0;
+    border-top: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.modal-sub-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 4px 0;
+}
+
+.modal-sub-item:last-child {
+    margin-bottom: 0;
+}
+
+.modal-sub-label {
+    color: #6b7280;
+    font-weight: 500;
+    font-size: 13px;
+    flex: 1;
+}
+
+.modal-sub-value {
+    color: #374151;
+    font-weight: 600;
+    font-size: 13px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* Make metric row clickable for modal */
+.metric-hover.modal-trigger {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.metric-hover.modal-trigger:hover {
+    background-color: #f9fafb;
+}
+
+/* PCE Card Pagination Styles */
+.pce-card-container {
+    position: relative;
+}
+
+.pce-nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 80px;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    pointer-events: auto;
+}
+
+.pce-nav-arrow.left {
+    left: 0;
+}
+
+.pce-nav-arrow.right {
+    right: 0;
+}
+
+.pce-nav-arrow:hover {
+    opacity: 1;
+    color: #374151;
+    background: transparent;
+}
+
+.pce-nav-arrow:disabled {
+    opacity: 0;
+    cursor: not-allowed;
+}
+
+.pce-nav-arrow:disabled:hover {
+    opacity: 0;
+    background: transparent;
+    color: #6b7280;
+}
+
+.pce-page {
+    display: none;
+}
+
+.pce-page.active {
+    display: block;
+}
+
+.pce-page-indicator {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* Generic Pagination Styles */
+.card-container {
+    position: relative;
+}
+
+.card-nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    color: #6b7280;
+    border: none;
+    font-size: 20px;
+    padding: 8px 12px;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+    opacity: 0;
+    visibility: hidden;
+    user-select: none;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.card-nav-arrow:hover {
+    opacity: 1;
+    visibility: visible;
+    color: #374151;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-nav-arrow.prev {
+    left: -20px;
+}
+
+.card-nav-arrow.next {
+    right: -20px;
+}
+
+.card-page-indicator {
+    text-align: center;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 12px;
+    padding: 4px 8px;
+    background: #f9fafb;
+    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+}
+
+/* Card-specific containers */
+.government-revenue-container,
+.government-expenditure-container,
+.exports-container,
+.gdi-container {
+    position: relative;
+}
+
+/* Hover states for navigation arrows */
+.government-revenue-container .card-nav-arrow:hover,
+.government-expenditure-container .card-nav-arrow:hover,
+.exports-container .card-nav-arrow:hover,
+.gdi-container .card-nav-arrow:hover {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Existing PCE pagination styles (keep for backward compatibility) */
+
+/* PCE Scrollable Container */
+.pce-scrollable-container {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: none;
+    margin: 0;
+    padding: 0;
+    /* Custom scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+/* Webkit scrollbar styling for better appearance */
+.pce-scrollable-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.pce-scrollable-container::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 4px;
+}
+
+.pce-scrollable-container::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 4px;
+    border: 1px solid #f7fafc;
+}
+
+.pce-scrollable-container::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* Ensure metric rows in scrollable container maintain proper styling */
+.pce-scrollable-container .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    position: relative;
+}
+
+/* Maintain hover effects for scrollable content */
+.pce-scrollable-container .metric-row.metric-hover:hover {
+    background-color: #f9fafb;
+    cursor: pointer;
+}
+
+/* Exports Scrollable Container */
+.exports-scrollable-container {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: none;
+    margin: 0;
+    padding: 0;
+    /* Custom scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+/* Webkit scrollbar styling for Exports container */
+.exports-scrollable-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.exports-scrollable-container::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 4px;
+}
+
+.exports-scrollable-container::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 4px;
+    border: 1px solid #f7fafc;
+}
+
+.exports-scrollable-container::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* Ensure metric rows in exports scrollable container maintain proper styling */
+.exports-scrollable-container .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    position: relative;
+}
+
+/* Maintain hover effects for exports scrollable content */
+.exports-scrollable-container .metric-row.metric-hover:hover {
+    background-color: #f9fafb;
+    cursor: pointer;
+}
+
+/* Tiny timeline chart icons */
+.tiny-chart-icon {
+    display: inline-block;
+    width: 24px;
+    height: 12px;
+    margin-left: 6px;
+    vertical-align: middle;
+    opacity: 0.7;
+}
+
+.tiny-chart-icon:hover {
+    opacity: 1;
+}
+
+.tiny-chart-icon canvas {
+    width: 100%;
+    height: 100%;
+}
