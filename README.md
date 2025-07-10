@@ -2,7 +2,7 @@
 
 A comprehensive web-based dashboard for monitoring and analyzing macroeconomic indicators, featuring real-time data visualization, PostgreSQL database integration, and Django REST Framework.
 
-## 🚀 Features
+## Features
 
 - **Real-time Economic Data**: Live updates from FRED and BEA APIs
 - **Interactive Dashboard**: Dynamic visualization with responsive design  
@@ -11,7 +11,7 @@ A comprehensive web-based dashboard for monitoring and analyzing macroeconomic i
 - **Multi-indicator Support**: GDP, CPI, Unemployment, Housing, Money Supply
 - **Cloud Deployment**: Ready for Vercel deployment
 
-## 🗄️ Database Architecture
+## Database Architecture
 
 ### **Database Configuration**
 - **Database**: PostgreSQL 12+
@@ -163,7 +163,7 @@ bea_series_info:
 - **Unique Constraints**: Prevent duplicate data entries
 - **Timestamp Tracking**: Full audit trail for all data changes
 
-## 🗄️ Database Statistics
+## Database Statistics
 
 ### **Current Data Volume**
 - **Total Tables**: 12 (4 core economic, 8 Django system tables)
@@ -172,7 +172,7 @@ bea_series_info:
 - **Time Range**: Historical data from 1990s to present
 - **Update Frequency**: Real-time via API synchronization
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```
 +-----------------------------------------------------------------------+
@@ -180,17 +180,17 @@ bea_series_info:
 |                  Macroeconomic Indicator Platform                     |
 +-----------------------------------------------------------------------+
 
-+----------------+    HTTP/REST API    +-----------------+    SQL    +----------------+
-|                | <-----------------> |                 | <-------> |                |
-| Frontend Layer |                     | Backend Layer   |           | Database Layer |
-|                |                     |                 |           |                |
-| HTML/CSS/JS    |                     | Django API      |           | PostgreSQL     |
-|                |                     |                 |           |                |
-| - Dashboard UI |                     | - REST Endpoints|           | - FRED Tables  |
-| - Data Viz     |                     | - Data Process  |           | - BEA Tables   |
-| - User Input   |                     | - Business Logic|           | - Indicators   |
-| - API Client   |                     | - Admin Panel   |           | - Metadata     |
-+----------------+                     +----------------+            +----------------+
++----------------+    HTTP/REST API    +------------------+     SQL   +----------------+
+|                | <-----------------> |                  | <-------> |                |
+| Frontend Layer |                     | Backend Layer    |           | Database Layer |
+|                |                     |                  |           |                |
+| HTML/CSS/JS    |                     | Django API       |           | PostgreSQL     |
+|                |                     |                  |           |                |
+| - Dashboard UI |                     | - REST Endpoints |           | - FRED Tables  |
+| - Data Viz     |                     | - Data Process   |           | - BEA Tables   |
+| - User Input   |                     | - Business Logic |           | - Indicators   |
+| - API Client   |                     | - Admin Panel    |           | - Metadata     |
++----------------+                     +------------------+           +----------------+
          |                                      |
          |                                      |
          |               +----------------------------------+
@@ -216,7 +216,7 @@ bea_series_info:
 +----------------+----------------+----------------+--------------------+
 ```
 
-## � Project Structure
+## Project Structure
 
 ```
 MEM Dashboard/
@@ -311,7 +311,7 @@ MEM Dashboard/
     └── indicators.py                       # Indicator data endpoint
 ```
 
-## 📊 File Statistics
+## File Statistics
 
 ### **Total Project Files**: 60
 
@@ -321,7 +321,7 @@ MEM Dashboard/
 - **Configuration Files**: 6 (project config, environment, documentation)
 - **Other Files**: 2 (README.md, .gitignore)
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.13+
@@ -350,7 +350,7 @@ python manage.py runserver 8001
 vercel deploy
 ```
 
-## 🔗 API Endpoints
+## API Endpoints
 
 ### Core Endpoints
 - `/api/health` - System health check
@@ -361,7 +361,7 @@ vercel deploy
 ### Django Admin
 - `/admin/` - Django admin panel for data management
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Backend**: Django 4.2.7, Django REST Framework, Python 3.13
 - **Database**: PostgreSQL with psycopg2
