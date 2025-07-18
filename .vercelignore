@@ -1,0 +1,89 @@
+# Development files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+.env
+
+# Documentation and logs
+*.md
+*.log
+2025.05.28_work_log.md
+REFACTORING_COMPLETE.md
+FIXES_COMPLETE.md
+README_API.md
+
+# Test files
+tests/
+src/pages/test/
+src/pages/debug/
+test_*.html
+debug_*.html
+
+# Archives and documentation
+archives/
+docs/
+
+# Scripts
+scripts/
+*_diagnostic.html
+final_test.html
+
+# Scripts
+start_api.sh
+deploy.sh
+
+# Archive
+*.zip
+
+# ============================================================================
+# INTELLECTUAL PROPERTY PROTECTION FILES - CRITICAL SECURITY EXCLUSIONS
+# ============================================================================
+
+# COPYRIGHT EVIDENCE FILES - NEVER DEPLOY
+intellectual_property_evidence.json
+src/backend/intellectual_property_evidence.json
+SYSTEM_COPYRIGHT_EVIDENCE.json
+
+# COPYRIGHT VERIFICATION SYSTEMS - NEVER DEPLOY  
+src/backend/copyright_verification.py
+src/backend/master_verification.py
+src/backend/protection_system.py
+
+# CRYPTOGRAPHIC KEYS AND CERTIFICATES - NEVER DEPLOY
+src/backend/keys/
+src/backend/keys/**
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# CODE SIGNING AND SECURITY SYSTEMS - NEVER DEPLOY
+src/backend/code_signing.py
+src/backend/anti_reverse_engineering.py
+src/backend/advanced_obfuscation.py
+src/backend/dynamic_key_manager.py
+src/backend/real_time_integrity_monitor.py
+
+# ENVIRONMENT VALIDATION SYSTEMS - NEVER DEPLOY
+src/backend/environment_validator.py
+src/backend/enhanced_environment_validator.py
+src/backend/authorized_environments.json
+
+# LEGAL AND OWNERSHIP DOCUMENTS - NEVER DEPLOY
+src/backend/legal_ownership_certificate.json
+src/backend/code_signature_manifest.json
+src/backend/security_incidents.json
+
+# PASSWORD AND SECURITY HINTS - NEVER DEPLOY
+src/backend/keys/password_hint.json
+
+# Large binary files
+*.so
+*.dylib
+*.dll

@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/*.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/health",
+      "dest": "/api/health.py"
+    },
+    {
+      "src": "/api/indicators",
+      "dest": "/api/indicators.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "django_api.settings",
+    "MEM_API_MODE": "DJANGO"
+  },
+  "functions": {
+    "api/*.py": {
+      "runtime": "python3.9"
+    }
+  }
+}

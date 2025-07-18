@@ -1,0 +1,55 @@
+{
+  "serviceName": "mem-dashboard-service",
+  "cluster": "mem-dashboard-cluster",
+  "taskDefinition": "mem-dashboard-task",
+  "desiredCount": 2,
+  "launchType": "FARGATE",
+  "platformVersion": "LATEST",
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "subnets": [
+        "subnet-private-1a",
+        "subnet-private-1b"
+      ],
+      "securityGroups": [
+        "sg-ecs-tasks"
+      ],
+      "assignPublicIp": "DISABLED"
+    }
+  },
+  "loadBalancers": [
+    {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-west-2:ACCOUNT-ID:targetgroup/mem-dashboard-tg/1234567890123456",
+      "containerName": "mem-dashboard-container",
+      "containerPort": 8000
+    }
+  ],
+  "serviceRegistries": [],
+  "deploymentConfiguration": {
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 50,
+    "deploymentCircuitBreaker": {
+      "enable": true,
+      "rollback": true
+    }
+  },
+  "placementConstraints": [],
+  "placementStrategy": [],
+  "enableExecuteCommand": true,
+  "enableECSManagedTags": true,
+  "propagateTags": "SERVICE",
+  "tags": [
+    {
+      "key": "Project",
+      "value": "MEM-Dashboard"
+    },
+    {
+      "key": "Environment",
+      "value": "production"
+    },
+    {
+      "key": "ManagedBy",
+      "value": "ECS"
+    }
+  ]
+}
