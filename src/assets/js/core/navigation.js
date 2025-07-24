@@ -1,21 +1,158 @@
 // Navigation Controller for MEM Dashboard
 class NavigationController {
     constructor() {
+        // Strict singleton pattern implementation
+        if (NavigationController.instance) {
+            console.log('🔄 NavigationController singleton: returning existing instance');
+            return NavigationController.instance;
+        }
+        
+        console.log('🆕 NavigationController: creating new instance');
         this.sections = ['gdp-components', 'treasury', 'debts', 'central-bank'];
+        this.chartInstances = {}; // Unified Chart instance storage
+        this.isInitializingCharts = false; // Prevent race conditions
+        
+        // 验证API拦截器状态
+        console.log('🔍 [NavigationController] API拦截器验证:');
+        console.log('🔍 [NavigationController] window.originalFetch:', !!window.originalFetch);
+        console.log('🔍 [NavigationController] fetch已重写:', window.fetch !== window.originalFetch);
+        console.log('🔍 [NavigationController] API_CONFIG:', window.API_CONFIG);
+        
+        // Note: API interceptor is handled globally by config/api_config.js
         this.init();
+        
+        // Store singleton instance
+        NavigationController.instance = this;
+    }
+
+    /**
+     * Global chart management utility - destroys existing charts safely
+     * Implements enhanced three-layer destruction mechanism
+     */
+    destroyExistingChart(canvas, storageKey = null) {
+        if (!canvas) {
+            console.log('⚠️ [Chart Manager] No canvas provided');
+            return;
+        }
+        
+        // Method 1: Use Chart.js built-in registry - most reliable
+        const existingChart = Chart.getChart(canvas);
+        if (existingChart) {
+            console.log('🗑️ [Chart Manager] Destroying existing chart via Chart.getChart...');
+            try {
+                existingChart.destroy();
+            } catch (error) {
+                console.warn('⚠️ [Chart Manager] Error destroying chart via registry:', error);
+            }
+        }
+        
+        // Method 2: Destroy from instance storage
+        if (storageKey && this.chartInstances[storageKey]) {
+            if (typeof this.chartInstances[storageKey].destroy === 'function') {
+                console.log(`🗑️ [Chart Manager] Destroying stored chart: ${storageKey}`);
+                try {
+                    this.chartInstances[storageKey].destroy();
+                } catch (error) {
+                    console.warn(`⚠️ [Chart Manager] Error destroying stored chart ${storageKey}:`, error);
+                }
+            }
+            delete this.chartInstances[storageKey];
+        }
+        
+        // Method 3: Destroy from window storage
+        if (storageKey && window[storageKey]) {
+            if (typeof window[storageKey].destroy === 'function') {
+                console.log(`🗑️ [Chart Manager] Destroying window stored chart: ${storageKey}`);
+                try {
+                    window[storageKey].destroy();
+                } catch (error) {
+                    console.warn(`⚠️ [Chart Manager] Error destroying window chart ${storageKey}:`, error);
+                }
+            }
+            window[storageKey] = null;
+        }
+        
+        // Method 4: Canvas state verification and cleanup
+        if (canvas.chart) {
+            console.log('🗑️ [Chart Manager] Cleaning up canvas.chart reference...');
+            try {
+                if (typeof canvas.chart.destroy === 'function') {
+                    canvas.chart.destroy();
+                }
+                delete canvas.chart;
+            } catch (error) {
+                console.warn('⚠️ [Chart Manager] Error cleaning canvas reference:', error);
+            }
+        }
+        
+        // Method 5: Force canvas context cleanup (Enhanced for Chart.js 3.x+)
+        try {
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // Reset canvas internal state
+                canvas.width = canvas.width;  // Force canvas reset
+            }
+        } catch (error) {
+            console.warn('⚠️ [Chart Manager] Error clearing canvas context:', error);
+        }
+        
+        // Method 6: Remove Chart.js internal references
+        if (canvas && canvas.chartJSID) {
+            try {
+                delete canvas.chartJSID;
+            } catch (error) {
+                console.warn('⚠️ [Chart Manager] Error clearing chartJSID:', error);
+            }
+        }
+        
+        console.log(`✅ [Chart Manager] Chart destruction complete for ${storageKey || 'canvas'}`);
     }
 
     init() {
         this.setupScrollListener();
         this.initModalTriggers();
         
-        // Load tiny charts after a short delay to ensure DOM is ready
-        setTimeout(() => {
-            this.loadTinyMotorVehiclesChart();
-            this.loadTinyDebtToGdpChart();
-        }, 100);
+        // Use async initialization to prevent race conditions
+        this.initializeCharts();
         
         console.log('✅ Navigation Controller initialized');
+    }
+    
+    /**
+     * Async chart initialization to prevent race conditions
+     */
+    async initializeCharts() {
+        // Ensure DOM is ready and no other initialization is in progress
+        if (this.isInitializingCharts) {
+            console.log('⚠️ Chart initialization already in progress, skipping...');
+            return;
+        }
+        
+        this.isInitializingCharts = true;
+        
+        try {
+            // Wait for DOM to be fully ready
+            await new Promise(resolve => {
+                if (document.readyState === 'complete') {
+                    resolve();
+                } else {
+                    window.addEventListener('load', resolve, { once: true });
+                }
+            });
+            
+            // Sequential chart loading to avoid conflicts
+            console.log('🚀 Starting chart initialization...');
+            await this.loadTinyMotorVehiclesChart();
+            await new Promise(resolve => setTimeout(resolve, 200)); // Brief delay between charts
+            await this.loadTinyDebtToGdpChart();
+            
+            console.log('✅ All charts initialized successfully');
+        } catch (error) {
+            console.error('❌ Error during chart initialization:', error);
+        } finally {
+            this.isInitializingCharts = false;
+        }
     }
 
     /**
@@ -1175,9 +1312,8 @@ class NavigationController {
         try {
             console.log('🔄 Fetching debt-to-GDP data from unified FRED API...');
             
-            // Use configured API endpoint
-            const apiConfig = window.API_CONFIG || { baseUrl: 'http://localhost:5001/api' };
-            const apiUrl = `${apiConfig.baseUrl}/fred/debt-to-gdp`;
+            // Use correct API endpoint path (使用相对路径让拦截器处理)
+            const apiUrl = '/api/fred/debt-to-gdp/';
             console.log(`🔗 Using API: ${apiUrl}`);
             
             const dbResponse = await fetch(apiUrl);
@@ -1248,12 +1384,8 @@ class NavigationController {
             return;
         }
         
-        // Destroy existing chart if it exists
-        if (window.modalDebtChartInstance) {
-            console.log('🗑️ [Modal] Destroying existing debt chart...');
-            window.modalDebtChartInstance.destroy();
-            window.modalDebtChartInstance = null;
-        }
+        // Destroy existing chart if it exists using the new Chart management system
+        this.destroyExistingChart(chartCanvas, 'modalDebtChartInstance');
         
         try {
             console.log('📊 [Modal] Loading debt chart...');
@@ -1408,12 +1540,8 @@ class NavigationController {
             return;
         }
         
-        // Destroy existing chart if it exists
-        if (window.modalMotorVehiclesChartInstance) {
-            console.log('🗑️ [Modal] Destroying existing chart...');
-            window.modalMotorVehiclesChartInstance.destroy();
-            window.modalMotorVehiclesChartInstance = null;
-        }
+        // Destroy existing chart if it exists using the new Chart management system
+        this.destroyExistingChart(chartCanvas, 'modalMotorVehiclesChartInstance');
         
         try {
             console.log('🚗 [Modal] Loading motor vehicles chart from BEA API...');
@@ -1728,7 +1856,13 @@ class NavigationController {
             // Create tiny chart
             const ctx = chartCanvas.getContext('2d');
             
-            new Chart(ctx, {
+            // Destroy existing chart and use unified management
+            this.destroyExistingChart(chartCanvas, 'tinyMotorVehiclesChart');
+            
+            // Add async delay to ensure destruction is complete
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            this.chartInstances.tinyMotorVehiclesChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: values.map(() => ''),
@@ -1791,7 +1925,13 @@ class NavigationController {
                 
                 const ctx = chartCanvas.getContext('2d');
                 
-                new Chart(ctx, {
+                // Destroy existing chart and use unified management (fallback)
+                this.destroyExistingChart(chartCanvas, 'tinyMotorVehiclesChart');
+                
+                // Add async delay to ensure destruction is complete
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                this.chartInstances.tinyMotorVehiclesChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: values.map(() => ''),
@@ -1841,11 +1981,20 @@ class NavigationController {
             return;
         }
 
+        // Destroy any existing chart first
+        this.destroyExistingChart(chartCanvas, 'tinyDebtToGdpChart');
+
         try {
             console.log('📊 Loading tiny Debt-to-GDP chart from unified FRED API...');
+            console.log('🔍 [DEBUG] API拦截器状态检查:');
+            console.log('🔍 [DEBUG] window.originalFetch 存在:', !!window.originalFetch);
+            console.log('🔍 [DEBUG] window.fetch 已被重写:', window.fetch !== window.originalFetch);
             
-            // Fetch data from unified FRED API endpoint
+            // Fetch data from unified FRED API endpoint (使用相对路径让拦截器处理)
+            console.log('🔍 [DEBUG] 即将调用 fetch("/api/fred/debt-to-gdp/")...');
             const response = await fetch('/api/fred/debt-to-gdp/');
+            console.log('🔍 [DEBUG] Fetch 响应状态:', response.status, response.statusText);
+            console.log('🔍 [DEBUG] Fetch 响应 URL:', response.url);
             
             let values;
             
@@ -1879,7 +2028,11 @@ class NavigationController {
             // Create tiny chart with exact same configuration as motor vehicles
             const ctx = chartCanvas.getContext('2d');
             
-            new Chart(ctx, {
+            // Destroy existing chart and add async delay
+            this.destroyExistingChart(chartCanvas, 'tinyDebtToGdpChart');
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            this.chartInstances.tinyDebtToGdpChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: values.map(() => ''),
@@ -1954,10 +2107,16 @@ class NavigationController {
                 const isIncreasing = currentValue > previousValue;
                 const lineColor = isIncreasing ? '#22c55e' : '#ef4444'; // Green for increase, red for decrease
                 
+                // Destroy any existing chart before creating fallback
+                this.destroyExistingChart(chartCanvas, 'tinyDebtToGdpChart');
+                
+                // Add async delay to ensure destruction is complete
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
                 // Create tiny chart
                 const ctx = chartCanvas.getContext('2d');
                 
-                new Chart(ctx, {
+                this.chartInstances.tinyDebtToGdpChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: values.map(() => ''),

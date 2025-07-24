@@ -30,6 +30,9 @@ urlpatterns = [
     # BEA API路由
     path('api/bea/', include('bea.urls')),
     
+    # Content API路由
+    path('', include('content.urls')),
+    
     # 兼容性路由 - 直接映射到根API路径 (与Flask保持一致)
     path('api/motor-vehicles/', include('bea.urls')),
     

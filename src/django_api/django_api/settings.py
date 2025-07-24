@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'fred',
     'bea',
     'indicators',
+    'content',
 ]
 
 MIDDLEWARE = [
