@@ -27,6 +27,9 @@ urlpatterns = [
     # FRED API路由
     path('api/fred/', include('fred.urls')),
     
+    # Japan FRED API路由
+    path('api/fred-jp/', include('fred_jp.urls')),
+    
     # BEA API路由
     path('api/bea/', include('bea.urls')),
     

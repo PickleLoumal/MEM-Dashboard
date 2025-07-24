@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'corsheaders',
     # MEM Dashboard apps
     'fred',
+    'fred_jp',  # Japan FRED indicators
     'bea',
     'indicators',
     'content',
