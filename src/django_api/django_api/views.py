@@ -49,3 +49,32 @@ def api_overview(request):
         'documentation': 'Django REST Framework compatible API',
         'migration_status': 'Django-Only deployment - Flask completely removed'
     })
+
+
+@api_view(['GET'])
+def global_health_check(request):
+    """全局健康检查端点 - 前端和Docker健康检查使用"""
+    try:
+        from django.db import connection
+        
+        # 检查数据库连接
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            database_available = True
+    except Exception:
+        database_available = False
+    
+    return Response({
+        'status': 'healthy' if database_available else 'degraded',
+        'timestamp': datetime.now().isoformat(),
+        'service': 'MEM Dashboard Django API',
+        'environment': 'development',
+        'database_available': database_available,
+        'version': '2.0.0',
+        'components': {
+            'fred_us': 'available',
+            'fred_jp': 'available', 
+            'bea': 'available',
+            'content': 'available'
+        }
+    })

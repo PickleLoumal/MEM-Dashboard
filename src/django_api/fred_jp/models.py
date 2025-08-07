@@ -20,7 +20,8 @@ class FredJpSeriesInfo(models.Model):
 
     class Meta:
         db_table = 'fred_jp_series_info'  # 使用专用日本表
-        managed = False  # Django不管理这个表，避免migration冲突
+        verbose_name = 'Japan FRED Series Info'
+        verbose_name_plural = 'Japan FRED Series Info'
 
     def __str__(self):
         return f"{self.series_id}: {self.title}"
@@ -43,9 +44,15 @@ class FredJpIndicator(models.Model):
 
     class Meta:
         db_table = 'fred_jp_indicators'  # 使用专用日本表
-        managed = False  # Django不管理这个表，避免migration冲突
         unique_together = ['series_id', 'date']
         ordering = ['-date']  # 按日期降序排列
+        verbose_name = 'Japan FRED Indicator'
+        verbose_name_plural = 'Japan FRED Indicators'
+        indexes = [
+            models.Index(fields=['series_id', '-date'], name='idx_jp_series_date'),
+            models.Index(fields=['indicator_type', '-date'], name='idx_jp_type_date'),
+            models.Index(fields=['series_id', '-updated_at'], name='idx_jp_series_updated'),
+        ]
 
     def __str__(self):
         return f"{self.series_id} - {self.date}: {self.value}"

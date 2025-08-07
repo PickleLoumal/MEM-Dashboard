@@ -55,8 +55,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     # MEM Dashboard apps
-    'fred',
-    'fred_jp',  # Japan FRED indicators
+    # 注意：fred_common是工具模块，不是Django应用，不应在此列表中
+    'fred_us',    # US FRED indicators (分离架构)
+    'fred_jp',    # Japan FRED indicators (分离架构)
     'bea',
     'indicators',
     'content',

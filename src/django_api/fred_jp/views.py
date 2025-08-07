@@ -17,6 +17,8 @@ from .serializers import (
     FredJpStatusSerializer,
     FredJpErrorResponseSerializer
 )
+from .data_fetcher import JapanFredDataFetcher
+from .config_manager import JapanFredConfigManager
 import logging
 
 logger = logging.getLogger(__name__)
@@ -27,19 +29,20 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = FredJpIndicator.objects.all()
     serializer_class = FredJpLatestValueSerializer
 
-    # 日本经济指标映射 - 基于实施计划
-    INDICATOR_MAPPING = {
-        'cpi': 'JPNCCPIALLMINMEI',
-        'gdp': 'JPNGDPDEFAISMEI',
-        'unemployment': 'LRUN64TTJPQ156S', 
-        'interest-rate': 'INTDSRJPM193N',
-        'export': 'XTEXVA01JPM667S',
-        'import': 'XTIMVA01JPM667S',
-        'population': 'POPTOTJPA647NWDB',
-        'inflation': 'JPNCCPIALLMINMEI',
-        'trade-balance': 'BPBLTT01JPQ188S',
-        'money-supply': 'JPNMABMM101IXNB'
-    }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.data_fetcher = None
+        self.config_manager = JapanFredConfigManager()
+
+    def get_data_fetcher(self):
+        """获取数据获取器实例"""
+        if not self.data_fetcher:
+            try:
+                self.data_fetcher = JapanFredDataFetcher()
+            except Exception as e:
+                logger.error(f"数据获取器初始化失败: {e}")
+                return None
+        return self.data_fetcher
     
     # 日本备用数据
     FALLBACK_DATA = {
@@ -157,7 +160,7 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             # 转换指标名称到series_id
-            series_id = self.INDICATOR_MAPPING.get(indicator_name.lower())
+            series_id = self.config_manager.get_series_id(indicator_name.lower())
             
             if not series_id:
                 # 如果没有找到映射，返回错误
@@ -165,7 +168,7 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
                     'success': False,
                     'error': 'Indicator not found',
                     'message': f'Japan indicator "{indicator_name}" is not supported',
-                    'supported_indicators': list(self.INDICATOR_MAPPING.keys()),
+                    'supported_indicators': self.config_manager.get_all_indicators(),
                     'timestamp': datetime.now().isoformat()
                 }, status=status.HTTP_404_NOT_FOUND)
             
@@ -222,11 +225,11 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
             'system': 'Japan FRED System (Django)',
             'database_available': database_available,
             'status': {
-                'indicators_available': len(self.INDICATOR_MAPPING),
+                'indicators_available': len(self.config_manager.get_all_indicators()),
                 'last_check': datetime.now().isoformat(),
                 'country': 'Japan'
             },
-            'supported_indicators': list(self.INDICATOR_MAPPING.keys()),
+            'supported_indicators': self.config_manager.get_all_indicators(),
             'last_updated': datetime.now()
         }
         
