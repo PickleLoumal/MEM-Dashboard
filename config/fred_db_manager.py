@@ -45,7 +45,15 @@ class FREDDatabaseManager:
             'CPIAUCSL': {'name': 'Consumer Price Index', 'type': 'prices', 'unit': 'Index', 'freq': 'monthly'},
             'UNRATE': {'name': 'Unemployment Rate', 'type': 'employment', 'unit': 'Percent', 'freq': 'monthly'},
             'HOUST': {'name': 'Housing Starts', 'type': 'housing', 'unit': 'Thousands', 'freq': 'monthly'},
-            'FEDFUNDS': {'name': 'Federal Funds Rate', 'type': 'monetary', 'unit': 'Percent', 'freq': 'monthly'}
+            'FEDFUNDS': {'name': 'Federal Funds Rate', 'type': 'monetary', 'unit': 'Percent', 'freq': 'monthly'},
+            # Consumer and Household Debt Indicators
+            'HDTGPDUSQ163N': {'name': 'Household Debt to GDP for United States', 'type': 'debt', 'unit': 'Ratio', 'freq': 'quarterly'},
+            'TDSP': {'name': 'Household Debt Service Payments as a Percent of Disposable Personal Income', 'type': 'debt', 'unit': 'Percent', 'freq': 'quarterly'},
+            'MDOAH': {'name': 'Mortgage Debt Outstanding, All holders (DISCONTINUED)', 'type': 'debt', 'unit': 'Millions of Dollars', 'freq': 'quarterly'},
+            'RCCCBBALTOT': {'name': 'Large Bank Consumer Credit Card Balances: Total Balances', 'type': 'debt', 'unit': 'Billions of U.S. Dollars', 'freq': 'quarterly'},
+            'SLOASM': {'name': 'Student Loans Owned and Securitized', 'type': 'debt', 'unit': 'Millions of U.S. Dollars', 'freq': 'monthly'},
+            'TOTALSL': {'name': 'Total Consumer Credit Outstanding', 'type': 'debt', 'unit': 'Millions of Dollars', 'freq': 'monthly'},
+            'DTCOLNVHFNM': {'name': 'Household Debt: Total', 'type': 'debt', 'unit': 'Millions of Dollars', 'freq': 'monthly'}
         }
         
         self.connection_available = False

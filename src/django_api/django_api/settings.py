@@ -199,3 +199,9 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+# FRED API Configuration
+FRED_API_KEY = os.getenv('FRED_API_KEY', '')
+
+# BEA API Configuration  
+BEA_API_KEY = os.getenv('BEA_API_KEY', '')

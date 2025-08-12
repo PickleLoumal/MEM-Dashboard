@@ -118,7 +118,7 @@
                 <div class="relative section-grid">
                     <!-- Revenue Card -->
                     <div class="component-card">
-                        <div class="component-title">Government Revenue: $3.11T <span class="metric-change-positive">(Q1 2025)</span></div>
+                        <div class="component-title">Government Revenue: <span>   Total: $3.11T  </span></div>
                         <div class="metric-row">
                             <div class="metric-label">Individual Income Taxes</div>
                             <div class="metric-value">$1.68T <span class="text-gray-500 text-xs">(54.04%)</span></div>
@@ -168,7 +168,7 @@
 
                     <!-- Expenditure Card -->
                     <div class="component-card">
-                        <div class="component-title">Government Expenditure <span class="metric-change-positive">(Q1 2025)</span> <span>   Total: $4.16T  </span> </div>
+                        <div class="component-title">Government Expenditure  <span>   Total: $4.16T  </span> </div>
                         
                         <!-- Social Programs & Healthcare Group -->
                         <div class="metric-row">
@@ -475,7 +475,6 @@
                     <div class="component-card">
                         <div class="component-title">Private Sector Consumption <span>Total: $20.49T</span></div>                          
                         <!-- PCE Major Components -->
-                        <div class="pce-scrollable-container">
                         <div class="metric-row">
                             <div class="metric-label"><strong>Durable Goods</strong></div>
                             <div class="metric-value">$2,215.63B <span class="text-gray-500 text-xs">(10.8% of PCE)</span></div>
@@ -554,8 +553,6 @@
                             <div class="metric-label">&nbsp;&nbsp;&nbsp;&nbsp;Final consumption expenditures of nonprofit institutions (NPISHs)</div>
                             <div class="metric-value">$623.94B <span class="text-gray-500 text-xs">(4.4%)</span></div>
                         </div>
-
-                        </div>
                     </div>
 
 
@@ -565,7 +562,6 @@
 
                     <div class="component-card">
                         <div class="component-title">Exports<span>Total: $634.0B</span></div>
-                        <div class="exports-scrollable-container">
                         <div class="metric-row">
                             <div class="metric-label"><strong>Goods Exports</strong></div>
                             <div class="metric-value">$538.7B <span class="text-gray-500 text-xs">(85.0% of total exports)</span></div>
@@ -671,7 +667,6 @@
                                     <div class="hover-card-value">NSA</div>
                                 </div>
                             </div>
-                        </div>
                         </div>
                     </div>
 
@@ -1258,226 +1253,258 @@
                     <div class="component-card">
                         <div class="component-title">Consumer/Household Debts</div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Total Household Debt Balance</div>
-                            <div class="metric-value">18.203T <span class="text-gray-500 text-xs">(Q1 2025)</span></div>
+                            <div class="metric-label">Household Debt-to-GDP Ratio</div>
+                            <div class="metric-value" id="household-debt-gdp">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Total Household Debt Balance</div>
+                                <div class="hover-card-title">Household Debt-to-GDP Ratio</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This comprehensive measure includes all outstanding debt held by U.S. households, encompassing mortgages, credit cards, auto loans, student loans, and other consumer debt categories. It represents the total financial obligations of American families across all lending sectors.</div>
+                                <div class="hover-card-description">This ratio measures total household debt outstanding relative to the nation's GDP, providing insight into the overall debt burden of American families compared to the size of the economy.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">Total household debt is a critical indicator of consumer financial health and economic stability. Rising debt levels can constrain future consumer spending, increase financial vulnerability during economic downturns, and signal potential credit risks that could impact the broader financial system.</div>
+                                <div class="hover-card-importance">This metric is crucial for assessing macroeconomic stability and household financial health. High ratios may indicate excessive leverage that could amplify economic downturns and constrain future economic growth.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">New York Federal Reserve Total Debt Balance</div>
+                                    <div class="hover-card-value">Household Debt to GDP for United States</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">FRBNY Consumer Credit Panel / Equifax</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">—</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">HDTGPDUSQ163N</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">NSA</div>
+                                    <div class="hover-card-value">Quarterly</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Household Debt-to-Disposable Income Ratio</div>
-                            <div class="metric-value">92.25% <span class="text-gray-500 text-xs">(Q4 2024)</span></div>
+                            <div class="metric-label">Household Debt Service Ratio</div>
+                            <div class="metric-value" id="debt-service-ratio">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Household Debt-to-Disposable Income Ratio</div>
+                                <div class="hover-card-title">Household Debt Service Ratio</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This ratio compares total household debt outstanding to disposable personal income, measuring households' debt burden relative to their after-tax income. It provides insight into how leveraged American families are and their capacity to service debt obligations.</div>
+                                <div class="hover-card-description">This measures the percentage of disposable personal income that households allocate to servicing debt payments, including principal and interest on mortgages, credit cards, auto loans, and other consumer debt.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">This metric is crucial for assessing household financial stability and spending capacity. High ratios indicate elevated leverage that could limit future borrowing capacity and reduce discretionary spending during economic stress, potentially amplifying economic downturns.</div>
+                                <div class="hover-card-importance">The debt service ratio is crucial for assessing household financial stress and payment capacity. High ratios indicate that households are dedicating large portions of income to debt payments, potentially limiting discretionary spending.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">US Household Debt to Disposable Income Ratio</div>
+                                    <div class="hover-card-value">Household Debt Service Payments as a Percent of Disposable Personal Income</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">Bloomberg</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">BBGCUSDI Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">TDSP</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">--</div>
+                                    <div class="hover-card-value">Quarterly</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
                             <div class="metric-label">Mortgage Debt Outstanding</div>
-                            <div class="metric-value">20.83T <span class="text-gray-500 text-xs">(Q4 2024)</span></div>
+                            <div class="metric-value" id="mortgage-debt-outstanding">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
                                 <div class="hover-card-title">Mortgage Debt Outstanding</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This measures the total outstanding balance of mortgage loans for residential properties, including first mortgages, second liens, and home equity lines of credit. It represents the largest component of household debt and directly reflects housing market conditions and homeownership trends.</div>
+                                <div class="hover-card-description">This measures the total outstanding balance of mortgage loans for residential properties, representing the largest component of household debt and directly reflecting housing market conditions.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">Mortgage debt is critical for understanding housing market stability and household wealth. Changes in mortgage debt levels reflect housing market activity, refinancing trends, and home price appreciation, while also indicating households' leverage against their primary asset.</div>
+                                <div class="hover-card-importance">Mortgage debt is critical for understanding housing market stability and household wealth. Changes in mortgage debt levels reflect housing market activity, refinancing trends, and home price appreciation.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">Mortgage Debt Outstanding</div>
+                                    <div class="hover-card-value">Mortgage Debt Outstanding, All holders (DISCONTINUED)</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">Federal Reserve</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">MORTMGDO Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">MDOAH</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">NSA</div>
+                                    <div class="hover-card-value">Quarterly</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
                             <div class="metric-label">Credit Card Debt Balances</div>
-                            <div class="metric-value">1.182T <span class="text-gray-500 text-xs">(Q1 2025)</span></div>
+                            <div class="metric-value" id="credit-card-balances">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
                                 <div class="hover-card-title">Credit Card Debt Balances</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This represents the total outstanding balances on credit cards held by U.S. consumers, including revolving credit from banks, credit unions, and other lenders. It excludes charge cards that must be paid in full each month and focuses on interest-bearing consumer debt.</div>
+                                <div class="hover-card-description">This represents the total outstanding balances on credit cards held by large banks, providing insight into consumer revolving credit usage and financial stress levels.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">Credit card debt is a key indicator of consumer financial stress due to its high interest rates and unsecured nature. Rising levels can signal household financial strain and reduced discretionary spending capacity, while also indicating potential credit quality deterioration in the banking sector.</div>
+                                <div class="hover-card-importance">Credit card debt is a key indicator of consumer financial stress due to its high interest rates and unsecured nature. Rising levels can signal household financial strain and reduced discretionary spending capacity.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">Fed Rsv Total Debt Balance Composition Credit Card</div>
+                                    <div class="hover-card-value">Large Bank Consumer Credit Card Balances: Total Balances</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">FRBNY Consumer Credit Panel / Equifax</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">TDBCCRED Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">RCCCBBALTOT</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">NSA</div>
+                                    <div class="hover-card-value">Quarterly</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Student Loan Debt Outstanding</div>
-                            <div class="metric-value">1.631T <span class="text-gray-500 text-xs">(Q1 2025)</span></div>
+                            <div class="metric-label">Student Loans Outstanding</div>
+                            <div class="metric-value" id="student-loans">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Student Loan Debt Outstanding</div>
+                                <div class="hover-card-title">Student Loans Outstanding</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This encompasses all outstanding educational loans held by students and graduates, including federal direct loans, federal family education loans, and private student loans. It represents the total debt burden associated with higher education financing in the United States.</div>
+                                <div class="hover-card-description">This encompasses all outstanding educational loans held by students and graduates, including federal direct loans, federal family education loans, and private student loans.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">Student loan debt affects millions of Americans and influences major life decisions including home purchases, family formation, and career choices. High levels can constrain economic mobility, delay household formation, and reduce long-term consumer spending capacity among younger demographics.</div>
+                                <div class="hover-card-importance">Student loan debt affects millions of Americans and influences major life decisions including home purchases, family formation, and career choices. High levels can constrain economic mobility and reduce long-term consumer spending capacity.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">New York Federal Reserve Total Debt Balance Composition Student Loan</div>
+                                    <div class="hover-card-value">Student Loans Owned and Securitized</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">FRBNY Consumer Credit Panel / Equifax</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">TDBCSTUD Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">SLOASM</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">NSA</div>
+                                    <div class="hover-card-value">Monthly</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Household Debt Service Ratio (DSR)</div>
-                            <div class="metric-value">11.28496% <span class="text-gray-500 text-xs">(Q4 2024)</span></div>
+                            <div class="metric-label">Total Consumer Credit</div>
+                            <div class="metric-value" id="consumer-credit">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Household Debt Service Ratio (DSR)</div>
+                                <div class="hover-card-title">Total Consumer Credit</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This measures the percentage of disposable personal income that households allocate to servicing debt payments, including principal and interest on mortgages, credit cards, auto loans, and other consumer debt. It provides insight into the immediate burden of debt payments on household cash flow.</div>
+                                <div class="hover-card-description">This measures the total amount of consumer credit outstanding, including revolving credit (credit cards) and non-revolving credit (auto loans, personal loans, etc.), excluding mortgages.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">The debt service ratio is crucial for assessing household financial stress and payment capacity. High ratios indicate that households are dedicating large portions of income to debt payments, potentially limiting discretionary spending and increasing vulnerability to income shocks or interest rate increases.</div>
+                                <div class="hover-card-importance">Total consumer credit provides insight into overall consumer borrowing behavior and financial health. Changes in this measure can indicate shifts in consumer confidence, spending patterns, and credit availability.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">US Federal Reserve Household Debt Service Ratio DSR Total SA</div>
+                                    <div class="hover-card-value">Total Consumer Credit Outstanding</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">Federal Reserve</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">DSPBTTSA Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">TOTALSL</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">SA</div>
+                                    <div class="hover-card-value">Monthly</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Rising Interest Rates</div>
-                            <div class="metric-value">1% <span class="text-gray-500 text-xs">(Apr 2025)</span></div>
+                            <div class="metric-label">Total Household Debt</div>
+                            <div class="metric-value" id="total-household-debt">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Rising Interest Rates</div>
+                                <div class="hover-card-title">Total Household Debt</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This tracks consumer sentiment regarding good buying conditions for houses specifically related to rising interest rates. It measures how consumers perceive the housing market environment when interest rates are increasing, providing insight into housing demand and affordability concerns.</div>
+                                <div class="hover-card-description">This comprehensive measure includes all outstanding debt held by U.S. households, encompassing mortgages, credit cards, auto loans, student loans, and other consumer debt categories.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">Consumer sentiment about housing purchases in a rising rate environment directly impacts housing market activity and household debt accumulation. When consumers perceive poor buying conditions due to rising rates, it can lead to reduced housing demand, affecting mortgage debt growth and overall household leverage.</div>
+                                <div class="hover-card-importance">Total household debt is a critical indicator of consumer financial health and economic stability. Rising debt levels can constrain future consumer spending and increase financial vulnerability during economic downturns.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">UMich Men Good Buying Conditions for Houses: Rising Interest Rates</div>
+                                    <div class="hover-card-value">Household Debt: Total</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">University of Michigan</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">UMMAHOAR Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">DTCOLNVHFNM</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">NSA</div>
+                                    <div class="hover-card-value">Monthly</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Federal Funds Rate</div>
+                            <div class="metric-value" id="fed-funds-rate">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Federal Funds Rate</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">The interest rate at which depository institutions trade federal funds (balances held at Federal Reserve Banks) with each other overnight, representing the primary tool of U.S. monetary policy.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">The federal funds rate directly influences borrowing costs throughout the economy, affecting mortgage rates, credit card rates, and other consumer debt. Changes in this rate impact household debt service costs and borrowing decisions.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Indicator Name:</div>
+                                    <div class="hover-card-value">Federal Funds Effective Rate</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">FEDFUNDS</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Seasonality:</div>
+                                    <div class="hover-card-value">Monthly</div>
                                 </div>
                             </div>
                         </div>
@@ -1841,52 +1868,36 @@
                     <div>
                         <div class="text-sm font-medium text-gray-700 mb-2">Interest Rates</div>
                         <div class="metric-row">
-                            <div class="metric-label">Federal Funds Effective Rate (EFFR)</div>
-                            <div class="metric-value">4.33% <span class="text-gray-500 text-xs">(May 16, 2025)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">Secured Overnight Financing Rate (SOFR)</div>
-                            <div class="metric-value">4.30-4.32% <span class="text-gray-500 text-xs">(May 16, 2025)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">2-Year Treasury Yield</div>
-                            <div class="metric-value">4.70% <span class="text-gray-500 text-xs">(May 16, 2025)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">10-Year Treasury Yield</div>
-                            <div class="metric-value">4.25% <span class="text-gray-500 text-xs">(May 19, 2025)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">10Y-2Y Treasury Spread (2s10s)</div>
-                            <div class="metric-value"><span class="metric-change-negative">-0.45%</span> <span class="text-gray-500 text-xs">(-45 bps, May 19)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">Bank Prime Loan Rate</div>
-                            <div class="metric-value">7.50% <span class="text-gray-500 text-xs">(Mar 19, 2025)</span></div>
+                            <div class="metric-label">Federal Funds Effective Rate</div>
+                            <div class="metric-value" id="federal-funds-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-label">30-Year Fixed Mortgage Rate</div>
-                            <div class="metric-value">6.75% <span class="text-gray-500 text-xs">(Week ending May 15)</span></div>
+                            <div class="metric-value" id="mortgage-30y-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">ICE BofA Corporate OAS</div>
-                            <div class="metric-value">0.85% <span class="text-gray-500 text-xs">(85 bps, May 19)</span></div>
+                            <div class="metric-label">10-Year Treasury Yield</div>
+                            <div class="metric-value" id="treasury-10y-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">CPI/Inflation Rate (YoY)</div>
-                            <div class="metric-value">3.0-3.5% <span class="text-gray-500 text-xs">(Apr 2025)</span></div>
+                            <div class="metric-label">2-Year Treasury Yield</div>
+                            <div class="metric-value" id="treasury-2y-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">5Y5Y Forward Inflation Expectation</div>
-                            <div class="metric-value">2.20% <span class="text-gray-500 text-xs">(May 19, 2025)</span></div>
+                            <div class="metric-label">3-Month Treasury Bill</div>
+                            <div class="metric-value" id="treasury-3m-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Real GDP Growth Rate (SAAR)</div>
-                            <div class="metric-value"><span class="metric-change-positive">+1.5%</span> <span class="text-gray-500 text-xs">(Q1 2025)</span></div>
+                            <div class="metric-label">Personal Consumption Expenditures (PCE) Price Index</div>
+                            <div class="metric-value" id="pce-price-index">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Unemployment Rate (U-3)</div>
-                            <div class="metric-value">4.1% <span class="text-gray-500 text-xs">(Apr 2025)</span></div>
+                            <div class="metric-label">Consumer Price Index (CPI-U)</div>
+                            <div class="metric-value" id="cpi-inflation-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-label">Debt-to-GDP Ratio</div>
+                            <div class="metric-value" id="debt-to-gdp-ratio">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                     </div>
                     <div>
@@ -2101,7 +2112,10 @@
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Debt-to-GDP Chart Script -->
+    <!-- TinyChart System Integration -->
+    <script src="src/assets/js/tiny-chart-integration.js"></script>
+
+    <!-- Legacy: Debt-to-GDP Chart Script (will be migrated to TinyChart system) -->
     <script>
         async function loadDebtToGdpChart() {
             const chartCanvas = document.getElementById('debtToGdpChart');

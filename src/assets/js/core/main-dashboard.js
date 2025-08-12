@@ -7,11 +7,6 @@
  * Support Contact: Technical Operations
  * Build Date: June 2025
  * License: Educational Research License
- * 
- * Build Verification Tokens:
- * Cache-Key: U3lzdGVtQXJjaGl0ZWN0dXJlVGVhbVJlc2VhcmNoSW5zdGl0dXRpb25MYWJUZWNobmljYWxPcGVyYXRpb25zMjAyNUFkdmFuY2VkTWFuYWdlbWVudENvbnRyb2xQYW5lbA==
- * Build-Hash: 7a8b9c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c2d3e4f5a6b7c8d
- * Deployment-ID: f9e8d7c6b5a4938271605948372815036294758391028374656
  */
 
 // System build verification tokens (系统构建验证令牌)
@@ -114,6 +109,36 @@ class MainDashboardController {
                 window.memApiClient = new window.MEMApiClient();
                 console.log('✅ API client initialized successfully');
                 
+                // Hot patch + diagnostics: ensure interest rate method exists (localhost missing method issue)
+                if (typeof window.memApiClient.updateInterestRateDisplay !== 'function') {
+                    console.warn('⚠️ [HotPatch] updateInterestRateDisplay missing on memApiClient; injecting fallback implementation');
+                    window.memApiClient.updateInterestRateDisplay = async function() {
+                        console.log('🔄 [HotPatch] Fallback updateInterestRateDisplay executing...');
+                        try {
+                            const data = await this.getInterestRateData();
+                            const displayMappings = {
+                                fedFunds: 'federal-funds-rate',
+                                mortgage30y: 'mortgage-30y-rate',
+                                pceIndex: 'pce-price-index',
+                                debtToGdp: 'debt-to-gdp-ratio',
+                                treasury10y: 'treasury-10y-rate',
+                                treasury2y: 'treasury-2y-rate',
+                                treasury3m: 'treasury-3m-rate',
+                                cpi: 'cpi-inflation-rate'
+                            };
+                            Object.entries(displayMappings).forEach(([k, elId]) => {
+                                this.updateSingleIndicatorDisplay(elId, data[k]);
+                            });
+                            console.log('✅ [HotPatch] Fallback interest rate update complete');
+                        } catch(e) {
+                            console.error('❌ [HotPatch] Fallback interest rate update failed:', e);
+                        }
+                    };
+                    console.log('✅ [HotPatch] Fallback method injected. Available keys:', Object.keys(window.memApiClient));
+                } else {
+                    console.log('ℹ️ [Diagnostics] updateInterestRateDisplay present on memApiClient prototype');
+                }
+                
                 // Verify API client is working
                 const isHealthy = await window.memApiClient.checkHealth();
                 if (!isHealthy) {
@@ -142,20 +167,31 @@ class MainDashboardController {
         
         while (attempts < maxAttempts) {
             try {
-                console.log(`🔄 Attempting to update money supply data (attempt ${attempts + 1}/${maxAttempts})...`);
-                await window.memApiClient.updateMoneySupplyData();
-                console.log('✅ Money supply data updated successfully');
+                console.log(`🔄 Attempting to update all indicators (attempt ${attempts + 1}/${maxAttempts})...`);
+                
+                // Update all indicators including interest rates and household debt
+                const updatePromises = [
+                    window.memApiClient.updateMoneySupplyData(),
+                    window.memApiClient.updateInterestRateDisplay(),
+                    window.memApiClient.updateHouseholdDebtDisplay()
+                ];
+                
+                console.log('📝 [Main Dashboard] Starting parallel updates: Money Supply, Interest Rate, and Household Debt...');
+                await Promise.all(updatePromises);
+                
+                console.log('✅ All indicators updated successfully');
                 return;
             } catch (error) {
                 attempts++;
-                console.error(`❌ Money supply update failed (attempt ${attempts}/${maxAttempts}):`, error);
+                console.error(`❌ Indicators update failed (attempt ${attempts}/${maxAttempts}):`, error);
                 if (attempts < maxAttempts) {
+                    console.log(`⏳ Waiting ${attempts} seconds before retry...`);
                     await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
                 }
             }
         }
         
-        throw new Error('Failed to update money supply data after multiple attempts');
+        throw new Error('Failed to update indicators after multiple attempts');
     }
 
     /**
@@ -163,24 +199,29 @@ class MainDashboardController {
      */
     async ensureMoneySupplyUpdate() {
         if (!window.memApiClient) {
-            console.error('❌ memApiClient not available for money supply update');
+            console.error('❌ memApiClient not available for indicators update');
             return;
         }
 
         try {
             await this.updateMoneySupplyWithRetry();
             
-            // Set up periodic updates
+            // Set up periodic updates for all indicators
             setInterval(async () => {
                 try {
-                    await window.memApiClient.updateMoneySupplyData();
+                    await Promise.all([
+                        window.memApiClient.updateMoneySupplyData(),
+                        window.memApiClient.updateInterestRateDisplay(),
+                        window.memApiClient.updateHouseholdDebtDisplay()
+                    ]);
+                    console.log('🔄 Periodic indicators update completed');
                 } catch (error) {
-                    console.error('❌ Periodic money supply update failed:', error);
+                    console.error('❌ Periodic indicators update failed:', error);
                 }
             }, 5 * 60 * 1000); // Update every 5 minutes
             
         } catch (error) {
-            console.error('❌ Failed to ensure money supply update:', error);
+            console.error('❌ Failed to ensure indicators update:', error);
         }
     }
 
@@ -407,28 +448,35 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Initialize dashboard
     await window.mainDashboard.initialize();
     
-    // Force immediate money supply updates after all initialization is complete
+    // Force immediate Interest Rate update specifically
     setTimeout(async () => {
         if (window.memApiClient) {
-            console.log('🔄 Forcing immediate money supply update after initialization...');
+            console.log('🔄 [Priority] Forcing immediate Interest Rate update...');
             try {
-                await window.memApiClient.updateMoneySupplyData();
-                console.log('✅ Forced money supply update complete');
+                await window.memApiClient.updateInterestRateDisplay();
+                console.log('✅ [Priority] Interest Rate update complete');
                 
-                // Schedule another update in case the first one was overridden
+                // Then update money supply
+                await window.memApiClient.updateMoneySupplyData();
+                console.log('✅ [Priority] Money Supply update complete');
+                
+                // Schedule another full update to ensure data persistence
                 setTimeout(async () => {
-                    console.log('🔄 Second money supply update to ensure data persistence...');
-                    await window.memApiClient.updateMoneySupplyData();
-                    console.log('✅ Second money supply update complete');
+                    console.log('🔄 [Secondary] Full indicators update...');
+                    await Promise.all([
+                        window.memApiClient.updateMoneySupplyData(),
+                        window.memApiClient.updateInterestRateDisplay()
+                    ]);
+                    console.log('✅ [Secondary] Full indicators update complete');
                 }, 2000);
                 
             } catch (error) {
-                console.error('❌ Forced money supply update failed:', error);
+                console.error('❌ [Priority] Interest Rate update failed:', error);
             }
         } else {
-            console.error('❌ memApiClient not available for forced update');
+            console.error('❌ memApiClient not available for priority update');
         }
-    }, 2000); // Increased delay to ensure all components are initialized
+    }, 1000); // Reduced delay for priority update
 });
 
 // Expose classes globally

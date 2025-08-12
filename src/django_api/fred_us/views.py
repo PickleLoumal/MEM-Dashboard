@@ -342,11 +342,6 @@ class FredUsIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
         """PCE价格指数 - GET /api/fred-us/pce-price-index/"""
         return self._get_specific_indicator('PCEPI', request)
 
-    @action(detail=False, methods=['get'], url_path='debt-to-gdp')
-    def debt_to_gdp_ratio(self, request):
-        """债务占GDP比率 - GET /api/fred-us/debt-to-gdp/"""
-        return self._get_specific_indicator('GFDEGDQ188S', request)
-
     @action(detail=False, methods=['get'], url_path='treasury-10y')
     def treasury_10y_rate(self, request):
         """10年期国债利率 - GET /api/fred-us/treasury-10y/"""
@@ -361,6 +356,42 @@ class FredUsIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
     def treasury_3m_rate(self, request):
         """3个月国债利率 - GET /api/fred-us/treasury-3m/"""
         return self._get_specific_indicator('TB3MS', request)
+
+    # Consumer and Household Debt Indicators
+    @action(detail=False, methods=['get'], url_path='household-debt-gdp')
+    def household_debt_gdp(self, request):
+        """家庭债务占GDP比重 - GET /api/fred-us/household-debt-gdp/"""
+        return self._get_specific_indicator('HDTGPDUSQ163N', request)
+
+    @action(detail=False, methods=['get'], url_path='debt-service-ratio')
+    def debt_service_ratio(self, request):
+        """家庭债务偿还比率 - GET /api/fred-us/debt-service-ratio/"""
+        return self._get_specific_indicator('TDSP', request)
+
+    @action(detail=False, methods=['get'], url_path='mortgage-debt')
+    def mortgage_debt_outstanding(self, request):
+        """抵押贷款债务未偿余额 - GET /api/fred-us/mortgage-debt/"""
+        return self._get_specific_indicator('MDOAH', request)
+
+    @action(detail=False, methods=['get'], url_path='credit-card-debt')
+    def credit_card_balances(self, request):
+        """信用卡债务余额 - GET /api/fred-us/credit-card-debt/"""
+        return self._get_specific_indicator('RCCCBBALTOT', request)
+
+    @action(detail=False, methods=['get'], url_path='student-loans')
+    def student_loans(self, request):
+        """学生贷款 - GET /api/fred-us/student-loans/"""
+        return self._get_specific_indicator('SLOASM', request)
+
+    @action(detail=False, methods=['get'], url_path='consumer-credit')
+    def total_consumer_credit(self, request):
+        """总消费者信贷 - GET /api/fred-us/consumer-credit/"""
+        return self._get_specific_indicator('TOTALSL', request)
+
+    @action(detail=False, methods=['get'], url_path='total-debt')
+    def total_household_debt(self, request):
+        """家庭总债务 - GET /api/fred-us/total-debt/"""
+        return self._get_specific_indicator('DTCOLNVHFNM', request)
 
     def _get_specific_indicator(self, series_id: str, request):
         """获取特定指标数据的通用方法 - 返回前端期望的简单格式"""

@@ -11,10 +11,12 @@ function MEMApiClient(baseUrl = null) {
         // Use configured API (Django or Flask)
         this.baseUrl = window.API_CONFIG.baseUrl;
         console.log(`🔗 Using ${window.API_CONFIG.name}: ${this.baseUrl}`);
-    } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        // Development fallback to Flask API
-        this.baseUrl = 'http://localhost:5001/api';
-        console.log('🔗 Using default Flask API: ' + this.baseUrl);
+    } else if (window.location.hostname === 'localhost' || 
+               window.location.hostname === '127.0.0.1' || 
+               window.location.protocol === 'file:') {
+        // Development environment - use Django API
+        this.baseUrl = 'http://localhost:8000/api';
+        console.log('🔗 Using Django API for development: ' + this.baseUrl);
     } else {
         // Production: use static JSON files (no serverless function auth issues)
         this.baseUrl = '/api';
@@ -99,6 +101,158 @@ function MEMApiClient(baseUrl = null) {
                 formatted_date: "Q1 2025",
                 series_id: "MOTOR_VEHICLES",
                 source: "BEA backup data"
+            }
+        },
+        // 利率相关fallback数据
+        FEDFUNDS: {
+            success: true,
+            data: {
+                value: 4.33,
+                formatted_date: "Jul 2025",
+                yoy_change: -18.76,
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        MORTGAGE30Y: {
+            success: true,
+            data: {
+                value: 6.72,
+                formatted_date: "Jul 2025",
+                yoy_change: -0.88,
+                unit: "Percent", 
+                source: "Fallback Data"
+            }
+        },
+        PCEINDEX: {
+            success: true,
+            data: {
+                value: 126.56,
+                formatted_date: "Jun 2025",
+                yoy_change: 2.8,
+                unit: "Index",
+                source: "Fallback Data"
+            }
+        },
+        DEBTTOGDP: {
+            success: true,
+            data: {
+                value: 120.87,
+                formatted_date: "Q1 2025", 
+                yoy_change: 3.2,
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        TREASURY10Y: {
+            success: true,
+            data: {
+                value: 4.22,
+                formatted_date: "Aug 2025",
+                yoy_change: -8.12,
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        TREASURY2Y: {
+            success: true,
+            data: {
+                value: 3.69,
+                formatted_date: "Aug 2025",
+                yoy_change: -11.75,
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        TREASURY3M: {
+            success: true,
+            data: {
+                value: 4.25,
+                formatted_date: "Jul 2025",
+                yoy_change: -15.20,
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        // Consumer and Household Debt indicators fallback data
+        HOUSEHOLD_DEBT_GDP: {
+            success: true,
+            data: {
+                value: 71.66,
+                formatted_date: "Jul 2024",
+                yoy_change: -1.2,
+                unit: "Ratio",
+                source: "Fallback Data"
+            }
+        },
+        DEBT_SERVICE_RATIO: {
+            success: true,
+            data: {
+                value: 11.25,
+                formatted_date: "Q1 2025",
+                yoy_change: 0.8,
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        MORTGAGE_DEBT: {
+            success: true,
+            data: {
+                value: 15841071.29,
+                formatted_date: "Jul 2019",
+                yoy_change: 0.0,
+                unit: "Millions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        CREDIT_CARD_DEBT: {
+            success: true,
+            data: {
+                value: 908.42,
+                formatted_date: "Q1 2025",
+                yoy_change: 5.2,
+                unit: "Billions of U.S. Dollars",
+                source: "Fallback Data"
+            }
+        },
+        STUDENT_LOANS: {
+            success: true,
+            data: {
+                value: 1813619.89,
+                formatted_date: "Jun 2025",
+                yoy_change: 2.8,
+                unit: "Millions of U.S. Dollars",
+                source: "Fallback Data"
+            }
+        },
+        CONSUMER_CREDIT: {
+            success: true,
+            data: {
+                value: 551973.3,
+                formatted_date: "May 2025",
+                yoy_change: 3.5,
+                unit: "Millions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        TOTAL_DEBT: {
+            success: true,
+            data: {
+                value: 45000000.0,
+                formatted_date: "Current",
+                yoy_change: 4.2,
+                unit: "Millions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        CPI: {
+            success: true,
+            data: {
+                value: 321.50,
+                formatted_date: "Jun 2025",
+                yoy_change: 3.1,
+                unit: "Index",
+                source: "Fallback Data"
             }
         }
     };
@@ -225,7 +379,118 @@ MEMApiClient.prototype.getHousingData = async function() {
 
 // Fetch Federal Funds Rate data - 统一FRED API
 MEMApiClient.prototype.getFedFundsData = async function() {
-    return await this.fetchWithCache('/fred/fed-funds', 'FED_FUNDS_DATA', null);
+    return await this.fetchWithCache('/fred-us/fed-funds/', 'FED_FUNDS_DATA', 'FEDFUNDS');
+};
+
+// Fetch 30-Year Mortgage Rate data - 统一FRED API
+MEMApiClient.prototype.getMortgage30YData = async function() {
+    return await this.fetchWithCache('/fred-us/mortgage-30y/', 'MORTGAGE_30Y_DATA', 'MORTGAGE30Y');
+};
+
+// Fetch PCE Price Index data - 统一FRED API
+MEMApiClient.prototype.getPCEPriceIndexData = async function() {
+    return await this.fetchWithCache('/fred-us/pce-price-index/', 'PCE_PRICE_INDEX_DATA', 'PCEINDEX');
+};
+
+// Fetch 10-Year Treasury Rate data - 统一FRED API
+MEMApiClient.prototype.getTreasury10YData = async function() {
+    return await this.fetchWithCache('/fred-us/treasury-10y/', 'TREASURY_10Y_DATA', 'TREASURY10Y');
+};
+
+// Fetch 2-Year Treasury Rate data - 统一FRED API
+MEMApiClient.prototype.getTreasury2YData = async function() {
+    return await this.fetchWithCache('/fred-us/treasury-2y/', 'TREASURY_2Y_DATA', 'TREASURY2Y');
+};
+
+// Fetch 3-Month Treasury Rate data - 统一FRED API
+MEMApiClient.prototype.getTreasury3MData = async function() {
+    return await this.fetchWithCache('/fred-us/treasury-3m/', 'TREASURY_3M_DATA', 'TREASURY3M');
+};
+
+// 利率相关指标获取方法
+MEMApiClient.prototype.getInterestRateData = async function() {
+    const endpoints = {
+        fedFunds: '/fred-us/fed-funds/',
+        mortgage30y: '/fred-us/mortgage-30y/', 
+        pceIndex: '/fred-us/pce-price-index/',
+        debtToGdp: '/fred-us/debt-to-gdp/',
+        treasury10y: '/fred-us/treasury-10y/',
+        treasury2y: '/fred-us/treasury-2y/',
+        treasury3m: '/fred-us/treasury-3m/',
+        cpi: '/fred-us/cpi/'
+    };
+    
+    // 正确的fallback key映射
+    const fallbackKeyMap = {
+        fedFunds: 'FEDFUNDS',
+        mortgage30y: 'MORTGAGE30Y',
+        pceIndex: 'PCEINDEX',
+        debtToGdp: 'DEBTTOGDP',
+        treasury10y: 'TREASURY10Y',
+        treasury2y: 'TREASURY2Y',
+        treasury3m: 'TREASURY3M',
+        cpi: 'CPI'
+    };
+    
+    const results = {};
+    
+    for (const [key, endpoint] of Object.entries(endpoints)) {
+        try {
+            results[key] = await this.fetchWithCache(
+                endpoint, 
+                `INTEREST_RATE_${key.toUpperCase()}`, 
+                fallbackKeyMap[key]
+            );
+        } catch (error) {
+            console.error(`Failed to fetch ${key}:`, error);
+            results[key] = this.fallbackData[fallbackKeyMap[key]] || null;
+        }
+    }
+    
+    return results;
+};
+
+// Consumer and Household Debt indicators获取方法
+MEMApiClient.prototype.getHouseholdDebtData = async function() {
+    const endpoints = {
+        householdDebtGdp: '/fred-us/household-debt-gdp/',
+        debtServiceRatio: '/fred-us/debt-service-ratio/',
+        mortgageDebt: '/fred-us/mortgage-debt/',
+        creditCardDebt: '/fred-us/credit-card-debt/',
+        studentLoans: '/fred-us/student-loans/',
+        consumerCredit: '/fred-us/consumer-credit/',
+        totalDebt: '/fred-us/total-debt/',
+        fedFunds: '/fred-us/fed-funds/' // 重用现有的联邦基金利率端点
+    };
+    
+    // fallback key映射
+    const fallbackKeyMap = {
+        householdDebtGdp: 'HOUSEHOLD_DEBT_GDP',
+        debtServiceRatio: 'DEBT_SERVICE_RATIO',
+        mortgageDebt: 'MORTGAGE_DEBT',
+        creditCardDebt: 'CREDIT_CARD_DEBT',
+        studentLoans: 'STUDENT_LOANS',
+        consumerCredit: 'CONSUMER_CREDIT',
+        totalDebt: 'TOTAL_DEBT',
+        fedFunds: 'FEDFUNDS'
+    };
+    
+    const results = {};
+    
+    for (const [key, endpoint] of Object.entries(endpoints)) {
+        try {
+            results[key] = await this.fetchWithCache(
+                endpoint, 
+                `HOUSEHOLD_DEBT_${key.toUpperCase()}`, 
+                fallbackKeyMap[key]
+            );
+        } catch (error) {
+            console.error(`Failed to fetch ${key}:`, error);
+            results[key] = this.fallbackData[fallbackKeyMap[key]] || null;
+        }
+    }
+    
+    return results;
 };
 
 // Get all FRED indicators at once - 统一FRED API
@@ -597,15 +862,131 @@ MEMApiClient.prototype.updateMoneySupplyData = async function() {
 MEMApiClient.prototype.updateAllIndicators = async function() {
     // Update all indicators in parallel
     await Promise.allSettled([
-        this.updateM2Display(),
-        this.updateM1Display(),
-        this.updateM2VDisplay(),
-        this.updateMonetaryBaseDisplay(),
+        this.updateMoneySupplyData(),
+        this.updateInterestRateDisplay(),
+        this.updateHouseholdDebtDisplay(),
         this.updateCPIDisplay(),
         this.updateUNRATEDisplay()
     ]);
 
-    console.log('✅ All indicators update complete');
+    console.log('✅ [API Client] All indicators update complete');
+};
+
+// 更新利率指标显示
+MEMApiClient.prototype.updateInterestRateDisplay = async function() {
+    console.log('🔄 [API Client] Updating Interest Rate indicators...');
+    
+    const data = await this.getInterestRateData();
+    
+    const displayMappings = {
+        fedFunds: 'federal-funds-rate',
+        mortgage30y: 'mortgage-30y-rate',
+        pceIndex: 'pce-price-index', 
+        debtToGdp: 'debt-to-gdp-ratio',
+        treasury10y: 'treasury-10y-rate',
+        treasury2y: 'treasury-2y-rate',
+        treasury3m: 'treasury-3m-rate',
+        cpi: 'cpi-inflation-rate'
+    };
+    
+    Object.entries(displayMappings).forEach(([dataKey, elementId]) => {
+        this.updateSingleIndicatorDisplay(elementId, data[dataKey]);
+    });
+    
+    console.log('✅ [API Client] Interest Rate indicators update complete');
+};
+
+// 更新债务指标显示
+MEMApiClient.prototype.updateHouseholdDebtDisplay = async function() {
+    console.log('🔄 [API Client] Updating Household Debt indicators...');
+    
+    const data = await this.getHouseholdDebtData();
+    
+    const displayMappings = {
+        householdDebtGdp: 'household-debt-gdp',
+        debtServiceRatio: 'debt-service-ratio',
+        mortgageDebt: 'mortgage-debt-outstanding',
+        creditCardDebt: 'credit-card-balances',
+        studentLoans: 'student-loans',
+        consumerCredit: 'consumer-credit',
+        totalDebt: 'total-household-debt',
+        fedFunds: 'fed-funds-rate'
+    };
+    
+    Object.entries(displayMappings).forEach(([dataKey, elementId]) => {
+        this.updateSingleIndicatorDisplay(elementId, data[dataKey]);
+    });
+    
+    console.log('✅ [API Client] Household Debt indicators update complete');
+};
+
+// 通用指标显示更新方法
+MEMApiClient.prototype.updateSingleIndicatorDisplay = function(elementId, apiData) {
+    const element = document.getElementById(elementId);
+    if (!element) {
+        console.warn(`❌ [API Client] Element not found: ${elementId}`);
+        console.warn(`Available elements with similar IDs:`, Array.from(document.querySelectorAll('[id*="rate"], [id*="index"], [id*="gdp"]')).map(el => el.id));
+        return;
+    }
+    
+    console.log(`🔄 [API Client] Updating element: ${elementId}`);
+    
+    try {
+        if (apiData && apiData.success && apiData.data) {
+            const data = apiData.data;
+            console.log(`📊 [API Client] ${elementId} data:`, data);
+            
+            // 格式化数值显示
+            let displayValue = data.value;
+            if (data.unit && data.unit.toLowerCase().includes('percent')) {
+                displayValue = `${data.value}%`;
+            } else if (data.series_id === 'GFDEGDQ188S') {
+                displayValue = `${data.value.toFixed(2)}%`;
+            } else if (data.series_id && data.series_id.includes('DGS') || data.series_id === 'FEDFUNDS' || data.series_id === 'MORTGAGE30US' || data.series_id === 'TB3MS') {
+                displayValue = `${data.value}%`;
+            } else if (data.series_id === 'PCEPI' || data.series_id === 'CPIAUCSL') {
+                displayValue = `${data.value}`;
+            } 
+            // 债务指标特殊格式化
+            else if (data.series_id === 'HDTGPDUSQ163N') {
+                displayValue = `${data.value.toFixed(2)}%`;
+            } else if (data.series_id === 'TDSP') {
+                displayValue = `${data.value.toFixed(2)}%`;
+            } else if (data.series_id === 'MDOAH') {
+                displayValue = `$${(data.value / 1000000).toFixed(2)}T`;
+            } else if (data.series_id === 'RCCCBBALTOT') {
+                displayValue = `$${data.value.toFixed(0)}B`;
+            } else if (data.series_id === 'SLOASM') {
+                displayValue = `$${(data.value / 1000000).toFixed(2)}T`;
+            } else if (data.series_id === 'TOTALSL') {
+                displayValue = `$${data.value.toFixed(0)}B`;
+            } else if (data.series_id === 'DTCOLNVHFNM') {
+                displayValue = `$${(data.value / 1000000).toFixed(2)}T`;
+            }
+            
+            // 同比变化显示
+            let changeDisplay = '';
+            if (data.yoy_change !== null && data.yoy_change !== undefined) {
+                const changeClass = data.yoy_change >= 0 ? 'metric-change-positive' : 'metric-change-negative';
+                const changeSign = data.yoy_change >= 0 ? '+' : '';
+                changeDisplay = ` <span class="${changeClass}">[${changeSign}${data.yoy_change.toFixed(2)}% YoY]</span>`;
+            }
+            
+            const finalHTML = `${displayValue}${changeDisplay} <span class="text-gray-500 text-xs">(FRED ${data.formatted_date})</span>`;
+            element.innerHTML = finalHTML;
+            console.log(`✅ [API Client] ${elementId} updated: ${displayValue} (${data.formatted_date})`);
+            
+        } else {
+            console.warn(`⚠️ [API Client] ${elementId} - No valid API data, using fallback`);
+            // 使用fallback数据
+            element.innerHTML = 'Data unavailable <span class="text-gray-500 text-xs">(Fallback)</span>';
+            console.warn(`⚠️ [API Client] ${elementId} using fallback - no valid API data`);
+        }
+        
+    } catch (error) {
+        console.error(`❌ [API Client] Error updating ${elementId}:`, error);
+        element.innerHTML = 'Loading error <span class="text-gray-500 text-xs">(Error)</span>';
+    }
 };
 
 // Export for use in the main HTML file
