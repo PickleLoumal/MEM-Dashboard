@@ -682,11 +682,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
                     <div>
                         <div class="component-title">Govt Deficit Financing</div>
+                        
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Total Public Debt Outstanding</div>
-                            <div class="metric-value">$36,213.6B <span class="text-gray-500 text-xs">(Apr 2025, NSA)</span></div>
+                            <div class="metric-label">Federal Debt: Total Public Debt</div>
+                            <div class="metric-value" id="gdf-federal-debt-total">Loading...</div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Total Public Debt Outstanding</div>
+                                <div class="hover-card-title">Federal Debt: Total Public Debt</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
@@ -697,93 +698,95 @@
                                 <div class="hover-card-importance">It serves as the primary measure of federal fiscal burden, affects government borrowing costs, influences monetary policy constraints, and determines the sustainability of fiscal policy while impacting intergenerational equity and long-term economic stability.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">US Total Debt Outstanding</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">GFDEBTN</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">US Treasury</div>
+                                    <div class="hover-card-value">U.S. Department of the Treasury</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">DEBPTOTL Index</div>
+                                    <div class="hover-card-label">Frequency:</div>
+                                    <div class="hover-card-value">Quarterly</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Not Seasonally Adjusted</div>
+                                    <div class="hover-card-label">Unit:</div>
+                                    <div class="hover-card-value">Millions of Dollars</div>
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Federal Deficit (Monthly)</div>
-                            <div class="metric-value">$258.4B <span class="text-gray-500 text-xs">(Apr 2025, NSA)</span></div>
+                            <div class="metric-label">Federal Debt: GDP Percentage</div>
+                            <div class="metric-value" id="gdf-federal-debt-gdp-ratio">Loading...</div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Federal Deficit (Monthly)</div>
+                                <div class="hover-card-title">Federal Debt: Total Public Debt as Percent of GDP</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This measures the monthly shortfall when federal government expenditures exceed receipts, providing timely insight into fiscal performance and the pace of debt accumulation throughout the fiscal year.</div>
-                                <div class="hover-card-row">
-                                    <div class="hover-card-label">Why it is important:</div>
-                                </div>
-                                <div class="hover-card-importance">It offers real-time monitoring of fiscal health, enables early detection of budget deviations, affects Treasury financing needs, and provides critical input for economic forecasting and policy adjustments.</div>
-                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
-                                <div class="hover-card-row">
-                                    <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">US Treasury Federal Budget Debt Summary Deficit Or Surplus NSA</div>
-                                </div>
-                                <div class="hover-card-row">
-                                    <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">US Treasury</div>
-                                </div>
-                                <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">FDDSSD Index</div>
-                                </div>
-                                <div class="hover-card-row">
-                                    <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Not Seasonally Adjusted</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="metric-row metric-hover">
-                            <div class="metric-label">Debt-to-GDP Ratio</div>
-                            <div class="metric-value">105.15% <span class="text-gray-500 text-xs">(Latest Available)</span></div>
-                            <div class="hover-card">
-                                <div class="hover-card-title">Debt-to-GDP Ratio</div>
-                                <div class="hover-card-row">
-                                    <div class="hover-card-label">Description:</div>
-                                </div>
-                                <div class="hover-card-description">This ratio compares total government debt to the nation's gross domestic product, providing a standardized measure of debt burden relative to the economy's capacity to generate income and service that debt.</div>
+                                <div class="hover-card-description">This ratio compares total federal debt to the nation's gross domestic product, providing a standardized measure of debt burden relative to the economy's capacity to generate income and service that debt.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
                                 <div class="hover-card-importance">It serves as the international standard for assessing fiscal sustainability, influences credit ratings and borrowing costs, enables cross-country comparisons, and helps determine when debt levels may constrain economic growth and policy flexibility.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">IMF Gross Gov Debt to GDP ratios United States</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">GFDEGDQ188S</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">International Monetary Fund</div>
+                                    <div class="hover-card-value">U.S. Department of the Treasury, Bureau of Economic Analysis</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">HPDDUNIT Index</div>
+                                    <div class="hover-card-label">Frequency:</div>
+                                    <div class="hover-card-value">Quarterly</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Annual</div>
+                                    <div class="hover-card-label">Unit:</div>
+                                    <div class="hover-card-value">Percent</div>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Federal Revenue Collections</div>
-                            <div class="metric-value">$2,372.8B <span class="text-gray-500 text-xs">(Apr 2025, NSA)</span></div>
+                            <div class="metric-label">Federal Surplus or Deficit</div>
+                            <div class="metric-value" id="gdf-federal-surplus-deficit">Loading...</div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Federal Revenue Collections</div>
+                                <div class="hover-card-title">Federal Surplus or Deficit [-]</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">This measures the monthly/quarterly balance when federal government receipts are compared to expenditures, showing whether the government runs a surplus (positive) or deficit (negative) in its fiscal operations.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">It offers real-time monitoring of fiscal health, enables early detection of budget deviations, affects Treasury financing needs, and provides critical input for economic forecasting and policy adjustments.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">MTSDS133FMS</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">U.S. Department of the Treasury</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Frequency:</div>
+                                    <div class="hover-card-value">Monthly</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Unit:</div>
+                                    <div class="hover-card-value">Millions of Dollars</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Federal Tax Receipts</div>
+                            <div class="metric-value" id="gdf-federal-tax-receipts">Loading...</div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Federal Government Current Tax Receipts</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
@@ -794,94 +797,194 @@
                                 <div class="hover-card-importance">It directly determines the government's capacity to fund programs without borrowing, reflects economic activity levels and tax policy effectiveness, and provides essential data for fiscal planning and deficit projections.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">US Treasury Federal Budget Refunding Internal Revenue Collections Interest</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">W006RC1Q027SBEA</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">Internal Revenue Service</div>
+                                    <div class="hover-card-value">U.S. Bureau of Economic Analysis</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">FFSO4157 Index</div>
+                                    <div class="hover-card-label">Frequency:</div>
+                                    <div class="hover-card-value">Quarterly</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Not Seasonally Adjusted</div>
+                                    <div class="hover-card-label">Unit:</div>
+                                    <div class="hover-card-value">Billions of Dollars</div>
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Treasury Cash Balance (Daily)</div>
-                            <div class="metric-value">$436.6B <span class="text-gray-500 text-xs">(28 May 2025, NSA)</span></div>
+                            <div class="metric-label">Federal Net Outlays</div>
+                            <div class="metric-value" id="gdf-federal-net-outlays">Loading...</div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Treasury Cash Balance (Daily)</div>
+                                <div class="hover-card-title">Federal Net Outlays</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This represents the daily cash balance held by the U.S. Treasury in its Federal Reserve account, providing real-time insight into the government's immediate liquidity position and operational cash management.</div>
+                                <div class="hover-card-description">This represents the total net cash outflows from the federal government, including discretionary and mandatory spending, interest payments, and transfer programs, after accounting for offsetting receipts and recoveries.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">It indicates the government's immediate ability to meet obligations without new borrowing, affects short-term funding needs and auction scheduling, and provides early warning signals for potential debt ceiling constraints or liquidity crises.</div>
+                                <div class="hover-card-importance">It provides the most comprehensive measure of federal spending impact on the economy, determines financing needs, affects fiscal policy evaluation, and influences debt sustainability assessments.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">US Treasury Cash Balance Federal Reserve Account</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">FYONET</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">US Treasury</div>
+                                    <div class="hover-card-value">U.S. Office of Management and Budget</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">USCBFDRA Index</div>
+                                    <div class="hover-card-label">Frequency:</div>
+                                    <div class="hover-card-value">Annual</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Not Seasonally Adjusted</div>
+                                    <div class="hover-card-label">Unit:</div>
+                                    <div class="hover-card-value">Millions of Dollars</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Federal Current Expenditures</div>
+                            <div class="metric-value" id="gdf-federal-current-expenditures">Loading...</div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Federal Government: Current Expenditures</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">This measures federal government spending on current operations including wages, salaries, purchases of goods and services, and transfer payments, excluding capital investments and debt service.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">It represents the government's direct contribution to current economic activity, affects GDP calculations, influences fiscal multiplier effects, and provides insight into government's operational efficiency and spending priorities.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">FGEXPND</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">U.S. Bureau of Economic Analysis</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Frequency:</div>
+                                    <div class="hover-card-value">Quarterly</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Unit:</div>
+                                    <div class="hover-card-value">Billions of Dollars</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Federal Current Receipts</div>
+                            <div class="metric-value" id="gdf-federal-current-receipts">Loading...</div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Federal Government: Current Receipts</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">This tracks total federal government revenue from current operations including taxes, fees, fines, and other non-borrowing income sources that fund government operations and services.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">It measures the government's self-financing capability, reflects economic health through tax base performance, determines fiscal sustainability without borrowing, and enables analysis of revenue efficiency and tax policy effectiveness.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">FGRECPT</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">U.S. Bureau of Economic Analysis</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Frequency:</div>
+                                    <div class="hover-card-value">Quarterly</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Unit:</div>
+                                    <div class="hover-card-value">Billions of Dollars</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Excess Reserves</div>
+                            <div class="metric-value" id="gdf-excess-reserves">Loading...</div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Excess Reserves of Depository Institutions</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">This measures bank reserves held above required levels at the Federal Reserve, indicating banking sector liquidity conditions and monetary policy transmission effectiveness in the financial system.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">It reflects monetary policy impact on banking liquidity, indicates credit market conditions and lending capacity, affects money market rates and transmission mechanisms, and provides early signals of financial system stress or accommodation.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">EXCSRESNW</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Board of Governors of the Federal Reserve System</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Frequency:</div>
+                                    <div class="hover-card-value">Weekly</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Unit:</div>
+                                    <div class="hover-card-value">Millions of Dollars</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div>
+                    <div class = "component-card">
                         <div class="component-title">Trade Deficits</div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">U.S. Trade Balance</div>
-                            <div class="metric-value">-$163.169B <span class="text-gray-500 text-xs">(Mar 2025, SA)</span></div>
+                            <div class="metric-label">Trade Balance: Goods and Services</div>
+                            <div class="metric-value" id="trade-balance-goods-services">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">U.S. Trade Balance</div>
+                                <div class="hover-card-title">Trade Balance: Goods and Services</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This indicator measures the difference between the value of goods and services exported by the United States and the value of goods and services imported, representing America's net trade position with the rest of the world.</div>
+                                <div class="hover-card-description">This indicator measures the difference between the value of goods and services exported by the United States and the value of goods and services imported, representing America's net trade position with the rest of the world on a balance of payments basis.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">It directly affects GDP through net exports, influences currency values, reflects economic competitiveness, and signals the balance between domestic consumption of foreign goods versus foreign consumption of American products.</div>
+                                <div class="hover-card-importance">It directly affects GDP through net exports, influences currency values, reflects economic competitiveness, and signals the balance between domestic consumption of foreign goods versus foreign consumption of American products. A persistent trade deficit indicates the economy imports more than it exports.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">U.S. International Trade in Goods and Services</div>
+                                    <div class="hover-card-value">Trade Balance: Goods and Services, Balance of Payments Basis</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">U.S. Census Bureau</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">USTBTOT Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">BOPGSTB</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Seasonally Adjusted</div>
+                                    <div class="hover-card-value">Monthly, Seasonally Adjusted</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
                             <div class="metric-label">Current Account Balance</div>
-                            <div class="metric-value">-$1,048.7B <span class="text-gray-500 text-xs">(Q3 2024, SA)</span></div>
+                            <div class="metric-value" id="current-account-balance">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
                                 <div class="hover-card-title">Current Account Balance</div>
                                 <div class="hover-card-row">
@@ -895,31 +998,31 @@
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">U.S. Current Account Balance</div>
+                                    <div class="hover-card-value">Balance on current account</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">Bureau of Economic Analysis</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">EHCABD Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">IEABC</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Seasonally Adjusted</div>
+                                    <div class="hover-card-value">Quarterly, Seasonally Adjusted</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Foreign Holdings of Treasury Securities</div>
-                            <div class="metric-value">$1,390.5B <span class="text-gray-500 text-xs">(Mar 2025, NSA)</span></div>
+                            <div class="metric-label">Foreign Treasury Holdings</div>
+                            <div class="metric-value" id="foreign-treasury-holdings">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Foreign Holdings of Treasury Securities</div>
+                                <div class="hover-card-title">Foreign Treasury Holdings</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This metric tracks the total value of U.S. Treasury securities owned by foreign governments, central banks, and private investors, representing international financing of U.S. government debt and confidence in dollar-denominated assets.</div>
+                                <div class="hover-card-description">This metric tracks the total value of U.S. Treasury securities owned by foreign official institutions, representing international financing of U.S. government debt and confidence in dollar-denominated assets by foreign governments and central banks.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
@@ -927,63 +1030,63 @@
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">Foreign Holdings of U.S. Treasury Securities</div>
+                                    <div class="hover-card-value">Rest of the World; Treasury Securities Held by Foreign Official Institutions</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">U.S. Treasury Department</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">HOLDFOR Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">BOGZ1FL263061130Q</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Not Seasonally Adjusted</div>
+                                    <div class="hover-card-value">Quarterly, Not Seasonally Adjusted</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Tariff Revenue (Daily)</div>
-                            <div class="metric-value">$33,128M <span class="text-gray-500 text-xs">(May 2025, NSA)</span></div>
+                            <div class="metric-label">Customs Duties Revenue</div>
+                            <div class="metric-value" id="customs-duties">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Tariff Revenue (Daily)</div>
+                                <div class="hover-card-title">Customs Duties Revenue</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This indicator measures daily collections from customs duties and tariffs imposed on imported goods, representing a key component of federal revenue and reflecting the impact of trade policy on government finances.</div>
+                                <div class="hover-card-description">This indicator measures federal government current tax receipts from customs duties and tariffs imposed on imported goods, representing a key component of federal revenue and reflecting the impact of trade policy on government finances.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">It provides real-time insight into trade policy effectiveness, protectionist measures' impact on government revenue, import volume changes, and the fiscal consequences of international trade disputes and negotiations.</div>
+                                <div class="hover-card-importance">It provides insight into trade policy effectiveness, protectionist measures' impact on government revenue, import volume changes, and the fiscal consequences of international trade disputes and negotiations.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">U.S. Customs and Border Protection Tariff Collections</div>
+                                    <div class="hover-card-value">Federal government current tax receipts: Taxes on production and imports: Customs duties</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">U.S. Treasury Department</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">TARFREV Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">B235RC1Q027SBEA</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Not Seasonally Adjusted</div>
+                                    <div class="hover-card-value">Quarterly, Seasonally Adjusted</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Federal Budget Deficit</div>
-                            <div class="metric-value">-$1,048.73B <span class="text-gray-500 text-xs">(2025 Annual)</span></div>
+                            <div class="metric-label">Federal Surplus/Deficit (MTS)</div>
+                            <div class="metric-value" id="federal-surplus-deficit-mts">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Federal Budget Deficit</div>
+                                <div class="hover-card-title">Federal Surplus/Deficit (MTS)</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This measures the annual shortfall when federal government expenditures exceed revenues, requiring borrowing to finance operations and representing the government's contribution to national debt accumulation.</div>
+                                <div class="hover-card-description">This measures the monthly shortfall or surplus when federal government expenditures are compared to revenues, from the Monthly Treasury Statement, representing the government's fiscal position and borrowing requirements.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
@@ -991,19 +1094,115 @@
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">Federal Government Budget Deficit/Surplus</div>
+                                    <div class="hover-card-value">Federal Surplus or Deficit [-]</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">U.S. Treasury Department</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">FEDGBS Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">MTSDS133FMS</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Annual</div>
+                                    <div class="hover-card-value">Monthly, Not Seasonally Adjusted</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Net Exports</div>
+                            <div class="metric-value" id="net-exports">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Net Exports</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">This measures the net value of goods and services exported by the United States minus the value of goods and services imported, representing the trade component of GDP and America's contribution to global demand.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">Net exports directly contribute to GDP growth, affect domestic employment and production, influence exchange rates, and reflect the economy's competitive position in international markets.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Indicator Name:</div>
+                                    <div class="hover-card-value">Net Exports of Goods and Services</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">NETEXP</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Seasonality:</div>
+                                    <div class="hover-card-value">Quarterly, Seasonally Adjusted</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Real Imports</div>
+                            <div class="metric-value" id="real-imports">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Real Imports</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">This measures the inflation-adjusted value of goods and services imported by the United States, providing a volume-based perspective on import activity that removes the effects of price changes.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">Real imports reflect actual consumption of foreign goods and services by Americans, affect domestic production and employment, and indicate economic strength and consumer demand patterns.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Indicator Name:</div>
+                                    <div class="hover-card-value">Real Imports of Goods and Services</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">IMPGSC1</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Seasonality:</div>
+                                    <div class="hover-card-value">Quarterly, Seasonally Adjusted</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Real Exports</div>
+                            <div class="metric-value" id="real-exports">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Real Exports</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">This measures the inflation-adjusted value of goods and services exported by the United States, providing a volume-based perspective on export activity that removes the effects of price changes.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">Real exports reflect actual foreign demand for American goods and services, drive domestic production and employment, and indicate the country's competitiveness in international markets.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Indicator Name:</div>
+                                    <div class="hover-card-value">Real Exports of Goods and Services</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">EXPGSC1</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Seasonality:</div>
+                                    <div class="hover-card-value">Quarterly, Seasonally Adjusted</div>
                                 </div>
                             </div>
                         </div>
@@ -1020,7 +1219,7 @@
                         <div class="component-title">Government Debts</div>
                         <div class="metric-row metric-hover">
                             <div class="metric-label">Total Public Debt Outstanding</div>
-                            <div class="metric-value">$36,213.6B <span class="text-gray-500 text-xs">(May 2025)</span></div>
+                            <div class="metric-value" id="federal-debt-total">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
                                 <div class="hover-card-title">Total Public Debt Outstanding</div>
                                 <div class="hover-card-row">
@@ -1034,29 +1233,29 @@
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">Federal Public Debt Total</div>
+                                    <div class="hover-card-value">Federal Debt: Total Public Debt</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">U.S. Treasury</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">DEBPTOTL Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">GFDEBTN</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Not Seasonally Adjusted</div>
+                                    <div class="hover-card-value">Quarterly, End of Period</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover modal-trigger" data-modal="debt-to-gdp">
                             <div class="metric-label">Debt-to-GDP Ratio<span class="tiny-chart-icon"><canvas id="tinyDebtToGdpChart" width="24" height="12"></canvas></span></div>
-                            <div class="metric-value">120.81% <span class="text-gray-500 text-xs">(FRED Q1 2025)</span></div>
+                            <div class="metric-value" id="federal-debt-gdp-ratio">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                         </div>
                         <div class="metric-row metric-hover">
                             <div class="metric-label">Federal Budget Deficit</div>
-                            <div class="metric-value">-$1,048.73B <span class="text-gray-500 text-xs">(FY 2025 YTD)</span></div>
+                            <div class="metric-value" id="federal-surplus-deficit">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
                                 <div class="hover-card-title">Federal Budget Deficit</div>
                                 <div class="hover-card-row">
@@ -1070,31 +1269,31 @@
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">Federal Government Budget Balance</div>
+                                    <div class="hover-card-value">Federal Surplus or Deficit [-]</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">U.S. Treasury</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">FEDGBS Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">MTSDS133FMS</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Not Seasonally Adjusted</div>
+                                    <div class="hover-card-value">Monthly</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Aging Population</div>
-                            <div class="metric-value">84,524,096 <span class="text-gray-500 text-xs">(Ages 35-54, 2022 Annual)</span></div>
+                            <div class="metric-label">Population 55+ Years</div>
+                            <div class="metric-value" id="population-55-over">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Aging Population</div>
+                                <div class="hover-card-title">Population 55+ Years</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This measures the population aged 35-54 years, reflecting demographic trends in the prime working-age cohort that will transition toward retirement age in the coming decades. This demographic data provides insight into future workforce dynamics and dependency ratios.</div>
+                                <div class="hover-card-description">This measures the population aged 55 years and over, reflecting demographic trends in the cohort approaching and beyond retirement age. This demographic data provides insight into future workforce dynamics and dependency ratios.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
@@ -1102,19 +1301,147 @@
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">National Population Age 35to54</div>
+                                    <div class="hover-card-value">Population Level - 55 Yrs. & over</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">U.S. Census Bureau</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">ADTHNATL Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">LNU00024230</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Annual Data</div>
+                                    <div class="hover-card-value">Monthly</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Gross Federal Debt</div>
+                            <div class="metric-value" id="gross-federal-debt">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Gross Federal Debt</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">This represents the gross federal debt of the United States, including all debt obligations issued by the federal government. It provides an annual fiscal year perspective on total federal debt accumulation.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">Gross federal debt is a comprehensive measure of the government's total borrowing and fiscal obligation to creditors. It provides a broader perspective on fiscal sustainability and long-term debt trends.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Indicator Name:</div>
+                                    <div class="hover-card-value">Gross Federal Debt</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">FYGFD</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Seasonality:</div>
+                                    <div class="hover-card-value">Annual, Fiscal Year</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Federal Interest % of GDP</div>
+                            <div class="metric-value" id="federal-interest-gdp">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Federal Interest % of GDP</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">This measures federal outlays on interest payments as a percentage of gross domestic product, indicating the share of economic output dedicated to servicing the federal debt.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">Interest payments as a percentage of GDP show the fiscal burden of debt service on the economy. Rising ratios indicate increasing pressure on federal budgets and potential crowding out of other government spending priorities.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Indicator Name:</div>
+                                    <div class="hover-card-value">Federal Outlays: Interest as Percent of GDP</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">FYOIGDA188S</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Seasonality:</div>
+                                    <div class="hover-card-value">Annual</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Federal Debt Public % of GDP</div>
+                            <div class="metric-value" id="federal-debt-public-gdp">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Federal Debt Public % of GDP</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">This measures federal debt held by the public as a percentage of gross domestic product, excluding intragovernmental holdings and focusing on debt held by private investors, foreign governments, and other external creditors.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">Public debt as a percentage of GDP is often considered a more relevant measure of fiscal burden since it represents actual borrowing from capital markets and affects interest rates and crowding out effects on private investment.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Indicator Name:</div>
+                                    <div class="hover-card-value">Federal Debt Held by the Public as Percent of GDP</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">FYGFGDQ188S</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Seasonality:</div>
+                                    <div class="hover-card-value">Quarterly</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Government Consumer Credit</div>
+                            <div class="metric-value" id="government-consumer-credit">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Government Consumer Credit</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">This measures the total consumer credit owned by the federal government, primarily consisting of student loans and other government-sponsored lending programs.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">Government-owned consumer credit represents direct government involvement in consumer lending markets and reflects policy decisions about access to credit for education and other purposes. Changes indicate shifts in government lending programs and policies.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Indicator Name:</div>
+                                    <div class="hover-card-value">Total Consumer Credit Owned by Federal Government</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">TOTALGOV</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Seasonality:</div>
+                                    <div class="hover-card-value">Monthly</div>
                                 </div>
                             </div>
                         </div>
@@ -1122,130 +1449,258 @@
                     <div class="component-card">
                         <div class="component-title">Private Sector Corporate Debts</div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Corporate Bond Yield Spreads</div>
-                            <div class="metric-value">-0.026821 <span class="text-gray-500 text-xs">(Wk 05 23 '25)</span></div>
+                            <div class="metric-label">NBER Recession Indicator</div>
+                            <div class="metric-value" id="nber-recession-indicator">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Corporate Bond Yield Spreads</div>
+                                <div class="hover-card-title">NBER Recession Indicator</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This indicator measures the Chicago Fed National Financial Conditions Index (NFCI) Credit component, specifically tracking the spread between high-yield corporate bonds and investment-grade corporate bonds (BofAML High Yield vs. Moody's Baa). It reflects credit market stress and corporate credit risk premiums.</div>
+                                <div class="hover-card-description">NBER based Recession Indicators for the United States from the Period following the Peak through the Trough. This binary indicator shows whether the US economy is currently in a recession period as determined by the National Bureau of Economic Research.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">Corporate bond yield spreads are critical indicators of financial market stress and credit availability. Widening spreads signal increased corporate credit risk and tighter financing conditions, while narrowing spreads indicate improving credit conditions and lower perceived default risk among corporations.</div>
+                                <div class="hover-card-importance">NBER recession indicators are the official determination of US business cycle peaks and troughs. They provide crucial context for corporate debt markets, as recession periods typically see increased default risk, tighter credit conditions, and reduced corporate investment.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">Chicago Fed NFCI Credit BofAML High Yield/Moody Baa Corporate Bond Yield Spread</div>
+                                    <div class="hover-card-value">NBER based Recession Indicators for the United States</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">Federal Reserve Bank of Chicago</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">NFCINHY Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">USREC</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Not Seasonally Adjusted</div>
+                                    <div class="hover-card-value">Monthly</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">High Inflation Rates</div>
-                            <div class="metric-value">4% <span class="text-gray-500 text-xs">(Apr 2025)</span></div>
+                            <div class="metric-label">Consumer Price Inflation</div>
+                            <div class="metric-value" id="consumer-price-inflation">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">High Inflation Rates</div>
+                                <div class="hover-card-title">Consumer Price Inflation</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This measures the median 1-year ahead expected inflation rate among survey respondents with high numerical ability. It captures inflation expectations from individuals who are better at processing numerical information, providing insight into more informed inflation expectations that may influence economic behavior.</div>
+                                <div class="hover-card-description">Inflation, consumer prices for the United States. This measures the annual percentage change in consumer prices, reflecting the overall inflation environment that affects corporate borrowing costs and economic conditions.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">High inflation expectations can become self-fulfilling as businesses and consumers adjust pricing and spending behavior accordingly. This indicator helps central banks gauge whether inflation expectations are becoming entrenched, which directly impacts monetary policy decisions and corporate financing costs.</div>
+                                <div class="hover-card-importance">Inflation directly impacts corporate debt markets through its effect on nominal interest rates, real borrowing costs, and central bank monetary policy. High inflation typically leads to higher interest rates, increasing corporate debt service burdens.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">Median 1 Year Ahead Expected Inflation Rate Numeracy High</div>
+                                    <div class="hover-card-value">Inflation, consumer prices for the United States</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">Federal Reserve Bank of New York</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">NYCNOYNH Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">FPCPITOTLZGUSA</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Not Seasonally Adjusted</div>
+                                    <div class="hover-card-value">Annual</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Economic Recession</div>
-                            <div class="metric-value">30.1237% <span class="text-gray-500 text-xs">(29 May '25)</span></div>
+                            <div class="metric-label">High Yield Bond Spread</div>
+                            <div class="metric-value" id="high-yield-bond-spread">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Economic Recession</div>
+                                <div class="hover-card-title">High Yield Bond Spread</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This indicator represents the probability of a U.S. recession occurring within the next 12 months, based on the yield curve spread between 2-year and 10-year Treasury securities. An inverted yield curve (where short-term rates exceed long-term rates) has historically been a reliable predictor of economic recessions.</div>
+                                <div class="hover-card-description">ICE BofA US High Yield Index Option-Adjusted Spread. This measures the spread between high-yield corporate bonds and risk-free Treasury securities, indicating the extra yield investors demand for holding risky corporate debt.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">Recession probability indicators help businesses, investors, and policymakers prepare for potential economic downturns. Higher recession probabilities signal increased corporate default risk, reduced credit availability, and potential deterioration in corporate debt markets as companies face declining revenues and tighter financing conditions.</div>
+                                <div class="hover-card-importance">High yield bond spreads are key indicators of corporate credit risk and market stress. Widening spreads signal increased risk aversion and tighter credit conditions, while narrowing spreads indicate improved confidence in corporate creditworthiness.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">US Probability Recession based on Yield Curve 2y 10y within 12 Month</div>
+                                    <div class="hover-card-value">ICE BofA US High Yield Index Option-Adjusted Spread</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">Bloomberg Economics</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">BLERY12M Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">BAMLH0A0HYM2</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Not Seasonally Adjusted</div>
+                                    <div class="hover-card-value">Daily, Close</div>
                                 </div>
                             </div>
                         </div>
                         <div class="metric-row metric-hover">
-                            <div class="metric-label">Credit Market Liquidity</div>
-                            <div class="metric-value">6712 <span class="text-gray-500 text-xs">(Wk 05 21 '25)</span></div>
+                            <div class="metric-label">Primary Credit Loans</div>
+                            <div class="metric-value" id="primary-credit-loans">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
                             <div class="hover-card">
-                                <div class="hover-card-title">Credit Market Liquidity</div>
+                                <div class="hover-card-title">Primary Credit Loans</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Description:</div>
                                 </div>
-                                <div class="hover-card-description">This indicator measures the Cleveland Federal Reserve's Credit Easing index, which tracks liquidity conditions in key credit markets including corporate bonds, municipal bonds, mortgage-backed securities, and other credit instruments. Higher values indicate more accommodative credit conditions and increased market liquidity.</div>
+                                <div class="hover-card-description">Assets: Liquidity and Credit Facilities: Loans: Primary Credit: Week Average. This measures the Federal Reserve's primary credit facility loans to depository institutions, indicating banking system liquidity conditions.</div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Why it is important:</div>
                                 </div>
-                                <div class="hover-card-importance">Credit market liquidity is essential for corporate financing and overall financial stability. Adequate liquidity ensures that corporations can access funding for operations and investment, while liquidity shortages can lead to credit crunches, higher borrowing costs, and increased corporate financial stress.</div>
+                                <div class="hover-card-importance">Primary credit loans reflect banking system stress and liquidity conditions. Higher levels may indicate funding difficulties for banks, which can translate to tighter credit conditions for corporate borrowers and reduced availability of business loans.</div>
                                 <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Indicator Name:</div>
-                                    <div class="hover-card-value">Cleveland Fed Credit Easing Liquidity to Key Credit Markets</div>
+                                    <div class="hover-card-value">Assets: Liquidity and Credit Facilities: Loans: Primary Credit: Week Average</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Source:</div>
-                                    <div class="hover-card-value">Federal Reserve Bank of Cleveland</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
                                 </div>
                                 <div class="hover-card-row">
-                                    <div class="hover-card-label">Bloomberg Ticker:</div>
-                                    <div class="hover-card-value">CREZLIQU Index</div>
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">WPC</div>
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Seasonality:</div>
-                                    <div class="hover-card-value">Not Seasonally Adjusted</div>
+                                    <div class="hover-card-value">Weekly, Ending Wednesday</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Corporate Debt Securities</div>
+                            <div class="metric-value" id="corporate-debt-securities">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Corporate Debt Securities</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">Nonfinancial Corporate Business; Debt Securities and Loans; Liability, Level. This measures the total outstanding debt securities and loans of nonfinancial corporate businesses, representing the aggregate debt burden of the corporate sector.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">Corporate debt levels indicate the leverage of the business sector and its vulnerability to economic shocks. Rising debt levels can constrain future investment and increase financial fragility during economic downturns.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Indicator Name:</div>
+                                    <div class="hover-card-value">Nonfinancial Corporate Business; Debt Securities and Loans; Liability, Level</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">BCNSDODNS</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Seasonality:</div>
+                                    <div class="hover-card-value">Quarterly, End of Period</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">AAA Corporate Bond Yield</div>
+                            <div class="metric-value" id="aaa-corporate-bond-yield">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">AAA Corporate Bond Yield</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">Moody's Seasoned Aaa Corporate Bond Yield. This represents the yield on highest-quality corporate bonds (Aaa rating), serving as a benchmark for investment-grade corporate borrowing costs.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">AAA corporate bond yields represent the borrowing costs for the highest quality corporate issuers. They serve as a benchmark for corporate credit markets and reflect investor confidence in top-tier corporate creditworthiness.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Indicator Name:</div>
+                                    <div class="hover-card-value">Moody's Seasoned Aaa Corporate Bond Yield</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">AAA</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Seasonality:</div>
+                                    <div class="hover-card-value">Monthly</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">BAA Corporate Bond Yield</div>
+                            <div class="metric-value" id="baa-corporate-bond-yield">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">BAA Corporate Bond Yield</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">Moody's Seasoned Baa Corporate Bond Yield. This represents the yield on medium-grade corporate bonds (Baa rating), indicating borrowing costs for investment-grade but lower quality corporate issuers.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">Baa corporate bond yields reflect borrowing costs for medium-grade corporate issuers. The spread between Baa and Aaa yields indicates credit risk premiums and investor risk appetite in corporate debt markets.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Indicator Name:</div>
+                                    <div class="hover-card-value">Moody's Seasoned Baa Corporate Bond Yield</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">BAA</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Seasonality:</div>
+                                    <div class="hover-card-value">Monthly</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-row metric-hover">
+                            <div class="metric-label">Corporate Debt to Equity Ratio</div>
+                            <div class="metric-value" id="corporate-debt-equity-ratio">Loading... <span class="text-gray-500 text-xs">(Loading)</span></div>
+                            <div class="hover-card">
+                                <div class="hover-card-title">Corporate Debt to Equity Ratio</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Description:</div>
+                                </div>
+                                <div class="hover-card-description">Nonfinancial Corporate Business; Debt as a Percentage of the Market Value of Corporate Equities, Level. This measures corporate debt relative to equity market valuation, indicating the leverage of the corporate sector.</div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Why it is important:</div>
+                                </div>
+                                <div class="hover-card-importance">The debt-to-equity ratio indicates corporate leverage and financial risk. High ratios suggest increased vulnerability to economic shocks and potential difficulties in servicing debt obligations during downturns.</div>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #ccc;">
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Indicator Name:</div>
+                                    <div class="hover-card-value">Nonfinancial Corporate Business; Debt as a Percentage of the Market Value of Corporate Equities</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Source:</div>
+                                    <div class="hover-card-value">Federal Reserve Economic Data (FRED)</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">FRED Series ID:</div>
+                                    <div class="hover-card-value">NCBCMDPMVCE</div>
+                                </div>
+                                <div class="hover-card-row">
+                                    <div class="hover-card-label">Seasonality:</div>
+                                    <div class="hover-card-value">Quarterly, End of Period</div>
                                 </div>
                             </div>
                         </div>

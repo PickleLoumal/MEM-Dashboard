@@ -245,6 +245,88 @@ function MEMApiClient(baseUrl = null) {
                 source: "Fallback Data"
             }
         },
+        
+        // Government Debts indicators fallback data
+        FEDERAL_DEBT_TOTAL: {
+            success: true,
+            data: {
+                value: 36214310.0,
+                formatted_date: "Jan 2025",
+                yoy_change: 4.71,
+                unit: "Millions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        FEDERAL_DEBT_GDP_RATIO: {
+            success: true,
+            data: {
+                value: 120.87,
+                formatted_date: "Jan 2025",
+                yoy_change: 0.15,
+                unit: "Percent of GDP",
+                source: "Fallback Data"
+            }
+        },
+        FEDERAL_SURPLUS_DEFICIT: {
+            success: true,
+            data: {
+                value: -291142.66,
+                formatted_date: "Jul 2025",
+                yoy_change: 12.5,
+                unit: "Millions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        POPULATION_55_OVER: {
+            success: true,
+            data: {
+                value: 102914.0,
+                formatted_date: "Jul 2025",
+                yoy_change: 2.1,
+                unit: "Thousands of Persons",
+                source: "Fallback Data"
+            }
+        },
+        GROSS_FEDERAL_DEBT: {
+            success: true,
+            data: {
+                value: 32989.0,
+                formatted_date: "Sep 2023",
+                yoy_change: 8.2,
+                unit: "Billions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        FEDERAL_INTEREST_GDP: {
+            success: true,
+            data: {
+                value: 3.02,
+                formatted_date: "Jan 2024",
+                yoy_change: 26.9,
+                unit: "Percent of GDP",
+                source: "Fallback Data"
+            }
+        },
+        FEDERAL_DEBT_PUBLIC_GDP: {
+            success: true,
+            data: {
+                value: 96.57,
+                formatted_date: "Jan 2025",
+                yoy_change: -0.6,
+                unit: "Percent of GDP",
+                source: "Fallback Data"
+            }
+        },
+        GOVERNMENT_CONSUMER_CREDIT: {
+            success: true,
+            data: {
+                value: 1545470.48,
+                formatted_date: "Jun 2025",
+                yoy_change: 1.2,
+                unit: "Millions of U.S. Dollars",
+                source: "Fallback Data"
+            }
+        },
         CPI: {
             success: true,
             data: {
@@ -252,6 +334,170 @@ function MEMApiClient(baseUrl = null) {
                 formatted_date: "Jun 2025",
                 yoy_change: 3.1,
                 unit: "Index",
+                source: "Fallback Data"
+            }
+        },
+        
+        // Trade Deficits indicators fallback data
+        TRADE_BALANCE_GOODS_SERVICES: {
+            success: true,
+            data: {
+                value: -60177.0,
+                formatted_date: "Jun 2025",
+                yoy_change: -8.2,
+                unit: "Millions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        CURRENT_ACCOUNT_BALANCE: {
+            success: true,
+            data: {
+                value: -450170.0,
+                formatted_date: "Jan 2025",
+                yoy_change: -15.3,
+                unit: "Millions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        FOREIGN_TREASURY_HOLDINGS: {
+            success: true,
+            data: {
+                value: 3955210.0,
+                formatted_date: "Jan 2025",
+                yoy_change: -2.1,
+                unit: "Millions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        CUSTOMS_DUTIES: {
+            success: true,
+            data: {
+                value: 266.994,
+                formatted_date: "Apr 2025",
+                yoy_change: 12.8,
+                unit: "Billions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        FEDERAL_SURPLUS_DEFICIT_MTS: {
+            success: true,
+            data: {
+                value: -291142.66,
+                formatted_date: "Jul 2025",
+                yoy_change: 18.5,
+                unit: "Millions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        NET_EXPORTS: {
+            success: true,
+            data: {
+                value: -872.384,
+                formatted_date: "Apr 2025",
+                yoy_change: -12.4,
+                unit: "Billions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        REAL_IMPORTS: {
+            success: true,
+            data: {
+                value: 3654.411,
+                formatted_date: "Apr 2025",
+                yoy_change: 5.8,
+                unit: "Billions of Chained 2017 Dollars",
+                source: "Fallback Data"
+            }
+        },
+        REAL_EXPORTS: {
+            success: true,
+            data: {
+                value: 2628.14,
+                formatted_date: "Apr 2025",
+                yoy_change: 3.2,
+                unit: "Billions of Chained 2017 Dollars",
+                source: "Fallback Data"
+            }
+        },
+        
+        // Private Sector Corporate Debts indicators fallback data
+        NBER_RECESSION_INDICATOR: {
+            success: true,
+            data: {
+                value: 0.0,
+                formatted_date: "Jul 2025",
+                yoy_change: 0.0,
+                unit: "+1 or 0",
+                source: "Fallback Data"
+            }
+        },
+        CONSUMER_PRICE_INFLATION: {
+            success: true,
+            data: {
+                value: 2.95,
+                formatted_date: "2024",
+                yoy_change: -0.5,
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        HIGH_YIELD_BOND_SPREAD: {
+            success: true,
+            data: {
+                value: 2.93,
+                formatted_date: "Aug 12, 2025",
+                yoy_change: -0.8,
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        PRIMARY_CREDIT_LOANS: {
+            success: true,
+            data: {
+                value: 5540.0,
+                formatted_date: "Aug 6, 2025",
+                yoy_change: 12.3,
+                unit: "Millions of U.S. Dollars",
+                source: "Fallback Data"
+            }
+        },
+        CORPORATE_DEBT_SECURITIES: {
+            success: true,
+            data: {
+                value: 13950.22,
+                formatted_date: "Q1 2025",
+                yoy_change: 4.1,
+                unit: "Billions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        AAA_CORPORATE_BOND_YIELD: {
+            success: true,
+            data: {
+                value: 5.45,
+                formatted_date: "Jul 2025",
+                yoy_change: 8.2,
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        BAA_CORPORATE_BOND_YIELD: {
+            success: true,
+            data: {
+                value: 6.10,
+                formatted_date: "Jul 2025",
+                yoy_change: 7.8,
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        CORPORATE_DEBT_EQUITY_RATIO: {
+            success: true,
+            data: {
+                value: 19.28,
+                formatted_date: "Q1 2025",
+                yoy_change: 2.1,
+                unit: "Percent",
                 source: "Fallback Data"
             }
         }
@@ -450,6 +696,98 @@ MEMApiClient.prototype.getInterestRateData = async function() {
     return results;
 };
 
+// Government Debts indicators获取方法
+MEMApiClient.prototype.getGovernmentDebtsData = async function() {
+    console.log('🔄 [API Client] Fetching Government Debts indicators...');
+    
+    const endpoints = {
+        federalDebtTotal: '/fred-us/federal-debt-total/',
+        federalDebtGdpRatio: '/fred-us/federal-debt-gdp-ratio/',
+        federalSurplusDeficit: '/fred-us/federal-surplus-deficit/',
+        population55Over: '/fred-us/population-55-over/',
+        grossFederalDebt: '/fred-us/gross-federal-debt/',
+        federalInterestGdp: '/fred-us/federal-interest-gdp/',
+        federalDebtPublicGdp: '/fred-us/federal-debt-public-gdp/',
+        governmentConsumerCredit: '/fred-us/government-consumer-credit/'
+    };
+    
+    // fallback key映射
+    const fallbackKeyMap = {
+        federalDebtTotal: 'FEDERAL_DEBT_TOTAL',
+        federalDebtGdpRatio: 'FEDERAL_DEBT_GDP_RATIO',
+        federalSurplusDeficit: 'FEDERAL_SURPLUS_DEFICIT',
+        population55Over: 'POPULATION_55_OVER',
+        grossFederalDebt: 'GROSS_FEDERAL_DEBT',
+        federalInterestGdp: 'FEDERAL_INTEREST_GDP',
+        federalDebtPublicGdp: 'FEDERAL_DEBT_PUBLIC_GDP',
+        governmentConsumerCredit: 'GOVERNMENT_CONSUMER_CREDIT'
+    };
+    
+    const results = {};
+    
+    for (const [key, endpoint] of Object.entries(endpoints)) {
+        try {
+            results[key] = await this.fetchWithCache(
+                endpoint, 
+                `GOVERNMENT_DEBT_${key.toUpperCase()}`, 
+                fallbackKeyMap[key]
+            );
+        } catch (error) {
+            console.error(`Failed to fetch ${key}:`, error);
+            results[key] = this.fallbackData[fallbackKeyMap[key]] || null;
+        }
+    }
+    
+    console.log('✅ [API Client] Government Debts indicators fetched');
+    return results;
+};
+
+// Government Deficit Financing indicators获取方法
+MEMApiClient.prototype.getGovtDeficitFinancingData = async function() {
+    console.log('🔄 [API Client] Fetching Government Deficit Financing indicators...');
+    
+    const endpoints = {
+        federalDebtTotal: '/fred-us/federal-debt-total-gdf/',
+        federalDebtGdpRatio: '/fred-us/federal-debt-gdp-ratio-gdf/',
+        federalSurplusDeficit: '/fred-us/federal-surplus-deficit-gdf/',
+        federalTaxReceipts: '/fred-us/federal-tax-receipts/',
+        federalNetOutlays: '/fred-us/federal-net-outlays/',
+        federalCurrentExpenditures: '/fred-us/federal-current-expenditures/',
+        federalCurrentReceipts: '/fred-us/federal-current-receipts/',
+        excessReserves: '/fred-us/excess-reserves/'
+    };
+    
+    // fallback key映射
+    const fallbackKeyMap = {
+        federalDebtTotal: 'GFDEBTN',
+        federalDebtGdpRatio: 'GFDEGDQ188S',
+        federalSurplusDeficit: 'MTSDS133FMS',
+        federalTaxReceipts: 'W006RC1Q027SBEA',
+        federalNetOutlays: 'FYONET',
+        federalCurrentExpenditures: 'FGEXPND',
+        federalCurrentReceipts: 'FGRECPT',
+        excessReserves: 'EXCSRESNW'
+    };
+    
+    const results = {};
+    
+    for (const [key, endpoint] of Object.entries(endpoints)) {
+        try {
+            results[key] = await this.fetchWithCache(
+                endpoint, 
+                `GOVT_DEFICIT_FINANCING_${key.toUpperCase()}`, 
+                fallbackKeyMap[key]
+            );
+        } catch (error) {
+            console.error(`Failed to fetch ${key}:`, error);
+            results[key] = this.fallbackData[fallbackKeyMap[key]] || null;
+        }
+    }
+    
+    console.log('✅ [API Client] Government Deficit Financing indicators fetched');
+    return results;
+};
+
 // Consumer and Household Debt indicators获取方法
 MEMApiClient.prototype.getHouseholdDebtData = async function() {
     const endpoints = {
@@ -489,7 +827,93 @@ MEMApiClient.prototype.getHouseholdDebtData = async function() {
             results[key] = this.fallbackData[fallbackKeyMap[key]] || null;
         }
     }
+
+    return results;
+};
+
+// Trade Deficits and International Balance indicators获取方法
+MEMApiClient.prototype.getTradeDeficitsData = async function() {
+    const endpoints = {
+        tradeBalance: '/fred-us/trade-balance-goods-services/',
+        currentAccount: '/fred-us/current-account-balance/',
+        foreignTreasuryHoldings: '/fred-us/foreign-treasury-holdings/',
+        customsDuties: '/fred-us/customs-duties/',
+        federalSurplusDeficitMts: '/fred-us/federal-surplus-deficit-mts/',
+        netExports: '/fred-us/net-exports/',
+        realImports: '/fred-us/real-imports/',
+        realExports: '/fred-us/real-exports/'
+    };
     
+    // fallback key映射
+    const fallbackKeyMap = {
+        tradeBalance: 'TRADE_BALANCE_GOODS_SERVICES',
+        currentAccount: 'CURRENT_ACCOUNT_BALANCE',
+        foreignTreasuryHoldings: 'FOREIGN_TREASURY_HOLDINGS',
+        customsDuties: 'CUSTOMS_DUTIES',
+        federalSurplusDeficitMts: 'FEDERAL_SURPLUS_DEFICIT_MTS',
+        netExports: 'NET_EXPORTS',
+        realImports: 'REAL_IMPORTS',
+        realExports: 'REAL_EXPORTS'
+    };
+    
+    const results = {};
+    
+    for (const [key, endpoint] of Object.entries(endpoints)) {
+        try {
+            results[key] = await this.fetchWithCache(
+                endpoint, 
+                `TRADE_DEFICITS_${key.toUpperCase()}`, 
+                fallbackKeyMap[key]
+            );
+        } catch (error) {
+            console.error(`Failed to fetch ${key}:`, error);
+            results[key] = this.fallbackData[fallbackKeyMap[key]] || null;
+        }
+    }
+
+    return results;
+};
+
+// Private Sector Corporate Debts indicators获取方法
+MEMApiClient.prototype.getPrivateSectorCorporateDebtsData = async function() {
+    const endpoints = {
+        nberRecessionIndicator: '/fred-us/nber-recession-indicator/',
+        consumerPriceInflation: '/fred-us/consumer-price-inflation/',
+        highYieldBondSpread: '/fred-us/high-yield-bond-spread/',
+        primaryCreditLoans: '/fred-us/primary-credit-loans/',
+        corporateDebtSecurities: '/fred-us/corporate-debt-securities/',
+        aaaCorporateBondYield: '/fred-us/aaa-corporate-bond-yield/',
+        baaCorporateBondYield: '/fred-us/baa-corporate-bond-yield/',
+        corporateDebtEquityRatio: '/fred-us/corporate-debt-equity-ratio/'
+    };
+    
+    // fallback key映射
+    const fallbackKeyMap = {
+        nberRecessionIndicator: 'NBER_RECESSION_INDICATOR',
+        consumerPriceInflation: 'CONSUMER_PRICE_INFLATION',
+        highYieldBondSpread: 'HIGH_YIELD_BOND_SPREAD',
+        primaryCreditLoans: 'PRIMARY_CREDIT_LOANS',
+        corporateDebtSecurities: 'CORPORATE_DEBT_SECURITIES',
+        aaaCorporateBondYield: 'AAA_CORPORATE_BOND_YIELD',
+        baaCorporateBondYield: 'BAA_CORPORATE_BOND_YIELD',
+        corporateDebtEquityRatio: 'CORPORATE_DEBT_EQUITY_RATIO'
+    };
+    
+    const results = {};
+    
+    for (const [key, endpoint] of Object.entries(endpoints)) {
+        try {
+            results[key] = await this.fetchWithCache(
+                endpoint, 
+                `PRIVATE_SECTOR_CORPORATE_DEBTS_${key.toUpperCase()}`, 
+                fallbackKeyMap[key]
+            );
+        } catch (error) {
+            console.error(`Failed to fetch ${key}:`, error);
+            results[key] = this.fallbackData[fallbackKeyMap[key]] || null;
+        }
+    }
+
     return results;
 };
 
@@ -865,6 +1289,7 @@ MEMApiClient.prototype.updateAllIndicators = async function() {
         this.updateMoneySupplyData(),
         this.updateInterestRateDisplay(),
         this.updateHouseholdDebtDisplay(),
+        this.updatePrivateSectorCorporateDebtsDisplay(),
         this.updateCPIDisplay(),
         this.updateUNRATEDisplay()
     ]);
@@ -920,6 +1345,78 @@ MEMApiClient.prototype.updateHouseholdDebtDisplay = async function() {
     console.log('✅ [API Client] Household Debt indicators update complete');
 };
 
+// 更新政府债务指标显示
+MEMApiClient.prototype.updateGovernmentDebtsDisplay = async function() {
+    console.log('🔄 [API Client] Updating Government Debts indicators...');
+    
+    const data = await this.getGovernmentDebtsData();
+    
+    const displayMappings = {
+        federalDebtTotal: 'federal-debt-total',
+        federalDebtGdpRatio: 'federal-debt-gdp-ratio',
+        federalSurplusDeficit: 'federal-surplus-deficit',
+        population55Over: 'population-55-over',
+        grossFederalDebt: 'gross-federal-debt',
+        federalInterestGdp: 'federal-interest-gdp',
+        federalDebtPublicGdp: 'federal-debt-public-gdp',
+        governmentConsumerCredit: 'government-consumer-credit'
+    };
+    
+    Object.entries(displayMappings).forEach(([dataKey, elementId]) => {
+        this.updateSingleIndicatorDisplay(elementId, data[dataKey]);
+    });
+    
+    console.log('✅ [API Client] Government Debts indicators update complete');
+};
+
+// 更新贸易逆差指标显示
+MEMApiClient.prototype.updateTradeDeficitsDisplay = async function() {
+    console.log('🔄 [API Client] Updating Trade Deficits indicators...');
+    
+    const data = await this.getTradeDeficitsData();
+    
+    const displayMappings = {
+        tradeBalance: 'trade-balance-goods-services',
+        currentAccount: 'current-account-balance',
+        foreignTreasuryHoldings: 'foreign-treasury-holdings',
+        customsDuties: 'customs-duties',
+        federalSurplusDeficitMts: 'federal-surplus-deficit-mts',
+        netExports: 'net-exports',
+        realImports: 'real-imports',
+        realExports: 'real-exports'
+    };
+    
+    Object.entries(displayMappings).forEach(([dataKey, elementId]) => {
+        this.updateSingleIndicatorDisplay(elementId, data[dataKey]);
+    });
+    
+    console.log('✅ [API Client] Trade Deficits indicators update complete');
+};
+
+// 更新Private Sector Corporate Debts指标显示
+MEMApiClient.prototype.updatePrivateSectorCorporateDebtsDisplay = async function() {
+    console.log('🔄 [API Client] Updating Private Sector Corporate Debts indicators...');
+    
+    const data = await this.getPrivateSectorCorporateDebtsData();
+    
+    const displayMappings = {
+        nberRecessionIndicator: 'nber-recession-indicator',
+        consumerPriceInflation: 'consumer-price-inflation',
+        highYieldBondSpread: 'high-yield-bond-spread',
+        primaryCreditLoans: 'primary-credit-loans',
+        corporateDebtSecurities: 'corporate-debt-securities',
+        aaaCorporateBondYield: 'aaa-corporate-bond-yield',
+        baaCorporateBondYield: 'baa-corporate-bond-yield',
+        corporateDebtEquityRatio: 'corporate-debt-equity-ratio'
+    };
+    
+    Object.entries(displayMappings).forEach(([dataKey, elementId]) => {
+        this.updateSingleIndicatorDisplay(elementId, data[dataKey]);
+    });
+    
+    console.log('✅ [API Client] Private Sector Corporate Debts indicators update complete');
+};
+
 // 通用指标显示更新方法
 MEMApiClient.prototype.updateSingleIndicatorDisplay = function(elementId, apiData) {
     const element = document.getElementById(elementId);
@@ -963,6 +1460,58 @@ MEMApiClient.prototype.updateSingleIndicatorDisplay = function(elementId, apiDat
             } else if (data.series_id === 'DTCOLNVHFNM') {
                 displayValue = `$${(data.value / 1000000).toFixed(2)}T`;
             }
+            // 贸易逆差指标特殊格式化
+            else if (data.series_id === 'BOPGSTB') {
+                // 贸易平衡（百万美元）
+                displayValue = data.value < 0 ? `-$${Math.abs(data.value / 1000).toFixed(1)}B` : `$${(data.value / 1000).toFixed(1)}B`;
+            } else if (data.series_id === 'IEABC') {
+                // 经常账户余额（百万美元）
+                displayValue = data.value < 0 ? `-$${Math.abs(data.value / 1000).toFixed(1)}B` : `$${(data.value / 1000).toFixed(1)}B`;
+            } else if (data.series_id === 'BOGZ1FL263061130Q') {
+                // 外国持有美债（百万美元）
+                displayValue = `$${(data.value / 1000000).toFixed(2)}T`;
+            } else if (data.series_id === 'B235RC1Q027SBEA') {
+                // 关税收入（十亿美元）
+                displayValue = `$${data.value.toFixed(1)}B`;
+            } else if (data.series_id === 'MTSDS133FMS') {
+                // 联邦盈余/赤字（百万美元）
+                displayValue = data.value < 0 ? `-$${Math.abs(data.value / 1000).toFixed(1)}B` : `$${(data.value / 1000).toFixed(1)}B`;
+            } else if (data.series_id === 'NETEXP') {
+                // 净出口（十亿美元）
+                displayValue = data.value < 0 ? `-$${Math.abs(data.value).toFixed(1)}B` : `$${data.value.toFixed(1)}B`;
+            } else if (data.series_id === 'IMPGSC1') {
+                // 实际进口（十亿美元）
+                displayValue = `$${data.value.toFixed(1)}B`;
+            } else if (data.series_id === 'EXPGSC1') {
+                // 实际出口（十亿美元）
+                displayValue = `$${data.value.toFixed(1)}B`;
+            }
+            // Private Sector Corporate Debts指标特殊格式化
+            else if (data.series_id === 'USREC') {
+                // NBER衰退指标（0或1）
+                displayValue = data.value === 0 ? 'No Recession' : 'In Recession';
+            } else if (data.series_id === 'FPCPITOTLZGUSA') {
+                // 消费者价格通胀（百分比）
+                displayValue = `${data.value.toFixed(2)}%`;
+            } else if (data.series_id === 'BAMLH0A0HYM2') {
+                // 高收益债券利差（百分比）
+                displayValue = `${data.value.toFixed(2)}%`;
+            } else if (data.series_id === 'WPC') {
+                // 主要信贷贷款（百万美元）
+                displayValue = `$${(data.value / 1000).toFixed(1)}B`;
+            } else if (data.series_id === 'BCNSDODNS') {
+                // 企业债务证券（十亿美元）
+                displayValue = `$${(data.value / 1000).toFixed(1)}T`;
+            } else if (data.series_id === 'AAA') {
+                // AAA企业债券收益率（百分比）
+                displayValue = `${data.value.toFixed(2)}%`;
+            } else if (data.series_id === 'BAA') {
+                // BAA企业债券收益率（百分比）
+                displayValue = `${data.value.toFixed(2)}%`;
+            } else if (data.series_id === 'NCBCMDPMVCE') {
+                // 企业债务股权比率（百分比）
+                displayValue = `${data.value.toFixed(2)}%`;
+            }
             
             // 同比变化显示
             let changeDisplay = '';
@@ -986,6 +1535,38 @@ MEMApiClient.prototype.updateSingleIndicatorDisplay = function(elementId, apiDat
     } catch (error) {
         console.error(`❌ [API Client] Error updating ${elementId}:`, error);
         element.innerHTML = 'Loading error <span class="text-gray-500 text-xs">(Error)</span>';
+    }
+};
+
+// Update Government Deficit Financing display method
+MEMApiClient.prototype.updateGovtDeficitFinancingDisplay = async function() {
+    console.log('🔄 [API Client] Updating Government Deficit Financing display...');
+    
+    try {
+        const data = await this.getGovtDeficitFinancingData();
+        console.log('📊 [API Client] Government Deficit Financing data received:', data);
+        
+        // 元素ID和数据键的映射
+        const elementMappings = {
+            'gdf-federal-debt-total': data.federalDebtTotal,
+            'gdf-federal-debt-gdp-ratio': data.federalDebtGdpRatio,
+            'gdf-federal-surplus-deficit': data.federalSurplusDeficit,
+            'gdf-federal-tax-receipts': data.federalTaxReceipts,
+            'gdf-federal-net-outlays': data.federalNetOutlays,
+            'gdf-federal-current-expenditures': data.federalCurrentExpenditures,
+            'gdf-federal-current-receipts': data.federalCurrentReceipts,
+            'gdf-excess-reserves': data.excessReserves
+        };
+        
+        // 更新每个指标显示
+        for (const [elementId, apiData] of Object.entries(elementMappings)) {
+            await this.updateSingleIndicatorDisplay(elementId, apiData);
+        }
+        
+        console.log('✅ [API Client] Government Deficit Financing display update completed');
+        
+    } catch (error) {
+        console.error('❌ [API Client] Failed to update Government Deficit Financing display:', error);
     }
 };
 

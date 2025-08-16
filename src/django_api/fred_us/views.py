@@ -393,6 +393,88 @@ class FredUsIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
         """家庭总债务 - GET /api/fred-us/total-debt/"""
         return self._get_specific_indicator('DTCOLNVHFNM', request)
 
+    # Government Debts Indicators
+    @action(detail=False, methods=['get'], url_path='federal-debt-total')
+    def federal_debt_total(self, request):
+        """联邦债务总额 - GET /api/fred-us/federal-debt-total/"""
+        return self._get_specific_indicator('GFDEBTN', request)
+
+    @action(detail=False, methods=['get'], url_path='federal-debt-gdp-ratio')
+    def federal_debt_gdp_ratio(self, request):
+        """联邦债务占GDP比例 - GET /api/fred-us/federal-debt-gdp-ratio/"""
+        return self._get_specific_indicator('GFDEGDQ188S', request)
+
+    @action(detail=False, methods=['get'], url_path='federal-surplus-deficit')
+    def federal_surplus_deficit(self, request):
+        """联邦盈余或赤字 - GET /api/fred-us/federal-surplus-deficit/"""
+        return self._get_specific_indicator('MTSDS133FMS', request)
+
+    @action(detail=False, methods=['get'], url_path='population-55-over')
+    def population_55_over(self, request):
+        """55岁及以上人口 - GET /api/fred-us/population-55-over/"""
+        return self._get_specific_indicator('LNU00024230', request)
+
+    @action(detail=False, methods=['get'], url_path='gross-federal-debt')
+    def gross_federal_debt(self, request):
+        """联邦总债务 - GET /api/fred-us/gross-federal-debt/"""
+        return self._get_specific_indicator('FYGFD', request)
+
+    @action(detail=False, methods=['get'], url_path='federal-interest-gdp')
+    def federal_interest_gdp(self, request):
+        """联邦利息支出占GDP比例 - GET /api/fred-us/federal-interest-gdp/"""
+        return self._get_specific_indicator('FYOIGDA188S', request)
+
+    @action(detail=False, methods=['get'], url_path='federal-debt-public-gdp')
+    def federal_debt_public_gdp(self, request):
+        """联邦公共债务占GDP比例 - GET /api/fred-us/federal-debt-public-gdp/"""
+        return self._get_specific_indicator('FYGFGDQ188S', request)
+
+    @action(detail=False, methods=['get'], url_path='government-consumer-credit')
+    def government_consumer_credit(self, request):
+        """政府消费者信贷 - GET /api/fred-us/government-consumer-credit/"""
+        return self._get_specific_indicator('TOTALGOV', request)
+
+    # Trade Deficits and International Balance Indicators
+    @action(detail=False, methods=['get'], url_path='trade-balance-goods-services')
+    def trade_balance_goods_services(self, request):
+        """贸易平衡：商品和服务（国际收支基础）- GET /api/fred-us/trade-balance-goods-services/"""
+        return self._get_specific_indicator('BOPGSTB', request)
+
+    @action(detail=False, methods=['get'], url_path='current-account-balance')
+    def current_account_balance(self, request):
+        """经常账户余额 - GET /api/fred-us/current-account-balance/"""
+        return self._get_specific_indicator('IEABC', request)
+
+    @action(detail=False, methods=['get'], url_path='foreign-treasury-holdings')
+    def foreign_treasury_holdings(self, request):
+        """外国官方机构持有的美国国债 - GET /api/fred-us/foreign-treasury-holdings/"""
+        return self._get_specific_indicator('BOGZ1FL263061130Q', request)
+
+    @action(detail=False, methods=['get'], url_path='customs-duties')
+    def customs_duties(self, request):
+        """联邦政府关税收入 - GET /api/fred-us/customs-duties/"""
+        return self._get_specific_indicator('B235RC1Q027SBEA', request)
+
+    @action(detail=False, methods=['get'], url_path='federal-surplus-deficit-mts')
+    def federal_surplus_deficit_mts(self, request):
+        """联邦财政盈余/赤字（月度财政报表）- GET /api/fred-us/federal-surplus-deficit-mts/"""
+        return self._get_specific_indicator('MTSDS133FMS', request)
+
+    @action(detail=False, methods=['get'], url_path='net-exports')
+    def net_exports(self, request):
+        """商品和服务净出口 - GET /api/fred-us/net-exports/"""
+        return self._get_specific_indicator('NETEXP', request)
+
+    @action(detail=False, methods=['get'], url_path='real-imports')
+    def real_imports(self, request):
+        """实际商品和服务进口 - GET /api/fred-us/real-imports/"""
+        return self._get_specific_indicator('IMPGSC1', request)
+
+    @action(detail=False, methods=['get'], url_path='real-exports')
+    def real_exports(self, request):
+        """实际商品和服务出口 - GET /api/fred-us/real-exports/"""
+        return self._get_specific_indicator('EXPGSC1', request)
+
     def _get_specific_indicator(self, series_id: str, request):
         """获取特定指标数据的通用方法 - 返回前端期望的简单格式"""
         try:
@@ -500,3 +582,86 @@ class FredUsIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
             FredUsErrorResponseSerializer(error_data).data,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    # ==================== Government Deficit Financing API Endpoints ====================
+    
+    @action(detail=False, methods=['get'], url_path='federal-debt-total-gdf')
+    def federal_debt_total_gdf(self, request):
+        """联邦债务总额 (Government Deficit Financing) - GET /api/fred-us/federal-debt-total-gdf/"""
+        return self._get_specific_indicator('GFDEBTN', request)
+    
+    @action(detail=False, methods=['get'], url_path='federal-debt-gdp-ratio-gdf')
+    def federal_debt_gdp_ratio_gdf(self, request):
+        """联邦债务占GDP比例 (Government Deficit Financing) - GET /api/fred-us/federal-debt-gdp-ratio-gdf/"""
+        return self._get_specific_indicator('GFDEGDQ188S', request)
+    
+    @action(detail=False, methods=['get'], url_path='federal-surplus-deficit-gdf')
+    def federal_surplus_deficit_gdf(self, request):
+        """联邦盈余或赤字 (Government Deficit Financing) - GET /api/fred-us/federal-surplus-deficit-gdf/"""
+        return self._get_specific_indicator('MTSDS133FMS', request)
+    
+    @action(detail=False, methods=['get'], url_path='federal-tax-receipts')
+    def federal_tax_receipts(self, request):
+        """联邦政府当期税收 - GET /api/fred-us/federal-tax-receipts/"""
+        return self._get_specific_indicator('W006RC1Q027SBEA', request)
+    
+    @action(detail=False, methods=['get'], url_path='federal-net-outlays')
+    def federal_net_outlays(self, request):
+        """联邦净支出 - GET /api/fred-us/federal-net-outlays/"""
+        return self._get_specific_indicator('FYONET', request)
+    
+    @action(detail=False, methods=['get'], url_path='federal-current-expenditures')
+    def federal_current_expenditures(self, request):
+        """联邦政府当期支出 - GET /api/fred-us/federal-current-expenditures/"""
+        return self._get_specific_indicator('FGEXPND', request)
+    
+    @action(detail=False, methods=['get'], url_path='federal-current-receipts')
+    def federal_current_receipts(self, request):
+        """联邦政府当期收入 - GET /api/fred-us/federal-current-receipts/"""
+        return self._get_specific_indicator('FGRECPT', request)
+    
+    @action(detail=False, methods=['get'], url_path='excess-reserves')
+    def excess_reserves(self, request):
+        """存款机构超额准备金 - GET /api/fred-us/excess-reserves/"""
+        return self._get_specific_indicator('EXCSRESNW', request)
+
+    # Private Sector Corporate Debts indicators - 企业债务指标
+    @action(detail=False, methods=['get'], url_path='nber-recession-indicator')
+    def nber_recession_indicator(self, request):
+        """NBER经济衰退指标 - GET /api/fred-us/nber-recession-indicator/"""
+        return self._get_specific_indicator('USREC', request)
+    
+    @action(detail=False, methods=['get'], url_path='consumer-price-inflation')
+    def consumer_price_inflation(self, request):
+        """美国消费者价格通胀率 - GET /api/fred-us/consumer-price-inflation/"""
+        return self._get_specific_indicator('FPCPITOTLZGUSA', request)
+    
+    @action(detail=False, methods=['get'], url_path='high-yield-bond-spread')
+    def high_yield_bond_spread(self, request):
+        """ICE BofA美国高收益指数期权调整利差 - GET /api/fred-us/high-yield-bond-spread/"""
+        return self._get_specific_indicator('BAMLH0A0HYM2', request)
+    
+    @action(detail=False, methods=['get'], url_path='primary-credit-loans')
+    def primary_credit_loans(self, request):
+        """资产流动性和信贷便利：主要信贷贷款 - GET /api/fred-us/primary-credit-loans/"""
+        return self._get_specific_indicator('WPC', request)
+    
+    @action(detail=False, methods=['get'], url_path='corporate-debt-securities')
+    def corporate_debt_securities(self, request):
+        """非金融企业：债券和贷款负债水平 - GET /api/fred-us/corporate-debt-securities/"""
+        return self._get_specific_indicator('BCNSDODNS', request)
+    
+    @action(detail=False, methods=['get'], url_path='aaa-corporate-bond-yield')
+    def aaa_corporate_bond_yield(self, request):
+        """穆迪季节性Aaa级企业债券收益率 - GET /api/fred-us/aaa-corporate-bond-yield/"""
+        return self._get_specific_indicator('AAA', request)
+    
+    @action(detail=False, methods=['get'], url_path='baa-corporate-bond-yield')
+    def baa_corporate_bond_yield(self, request):
+        """穆迪季节性Baa级企业债券收益率 - GET /api/fred-us/baa-corporate-bond-yield/"""
+        return self._get_specific_indicator('BAA', request)
+    
+    @action(detail=False, methods=['get'], url_path='corporate-debt-equity-ratio')
+    def corporate_debt_equity_ratio(self, request):
+        """非金融企业债务占股权市值比例 - GET /api/fred-us/corporate-debt-equity-ratio/"""
+        return self._get_specific_indicator('NCBCMDPMVCE', request)

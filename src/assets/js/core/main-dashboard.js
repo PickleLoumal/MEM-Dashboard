@@ -169,14 +169,18 @@ class MainDashboardController {
             try {
                 console.log(`🔄 Attempting to update all indicators (attempt ${attempts + 1}/${maxAttempts})...`);
                 
-                // Update all indicators including interest rates and household debt
+                // Update all indicators including interest rates, household debt, government debts, trade deficits, govt deficit financing, and private sector corporate debts
                 const updatePromises = [
                     window.memApiClient.updateMoneySupplyData(),
                     window.memApiClient.updateInterestRateDisplay(),
-                    window.memApiClient.updateHouseholdDebtDisplay()
+                    window.memApiClient.updateHouseholdDebtDisplay(),
+                    window.memApiClient.updateGovernmentDebtsDisplay(),
+                    window.memApiClient.updateTradeDeficitsDisplay(),
+                    window.memApiClient.updateGovtDeficitFinancingDisplay(),
+                    window.memApiClient.updatePrivateSectorCorporateDebtsDisplay()
                 ];
                 
-                console.log('📝 [Main Dashboard] Starting parallel updates: Money Supply, Interest Rate, and Household Debt...');
+                console.log('📝 [Main Dashboard] Starting parallel updates: Money Supply, Interest Rate, Household Debt, Government Debts, Trade Deficits, Govt Deficit Financing, and Private Sector Corporate Debts...');
                 await Promise.all(updatePromises);
                 
                 console.log('✅ All indicators updated successfully');
@@ -212,7 +216,11 @@ class MainDashboardController {
                     await Promise.all([
                         window.memApiClient.updateMoneySupplyData(),
                         window.memApiClient.updateInterestRateDisplay(),
-                        window.memApiClient.updateHouseholdDebtDisplay()
+                        window.memApiClient.updateHouseholdDebtDisplay(),
+                        window.memApiClient.updateGovernmentDebtsDisplay(),
+                        window.memApiClient.updateTradeDeficitsDisplay(),
+                        window.memApiClient.updateGovtDeficitFinancingDisplay(),
+                        window.memApiClient.updatePrivateSectorCorporateDebtsDisplay()
                     ]);
                     console.log('🔄 Periodic indicators update completed');
                 } catch (error) {
