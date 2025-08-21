@@ -1,5 +1,9 @@
 # MEM Dashboard - Macroeconomic Indicator Platform
-
+[![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://python.org)
+[![Django](https://img.shields.io/badge/Django-4.2.7-green.svg)](https://djangoproject.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-blue.svg)](https://postgresql.org)
+[![License](https://img.shields.io/badge/License-Educational%20Research-orange.svg)](#license)
+[![Vercel](https://img.shields.io/badge/Deploy-Vercel-black.svg)](https://vercel.com)
 A comprehensive web-based dashboard for monitoring and analyzing macroeconomic indicators, featuring real-time data visualization, PostgreSQL database integration, and Django REST Framework.
 
 ## Features
