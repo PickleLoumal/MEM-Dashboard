@@ -103,6 +103,15 @@ class UsFredDataFetcher(BaseFredDataFetcher):
             'DGS2': '2_year_treasury',
             'TB3MS': '3_month_treasury',
             
+            # 消费者和家庭债务指标
+            'HDTGPDUSQ163N': 'household_debt_to_gdp',
+            'TDSP': 'debt_service_ratio',
+            'MDOAH': 'mortgage_debt_outstanding',
+            'RCCCBBALTOT': 'credit_card_balances',
+            'SLOASM': 'student_loans',
+            'TOTALSL': 'consumer_credit_total',
+            'DTCOLNVHFNM': 'household_debt_total',
+            
             # 消费和零售
             'RSXFS': 'retail_sales',
             'PCE': 'personal_consumption',
@@ -139,6 +148,7 @@ class UsFredDataFetcher(BaseFredDataFetcher):
             'inflation': ['CPIAUCNS', 'CPILFESL', 'DCOILWTICO', 'GOLDAMGBD228NLBM'],
             'economic_growth': ['GDP', 'GDPC1', 'GDPPOT', 'INDPRO'],
             'monetary_policy': ['FEDFUNDS', 'DGS10', 'DGS2', 'TB3MS'],
+            'household_debt': ['HDTGPDUSQ163N', 'TDSP', 'MDOAH', 'RCCCBBALTOT', 'SLOASM', 'TOTALSL', 'DTCOLNVHFNM'],
             'consumption': ['RSXFS', 'PCE', 'PSAVERT'],
             'manufacturing': ['NAPM', 'HOUST'],
             'trade': ['BOPGSTB', 'EXUSEU', 'EXJPUS']

@@ -58,7 +58,24 @@ class MainDashboardController {
         this.isInitialized = false;
         this.initializationAttempts = 0;
         this.maxInitializationAttempts = 3;
-        console.log('🎛️ Main Dashboard Controller initialized');
+        this.updateInterval = null;
+        
+        // Define all indicator categories in a centralized configuration
+        this.indicatorCategories = [
+            { name: 'Money Supply', method: 'updateMoneySupplyDisplay', priority: 'high' },
+            { name: 'Interest Rates', method: 'updateInterestRateDisplay', priority: 'high' },
+            { name: 'Banking Sector', method: 'updateBankingSectorDisplay', priority: 'high' },
+            { name: 'Inflation', method: 'updateInflationDisplay', priority: 'high' },
+            { name: 'Employment', method: 'updateEmploymentDisplay', priority: 'high' },
+            { name: 'Gross Domestic Investment', method: 'updateInvestmentDisplay', priority: 'high' },
+            { name: 'Household Debt', method: 'updateHouseholdDebtDisplay', priority: 'medium' },
+            { name: 'Government Debts', method: 'updateGovernmentDebtsDisplay', priority: 'medium' },
+            { name: 'Trade Deficits', method: 'updateTradeDeficitsDisplay', priority: 'medium' },
+            { name: 'Government Deficit Financing', method: 'updateGovtDeficitFinancingDisplay', priority: 'low' },
+            { name: 'Private Sector Corporate Debts', method: 'updatePrivateSectorCorporateDebtsDisplay', priority: 'low' }
+        ];
+        
+        console.log('🎛️ Main Dashboard Controller initialized with', this.indicatorCategories.length, 'indicator categories');
     }
 
     /**
@@ -89,8 +106,8 @@ class MainDashboardController {
             this.isInitialized = true;
             console.log('✅ MEM Dashboard initialization complete');
             
-            // Ensure money supply data is updated after initialization
-            await this.ensureMoneySupplyUpdate();
+            // Initialize all economic indicators after core components are ready
+            await this.initializeEconomicIndicators();
             
         } catch (error) {
             console.error('❌ Dashboard initialization failed:', error);
@@ -99,7 +116,7 @@ class MainDashboardController {
     }
 
     /**
-     * Initialize API client for money supply data
+     * Initialize API client and data services
      */
     async initializeApiClient() {
         console.log('🔌 Initializing API client...');
@@ -109,11 +126,11 @@ class MainDashboardController {
                 window.memApiClient = new window.MEMApiClient();
                 console.log('✅ API client initialized successfully');
                 
-                // Hot patch + diagnostics: ensure interest rate method exists (localhost missing method issue)
+                // Ensure critical display methods are available
                 if (typeof window.memApiClient.updateInterestRateDisplay !== 'function') {
-                    console.warn('⚠️ [HotPatch] updateInterestRateDisplay missing on memApiClient; injecting fallback implementation');
+                    console.warn('⚠️ [System] updateInterestRateDisplay missing; injecting fallback implementation');
                     window.memApiClient.updateInterestRateDisplay = async function() {
-                        console.log('🔄 [HotPatch] Fallback updateInterestRateDisplay executing...');
+                        console.log('🔄 [System] Fallback updateInterestRateDisplay executing...');
                         try {
                             const data = await this.getInterestRateData();
                             const displayMappings = {
@@ -129,24 +146,24 @@ class MainDashboardController {
                             Object.entries(displayMappings).forEach(([k, elId]) => {
                                 this.updateSingleIndicatorDisplay(elId, data[k]);
                             });
-                            console.log('✅ [HotPatch] Fallback interest rate update complete');
+                            console.log('✅ [System] Fallback interest rate update complete');
                         } catch(e) {
-                            console.error('❌ [HotPatch] Fallback interest rate update failed:', e);
+                            console.error('❌ [System] Fallback interest rate update failed:', e);
                         }
                     };
-                    console.log('✅ [HotPatch] Fallback method injected. Available keys:', Object.keys(window.memApiClient));
+                    console.log('✅ [System] Fallback method injected');
                 } else {
-                    console.log('ℹ️ [Diagnostics] updateInterestRateDisplay present on memApiClient prototype');
+                    console.log('ℹ️ [System] All display methods available');
                 }
                 
-                // Verify API client is working
+                // Verify API client health
                 const isHealthy = await window.memApiClient.checkHealth();
                 if (!isHealthy) {
                     throw new Error('API health check failed');
                 }
                 
-                // Initial money supply update
-                await this.updateMoneySupplyWithRetry();
+                // Initialize data update scheduler
+                await this.initializeDataUpdateScheduler();
                 
             } catch (error) {
                 console.error('❌ API client initialization failed:', error);
@@ -159,35 +176,73 @@ class MainDashboardController {
     }
 
     /**
-     * Update money supply data with retry mechanism
+     * Initialize comprehensive data update scheduler with retry mechanism
      */
-    async updateMoneySupplyWithRetry() {
+    async initializeDataUpdateScheduler() {
         let attempts = 0;
         const maxAttempts = 3;
         
         while (attempts < maxAttempts) {
             try {
-                console.log(`🔄 Attempting to update all indicators (attempt ${attempts + 1}/${maxAttempts})...`);
+                console.log(`🔄 Initializing data update scheduler (attempt ${attempts + 1}/${maxAttempts})...`);
                 
-                // Update all indicators including interest rates, household debt, government debts, trade deficits, govt deficit financing, and private sector corporate debts
-                const updatePromises = [
-                    window.memApiClient.updateMoneySupplyData(),
-                    window.memApiClient.updateInterestRateDisplay(),
-                    window.memApiClient.updateHouseholdDebtDisplay(),
-                    window.memApiClient.updateGovernmentDebtsDisplay(),
-                    window.memApiClient.updateTradeDeficitsDisplay(),
-                    window.memApiClient.updateGovtDeficitFinancingDisplay(),
-                    window.memApiClient.updatePrivateSectorCorporateDebtsDisplay()
-                ];
+                // Initialize all indicator categories with parallel updates and performance tracking
+                const startTime = performance.now();
                 
-                console.log('📝 [Main Dashboard] Starting parallel updates: Money Supply, Interest Rate, Household Debt, Government Debts, Trade Deficits, Govt Deficit Financing, and Private Sector Corporate Debts...');
-                await Promise.all(updatePromises);
+                const updatePromises = this.indicatorCategories.map(category => {
+                    // Check if the method exists before calling it
+                    if (typeof window.memApiClient[category.method] === 'function') {
+                        return window.memApiClient[category.method]()
+                            .then(() => ({ 
+                                category: category.name, 
+                                success: true, 
+                                priority: category.priority 
+                            }))
+                            .catch(error => ({ 
+                                category: category.name, 
+                                success: false, 
+                                error: error.message,
+                                priority: category.priority 
+                            }));
+                    } else {
+                        console.warn(`⚠️ [Initial] ${category.name} method '${category.method}' not implemented yet`);
+                        return Promise.resolve({ 
+                            category: category.name, 
+                            success: false, 
+                            error: 'Method not implemented',
+                            priority: category.priority 
+                        });
+                    }
+                });
                 
-                console.log('✅ All indicators updated successfully');
+                console.log('📝 [Dashboard] Starting parallel indicator updates across all categories...');
+                const results = await Promise.allSettled(updatePromises);
+                
+                // Analyze results and provide detailed feedback
+                const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+                const total = results.length;
+                const duration = performance.now() - startTime;
+                
+                console.log(`📊 [Dashboard] Update completed: ${successful}/${total} categories successful in ${duration.toFixed(1)}ms`);
+                
+                // Log any failures for debugging
+                results.forEach(result => {
+                    if (result.status === 'fulfilled' && !result.value.success) {
+                        console.warn(`⚠️ [Dashboard] ${result.value.category} update failed: ${result.value.error}`);
+                    } else if (result.status === 'rejected') {
+                        console.error(`❌ [Dashboard] Promise rejected: ${result.reason}`);
+                    }
+                });
+                
+                if (successful < total) {
+                    console.warn(`⚠️ [Dashboard] ${total - successful} indicator categories failed to update`);
+                }
+                
+                console.log('✅ All economic indicators initialized successfully');
                 return;
             } catch (error) {
                 attempts++;
-                console.error(`❌ Indicators update failed (attempt ${attempts}/${maxAttempts}):`, error);
+                console.error(`❌ Indicator initialization failed (attempt ${attempts}/${maxAttempts}):`, error);
                 if (attempts < maxAttempts) {
                     console.log(`⏳ Waiting ${attempts} seconds before retry...`);
                     await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
@@ -195,41 +250,56 @@ class MainDashboardController {
             }
         }
         
-        throw new Error('Failed to update indicators after multiple attempts');
+        throw new Error('Failed to initialize economic indicators after multiple attempts');
     }
 
     /**
-     * Ensure money supply data is updated
+     * Initialize economic indicators and set up periodic updates
      */
-    async ensureMoneySupplyUpdate() {
+    async initializeEconomicIndicators() {
         if (!window.memApiClient) {
-            console.error('❌ memApiClient not available for indicators update');
+            console.error('❌ memApiClient not available for indicators initialization');
             return;
         }
 
         try {
-            await this.updateMoneySupplyWithRetry();
+            // Initial data load has already been handled by initializeDataUpdateScheduler
+            console.log('🔄 Setting up periodic economic indicator updates...');
             
-            // Set up periodic updates for all indicators
-            setInterval(async () => {
+            // Set up periodic updates for all economic indicators using configuration
+            const updateInterval = setInterval(async () => {
                 try {
-                    await Promise.all([
-                        window.memApiClient.updateMoneySupplyData(),
-                        window.memApiClient.updateInterestRateDisplay(),
-                        window.memApiClient.updateHouseholdDebtDisplay(),
-                        window.memApiClient.updateGovernmentDebtsDisplay(),
-                        window.memApiClient.updateTradeDeficitsDisplay(),
-                        window.memApiClient.updateGovtDeficitFinancingDisplay(),
-                        window.memApiClient.updatePrivateSectorCorporateDebtsDisplay()
-                    ]);
-                    console.log('🔄 Periodic indicators update completed');
+                    const startTime = performance.now();
+                    const updatePromises = this.indicatorCategories.map(category => {
+                        // Check if the method exists before calling it
+                        if (typeof window.memApiClient[category.method] === 'function') {
+                            return window.memApiClient[category.method]()
+                                .catch(error => {
+                                    console.warn(`⚠️ [Periodic] ${category.name} update failed: ${error.message}`);
+                                    return null;
+                                });
+                        } else {
+                            console.warn(`⚠️ [Periodic] ${category.name} method '${category.method}' not implemented yet`);
+                            return Promise.resolve(null);
+                        }
+                    });
+                    
+                    const results = await Promise.allSettled(updatePromises);
+                    const successful = results.filter(r => r.status === 'fulfilled' && r.value !== null).length;
+                    const duration = performance.now() - startTime;
+                    
+                    console.log(`🔄 Periodic economic indicators update completed: ${successful}/${this.indicatorCategories.length} successful in ${duration.toFixed(1)}ms`);
                 } catch (error) {
-                    console.error('❌ Periodic indicators update failed:', error);
+                    console.error('❌ Periodic economic indicators update failed:', error);
                 }
             }, 5 * 60 * 1000); // Update every 5 minutes
             
+            // Store interval reference for cleanup
+            this.updateInterval = updateInterval;
+            console.log('✅ Periodic economic indicators update scheduler initialized');
+            
         } catch (error) {
-            console.error('❌ Failed to ensure indicators update:', error);
+            console.error('❌ Failed to initialize economic indicators:', error);
         }
     }
 
@@ -245,6 +315,74 @@ class MainDashboardController {
         } else {
             console.error('❌ NavigationController not available');
         }
+    }
+
+    /**
+     * Clean up resources and stop periodic updates
+     */
+    cleanup() {
+        if (this.updateInterval) {
+            clearInterval(this.updateInterval);
+            this.updateInterval = null;
+            console.log('✅ Periodic update scheduler cleaned up');
+        }
+        
+        this.isInitialized = false;
+        console.log('✅ Dashboard controller cleaned up');
+    }
+
+    /**
+     * Get dashboard health status
+     */
+    getHealthStatus() {
+        return {
+            isInitialized: this.isInitialized,
+            hasApiClient: !!window.memApiClient,
+            hasNavigation: !!this.navigationController,
+            hasExchangeRates: !!this.exchangeRateDisplay,
+            hasPeriodicUpdates: !!this.updateInterval,
+            indicatorCategories: this.indicatorCategories.length,
+            timestamp: new Date().toISOString()
+        };
+    }
+
+    /**
+     * Add a new indicator category dynamically
+     * @param {string} name - Display name of the indicator category
+     * @param {string} method - Method name on the API client
+     * @param {string} priority - Priority level: 'high', 'medium', or 'low'
+     */
+    addIndicatorCategory(name, method, priority = 'medium') {
+        if (!window.memApiClient || typeof window.memApiClient[method] !== 'function') {
+            console.error(`❌ Cannot add indicator category '${name}': Method '${method}' not found on API client`);
+            return false;
+        }
+
+        const existingCategory = this.indicatorCategories.find(c => c.name === name || c.method === method);
+        if (existingCategory) {
+            console.warn(`⚠️ Indicator category '${name}' already exists`);
+            return false;
+        }
+
+        this.indicatorCategories.push({ name, method, priority });
+        console.log(`✅ Added indicator category: ${name} (${priority} priority)`);
+        return true;
+    }
+
+    /**
+     * Remove an indicator category
+     * @param {string} name - Name of the indicator category to remove
+     */
+    removeIndicatorCategory(name) {
+        const index = this.indicatorCategories.findIndex(c => c.name === name);
+        if (index === -1) {
+            console.warn(`⚠️ Indicator category '${name}' not found`);
+            return false;
+        }
+
+        this.indicatorCategories.splice(index, 1);
+        console.log(`✅ Removed indicator category: ${name}`);
+        return true;
     }
 
     /**
@@ -456,35 +594,40 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Initialize dashboard
     await window.mainDashboard.initialize();
     
-    // Force immediate Interest Rate update specifically
+    // Perform priority updates for critical indicators
     setTimeout(async () => {
         if (window.memApiClient) {
-            console.log('🔄 [Priority] Forcing immediate Interest Rate update...');
+            console.log('🔄 [Priority] Executing priority indicator updates...');
             try {
-                await window.memApiClient.updateInterestRateDisplay();
-                console.log('✅ [Priority] Interest Rate update complete');
+                // Update critical economic indicators first (high priority)
+                const highPriorityCategories = window.mainDashboard.indicatorCategories.filter(c => c.priority === 'high');
+                const highPriorityPromises = highPriorityCategories.map(category => 
+                    window.memApiClient[category.method]()
+                );
                 
-                // Then update money supply
-                await window.memApiClient.updateMoneySupplyData();
-                console.log('✅ [Priority] Money Supply update complete');
+                await Promise.all(highPriorityPromises);
+                console.log('✅ [Priority] Critical indicators update complete');
                 
-                // Schedule another full update to ensure data persistence
+                // Schedule secondary update for medium and low priority indicators
                 setTimeout(async () => {
-                    console.log('🔄 [Secondary] Full indicators update...');
-                    await Promise.all([
-                        window.memApiClient.updateMoneySupplyData(),
-                        window.memApiClient.updateInterestRateDisplay()
-                    ]);
-                    console.log('✅ [Secondary] Full indicators update complete');
+                    console.log('🔄 [Secondary] Comprehensive indicators refresh...');
+                    const secondaryCategories = window.mainDashboard.indicatorCategories.filter(c => c.priority !== 'high');
+                    const secondaryPromises = secondaryCategories.map(category => 
+                        window.memApiClient[category.method]()
+                            .catch(error => console.warn(`⚠️ [Secondary] ${category.name} failed: ${error.message}`))
+                    );
+                    
+                    await Promise.allSettled(secondaryPromises);
+                    console.log('✅ [Secondary] Comprehensive indicators refresh complete');
                 }, 2000);
                 
             } catch (error) {
-                console.error('❌ [Priority] Interest Rate update failed:', error);
+                console.error('❌ [Priority] Critical indicators update failed:', error);
             }
         } else {
-            console.error('❌ memApiClient not available for priority update');
+            console.error('❌ memApiClient not available for priority updates');
         }
-    }, 1000); // Reduced delay for priority update
+    }, 1000); // Optimized delay for priority updates
 });
 
 // Expose classes globally

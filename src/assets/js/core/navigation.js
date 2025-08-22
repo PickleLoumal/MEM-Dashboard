@@ -171,7 +171,8 @@ class NavigationController {
         // Scroll to section
         const section = document.getElementById(sectionId);
         if (section) {
-            const navHeight = document.querySelector('.nav-menu').offsetHeight;
+            const navElement = document.querySelector('.nav-menu');
+            const navHeight = navElement ? navElement.offsetHeight : 0;
             const targetPosition = section.offsetTop - navHeight - 20;
             
             window.scrollTo({
@@ -186,7 +187,8 @@ class NavigationController {
      */
     setupScrollListener() {
         window.addEventListener('scroll', () => {
-            const navHeight = document.querySelector('.nav-menu').offsetHeight;
+            const navElement = document.querySelector('.nav-menu');
+            const navHeight = navElement ? navElement.offsetHeight : 0;
             const scrollPosition = window.scrollY + navHeight + 100;
 
             this.sections.forEach((sectionId, index) => {

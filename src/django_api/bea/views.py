@@ -297,3 +297,144 @@ def health_check(request):
             'status': 'unhealthy',
             'error': str(e)
         }, status=500)
+
+# Gross Domestic Investment indicators - 投资指标 (10个指标)
+@api_view(['GET'])
+def investment_total(request):
+    """Gross Private Domestic Investment - GET /bea/investment-total/"""
+    try:
+        result = BeaIndicatorProcessor.process_indicator_data('INVESTMENT_TOTAL', True)
+        return Response(result)
+    except Exception as e:
+        logger.error(f"Error processing investment total: {e}")
+        return Response({
+            'success': False,
+            'error': str(e),
+            'series_id': 'INVESTMENT_TOTAL'
+        }, status=500)
+
+@api_view(['GET'])
+def investment_fixed(request):
+    """Fixed Investment - GET /bea/investment-fixed/"""
+    try:
+        result = BeaIndicatorProcessor.process_indicator_data('INVESTMENT_FIXED', True)
+        return Response(result)
+    except Exception as e:
+        logger.error(f"Error processing investment fixed: {e}")
+        return Response({
+            'success': False,
+            'error': str(e),
+            'series_id': 'INVESTMENT_FIXED'
+        }, status=500)
+
+@api_view(['GET'])
+def investment_nonresidential(request):
+    """Nonresidential Investment - GET /bea/investment-nonresidential/"""
+    try:
+        result = BeaIndicatorProcessor.process_indicator_data('INVESTMENT_NONRESIDENTIAL', True)
+        return Response(result)
+    except Exception as e:
+        logger.error(f"Error processing investment nonresidential: {e}")
+        return Response({
+            'success': False,
+            'error': str(e),
+            'series_id': 'INVESTMENT_NONRESIDENTIAL'
+        }, status=500)
+
+@api_view(['GET'])
+def investment_structures(request):
+    """Structures Investment - GET /bea/investment-structures/"""
+    try:
+        result = BeaIndicatorProcessor.process_indicator_data('INVESTMENT_STRUCTURES', True)
+        return Response(result)
+    except Exception as e:
+        logger.error(f"Error processing investment structures: {e}")
+        return Response({
+            'success': False,
+            'error': str(e),
+            'series_id': 'INVESTMENT_STRUCTURES'
+        }, status=500)
+
+@api_view(['GET'])
+def investment_equipment(request):
+    """Equipment Investment - GET /bea/investment-equipment/"""
+    try:
+        result = BeaIndicatorProcessor.process_indicator_data('INVESTMENT_EQUIPMENT', True)
+        return Response(result)
+    except Exception as e:
+        logger.error(f"Error processing investment equipment: {e}")
+        return Response({
+            'success': False,
+            'error': str(e),
+            'series_id': 'INVESTMENT_EQUIPMENT'
+        }, status=500)
+
+@api_view(['GET'])
+def investment_ip(request):
+    """Intellectual Property Products Investment - GET /bea/investment-ip/"""
+    try:
+        result = BeaIndicatorProcessor.process_indicator_data('INVESTMENT_IP', True)
+        return Response(result)
+    except Exception as e:
+        logger.error(f"Error processing investment ip: {e}")
+        return Response({
+            'success': False,
+            'error': str(e),
+            'series_id': 'INVESTMENT_IP'
+        }, status=500)
+
+@api_view(['GET'])
+def investment_residential(request):
+    """Residential Investment - GET /bea/investment-residential/"""
+    try:
+        result = BeaIndicatorProcessor.process_indicator_data('INVESTMENT_RESIDENTIAL', True)
+        return Response(result)
+    except Exception as e:
+        logger.error(f"Error processing investment residential: {e}")
+        return Response({
+            'success': False,
+            'error': str(e),
+            'series_id': 'INVESTMENT_RESIDENTIAL'
+        }, status=500)
+
+@api_view(['GET'])
+def investment_inventories(request):
+    """Change in Private Inventories - GET /bea/investment-inventories/"""
+    try:
+        result = BeaIndicatorProcessor.process_indicator_data('INVESTMENT_INVENTORIES', True)
+        return Response(result)
+    except Exception as e:
+        logger.error(f"Error processing investment inventories: {e}")
+        return Response({
+            'success': False,
+            'error': str(e),
+            'series_id': 'INVESTMENT_INVENTORIES'
+        }, status=500)
+
+@api_view(['GET'])
+def investment_net(request):
+    """Net Private Domestic Investment - GET /bea/investment-net/"""
+    try:
+        result = BeaIndicatorProcessor.process_indicator_data('INVESTMENT_NET', True)
+        return Response(result)
+    except Exception as e:
+        logger.error(f"Error processing investment net: {e}")
+        return Response({
+            'success': False,
+            'error': str(e),
+            'series_id': 'INVESTMENT_NET'
+        }, status=500)
+
+@api_view(['GET'])
+def govt_investment_total(request):
+    """Gross Government Investment - GET /bea/govt-investment-total/"""
+    try:
+        result = BeaIndicatorProcessor.process_indicator_data('GOVT_INVESTMENT_TOTAL', True)
+        return Response(result)
+    except Exception as e:
+        logger.error(f"Error processing govt investment total: {e}")
+        return Response({
+            'success': False,
+            'error': str(e),
+            'series_id': 'GOVT_INVESTMENT_TOTAL'
+        }, status=500)

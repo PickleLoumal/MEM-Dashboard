@@ -237,7 +237,7 @@
 
                     <div class="component-card">
                         <div class="component-title metric-hover">
-                            Gross Domestic Investment <span>Total: $5,971.3B</span>
+                            Gross Domestic Investment <span id="gdi-total-value">Total: $5,971.3B</span>
                             <div class="hover-card">
                                 <div class="hover-card-title">Data Source Citation</div>
                                 <div class="hover-card-row">
@@ -248,7 +248,7 @@
                                 </div>
                                 <div class="hover-card-row">
                                     <div class="hover-card-label">Access Date:</div>
-                                    <div class="hover-card-value">Monday, June 9, 2025</div>
+                                    <div class="hover-card-value" id="gdi-access-date">Monday, June 9, 2025</div>
                                 </div>
                             </div>
                         </div>
@@ -256,12 +256,12 @@
                         <!-- Private Investment -->
                         <div class="metric-row">
                             <div class="metric-label"><strong>Gross Private Domestic Investment</strong></div>
-                            <div class="metric-value">$4,984.8B <span class="text-gray-500 text-xs">(83.5% of total)</span></div>
+                            <div class="metric-value" id="gdi-investment-total">$4,984.8B <span class="text-gray-500 text-xs">(83.5% of total)</span></div>
                         </div>
                         
                         <div class="metric-row metric-hover">
                             <div class="metric-label">&nbsp;&nbsp;&nbsp;&nbsp;Fixed Investment</div>
-                            <div class="metric-value">$4,943.1B <span class="text-gray-500 text-xs">(99.2%)</span></div>
+                            <div class="metric-value" id="gdi-investment-fixed">$4,943.1B <span class="text-gray-500 text-xs">(99.2%)</span></div>
                             <div class="hover-card">
                                 <div class="hover-card-title">Private Fixed Investment</div>
                                 <div class="hover-card-row">
@@ -290,7 +290,7 @@
                         
                         <div class="metric-row metric-hover">
                             <div class="metric-label">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nonresidential</div>
-                            <div class="metric-value">$3,831.6B <span class="text-gray-500 text-xs">(77.5%)</span></div>
+                            <div class="metric-value" id="gdi-investment-nonresidential">$3,831.6B <span class="text-gray-500 text-xs">(77.5%)</span></div>
                             <div class="hover-card">
                                 <div class="hover-card-title">Nonresidential Fixed Investment</div>
                                 <div class="hover-card-row">
@@ -323,7 +323,7 @@
                         
                         <div class="metric-row metric-hover">
                             <div class="metric-label">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Residential</div>
-                            <div class="metric-value">$1,111.5B <span class="text-gray-500 text-xs">(22.5%)</span></div>
+                            <div class="metric-value" id="gdi-investment-residential">$1,111.5B <span class="text-gray-500 text-xs">(22.5%)</span></div>
                             <div class="hover-card">
                                 <div class="hover-card-title">Residential Fixed Investment</div>
                                 <div class="hover-card-row">
@@ -339,7 +339,7 @@
                         
                         <div class="metric-row metric-hover">
                             <div class="metric-label">&nbsp;&nbsp;&nbsp;&nbsp;Change in Private Inventories</div>
-                            <div class="metric-value">$41.7B <span class="text-gray-500 text-xs">(0.8%)</span></div>
+                            <div class="metric-value" id="gdi-investment-inventories">$41.7B <span class="text-gray-500 text-xs">(0.8%)</span></div>
                             <div class="hover-card">
                                 <div class="hover-card-title">Change in Private Inventories</div>
                                 <div class="hover-card-row">
@@ -356,12 +356,12 @@
                         <!-- Government Investment -->
                         <div class="metric-row">
                             <div class="metric-label"><strong>Gross Government Investment</strong></div>
-                            <div class="metric-value">$986.6B <span class="text-gray-500 text-xs">(16.5% of total)</span></div>
+                            <div class="metric-value" id="gdi-govt-investment-total">$986.6B <span class="text-gray-500 text-xs">(16.5% of total)</span></div>
                         </div>
                         
                         <div class="metric-row metric-hover">
                             <div class="metric-label">&nbsp;&nbsp;&nbsp;&nbsp;Structures</div>
-                            <div class="metric-value">$452.3B <span class="text-gray-500 text-xs">(45.8%)</span></div>
+                            <div class="metric-value" id="gdi-investment-structures">$452.3B <span class="text-gray-500 text-xs">(45.8%)</span></div>
                             <div class="hover-card">
                                 <div class="hover-card-title">Government Structures Investment</div>
                                 <div class="hover-card-row">
@@ -377,7 +377,7 @@
                         
                         <div class="metric-row metric-hover">
                             <div class="metric-label">&nbsp;&nbsp;&nbsp;&nbsp;Intellectual Property Products</div>
-                            <div class="metric-value">$350.2B <span class="text-gray-500 text-xs">(35.5%)</span></div>
+                            <div class="metric-value" id="gdi-investment-ip">$350.2B <span class="text-gray-500 text-xs">(35.5%)</span></div>
                             <div class="hover-card">
                                 <div class="hover-card-title">Government Intellectual Property Investment</div>
                                 <div class="hover-card-row">
@@ -393,7 +393,7 @@
                         
                         <div class="metric-row metric-hover">
                             <div class="metric-label">&nbsp;&nbsp;&nbsp;&nbsp;Equipment</div>
-                            <div class="metric-value">$184.1B <span class="text-gray-500 text-xs">(18.7%)</span></div>
+                            <div class="metric-value" id="gdi-investment-equipment">$184.1B <span class="text-gray-500 text-xs">(18.7%)</span></div>
                             <div class="hover-card">
                                 <div class="hover-card-title">Government Equipment Investment</div>
                                 <div class="hover-card-row">
@@ -2358,87 +2358,71 @@
                     <div>
                         <div class="text-sm font-medium text-gray-700 mb-2">Money Supply</div>
                         <div class="metric-row">
+                            <div class="metric-label">Federal Funds Rate</div>
+                            <div class="metric-value" id="ms-federal-funds-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
+                        </div>
+                        <div class="metric-row">
                             <div class="metric-label">M2 Money Supply</div>
-                            <div class="metric-value" id="us-m2-supply">Loading... <span class="text-gray-500 text-xs"></span></div>
+                            <div class="metric-value" id="ms-m2-money-supply">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">M1 Money Stock</div>
-                            <div class="metric-value" id="us-m1-supply">Loading... <span class="text-gray-500 text-xs"></span></div>
+                            <div class="metric-label">Federal Reserve Balance Sheet</div>
+                            <div class="metric-value" id="ms-fed-balance-sheet">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">M2 Money Velocity</div>
-                            <div class="metric-value" id="us-m2v-velocity">Loading... <span class="text-gray-500 text-xs"></span></div>
+                            <div class="metric-label">Bank Lending Standards</div>
+                            <div class="metric-value" id="ms-bank-lending-standards">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Monetary Base (M0)</div>
-                            <div class="metric-value" id="monetary-base-total">Loading... <span class="text-gray-500 text-xs"></span></div>
+                            <div class="metric-label">Commercial Bank Loans</div>
+                            <div class="metric-value" id="ms-commercial-bank-loans">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Federal Reserve Total Assets</div>
-                            <div class="metric-value">$6.71T <span class="text-gray-500 text-xs">(Week ending May 7, 2025)</span></div>
+                            <div class="metric-label">Interest Rate on Reserve Balances</div>
+                            <div class="metric-value" id="ms-interest-rate-reserve-balances">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Total Reserves of Depository Institutions</div>
-                            <div class="metric-value">$3.47T <span class="text-gray-500 text-xs">(Week ending May 7, 2025)</span></div>
+                            <div class="metric-label">Overnight Reverse Repo</div>
+                            <div class="metric-value" id="ms-overnight-reverse-repo">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Overnight Reverse Repurchase Agreements</div>
-                            <div class="metric-value">$555.248B <span class="text-gray-500 text-xs">(May 8, 2025)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">Commercial Bank Credit</div>
-                            <div class="metric-value">$18.13T <span class="text-gray-500 text-xs">(Mar 2025)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">Federal Funds Rate (Effective)</div>
-                            <div class="metric-value">4.33% <span class="text-gray-500 text-xs">(May 8, 2025)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">Required Reserve Ratio</div>
-                            <div class="metric-value">0% <span class="text-gray-500 text-xs">(Effective Mar 26, 2020)</span></div>
+                            <div class="metric-label">M1 Money Supply</div>
+                            <div class="metric-value" id="ms-m1-money-supply">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                     </div>
                     <div>
                         <div class="text-sm font-medium text-gray-700 mb-2">Banking Sector</div>
                         <div class="metric-row">
-                            <div class="metric-label">Commercial Bank Credit</div>
-                            <div class="metric-value">$18.13T <span class="text-gray-500 text-xs">(Mar 2025)</span></div>
+                            <div class="metric-label">Federal Funds Rate</div>
+                            <div class="metric-value" id="bs-federal-funds-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Net Interest Margin (NIM)</div>
-                            <div class="metric-value">3.28% <span class="text-gray-500 text-xs">(Q4 2024)</span></div>
+                            <div class="metric-label">Interest on Reserve Balances</div>
+                            <div class="metric-value" id="bs-reserve-balances-interest">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Delinquency Rate on Loans</div>
-                            <div class="metric-value">1.62% <span class="text-gray-500 text-xs">(Q4 2024)</span></div>
+                            <div class="metric-label">Total Reserve Balances</div>
+                            <div class="metric-value" id="bs-total-reserves">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Tier 1 Capital Ratio</div>
-                            <div class="metric-value">12.8% <span class="text-gray-500 text-xs">(CET1 Avg, Q2 2023)</span></div>
+                            <div class="metric-label">Fed Balance Sheet Assets</div>
+                            <div class="metric-value" id="bs-fed-balance-sheet">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Federal Funds Rate (Effective)</div>
-                            <div class="metric-value">4.33% <span class="text-gray-500 text-xs">(May 8, 2025)</span></div>
+                            <div class="metric-label">PCE Price Index</div>
+                            <div class="metric-value" id="bs-pce-inflation">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Interest on Reserve Balances (IORB)</div>
-                            <div class="metric-value">4.40% <span class="text-gray-500 text-xs">(Effective Dec 19, 2024)</span></div>
+                            <div class="metric-label">Unemployment Rate</div>
+                            <div class="metric-value" id="bs-unemployment-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">SLOOS - Net % Tightening Standards</div>
-                            <div class="metric-value">Varies <span class="text-gray-500 text-xs">(Q4 2024 Survey)</span></div>
+                            <div class="metric-label">Commercial Bank Loans</div>
+                            <div class="metric-value" id="bs-commercial-loans">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Federal Reserve Total Assets</div>
-                            <div class="metric-value">$6.71T <span class="text-gray-500 text-xs">(May 7, 2025)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">Discount Rate (Primary Credit)</div>
-                            <div class="metric-value">4.50% <span class="text-gray-500 text-xs">(Effective Dec 19, 2024)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">Reserve Requirement Ratio</div>
-                            <div class="metric-value">0% <span class="text-gray-500 text-xs">(Effective Mar 26, 2020)</span></div>
+                            <div class="metric-label">Bank Prime Loan Rate</div>
+                            <div class="metric-value" id="bs-prime-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                     </div>
                 </div>
@@ -2448,91 +2432,71 @@
                     <div>
                         <div class="text-sm font-medium text-gray-700 mb-2">Inflation</div>
                         <div class="metric-row">
-                            <div class="metric-label">Consumer Price Index (CPI-U)</div>
-                            <div class="metric-value">319.615 <span class="text-gray-500 text-xs">(Mar 2025, Index)</span></div>
+                            <div class="metric-label">Consumer Price Index (CPI)</div>
+                            <div class="metric-value" id="inf-consumer-price-index">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Personal Consumption Expenditures (PCE)</div>
-                            <div class="metric-value">125.732 <span class="text-gray-500 text-xs">(Mar 2025, Index 2017=100)</span></div>
+                            <div class="metric-label">Core PCE Price Index</div>
+                            <div class="metric-value" id="inf-core-pce-index">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Core Consumer Price Index (Core CPI)</div>
-                            <div class="metric-value">325.659 <span class="text-gray-500 text-xs">(Mar 2025, Index)</span></div>
+                            <div class="metric-label">Federal Funds Rate</div>
+                            <div class="metric-value" id="inf-federal-funds-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Core Personal Consumption Expenditures (Core PCE)</div>
-                            <div class="metric-value">125.052 <span class="text-gray-500 text-xs">(Mar 2025, Index 2017=100)</span></div>
+                            <div class="metric-label">Unemployment Rate</div>
+                            <div class="metric-value" id="inf-unemployment-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Producer Price Index (PPI) for Final Demand</div>
-                            <div class="metric-value">147.464 <span class="text-gray-500 text-xs">(Mar 2025, SA Index Nov 2009=100)</span></div>
+                            <div class="metric-label">Retail Sales</div>
+                            <div class="metric-value" id="inf-retail-sales">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Employment Cost Index (ECI) - Wages & Salaries</div>
-                            <div class="metric-value"><span class="metric-change-positive">+0.8%</span> <span class="text-gray-500 text-xs">(Q1 2025, 3-mo SA % change)</span></div>
+                            <div class="metric-label">Producer Price Index</div>
+                            <div class="metric-value" id="inf-producer-price-index">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Average Hourly Earnings (AHE)</div>
-                            <div class="metric-value">$36.06 <span class="text-gray-500 text-xs">(Apr 2025, SA)</span></div>
+                            <div class="metric-label">10-Year Breakeven Inflation Rate</div>
+                            <div class="metric-value" id="inf-breakeven-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Import Price Index</div>
-                            <div class="metric-value">141.8 <span class="text-gray-500 text-xs">(Mar 2025, Index 2000=100)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">University of Michigan: Inflation Expectations</div>
-                            <div class="metric-value">5.0% <span class="text-gray-500 text-xs">(Mar 2025, 1-Year Median)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">5-Year, 5-Year Forward Inflation Expectation Rate</div>
-                            <div class="metric-value">2.19% <span class="text-gray-500 text-xs">(May 8, 2025)</span></div>
+                            <div class="metric-label">Crude Oil Prices (WTI)</div>
+                            <div class="metric-value" id="inf-oil-prices">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                     </div>
                     <div>
                         <div class="text-sm font-medium text-gray-700 mb-2">Employment</div>
                         <div class="metric-row">
                             <div class="metric-label">Nonfarm Payrolls (NFP)</div>
-                            <div class="metric-value"><span class="metric-change-positive">+177,000</span> <span class="text-gray-500 text-xs">(Apr 2025, Change)</span></div>
+                            <div class="metric-value" id="employment-nonfarm-payroll">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-label">Unemployment Rate (U-3)</div>
-                            <div class="metric-value">4.2% <span class="text-gray-500 text-xs">(Apr 2025)</span></div>
+                            <div class="metric-value" id="employment-unemployment-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-label">Initial Jobless Claims</div>
-                            <div class="metric-value">228,000 <span class="text-gray-500 text-xs">(Week ending May 3, 2025)</span></div>
+                            <div class="metric-value" id="employment-initial-jobless-claims">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-label">Average Hourly Earnings Growth</div>
-                            <div class="metric-value">$36.06 <span class="metric-change-positive">(+0.2% MoM)</span> <span class="text-gray-500 text-xs">(Apr 2025)</span></div>
+                            <div class="metric-value" id="employment-average-hourly-earnings">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-label">JOLTS - Job Openings</div>
-                            <div class="metric-value">7.192M <span class="text-gray-500 text-xs">(Mar 2025)</span></div>
+                            <div class="metric-value" id="employment-job-openings">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-label">Labor Force Participation Rate (LFPR)</div>
-                            <div class="metric-value">62.6% <span class="text-gray-500 text-xs">(Apr 2025)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">Prime-Age LFPR</div>
-                            <div class="metric-value">83.6% <span class="text-gray-500 text-xs">(Apr 2025)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">Employment-Population Ratio (EPOP)</div>
-                            <div class="metric-value">60.0% <span class="text-gray-500 text-xs">(Apr 2025)</span></div>
+                            <div class="metric-value" id="employment-labor-force-participation">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-label">JOLTS - Quits Rate</div>
-                            <div class="metric-value">2.1% <span class="text-gray-500 text-xs">(Mar 2025, Total Nonfarm)</span></div>
+                            <div class="metric-value" id="employment-quits-rate">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                         <div class="metric-row">
-                            <div class="metric-label">Underemployment Rate (U-6)</div>
-                            <div class="metric-value">7.8% <span class="text-gray-500 text-xs">(Apr 2025, SA)</span></div>
-                        </div>
-                        <div class="metric-row">
-                            <div class="metric-label">Continuing Jobless Claims</div>
-                            <div class="metric-value">1,879,000 <span class="text-gray-500 text-xs">(Week ending Apr 26, 2025, SA)</span></div>
+                            <div class="metric-label">Employment Cost Index</div>
+                            <div class="metric-value" id="employment-cost-index">Loading... <span class="text-gray-500 text-xs"></span></div>
                         </div>
                     </div>
                     <div>
