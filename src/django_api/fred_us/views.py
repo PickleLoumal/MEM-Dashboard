@@ -475,6 +475,47 @@ class FredUsIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
         """实际商品和服务出口 - GET /api/fred-us/real-exports/"""
         return self._get_specific_indicator('EXPGSC1', request)
 
+    # Employment Indicators
+    @action(detail=False, methods=['get'], url_path='unemployment-rate')
+    def unemployment_rate_employment(self, request):
+        """失业率 - GET /api/fred-us/unemployment-rate/"""
+        return self._get_specific_indicator('UNRATE', request)
+
+    @action(detail=False, methods=['get'], url_path='labor-force-participation')
+    def labor_force_participation_rate(self, request):
+        """劳动力参与率 - GET /api/fred-us/labor-force-participation/"""
+        return self._get_specific_indicator('CIVPART', request)
+
+    @action(detail=False, methods=['get'], url_path='job-openings')
+    def job_openings_total(self, request):
+        """职位空缺总数 - GET /api/fred-us/job-openings/"""
+        return self._get_specific_indicator('JTSJOL', request)
+
+    @action(detail=False, methods=['get'], url_path='quits-rate')
+    def quits_rate_total(self, request):
+        """辞职率 - GET /api/fred-us/quits-rate/"""
+        return self._get_specific_indicator('JTSQUR', request)
+
+    @action(detail=False, methods=['get'], url_path='initial-jobless-claims')
+    def initial_jobless_claims(self, request):
+        """首次申请失业救济人数 - GET /api/fred-us/initial-jobless-claims/"""
+        return self._get_specific_indicator('ICSA', request)
+
+    @action(detail=False, methods=['get'], url_path='employment-cost-index')
+    def employment_cost_index(self, request):
+        """就业成本指数 - GET /api/fred-us/employment-cost-index/"""
+        return self._get_specific_indicator('ECIWAG', request)
+
+    @action(detail=False, methods=['get'], url_path='nonfarm-payroll')
+    def nonfarm_payroll_growth(self, request):
+        """非农就业人数 - GET /api/fred-us/nonfarm-payroll/"""
+        return self._get_specific_indicator('PAYEMS', request)
+
+    @action(detail=False, methods=['get'], url_path='average-hourly-earnings')
+    def average_hourly_earnings_growth(self, request):
+        """平均时薪增长 - GET /api/fred-us/average-hourly-earnings/"""
+        return self._get_specific_indicator('AHETPI', request)
+
     def _get_specific_indicator(self, series_id: str, request):
         """获取特定指标数据的通用方法 - 返回前端期望的简单格式"""
         try:
@@ -665,3 +706,126 @@ class FredUsIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
     def corporate_debt_equity_ratio(self, request):
         """非金融企业债务占股权市值比例 - GET /api/fred-us/corporate-debt-equity-ratio/"""
         return self._get_specific_indicator('NCBCMDPMVCE', request)
+
+    # Money Supply indicators - 货币供应量指标
+    @action(detail=False, methods=['get'], url_path='federal-funds-rate')
+    def federal_funds_rate(self, request):
+        """联邦基金利率 - GET /api/fred-us/federal-funds-rate/"""
+        return self._get_specific_indicator('FEDFUNDS', request)
+    
+    @action(detail=False, methods=['get'], url_path='m2-money-supply')
+    def m2_money_supply(self, request):
+        """M2货币供应量 - GET /api/fred-us/m2-money-supply/"""
+        return self._get_specific_indicator('M2SL', request)
+    
+    @action(detail=False, methods=['get'], url_path='fed-balance-sheet')
+    def fed_balance_sheet(self, request):
+        """美联储资产负债表总资产 - GET /api/fred-us/fed-balance-sheet/"""
+        return self._get_specific_indicator('WALCL', request)
+    
+    @action(detail=False, methods=['get'], url_path='bank-lending-standards')
+    def bank_lending_standards(self, request):
+        """银行贷款标准 - GET /api/fred-us/bank-lending-standards/"""
+        return self._get_specific_indicator('DRTSCIS', request)
+    
+    @action(detail=False, methods=['get'], url_path='commercial-bank-loans')
+    def commercial_bank_loans(self, request):
+        """商业银行贷款和租赁总额 - GET /api/fred-us/commercial-bank-loans/"""
+        return self._get_specific_indicator('TOTLL', request)
+    
+    @action(detail=False, methods=['get'], url_path='interest-rate-reserve-balances')
+    def interest_rate_reserve_balances(self, request):
+        """准备金余额利率 - GET /api/fred-us/interest-rate-reserve-balances/"""
+        return self._get_specific_indicator('IORB', request)
+    
+    @action(detail=False, methods=['get'], url_path='overnight-reverse-repo')
+    def overnight_reverse_repo(self, request):
+        """隔夜逆回购协议 - GET /api/fred-us/overnight-reverse-repo/"""
+        return self._get_specific_indicator('RRPONTSYD', request)
+    
+    @action(detail=False, methods=['get'], url_path='m1-money-supply')
+    def m1_money_supply(self, request):
+        """M1货币供应量 - GET /api/fred-us/m1-money-supply/"""
+        return self._get_specific_indicator('M1SL', request)
+
+    # Banking Sector indicators - 银行业指标 (8个指标)
+    @action(detail=False, methods=['get'], url_path='banking-federal-funds-rate')
+    def banking_federal_funds_rate(self, request):
+        """联邦基金利率 (Banking Sector) - GET /api/fred-us/banking-federal-funds-rate/"""
+        return self._get_specific_indicator('FEDFUNDS', request)
+    
+    @action(detail=False, methods=['get'], url_path='banking-reserve-balances-interest')
+    def banking_reserve_balances_interest(self, request):
+        """准备金余额利率 - GET /api/fred-us/banking-reserve-balances-interest/"""
+        return self._get_specific_indicator('IORB', request)
+    
+    @action(detail=False, methods=['get'], url_path='banking-total-reserves')
+    def banking_total_reserves(self, request):
+        """总准备金余额 - GET /api/fred-us/banking-total-reserves/"""
+        return self._get_specific_indicator('TOTRESNS', request)
+    
+    @action(detail=False, methods=['get'], url_path='banking-fed-balance-sheet')
+    def banking_fed_balance_sheet(self, request):
+        """美联储资产负债表总资产 - GET /api/fred-us/banking-fed-balance-sheet/"""
+        return self._get_specific_indicator('WALCL', request)
+    
+    @action(detail=False, methods=['get'], url_path='banking-pce-inflation')
+    def banking_pce_inflation(self, request):
+        """PCE价格指数 (通胀) - GET /api/fred-us/banking-pce-inflation/"""
+        return self._get_specific_indicator('PCEPI', request)
+    
+    @action(detail=False, methods=['get'], url_path='banking-unemployment-rate')
+    def banking_unemployment_rate(self, request):
+        """失业率 - GET /api/fred-us/banking-unemployment-rate/"""
+        return self._get_specific_indicator('UNRATE', request)
+    
+    @action(detail=False, methods=['get'], url_path='banking-commercial-loans')
+    def banking_commercial_loans(self, request):
+        """商业银行贷款和租赁 - GET /api/fred-us/banking-commercial-loans/"""
+        return self._get_specific_indicator('TOTLL', request)
+    
+    @action(detail=False, methods=['get'], url_path='banking-prime-rate')
+    def banking_prime_rate(self, request):
+        """银行基准贷款利率 - GET /api/fred-us/banking-prime-rate/"""
+        return self._get_specific_indicator('DPRIME', request)
+    
+    # Inflation indicators - 通胀指标 (8个指标)
+    @action(detail=False, methods=['get'], url_path='inflation-consumer-price-index')
+    def inflation_consumer_price_index(self, request):
+        """消费者价格指数 (CPI) - GET /api/fred-us/inflation-consumer-price-index/"""
+        return self._get_specific_indicator('CPIAUCSL', request)
+    
+    @action(detail=False, methods=['get'], url_path='inflation-core-pce-price-index')
+    def inflation_core_pce_price_index(self, request):
+        """核心PCE价格指数 - GET /api/fred-us/inflation-core-pce-price-index/"""
+        return self._get_specific_indicator('PCEPILFE', request)
+    
+    @action(detail=False, methods=['get'], url_path='inflation-federal-funds-rate')
+    def inflation_federal_funds_rate(self, request):
+        """联邦基金利率 (Inflation) - GET /api/fred-us/inflation-federal-funds-rate/"""
+        return self._get_specific_indicator('FEDFUNDS', request)
+    
+    @action(detail=False, methods=['get'], url_path='inflation-unemployment-rate')
+    def inflation_unemployment_rate(self, request):
+        """失业率 (Inflation) - GET /api/fred-us/inflation-unemployment-rate/"""
+        return self._get_specific_indicator('UNRATE', request)
+    
+    @action(detail=False, methods=['get'], url_path='inflation-retail-sales')
+    def inflation_retail_sales(self, request):
+        """零售销售 - GET /api/fred-us/inflation-retail-sales/"""
+        return self._get_specific_indicator('RSAFS', request)
+    
+    @action(detail=False, methods=['get'], url_path='inflation-producer-price-index')
+    def inflation_producer_price_index(self, request):
+        """生产者价格指数 - GET /api/fred-us/inflation-producer-price-index/"""
+        return self._get_specific_indicator('PPIACO', request)
+    
+    @action(detail=False, methods=['get'], url_path='inflation-breakeven-rate')
+    def inflation_breakeven_rate(self, request):
+        """10年盈亏平衡通胀率 - GET /api/fred-us/inflation-breakeven-rate/"""
+        return self._get_specific_indicator('T10YIEM', request)
+    
+    @action(detail=False, methods=['get'], url_path='inflation-oil-prices')
+    def inflation_oil_prices(self, request):
+        """原油价格 (WTI) - GET /api/fred-us/inflation-oil-prices/"""
+        return self._get_specific_indicator('DCOILWTICO', request)

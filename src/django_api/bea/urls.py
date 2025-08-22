@@ -34,4 +34,16 @@ urlpatterns = [
     path('indicators/', views.bea_indicators, name='bea_indicators'),
     path('indicators/motor_vehicles/', views.motor_vehicles_data, name='motor_vehicles_data'),
     path('indicators/recreational_goods/', views.recreational_goods_data, name='recreational_goods_data'),
+
+    # Gross Domestic Investment indicators
+    path('investment-total/', views.investment_total, name='investment_total'),
+    path('investment-fixed/', views.investment_fixed, name='investment_fixed'),
+    path('investment-nonresidential/', views.investment_nonresidential, name='investment_nonresidential'),
+    path('investment-structures/', views.investment_structures, name='investment_structures'),
+    path('investment-equipment/', views.investment_equipment, name='investment_equipment'),
+    path('investment-ip/', views.investment_ip, name='investment_ip'),
+    path('investment-residential/', views.investment_residential, name='investment_residential'),
+    path('investment-inventories/', views.investment_inventories, name='investment_inventories'),
+    path('investment-net/', views.investment_net, name='investment_net'),
+    path('govt-investment-total/', views.govt_investment_total, name='govt_investment_total'),
 ]

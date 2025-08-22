@@ -59,6 +59,84 @@ function MEMApiClient(baseUrl = null) {
                 source: "FRED backup data"
             }
         },
+        // Employment indicators fallback data
+        CIVPART: {
+            success: true,
+            data: {
+                value: 62.2,
+                yoy_change: -0.5,
+                date: "2025-07-01",
+                formatted_date: "Jul 2025",
+                series_id: "CIVPART",
+                source: "FRED backup data"
+            }
+        },
+        JTSJOL: {
+            success: true,
+            data: {
+                value: 7437,
+                yoy_change: -5.8,
+                date: "2025-06-01",
+                formatted_date: "Jun 2025",
+                series_id: "JTSJOL",
+                source: "FRED backup data"
+            }
+        },
+        JTSQUR: {
+            success: true,
+            data: {
+                value: 2.0,
+                yoy_change: -18.4,
+                date: "2025-06-01",
+                formatted_date: "Jun 2025",
+                series_id: "JTSQUR",
+                source: "FRED backup data"
+            }
+        },
+        ICSA: {
+            success: true,
+            data: {
+                value: 224000,
+                yoy_change: -7.1,
+                date: "2025-08-09",
+                formatted_date: "Aug 2025",
+                series_id: "ICSA",
+                source: "FRED backup data"
+            }
+        },
+        ECIWAG: {
+            success: true,
+            data: {
+                value: 173.566,
+                yoy_change: 4.2,
+                date: "2025-04-01",
+                formatted_date: "Q2 2025",
+                series_id: "ECIWAG",
+                source: "FRED backup data"
+            }
+        },
+        PAYEMS: {
+            success: true,
+            data: {
+                value: 159539,
+                yoy_change: 1.8,
+                date: "2025-07-01",
+                formatted_date: "Jul 2025",
+                series_id: "PAYEMS",
+                source: "FRED backup data"
+            }
+        },
+        AHETPI: {
+            success: true,
+            data: {
+                value: 31.34,
+                yoy_change: 3.9,
+                date: "2025-07-01",
+                formatted_date: "Jul 2025",
+                series_id: "AHETPI",
+                source: "FRED backup data"
+            }
+        },
         M1: {
             success: true,
             data: {
@@ -500,6 +578,108 @@ function MEMApiClient(baseUrl = null) {
                 unit: "Percent",
                 source: "Fallback Data"
             }
+        },
+
+        // Gross Domestic Investment indicators fallback data
+        INVESTMENT_TOTAL: {
+            success: true,
+            data: {
+                value: 4984.8,
+                formatted_date: "2023",
+                yoy_change: 2.5,
+                unit: "Billions of Dollars",
+                source: "BEA Fallback Data"
+            }
+        },
+        INVESTMENT_FIXED: {
+            success: true,
+            data: {
+                value: 4943.1,
+                formatted_date: "2023",
+                yoy_change: 2.8,
+                unit: "Billions of Dollars",
+                source: "BEA Fallback Data"
+            }
+        },
+        INVESTMENT_NONRESIDENTIAL: {
+            success: true,
+            data: {
+                value: 3831.6,
+                formatted_date: "2023",
+                yoy_change: 3.2,
+                unit: "Billions of Dollars",
+                source: "BEA Fallback Data"
+            }
+        },
+        INVESTMENT_STRUCTURES: {
+            success: true,
+            data: {
+                value: 884.1,
+                formatted_date: "2023",
+                yoy_change: 1.5,
+                unit: "Billions of Dollars",
+                source: "BEA Fallback Data"
+            }
+        },
+        INVESTMENT_EQUIPMENT: {
+            success: true,
+            data: {
+                value: 1425.8,
+                formatted_date: "2023",
+                yoy_change: 4.2,
+                unit: "Billions of Dollars",
+                source: "BEA Fallback Data"
+            }
+        },
+        INVESTMENT_IP: {
+            success: true,
+            data: {
+                value: 1521.7,
+                formatted_date: "2023",
+                yoy_change: 3.8,
+                unit: "Billions of Dollars",
+                source: "BEA Fallback Data"
+            }
+        },
+        INVESTMENT_RESIDENTIAL: {
+            success: true,
+            data: {
+                value: 1111.5,
+                formatted_date: "2023",
+                yoy_change: -1.2,
+                unit: "Billions of Dollars",
+                source: "BEA Fallback Data"
+            }
+        },
+        INVESTMENT_INVENTORIES: {
+            success: true,
+            data: {
+                value: 41.7,
+                formatted_date: "2023",
+                yoy_change: -8.5,
+                unit: "Billions of Dollars",
+                source: "BEA Fallback Data"
+            }
+        },
+        INVESTMENT_NET: {
+            success: true,
+            data: {
+                value: 5042.5,
+                formatted_date: "2023",
+                yoy_change: 2.3,
+                unit: "Billions of Dollars",
+                source: "BEA Fallback Data"
+            }
+        },
+        GOVT_INVESTMENT_TOTAL: {
+            success: true,
+            data: {
+                value: 986.6,
+                formatted_date: "2023",
+                yoy_change: 1.8,
+                unit: "Billions of Dollars",
+                source: "BEA Fallback Data"
+            }
         }
     };
     
@@ -874,6 +1054,125 @@ MEMApiClient.prototype.getTradeDeficitsData = async function() {
     return results;
 };
 
+// Employment indicators获取方法
+MEMApiClient.prototype.getEmploymentData = async function() {
+    const endpoints = {
+        unemploymentRate: '/fred-us/unemployment-rate/',
+        laborForceParticipation: '/fred-us/labor-force-participation/',
+        jobOpenings: '/fred-us/job-openings/',
+        quitsRate: '/fred-us/quits-rate/',
+        initialJoblessClaims: '/fred-us/initial-jobless-claims/',
+        employmentCostIndex: '/fred-us/employment-cost-index/',
+        nonfarmPayroll: '/fred-us/nonfarm-payroll/',
+        averageHourlyEarnings: '/fred-us/average-hourly-earnings/'
+    };
+    
+    // fallback key映射
+    const fallbackKeyMap = {
+        unemploymentRate: 'UNRATE',
+        laborForceParticipation: 'CIVPART',
+        jobOpenings: 'JTSJOL',
+        quitsRate: 'JTSQUR',
+        initialJoblessClaims: 'ICSA',
+        employmentCostIndex: 'ECIWAG',
+        nonfarmPayroll: 'PAYEMS',
+        averageHourlyEarnings: 'AHETPI'
+    };
+    
+    const results = {};
+    
+    for (const [key, endpoint] of Object.entries(endpoints)) {
+        try {
+            results[key] = await this.fetchWithCache(
+                endpoint, 
+                `EMPLOYMENT_${key.toUpperCase()}`, 
+                fallbackKeyMap[key]
+            );
+        } catch (error) {
+            console.error(`Failed to fetch ${key}:`, error);
+            results[key] = this.fallbackData[fallbackKeyMap[key]] || null;
+        }
+    }
+
+    return results;
+};
+
+// Gross Domestic Investment indicators获取方法
+MEMApiClient.prototype.getInvestmentData = async function() {
+    console.log('🔄 [API Client] Fetching Gross Domestic Investment indicators...');
+
+    const endpoints = {
+        investmentTotal: '/bea/investment-total/',
+        investmentFixed: '/bea/investment-fixed/',
+        investmentNonresidential: '/bea/investment-nonresidential/',
+        investmentStructures: '/bea/investment-structures/',
+        investmentEquipment: '/bea/investment-equipment/',
+        investmentIP: '/bea/investment-ip/',
+        investmentResidential: '/bea/investment-residential/',
+        investmentInventories: '/bea/investment-inventories/',
+        investmentNet: '/bea/investment-net/',
+        govtInvestmentTotal: '/bea/govt-investment-total/'
+    };
+
+    // fallback key映射
+    const fallbackKeyMap = {
+        investmentTotal: 'INVESTMENT_TOTAL',
+        investmentFixed: 'INVESTMENT_FIXED',
+        investmentNonresidential: 'INVESTMENT_NONRESIDENTIAL',
+        investmentStructures: 'INVESTMENT_STRUCTURES',
+        investmentEquipment: 'INVESTMENT_EQUIPMENT',
+        investmentIP: 'INVESTMENT_IP',
+        investmentResidential: 'INVESTMENT_RESIDENTIAL',
+        investmentInventories: 'INVESTMENT_INVENTORIES',
+        investmentNet: 'INVESTMENT_NET',
+        govtInvestmentTotal: 'GOVT_INVESTMENT_TOTAL'
+    };
+
+    const results = {};
+
+    for (const [key, endpoint] of Object.entries(endpoints)) {
+        try {
+            results[key] = await this.fetchWithCache(
+                endpoint,
+                `INVESTMENT_${key.toUpperCase()}`,
+                fallbackKeyMap[key]
+            );
+        } catch (error) {
+            console.error(`Failed to fetch ${key}:`, error);
+            results[key] = this.fallbackData[fallbackKeyMap[key]] || null;
+        }
+    }
+
+    console.log('✅ [API Client] Gross Domestic Investment indicators fetched');
+    return results;
+};
+
+// 更新投资指标显示
+MEMApiClient.prototype.updateInvestmentDisplay = async function() {
+    console.log('🔄 [API Client] Updating Investment indicators...');
+
+    const data = await this.getInvestmentData();
+
+    const displayMappings = {
+        investmentTotal: 'gdi-investment-total',
+        investmentFixed: 'gdi-investment-fixed',
+        investmentNonresidential: 'gdi-investment-nonresidential',
+        investmentStructures: 'gdi-investment-structures',
+        investmentEquipment: 'gdi-investment-equipment',
+        investmentIP: 'gdi-investment-ip',
+        investmentResidential: 'gdi-investment-residential',
+        investmentInventories: 'gdi-investment-inventories',
+        investmentNet: 'gdi-investment-net',
+        govtInvestmentTotal: 'gdi-govt-investment-total'
+    };
+
+    Object.entries(displayMappings).forEach(([dataKey, elementId]) => {
+        this.updateSingleIndicatorDisplay(elementId, data[dataKey]);
+    });
+
+    console.log('✅ [API Client] Investment indicators update complete');
+};
+
 // Private Sector Corporate Debts indicators获取方法
 MEMApiClient.prototype.getPrivateSectorCorporateDebtsData = async function() {
     const endpoints = {
@@ -925,6 +1224,52 @@ MEMApiClient.prototype.getAllFREDData = async function() {
 // Get FRED system status - 统一FRED API
 MEMApiClient.prototype.getFREDStatus = async function() {
     return await this.fetchWithCache('/fred/status', 'FRED_STATUS', null);
+};
+
+// Money Supply indicators - 货币供应量指标
+MEMApiClient.prototype.getMoneySupplyData = async function() {
+    console.log('🔄 [API Client] Fetching Money Supply indicators...');
+    
+    const endpoints = {
+        federalFundsRate: '/fred-us/federal-funds-rate/',
+        m2MoneySupply: '/fred-us/m2-money-supply/',
+        fedBalanceSheet: '/fred-us/fed-balance-sheet/',
+        bankLendingStandards: '/fred-us/bank-lending-standards/',
+        commercialBankLoans: '/fred-us/commercial-bank-loans/',
+        interestRateReserveBalances: '/fred-us/interest-rate-reserve-balances/',
+        overnightReverseRepo: '/fred-us/overnight-reverse-repo/',
+        m1MoneySupply: '/fred-us/m1-money-supply/'
+    };
+    
+    try {
+        const requests = Object.entries(endpoints).map(([key, endpoint]) =>
+            this.fetchWithCache(endpoint, `MONEY_SUPPLY_${key.toUpperCase()}`, null)
+                .then(data => ({ key, data, success: true }))
+                .catch(error => {
+                    console.warn(`⚠️ [API Client] ${key} failed:`, error.message);
+                    return { key, data: null, success: false, error: error.message };
+                })
+        );
+        
+        const results = await Promise.all(requests);
+        
+        const moneySupplyData = {};
+        results.forEach(result => {
+            if (result.success && result.data && result.data.success) {
+                moneySupplyData[result.key] = result.data;
+            } else {
+                console.warn(`⚠️ [API Client] ${result.key} returned invalid data or failed`);
+                moneySupplyData[result.key] = this.getMoneySupplyFallbackData()[result.key];
+            }
+        });
+        
+        console.log('✅ [API Client] Money Supply data compiled successfully:', moneySupplyData);
+        return moneySupplyData;
+        
+    } catch (error) {
+        console.error('❌ [API Client] Failed to fetch Money Supply data:', error);
+        return this.getMoneySupplyFallbackData();
+    }
 };
 
 // Update M2 display in the HTML
@@ -1289,6 +1634,8 @@ MEMApiClient.prototype.updateAllIndicators = async function() {
         this.updateMoneySupplyData(),
         this.updateInterestRateDisplay(),
         this.updateHouseholdDebtDisplay(),
+        this.updateEmploymentDisplay(),
+        this.updateInvestmentDisplay(),
         this.updatePrivateSectorCorporateDebtsDisplay(),
         this.updateCPIDisplay(),
         this.updateUNRATEDisplay()
@@ -1343,6 +1690,30 @@ MEMApiClient.prototype.updateHouseholdDebtDisplay = async function() {
     });
     
     console.log('✅ [API Client] Household Debt indicators update complete');
+};
+
+// 更新Employment指标显示
+MEMApiClient.prototype.updateEmploymentDisplay = async function() {
+    console.log('🔄 [API Client] Updating Employment indicators...');
+    
+    const data = await this.getEmploymentData();
+    
+    const displayMappings = {
+        unemploymentRate: 'employment-unemployment-rate',
+        laborForceParticipation: 'employment-labor-force-participation',
+        jobOpenings: 'employment-job-openings',
+        quitsRate: 'employment-quits-rate',
+        initialJoblessClaims: 'employment-initial-jobless-claims',
+        employmentCostIndex: 'employment-cost-index',
+        nonfarmPayroll: 'employment-nonfarm-payroll',
+        averageHourlyEarnings: 'employment-average-hourly-earnings'
+    };
+    
+    Object.entries(displayMappings).forEach(([dataKey, elementId]) => {
+        this.updateSingleIndicatorDisplay(elementId, data[dataKey]);
+    });
+    
+    console.log('✅ [API Client] Employment indicators update complete');
 };
 
 // 更新政府债务指标显示
@@ -1512,7 +1883,19 @@ MEMApiClient.prototype.updateSingleIndicatorDisplay = function(elementId, apiDat
                 // 企业债务股权比率（百分比）
                 displayValue = `${data.value.toFixed(2)}%`;
             }
-            
+            // 投资指标特殊格式化 - BEA投资数据
+            else if (elementId && (elementId.startsWith('gdi-') || elementId.includes('investment'))) {
+                // 投资指标：将百万美元转换为十亿美元或万亿美元格式
+                const valueInBillions = data.value / 1000; // 转换为十亿美元
+                if (valueInBillions >= 1000) {
+                    // 大于1000B时，转换为T（万亿美元）
+                    displayValue = `$${(valueInBillions / 1000).toFixed(1)}T`;
+                } else {
+                    // 小于1000B时，显示为B（十亿美元）
+                    displayValue = `$${valueInBillions.toFixed(0)}B`;
+                }
+            }
+
             // 同比变化显示
             let changeDisplay = '';
             if (data.yoy_change !== null && data.yoy_change !== undefined) {
@@ -1521,7 +1904,15 @@ MEMApiClient.prototype.updateSingleIndicatorDisplay = function(elementId, apiDat
                 changeDisplay = ` <span class="${changeClass}">[${changeSign}${data.yoy_change.toFixed(2)}% YoY]</span>`;
             }
             
-            const finalHTML = `${displayValue}${changeDisplay} <span class="text-gray-500 text-xs">(FRED ${data.formatted_date})</span>`;
+            // 根据数据源确定显示标识
+            let sourceLabel = 'FRED';
+            if (data.source && data.source.toLowerCase().includes('bea')) {
+                sourceLabel = 'BEA';
+            } else if (elementId && (elementId.startsWith('gdi-') || elementId.includes('investment'))) {
+                sourceLabel = 'BEA'; // 对于投资指标，默认为BEA
+            }
+
+            const finalHTML = `${displayValue}${changeDisplay} <span class="text-gray-500 text-xs">(${sourceLabel} ${data.formatted_date})</span>`;
             element.innerHTML = finalHTML;
             console.log(`✅ [API Client] ${elementId} updated: ${displayValue} (${data.formatted_date})`);
             
@@ -1567,6 +1958,498 @@ MEMApiClient.prototype.updateGovtDeficitFinancingDisplay = async function() {
         
     } catch (error) {
         console.error('❌ [API Client] Failed to update Government Deficit Financing display:', error);
+    }
+};
+
+// Money Supply fallback data
+MEMApiClient.prototype.getMoneySupplyFallbackData = function() {
+    return {
+        federalFundsRate: {
+            success: true,
+            data: {
+                value: 4.33,
+                yoy_change: -18.76,
+                date: "2025-07-01",
+                formatted_date: "Jul 2025",
+                series_id: "FEDFUNDS",
+                source: "FRED backup data"
+            }
+        },
+        m2MoneySupply: {
+            success: true,
+            data: {
+                value: 22020.8,
+                yoy_change: 4.44,
+                date: "2025-06-01",
+                formatted_date: "Jun 2025",
+                series_id: "M2SL",
+                source: "FRED backup data"
+            }
+        },
+        fedBalanceSheet: {
+            success: true,
+            data: {
+                value: 6643615.0,
+                yoy_change: -17.2,
+                date: "2025-08-13",
+                formatted_date: "Aug 2025",
+                series_id: "WALCL",
+                source: "FRED backup data"
+            }
+        },
+        bankLendingStandards: {
+            success: true,
+            data: {
+                value: 8.2,
+                yoy_change: 5.1,
+                date: "2025-07-01",
+                formatted_date: "Q3 2025",
+                series_id: "DRTSCIS",
+                source: "FRED backup data"
+            }
+        },
+        commercialBankLoans: {
+            success: true,
+            data: {
+                value: 13010.67,
+                yoy_change: 2.1,
+                date: "2025-08-06",
+                formatted_date: "Aug 2025",
+                series_id: "TOTLL",
+                source: "FRED backup data"
+            }
+        },
+        interestRateReserveBalances: {
+            success: true,
+            data: {
+                value: 4.4,
+                yoy_change: 0.0,
+                date: "2025-08-18",
+                formatted_date: "Aug 2025",
+                series_id: "IORB",
+                source: "FRED backup data"
+            }
+        },
+        overnightReverseRepo: {
+            success: true,
+            data: {
+                value: 33.757,
+                yoy_change: -92.7,
+                date: "2025-08-15",
+                formatted_date: "Aug 2025",
+                series_id: "RRPONTSYD",
+                source: "FRED backup data"
+            }
+        },
+        m1MoneySupply: {
+            success: true,
+            data: {
+                value: 18803.0,
+                yoy_change: 3.86,
+                date: "2025-06-01",
+                formatted_date: "Jun 2025",
+                series_id: "M1SL",
+                source: "FRED backup data"
+            }
+        }
+    };
+};
+
+// Update Money Supply display method
+MEMApiClient.prototype.updateMoneySupplyDisplay = async function() {
+    console.log('🔄 [API Client] Updating Money Supply display...');
+    
+    try {
+        const data = await this.getMoneySupplyData();
+        console.log('📊 [API Client] Money Supply data received:', data);
+        
+        // 元素ID和数据键的映射
+        const elementMappings = {
+            'ms-federal-funds-rate': data.federalFundsRate,
+            'ms-m2-money-supply': data.m2MoneySupply,
+            'ms-fed-balance-sheet': data.fedBalanceSheet,
+            'ms-bank-lending-standards': data.bankLendingStandards,
+            'ms-commercial-bank-loans': data.commercialBankLoans,
+            'ms-interest-rate-reserve-balances': data.interestRateReserveBalances,
+            'ms-overnight-reverse-repo': data.overnightReverseRepo,
+            'ms-m1-money-supply': data.m1MoneySupply
+        };
+        
+        // 更新每个指标显示
+        for (const [elementId, apiData] of Object.entries(elementMappings)) {
+            await this.updateSingleIndicatorDisplay(elementId, apiData);
+        }
+        
+        console.log('✅ [API Client] Money Supply display update completed');
+        
+    } catch (error) {
+        console.error('❌ [API Client] Failed to update Money Supply display:', error);
+    }
+};
+
+// Banking Sector indicators - 银行业指标 (8个指标)
+MEMApiClient.prototype.getBankingSectorData = async function() {
+    console.log('🔄 [API Client] Fetching Banking Sector indicators...');
+    
+    const endpoints = {
+        federalFundsRate: '/fred-us/banking-federal-funds-rate/',
+        reserveBalancesInterest: '/fred-us/banking-reserve-balances-interest/',
+        totalReserves: '/fred-us/banking-total-reserves/',
+        fedBalanceSheet: '/fred-us/banking-fed-balance-sheet/',
+        pceInflation: '/fred-us/banking-pce-inflation/',
+        unemploymentRate: '/fred-us/banking-unemployment-rate/',
+        commercialLoans: '/fred-us/banking-commercial-loans/',
+        primeRate: '/fred-us/banking-prime-rate/'
+    };
+    
+    try {
+        // 并行获取所有Banking Sector指标数据
+        const requests = Object.entries(endpoints).map(([key, path]) =>
+            this.fetchWithCache(path, `BANKING_SECTOR_${key.toUpperCase()}`, null)
+                .then(data => ({ key, data, success: true }))
+                .catch(error => ({ key, data: null, success: false, error: error.message }))
+        );
+        
+        const results = await Promise.allSettled(requests);
+        const bankingSectorData = {};
+        
+        results.forEach(result => {
+            if (result.status === 'fulfilled') {
+                const { key, data, success } = result.value;
+                if (success && data && data.success && data.data) {
+                    bankingSectorData[key] = {
+                        success: true,
+                        data: Array.isArray(data.data) ? data.data[0] : data.data
+                    };
+                    console.log(`✅ [API Client] ${key} data retrieved successfully`);
+                } else {
+                    console.warn(`⚠️ [API Client] ${key} returned invalid data or failed`);
+                    bankingSectorData[key] = this.getBankingSectorFallbackData()[key];
+                }
+            } else {
+                console.error(`❌ [API Client] ${result.reason}`);
+                // 使用fallback数据的第一个有效key
+                const firstKey = Object.keys(endpoints)[0];
+                bankingSectorData[firstKey] = this.getBankingSectorFallbackData()[firstKey];
+            }
+        });
+        
+        console.log('✅ [API Client] Banking Sector data compiled successfully:', bankingSectorData);
+        return bankingSectorData;
+        
+    } catch (error) {
+        console.error('❌ [API Client] Failed to fetch Banking Sector data:', error);
+        return this.getBankingSectorFallbackData();
+    }
+};
+
+// Banking Sector fallback data
+MEMApiClient.prototype.getBankingSectorFallbackData = function() {
+    return {
+        federalFundsRate: {
+            success: true,
+            data: {
+                value: 4.33,
+                yoy_change: -18.76,
+                date: "2025-07-01",
+                formatted_date: "Jul 2025",
+                series_id: "FEDFUNDS"
+            }
+        },
+        reserveBalancesInterest: {
+            success: true,
+            data: {
+                value: 4.40,
+                yoy_change: 0.00,
+                date: "2025-08-18",
+                formatted_date: "Aug 2025",
+                series_id: "IORB"
+            }
+        },
+        totalReserves: {
+            success: true,
+            data: {
+                value: 3355.7,
+                yoy_change: -15.32,
+                date: "2025-06-01",
+                formatted_date: "Jun 2025",
+                series_id: "TOTRESNS"
+            }
+        },
+        fedBalanceSheet: {
+            success: true,
+            data: {
+                value: 6643615.0,
+                yoy_change: -8.45,
+                date: "2025-08-13",
+                formatted_date: "Aug 2025",
+                series_id: "WALCL"
+            }
+        },
+        pceInflation: {
+            success: true,
+            data: {
+                value: 126.555,
+                yoy_change: 2.65,
+                date: "2025-06-01",
+                formatted_date: "Jun 2025",
+                series_id: "PCEPI"
+            }
+        },
+        unemploymentRate: {
+            success: true,
+            data: {
+                value: 4.2,
+                yoy_change: 16.67,
+                date: "2025-07-01",
+                formatted_date: "Jul 2025",
+                series_id: "UNRATE"
+            }
+        },
+        commercialLoans: {
+            success: true,
+            data: {
+                value: 13010.67,
+                yoy_change: 2.18,
+                date: "2025-08-06",
+                formatted_date: "Aug 2025",
+                series_id: "TOTLL"
+            }
+        },
+        primeRate: {
+            success: true,
+            data: {
+                value: 7.50,
+                yoy_change: 0.00,
+                date: "2025-08-14",
+                formatted_date: "Aug 2025",
+                series_id: "DPRIME"
+            }
+        }
+    };
+};
+
+// Update Banking Sector display method
+MEMApiClient.prototype.updateBankingSectorDisplay = async function() {
+    console.log('🔄 [API Client] Updating Banking Sector display...');
+    
+    try {
+        const data = await this.getBankingSectorData();
+        console.log('📊 [API Client] Banking Sector data received:', data);
+        
+        // 元素ID和数据键的映射
+        const elementMappings = {
+            'bs-federal-funds-rate': data.federalFundsRate,
+            'bs-reserve-balances-interest': data.reserveBalancesInterest,
+            'bs-total-reserves': data.totalReserves,
+            'bs-fed-balance-sheet': data.fedBalanceSheet,
+            'bs-pce-inflation': data.pceInflation,
+            'bs-unemployment-rate': data.unemploymentRate,
+            'bs-commercial-loans': data.commercialLoans,
+            'bs-prime-rate': data.primeRate
+        };
+        
+        // 更新每个指标显示
+        for (const [elementId, apiData] of Object.entries(elementMappings)) {
+            await this.updateSingleIndicatorDisplay(elementId, apiData);
+        }
+        
+        console.log('✅ [API Client] Banking Sector display update completed');
+        
+    } catch (error) {
+        console.error('❌ [API Client] Failed to update Banking Sector display:', error);
+    }
+};
+
+// Inflation indicators - 通胀指标 (8个指标)
+MEMApiClient.prototype.getInflationData = async function() {
+    console.log('🔄 [API Client] Fetching Inflation indicators...');
+    
+    const endpoints = {
+        consumerPriceIndex: '/fred-us/inflation-consumer-price-index/',
+        corePceIndex: '/fred-us/inflation-core-pce-price-index/',
+        federalFundsRate: '/fred-us/inflation-federal-funds-rate/',
+        unemploymentRate: '/fred-us/inflation-unemployment-rate/',
+        retailSales: '/fred-us/inflation-retail-sales/',
+        producerPriceIndex: '/fred-us/inflation-producer-price-index/',
+        breakevenRate: '/fred-us/inflation-breakeven-rate/',
+        oilPrices: '/fred-us/inflation-oil-prices/'
+    };
+    
+    const promises = Object.entries(endpoints).map(([key, endpoint]) => 
+        this.fetchWithCache(endpoint, `INFLATION_${key.toUpperCase()}`, null)
+            .then(response => ({ [key]: response }))
+            .catch(error => {
+                console.warn(`⚠️ [API Client] Failed to fetch ${key}: ${error.message}`);
+                return { [key]: null };
+            })
+    );
+    
+    try {
+        const results = await Promise.allSettled(promises);
+        const data = {};
+        
+        results.forEach(result => {
+            if (result.status === 'fulfilled') {
+                Object.assign(data, result.value);
+            }
+        });
+        
+        // 检查是否有足够的数据
+        const validDataCount = Object.values(data).filter(d => d !== null).length;
+        if (validDataCount < 4) { // 至少需要一半的指标有效
+            console.warn('⚠️ [API Client] Insufficient Inflation data, using fallback');
+            return this.getInflationFallbackData();
+        }
+        
+        console.log(`✅ [API Client] Successfully fetched ${validDataCount}/8 Inflation indicators`);
+        return data;
+        
+    } catch (error) {
+        console.error('❌ [API Client] Failed to fetch Inflation data:', error);
+        return this.getInflationFallbackData();
+    }
+};
+
+// Inflation fallback data
+MEMApiClient.prototype.getInflationFallbackData = function() {
+    return {
+        consumerPriceIndex: {
+            success: true,
+            data: {
+                value: 322.132,
+                yoy_change: 2.3,
+                date: "2025-07-01",
+                formatted_date: "Jul 2025",
+                series_id: "CPIAUCSL",
+                indicator_name: "Consumer Price Index",
+                unit: "Index 1982-1984=100",
+                source: "Fallback Data"
+            }
+        },
+        corePceIndex: {
+            success: true,
+            data: {
+                value: 125.932,
+                yoy_change: 2.1,
+                date: "2025-06-01",
+                formatted_date: "Jun 2025",
+                series_id: "PCEPILFE",
+                indicator_name: "Core PCE Price Index",
+                unit: "Index 2017=100",
+                source: "Fallback Data"
+            }
+        },
+        federalFundsRate: {
+            success: true,
+            data: {
+                value: 4.33,
+                yoy_change: -0.92,
+                date: "2025-07-01",
+                formatted_date: "Jul 2025",
+                series_id: "FEDFUNDS",
+                indicator_name: "Federal Funds Rate",
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        unemploymentRate: {
+            success: true,
+            data: {
+                value: 4.2,
+                yoy_change: 0.3,
+                date: "2025-07-01",
+                formatted_date: "Jul 2025",
+                series_id: "UNRATE",
+                indicator_name: "Unemployment Rate",
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        retailSales: {
+            success: true,
+            data: {
+                value: 726283.0,
+                yoy_change: 5.8,
+                date: "2025-07-01",
+                formatted_date: "Jul 2025",
+                series_id: "RSAFS",
+                indicator_name: "Retail Sales",
+                unit: "Millions of Dollars",
+                source: "Fallback Data"
+            }
+        },
+        producerPriceIndex: {
+            success: true,
+            data: {
+                value: 262.528,
+                yoy_change: 3.1,
+                date: "2025-07-01",
+                formatted_date: "Jul 2025",
+                series_id: "PPIACO",
+                indicator_name: "Producer Price Index",
+                unit: "Index 1982=100",
+                source: "Fallback Data"
+            }
+        },
+        breakevenRate: {
+            success: true,
+            data: {
+                value: 2.38,
+                yoy_change: 0.15,
+                date: "2025-07-01",
+                formatted_date: "Jul 2025",
+                series_id: "T10YIEM",
+                indicator_name: "10-Year Breakeven Inflation Rate",
+                unit: "Percent",
+                source: "Fallback Data"
+            }
+        },
+        oilPrices: {
+            success: true,
+            data: {
+                value: 65.03,
+                yoy_change: -8.2,
+                date: "2025-08-11",
+                formatted_date: "Aug 2025",
+                series_id: "DCOILWTICO",
+                indicator_name: "Crude Oil Prices (WTI)",
+                unit: "Dollars per Barrel",
+                source: "Fallback Data"
+            }
+        }
+    };
+};
+
+// Update Inflation display method
+MEMApiClient.prototype.updateInflationDisplay = async function() {
+    console.log('🔄 [API Client] Updating Inflation display...');
+    
+    try {
+        const data = await this.getInflationData();
+        console.log('📊 [API Client] Inflation data received:', data);
+        
+        // 元素ID和数据键的映射
+        const elementMappings = {
+            'inf-consumer-price-index': data.consumerPriceIndex,
+            'inf-core-pce-index': data.corePceIndex,
+            'inf-federal-funds-rate': data.federalFundsRate,
+            'inf-unemployment-rate': data.unemploymentRate,
+            'inf-retail-sales': data.retailSales,
+            'inf-producer-price-index': data.producerPriceIndex,
+            'inf-breakeven-rate': data.breakevenRate,
+            'inf-oil-prices': data.oilPrices
+        };
+        
+        // 更新每个指标的显示
+        for (const [elementId, apiData] of Object.entries(elementMappings)) {
+            await this.updateSingleIndicatorDisplay(elementId, apiData);
+        }
+        
+        console.log('✅ [API Client] Inflation display update completed');
+        
+    } catch (error) {
+        console.error('❌ [API Client] Failed to update Inflation display:', error);
     }
 };
 
