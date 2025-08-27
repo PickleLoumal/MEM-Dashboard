@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en" translate="no" class="notranslate">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
+    <meta name="googlebot" content="notranslate">
+    <title>Japan Economic Monitor Dashboard</title>
+    
+    <!-- Build configuration metadata -->
+    <meta name="build-timestamp" content="2025-Aug">
+    <meta name="application-id" content="Japan Economic Monitor">
+    <meta name="schema-version" content="1.0.0">
+    
+    <!-- Cache control headers -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Framework and styling imports -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="japan_dashboard_styles.css">
+    
+    <!-- Inline Translation Data -->
+    <script>
+        console.log('✅ Preparing to load translations');
+        
+        // Basic configuration - inline version
+        window.JAPAN_API_CONFIG = {
+            BASE_URL: window.location.origin,
+            API_VERSION: 'v1',
+            DASHBOARD_VERSION: '1.0.0'
+        };
+    </script>
+    
+    <!-- Core JavaScript Files -->
+    <!-- External JS files commented out for debugging -->
+    <!-- <script src="config/japan_api_config.js"></script> -->
+    <!-- <script src="src/assets/js/core/japan-dashboard.js"></script> -->
+</head>
+<body>
+
+    <div class="header-nav">
+        <div class="mx-auto px-2">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-6">
+                    <h1 class="text-xl font-bold" data-i18n="header.title">Japan Economic Monitor</h1>
+                    <span class="text-blue-200">|</span>
+                    <span class="text-blue-100" data-i18n="header.country">Country: Japan</span>
+                    <span class="text-blue-200">|</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-blue-200 text-sm">Language:</span>
+                    <select id="language-selector" style="background: white; color: #333; padding: 8px 12px; border: 2px solid #ccc; border-radius: 6px; font-size: 14px; min-width: 160px; cursor: pointer;">
+                        <option value="en">🇺🇸 English</option>
+                        <option value="ja">🇯🇵 日本語</option>
+                        <option value="zh-HK">🇭🇰 繁體中文 (香港)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="breadcrumb">
+        <div class="mx-auto px-2">
+            <span class="text-gray-600" data-i18n="breadcrumb.home">Home</span>
+            <span class="mx-2 text-gray-400">></span>
+            <span class="text-gray-600" data-i18n="breadcrumb.country">Japan</span>
+            <span class="mx-2 text-gray-400">></span>
+            <span class="text-gray-800 font-medium" data-i18n="breadcrumb.indicators">Economic Indicators</span>
+        </div>
+    </div>
+
+    <div class="mx-auto px-2 py-6">
+        
+        <!-- GDP Components Section -->
+        <div id="gdp-components" class="indicator-card">
+            <div class="indicator-header cursor-pointer hover:bg-gray-100 transition-colors">
+                <span data-i18n="gdp.title">GDP Components (Expenditure Approach)</span>
+            </div>
+            <div class="indicator-content">
+                <div class="gdp-overview">
+                    <div class="gdp-components-container">
+                        <div class="gdp-component-item">
+                            <div class="gdp-component-percentage">---%</div>
+                            <div class="gdp-component-name" data-i18n="gdp.government">Government</div>
+                            <div class="gdp-component-subtitle">(G)</div>
+                            <div class="gdp-component-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                            <div class="gdp-component-change" data-i18n="gdp.data_preparing">Data Preparing</div>
+                        </div>
+                        <div class="operation-symbol">+</div>
+                        <div class="gdp-component-item">
+                            <div class="gdp-component-percentage">---%</div>
+                            <div class="gdp-component-name" data-i18n="gdp.investment">Investment</div>
+                            <div class="gdp-component-subtitle">(I)</div>
+                            <div class="gdp-component-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                            <div class="gdp-component-change" data-i18n="gdp.data_preparing">Data Preparing</div>
+                        </div>
+                        <div class="operation-symbol">+</div>
+                        <div class="gdp-component-item">
+                            <div class="gdp-component-percentage">---%</div>
+                            <div class="gdp-component-name" data-i18n="gdp.consumption">Consumption</div>
+                            <div class="gdp-component-subtitle">(C)</div>
+                            <div class="gdp-component-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                            <div class="gdp-component-change" data-i18n="gdp.data_preparing">Data Preparing</div>
+                        </div>
+                        <div class="operation-symbol">+</div>
+                        <div class="gdp-component-item">
+                            <div class="gdp-component-percentage">---%</div>
+                            <div class="gdp-component-name" data-i18n="gdp.exports">Exports</div>
+                            <div class="gdp-component-subtitle">(X)</div>
+                            <div class="gdp-component-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                            <div class="gdp-component-change" data-i18n="gdp.data_preparing">Data Preparing</div>
+                        </div>
+                        <div class="operation-symbol negative">−</div>
+                        <div class="gdp-component-item">
+                            <div class="gdp-component-percentage gdp-subtract">---%</div>
+                            <div class="gdp-component-name" data-i18n="gdp.imports">Imports</div>
+                            <div class="gdp-component-subtitle">(M)</div>
+                            <div class="gdp-component-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                            <div class="gdp-component-change" data-i18n="gdp.data_preparing">Data Preparing</div>
+                        </div>
+                    </div>
+                </div>
+            
+                <!-- Government Finance Section -->
+                <div class="relative section-grid">
+                    <!-- Revenue Card -->
+                    <div class="component-card">
+                        <div class="component-title">
+                            <span data-i18n="gov.revenue.title">Government Revenue:</span> 
+                            <span><span data-i18n="common.total">Total:</span> ---<span data-i18n="unit.trillion_yen">¥ Trillion</span></span>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-label" data-i18n="gov.revenue.income_tax">Income Tax</div>
+                            <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span> <span class="text-gray-500 text-xs">(---%)</span></div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-label" data-i18n="gov.revenue.corporate_tax">Corporate Tax</div>
+                            <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span> <span class="text-gray-500 text-xs">(---%)</span></div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-label" data-i18n="gov.revenue.consumption_tax">Consumption Tax</div>
+                            <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span> <span class="text-gray-500 text-xs">(---%)</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Expenditure Card -->
+                    <div class="component-card">
+                        <div class="component-title">
+                            <span data-i18n="gov.expenditure.title">Government Expenditure:</span> 
+                            <span><span data-i18n="common.total">Total:</span> ---<span data-i18n="unit.trillion_yen">¥ Trillion</span></span>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-label" data-i18n="gov.expenditure.social_security">Social Security</div>
+                            <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span> <span class="text-gray-500 text-xs">(---%)</span></div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-label" data-i18n="gov.expenditure.healthcare">Healthcare</div>
+                            <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span> <span class="text-gray-500 text-xs">(---%)</span></div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-label" data-i18n="gov.expenditure.education">Education</div>
+                            <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span> <span class="text-gray-500 text-xs">(---%)</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Economic Indicators Section -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <!-- CPI Inflation -->
+                    <div class="component-card">
+                        <div class="component-title" data-i18n="indicators.cpi.title">Consumer Price Index (CPI)</div>
+                        <div class="metric-row">
+                            <div class="metric-label" data-i18n="indicators.cpi.annual_rate">Annual Inflation Rate</div>
+                            <div class="metric-value">---%</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-label" data-i18n="indicators.cpi.monthly_change">Monthly Change</div>
+                            <div class="metric-value">---%</div>
+                        </div>
+                    </div>
+
+                    <!-- Employment -->
+                    <div class="component-card">
+                        <div class="component-title" data-i18n="indicators.employment.title">Employment Statistics</div>
+                        <div class="metric-row">
+                            <div class="metric-label" data-i18n="indicators.employment.unemployment_rate">Unemployment Rate</div>
+                            <div class="metric-value">---%</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-label" data-i18n="indicators.employment.labor_force">Labor Force Participation</div>
+                            <div class="metric-value">---%</div>
+                        </div>
+                    </div>
+
+                    <!-- Trade Balance -->
+                    <div class="component-card">
+                        <div class="component-title" data-i18n="indicators.trade.title">Trade Balance</div>
+                        <div class="metric-row">
+                            <div class="metric-label" data-i18n="indicators.trade.balance">Trade Balance</div>
+                            <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-label" data-i18n="indicators.trade.exports">Exports</div>
+                            <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Treasury and Central Bank Sections -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <!-- Treasury Section -->
+            <div id="treasury" class="indicator-card">
+                <div class="indicator-header" data-i18n="treasury.title">Treasury</div>
+                <div class="indicator-content">
+                    <div class="component-title" data-i18n="treasury.gov_debt_financing">Government Debt Financing</div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="treasury.government_debt_total">Government Debt: Total</div>
+                        <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="treasury.government_debt_gdp_ratio">Government Debt: GDP Percentage</div>
+                        <div class="metric-value">---%</div>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="treasury.primary_balance">Primary Budget Balance</div>
+                        <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="treasury.government_tax_receipts">Government Tax Receipts</div>
+                        <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="treasury.bond_yields">10-Year JGB Yield</div>
+                        <div class="metric-value">---%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Central Bank Section -->
+            <div id="central-bank" class="indicator-card">
+                <div class="indicator-header" data-i18n="central_bank.title">Central Bank</div>
+                <div class="indicator-content">
+                    <div class="component-title" data-i18n="central_bank.boj_title">Bank of Japan (BOJ)</div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="central_bank.policy_rate">Policy Interest Rate</div>
+                        <div class="metric-value">---%</div>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="central_bank.money_stock_m2">Money Stock (M2)</div>
+                        <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="central_bank.balance_sheet_assets">BOJ Balance Sheet Total Assets</div>
+                        <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="central_bank.base_money">Base Money</div>
+                        <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="central_bank.yield_curve_control">Yield Curve Control Target</div>
+                        <div class="metric-value">---%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exchange Rate and Investment Analysis -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <!-- Exchange Rate Information -->
+            <div class="indicator-card">
+                <div class="indicator-header" data-i18n="exchange_rate.title">Exchange Rate Information</div>
+                <div class="indicator-content">
+                    <div class="component-title" data-i18n="exchange_rate.yen_rates">Japanese Yen Exchange Rates</div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="exchange_rate.usd_jpy">USD/JPY Exchange Rate</div>
+                        <div class="metric-value">---</div>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="exchange_rate.eur_jpy">EUR/JPY Exchange Rate</div>
+                        <div class="metric-value">---</div>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="exchange_rate.real_effective">JPY Real Effective Exchange Rate</div>
+                        <div class="metric-value">---</div>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="exchange_rate.trade_weighted">Trade-Weighted Exchange Rate</div>
+                        <div class="metric-value">---</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investment Analysis -->
+            <div class="indicator-card">
+                <div class="indicator-header" data-i18n="investment.title">Investment Analysis</div>
+                <div class="indicator-content">
+                    <div class="component-title" data-i18n="investment.gross_domestic">Gross Domestic Investment</div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="investment.private_investment">Private Investment</div>
+                        <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="investment.government_investment">Government Investment</div>
+                        <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="investment.business_investment">Business Fixed Investment</div>
+                        <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="metric-label" data-i18n="investment.residential">Residential Investment</div>
+                        <div class="metric-value">---<span data-i18n="unit.trillion_yen">¥ Trillion</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-12 py-8 border-t border-gray-200 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center text-gray-600 space-y-3">
+                <h3 class="text-lg font-semibold text-gray-700" data-i18n="footer.title">Japan Economic Indicators Dashboard - Data Preparation in Progress</h3>
+                
+                <p class="text-sm" data-i18n="footer.data_sources">
+                    Data Sources: Cabinet Office | Ministry of Internal Affairs | Ministry of Health, Labour and Welfare | Bank of Japan | e-Stat Government Statistics | Other Related Agencies
+                </p>
+                
+                <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-6 text-sm">
+                    <div>
+                        <span data-i18n="footer.last_updated">Last Updated:</span> 
+                        <span class="font-medium">2025/08/25 03:19</span>
+                    </div>
+                    <div class="text-gray-500">|</div>
+                    <div>
+                        <span data-i18n="footer.api_status">API Connection Status:</span> 
+                        <span class="font-medium text-orange-600" data-i18n="footer.status_preparing">Preparing</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global translation data
+        const TRANSLATIONS = {
+            'en': {
+                'header.title': 'Japan Economic Monitor',
+                'header.country': 'Country: Japan',
+                'breadcrumb.home': 'Home',
+                'breadcrumb.country': 'Japan',
+                'breadcrumb.indicators': 'Economic Indicators',
+                'gdp.title': 'GDP Components (Expenditure Approach)',
+                'gdp.government': 'Government',
+                'gdp.investment': 'Investment',
+                'gdp.consumption': 'Consumption',
+                'gdp.exports': 'Exports',
+                'gdp.imports': 'Imports',
+                'gdp.data_preparing': 'Data Preparing',
+                'gov.revenue.title': 'Government Revenue:',
+                'gov.revenue.income_tax': 'Income Tax',
+                'gov.revenue.corporate_tax': 'Corporate Tax',
+                'gov.revenue.consumption_tax': 'Consumption Tax',
+                'gov.expenditure.title': 'Government Expenditure:',
+                'gov.expenditure.social_security': 'Social Security',
+                'gov.expenditure.healthcare': 'Healthcare',
+                'gov.expenditure.education': 'Education',
+                'indicators.cpi.title': 'Consumer Price Index (CPI)',
+                'indicators.cpi.annual_rate': 'Annual Inflation Rate',
+                'indicators.cpi.monthly_change': 'Monthly Change',
+                'indicators.employment.title': 'Employment Statistics',
+                'indicators.employment.unemployment_rate': 'Unemployment Rate',
+                'indicators.employment.labor_force': 'Labor Force Participation',
+                'indicators.trade.title': 'Trade Balance',
+                'indicators.trade.balance': 'Trade Balance',
+                'indicators.trade.exports': 'Exports',
+                'treasury.title': 'Treasury',
+                'treasury.gov_debt_financing': 'Government Debt Financing',
+                'treasury.government_debt_total': 'Government Debt: Total',
+                'treasury.government_debt_gdp_ratio': 'Government Debt: GDP Percentage',
+                'treasury.primary_balance': 'Primary Budget Balance',
+                'treasury.government_tax_receipts': 'Government Tax Receipts',
+                'treasury.bond_yields': '10-Year JGB Yield',
+                'central_bank.title': 'Central Bank',
+                'central_bank.boj_title': 'Bank of Japan (BOJ)',
+                'central_bank.policy_rate': 'Policy Interest Rate',
+                'central_bank.money_stock_m2': 'Money Stock (M2)',
+                'central_bank.balance_sheet_assets': 'BOJ Balance Sheet Total Assets',
+                'central_bank.base_money': 'Base Money',
+                'central_bank.yield_curve_control': 'Yield Curve Control Target',
+                'exchange_rate.title': 'Exchange Rate Information',
+                'exchange_rate.yen_rates': 'Japanese Yen Exchange Rates',
+                'exchange_rate.usd_jpy': 'USD/JPY Exchange Rate',
+                'exchange_rate.eur_jpy': 'EUR/JPY Exchange Rate',
+                'exchange_rate.real_effective': 'JPY Real Effective Exchange Rate',
+                'exchange_rate.trade_weighted': 'Trade-Weighted Exchange Rate',
+                'investment.title': 'Investment Analysis',
+                'investment.gross_domestic': 'Gross Domestic Investment',
+                'investment.private_investment': 'Private Investment',
+                'investment.government_investment': 'Government Investment',
+                'investment.business_investment': 'Business Fixed Investment',
+                'investment.residential': 'Residential Investment',
+                'common.total': 'Total:',
+                'unit.trillion_yen': '¥ Trillion',
+                'footer.title': 'Japan Economic Indicators Dashboard - Data Preparation in Progress',
+                'footer.data_sources': 'Data Sources: Cabinet Office | Ministry of Internal Affairs | Ministry of Health, Labour and Welfare | Bank of Japan | e-Stat Government Statistics | Other Related Agencies',
+                'footer.last_updated': 'Last Updated:',
+                'footer.api_status': 'API Connection Status:',
+                'footer.status_preparing': 'Preparing'
+            },
+            'ja': {
+                'header.title': '日本経済モニター',
+                'header.country': '国: 日本',
+                'breadcrumb.home': 'ホーム',
+                'breadcrumb.country': '日本',
+                'breadcrumb.indicators': '経済指標',
+                'gdp.title': 'GDP構成要素（支出アプローチ）',
+                'gdp.government': '政府',
+                'gdp.investment': '投資',
+                'gdp.consumption': '消費',
+                'gdp.exports': '輸出',
+                'gdp.imports': '輸入',
+                'gdp.data_preparing': 'データ準備中',
+                'gov.revenue.title': '政府収入:',
+                'gov.revenue.income_tax': '所得税',
+                'gov.revenue.corporate_tax': '法人税',
+                'gov.revenue.consumption_tax': '消費税',
+                'gov.expenditure.title': '政府支出:',
+                'gov.expenditure.social_security': '社会保障',
+                'gov.expenditure.healthcare': '医療',
+                'gov.expenditure.education': '教育',
+                'indicators.cpi.title': '消費者物価指数（CPI）',
+                'indicators.cpi.annual_rate': '年次インフレ率',
+                'indicators.cpi.monthly_change': '月次変化率',
+                'indicators.employment.title': '雇用統計',
+                'indicators.employment.unemployment_rate': '失業率',
+                'indicators.employment.labor_force': '労働力参加率',
+                'indicators.trade.title': '貿易収支',
+                'indicators.trade.balance': '貿易収支',
+                'indicators.trade.exports': '輸出',
+                'treasury.title': '国庫',
+                'treasury.gov_debt_financing': '政府債務ファイナンス',
+                'treasury.government_debt_total': '政府債務: 総額',
+                'treasury.government_debt_gdp_ratio': '政府債務: GDP比',
+                'treasury.primary_balance': 'プライマリーバランス',
+                'treasury.government_tax_receipts': '政府税収',
+                'treasury.bond_yields': '10年物国債利回り',
+                'central_bank.title': '中央銀行',
+                'central_bank.boj_title': '日本銀行（BOJ）',
+                'central_bank.policy_rate': '政策金利',
+                'central_bank.money_stock_m2': 'マネーストック（M2）',
+                'central_bank.balance_sheet_assets': '日銀バランスシート総資産',
+                'central_bank.base_money': 'ベースマネー',
+                'central_bank.yield_curve_control': 'イールドカーブコントロール目標',
+                'exchange_rate.title': '為替レート情報',
+                'exchange_rate.yen_rates': '日本円為替レート',
+                'exchange_rate.usd_jpy': '米ドル/円レート',
+                'exchange_rate.eur_jpy': 'ユーロ/円レート',
+                'exchange_rate.real_effective': '円実効為替レート',
+                'exchange_rate.trade_weighted': '貿易加重為替レート',
+                'investment.title': '投資分析',
+                'investment.gross_domestic': '国内総投資',
+                'investment.private_investment': '民間投資',
+                'investment.government_investment': '政府投資',
+                'investment.business_investment': '企業設備投資',
+                'investment.residential': '住宅投資',
+                'common.total': '合計:',
+                'unit.trillion_yen': '¥ Trillion',
+                'footer.title': '日本経済指標ダッシュボード - データ準備中',
+                'footer.data_sources': 'データソース: 内閣府 | 総務省 | 厚生労働省 | 日本銀行 | e-Stat政府統計 | その他関連機関',
+                'footer.last_updated': '最終更新:',
+                'footer.api_status': 'API接続状況:',
+                'footer.status_preparing': '準備中'
+            },
+            'zh-HK': {
+                'header.title': '日本經濟監測儀表板',
+                'header.country': '國家: 日本',
+                'breadcrumb.home': '主頁',
+                'breadcrumb.country': '日本',
+                'breadcrumb.indicators': '經濟指標',
+                'gdp.title': 'GDP構成要素（支出法）',
+                'gdp.government': '政府開支',
+                'gdp.investment': '投資',
+                'gdp.consumption': '消費',
+                'gdp.exports': '出口',
+                'gdp.imports': '進口',
+                'gdp.data_preparing': '數據準備中',
+                'gov.revenue.title': '政府收入:',
+                'gov.revenue.income_tax': '個人所得稅',
+                'gov.revenue.corporate_tax': '企業所得稅',
+                'gov.revenue.consumption_tax': '消費稅',
+                'gov.expenditure.title': '政府支出:',
+                'gov.expenditure.social_security': '社會保障',
+                'gov.expenditure.healthcare': '醫療',
+                'gov.expenditure.education': '教育',
+                'indicators.cpi.title': '消費者物價指數（CPI）',
+                'indicators.cpi.annual_rate': '年度通脹率',
+                'indicators.cpi.monthly_change': '月度變化',
+                'indicators.employment.title': '就業統計',
+                'indicators.employment.unemployment_rate': '失業率',
+                'indicators.employment.labor_force': '勞動力參與率',
+                'indicators.trade.title': '貿易平衡',
+                'indicators.trade.balance': '貿易餘額',
+                'indicators.trade.exports': '出口',
+                'treasury.title': '國庫',
+                'treasury.gov_debt_financing': '政府債務融資',
+                'treasury.government_debt_total': '政府債務: 總額',
+                'treasury.government_debt_gdp_ratio': '政府債務: GDP比例',
+                'treasury.primary_balance': '基本財政平衡',
+                'treasury.government_tax_receipts': '政府稅收',
+                'treasury.bond_yields': '10年期國債收益率',
+                'central_bank.title': '中央銀行',
+                'central_bank.boj_title': '日本銀行（BOJ）',
+                'central_bank.policy_rate': '政策利率',
+                'central_bank.money_stock_m2': '貨幣供應量（M2）',
+                'central_bank.balance_sheet_assets': '日銀資產負債表總資產',
+                'central_bank.base_money': '基礎貨幣',
+                'central_bank.yield_curve_control': '收益率曲線控制目標',
+                'exchange_rate.title': '匯率信息',
+                'exchange_rate.yen_rates': '日圓匯率',
+                'exchange_rate.usd_jpy': '美元/日圓匯率',
+                'exchange_rate.eur_jpy': '歐元/日圓匯率',
+                'exchange_rate.real_effective': '日圓實際有效匯率',
+                'exchange_rate.trade_weighted': '貿易加權匯率',
+                'investment.title': '投資分析',
+                'investment.gross_domestic': '國內總投資',
+                'investment.private_investment': '私人投資',
+                'investment.government_investment': '政府投資',
+                'investment.business_investment': '企業固定投資',
+                'investment.residential': '住宅投資',
+                'common.total': '總計:',
+                'unit.trillion_yen': '¥ Trillion',
+                'footer.title': '日本經濟指標儀表板 - 數據準備中',
+                'footer.data_sources': '數據來源: 內閣府 | 總務省 | 厚生勞動省 | 日本銀行 | e-Stat政府統計 | 其他相關機構',
+                'footer.last_updated': '最終更新:',
+                'footer.api_status': 'API連接狀況:',
+                'footer.status_preparing': '準備中'
+            }
+        };
+        
+        // Global variables
+        let currentLanguage = 'en';
+        
+        console.log('✅ Global translations loaded');
+
+        // Translation function
+        function updatePageTextSimple(langCode) {
+            console.log('🔄 Updating page text to:', langCode);
+            
+            if (!TRANSLATIONS[langCode]) {
+                console.warn('⚠️ No translations found for:', langCode);
+                return;
+            }
+
+            const langTranslations = TRANSLATIONS[langCode];
+            const elements = document.querySelectorAll('[data-i18n]');
+            console.log('🔍 Found', elements.length, 'translatable elements');
+
+            let updatedCount = 0;
+            elements.forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (langTranslations[key]) {
+                    element.textContent = langTranslations[key];
+                    updatedCount++;
+                } else {
+                    console.warn('⚠️ Missing translation for key:', key, 'in language:', langCode);
+                }
+            });
+            
+            console.log('✅ Translation completed. Updated', updatedCount, 'elements');
+            currentLanguage = langCode;
+            localStorage.setItem('japan-dashboard-language', langCode);
+        }
+        
+        // Document ready initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Japan Economic Dashboard loading...');
+            
+            // Prevent Google Translate interference
+            document.documentElement.setAttribute('translate', 'no');
+            document.documentElement.classList.add('notranslate');
+            document.body.setAttribute('translate', 'no');
+            
+            // Set up language selector
+            const selector = document.getElementById('language-selector');
+            if (selector) {
+                // Load saved language
+                const savedLang = localStorage.getItem('japan-dashboard-language') || 'en';
+                selector.value = savedLang;
+                console.log('📁 Loaded saved language:', savedLang);
+                
+                // Set initial language on page load
+                updatePageTextSimple(savedLang);
+                
+                // Add change event listener
+                selector.addEventListener('change', function(e) {
+                    const newLang = e.target.value;
+                    console.log('🔄 Language selector changed to:', newLang);
+                    updatePageTextSimple(newLang);
+                });
+                
+                console.log('✅ Language selector configured');
+            } else {
+                console.error('❌ Language selector not found!');
+            }
+            
+            console.log('✅ Japan Economic Dashboard initialization completed');
+        });
+
+        // Global refresh function
+        function refreshDashboardData() {
+            console.log('🔄 Refreshing dashboard data...');
+            // Add data refresh logic here when API is connected
+        }
+    </script>
+
+</body>
+</html>
