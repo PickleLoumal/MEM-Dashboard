@@ -81,8 +81,7 @@ class CSI300ApiClient {
                 // Add filters to query params
                 if (filters.im_code) queryParams.append('im_code', filters.im_code);
                 if (filters.industry) queryParams.append('industry', filters.industry);
-                if (filters.market_cap_min) queryParams.append('market_cap_min', filters.market_cap_min);
-                if (filters.market_cap_max) queryParams.append('market_cap_max', filters.market_cap_max);
+                if (filters.company_search) queryParams.append('search', filters.company_search);
                 
                 // Use Django REST framework pagination parameters
                 if (filters.page_size) queryParams.append('page_size', filters.page_size);
@@ -97,6 +96,8 @@ class CSI300ApiClient {
                 }
 
                 const url = `${this.baseUrl}/api/csi300/api/companies/?${queryParams.toString()}`;
+                console.log('API Request URL:', url);
+                console.log('Request filters:', filters);
                 return await this.makeRequest(url);
             },
             // Reduce cache TTL for paginated results to ensure fresh data
@@ -142,6 +143,22 @@ class CSI300ApiClient {
     async searchCompanies(query) {
         const url = `${this.baseUrl}/api/csi300/api/companies/search/?q=${encodeURIComponent(query)}`;
         return await this.makeRequest(url);
+    }
+
+    /**
+     * Get industry peers comparison for a company
+     */
+    async getIndustryPeersComparison(companyId) {
+        const cacheKey = `industry_peers_${companyId}`;
+        
+        return await this.getCachedOrFetch(
+            cacheKey,
+            async () => {
+                const url = `${this.baseUrl}/api/csi300/api/companies/${companyId}/industry_peers_comparison/`;
+                return await this.makeRequest(url);
+            },
+            CSI300Config.CACHE_CONFIG.COMPANY_DETAIL_TTL // Reuse company detail TTL
+        );
     }
 
     /**
