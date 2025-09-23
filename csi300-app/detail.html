@@ -15,9 +15,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Application Configuration -->
-    <script src="config/csi300_api_config.js"></script>
-    <script src="assets/js/utils/csi300_api_client.js"></script>
-    <script src="assets/js/core/company-modal-manager.js"></script>
+    <script src="config/csi300_api_config.js?v=20250923"></script>
+    <script src="assets/js/utils/csi300_api_client.js?v=20250923"></script>
+    <script src="assets/js/core/company-modal-manager.js?v=20250923"></script>
     
     <style>
         * {
@@ -488,6 +488,12 @@
                 font-size: 18px;
             }
         }
+        
+        /* Loading spinner animation for modal */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -917,10 +923,69 @@
             }
 
             // Industry Peers Comparison Modal
-            showPeersComparison() {
-                const content = this.modalManager.generatePeersComparisonContent();
-                document.getElementById('peersComparisonContent').innerHTML = content;
-                this.openModal('peersComparisonModal');
+            async showPeersComparison() {
+                // Show loading state in the current view
+                const loadingOverlay = this.createLoadingOverlay();
+                document.body.appendChild(loadingOverlay);
+                
+                try {
+                    // Pre-load the data before opening modal
+                    const content = await this.modalManager.generatePeersComparisonContentAsync();
+                    
+                    // Remove loading overlay
+                    document.body.removeChild(loadingOverlay);
+                    
+                    // Set content and open modal smoothly
+                    document.getElementById('peersComparisonContent').innerHTML = content;
+                    this.openModal('peersComparisonModal');
+                    
+                } catch (error) {
+                    // Remove loading overlay
+                    if (document.body.contains(loadingOverlay)) {
+                        document.body.removeChild(loadingOverlay);
+                    }
+                    
+                    // Show error in modal
+                    const errorContent = `
+                        <div style="text-align: center; padding: 40px; color: #dc3545;">
+                            <h3>Unable to Load Comparison Data</h3>
+                            <p style="margin: 15px 0; color: #666;">${error.message}</p>
+                            <button onclick="window.app.showPeersComparison()" 
+                                    style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                Retry
+                            </button>
+                        </div>
+                    `;
+                    document.getElementById('peersComparisonContent').innerHTML = errorContent;
+                    this.openModal('peersComparisonModal');
+                }
+            }
+
+            createLoadingOverlay() {
+                const overlay = document.createElement('div');
+                overlay.className = 'loading-overlay-fullscreen';
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.3);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 2000;
+                    backdrop-filter: blur(2px);
+                `;
+                
+                overlay.innerHTML = `
+                    <div style="background: white; padding: 30px 40px; border-radius: 12px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
+                        <div style="display: inline-block; width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;"></div>
+                        <p style="margin: 0; color: #666; font-size: 16px; font-weight: 500;">Loading industry comparison...</p>
+                    </div>
+                `;
+                
+                return overlay;
             }
 
             // Modal management methods

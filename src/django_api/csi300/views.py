@@ -9,7 +9,8 @@ from .serializers import (
     CSI300CompanySerializer, 
     CSI300CompanyListSerializer,
     CSI300FilterOptionsSerializer,
-    CSI300InvestmentSummarySerializer
+    CSI300InvestmentSummarySerializer,
+    CSI300IndustryPeersComparisonSerializer
 )
 
 
@@ -150,6 +151,80 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
             
             serializer = CSI300InvestmentSummarySerializer(summary)
             return Response(serializer.data)
+            
+        except CSI300Company.DoesNotExist:
+            return Response(
+                {'error': 'Company not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    @action(detail=True, methods=['get'])
+    def industry_peers_comparison(self, request, pk=None):
+        """Get industry peers comparison for a company"""
+        try:
+            company = self.get_object()
+            
+            if not company.industry:
+                return Response(
+                    {'error': 'Company industry information not available'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Get all companies in the same industry
+            # Order by market cap descending to calculate rankings
+            all_industry_companies = CSI300Company.objects.filter(
+                industry=company.industry
+            ).exclude(
+                market_cap_local__isnull=True
+            ).order_by('-market_cap_local')
+            
+            # Calculate current company's rank in the industry
+            current_company_rank = None
+            for idx, comp in enumerate(all_industry_companies, 1):
+                if comp.id == company.id:
+                    current_company_rank = idx
+                    break
+            
+            # Get top 3 companies (固定前3名，不排除任何公司)
+            top_3_companies = all_industry_companies[:3]
+            
+            if not top_3_companies:
+                return Response(
+                    {'error': 'No companies found in the same industry'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Prepare comparison data with rankings
+            comparison_data = []
+            
+            # Always add current company first
+            company_serializer = CSI300IndustryPeersComparisonSerializer(company)
+            company_data = company_serializer.data
+            company_data['rank'] = current_company_rank
+            company_data['is_current_company'] = True
+            comparison_data.append(company_data)
+            
+            # Add top 3 companies (固定显示前3名)
+            for idx, top_company in enumerate(top_3_companies, 1):
+                top_serializer = CSI300IndustryPeersComparisonSerializer(top_company)
+                top_data = top_serializer.data
+                top_data['rank'] = idx
+                top_data['is_current_company'] = (top_company.id == company.id)
+                comparison_data.append(top_data)
+            
+            return Response({
+                'target_company': {
+                    'id': company.id,
+                    'name': company.name,
+                    'ticker': company.ticker,
+                    'industry': company.industry,
+                    'rank': current_company_rank
+                },
+                'industry': company.industry,
+                'comparison_data': comparison_data,
+                'total_top_companies_shown': len(top_3_companies),
+                'total_companies_in_industry': all_industry_companies.count()
+            })
             
         except CSI300Company.DoesNotExist:
             return Response(

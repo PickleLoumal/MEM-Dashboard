@@ -428,13 +428,9 @@
                 </div>
                 
                 <div class="filter-group">
-                    <label class="filter-label">Market Cap Range (USD Million)</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <input type="number" name="market_cap_min" id="marketCapMin" 
-                               class="filter-input" placeholder="Min">
-                        <input type="number" name="market_cap_max" id="marketCapMax" 
-                               class="filter-input" placeholder="Max">
-                    </div>
+                    <label class="filter-label">Search Companies</label>
+                    <input type="text" name="company_search" id="companySearch" 
+                           class="filter-input" placeholder="Search by company name or ticker...">
                 </div>
             </div>
             
@@ -571,6 +567,20 @@
                 // Clear filters button
                 document.getElementById('clearFiltersBtn').addEventListener('click', () => {
                     this.clearFilters();
+                });
+
+                // Real-time search
+                const searchInput = document.getElementById('companySearch');
+                let searchTimeout;
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    const searchValue = e.target.value.trim();
+                    console.log('Search input changed:', searchValue);
+                    
+                    searchTimeout = setTimeout(() => {
+                        console.log('Applying search filter for:', searchValue);
+                        this.applyFilters();
+                    }, 300); // Debounce for 300ms
                 });
             }
 
@@ -766,8 +776,16 @@
                     }
                 }
                 
+                console.log('Applying filters:', filters);
+                
                 this.currentFilters = filters;
                 this.currentPage = 1; // Reset to first page
+                
+                // Clear cache when applying filters to ensure fresh search results
+                if (this.apiClient && this.apiClient.clearCache) {
+                    this.apiClient.clearCache();
+                }
+                
                 this.loadCompanies();
                 
                 // Update URL
