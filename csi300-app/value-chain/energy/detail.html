@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Industry Value Chain Analysis - CSI300 Platform</title>
+    
+    <!-- Framework and styling imports -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../src/assets/css/base/main.css">
+    <link rel="stylesheet" href="../assets/value-chain.css">
+</head>
+<body>
+    
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <div class="breadcrumb">
+            <a href="../../index.html">CSI300 Filter</a>
+            <span class="breadcrumb-separator">></span>
+            <a href="../../browser.html">Browse Results</a>
+            <span class="breadcrumb-separator">></span>
+            <a href="#" class="breadcrumb-company-link" id="breadcrumbCompany">Loading...</a>
+            <span class="breadcrumb-separator">></span>
+            <span class="breadcrumb-current">Value Chain Analysis</span>
+        </div>
+        
+        <!-- Global back navigation will be handled by hover area -->
+        
+        <!-- Header -->
+        <div class="value-chain-header">
+            <h1>Energy Industry Value Chain Analysis</h1>
+            <div class="company-name-link" id="companyNameLink" style="display: none;">
+                <span class="company-name-clickable" id="clickableCompanyName"></span>
+            </div>
+            <p>Comprehensive analysis of the energy sector from upstream to end customers</p>
+            <div class="value-chain-header-stats">
+                <span class="value-chain-status-badge value-chain-status-available">23 Sub-Industries</span>
+                <span class="value-chain-status-badge value-chain-status-available">5 Value Chain Stages</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <!-- Industry Overview -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Energy Industry Overview</h2>
+            <p class="text-gray-600 mb-6 text-lg leading-relaxed">
+                The energy industry encompasses activities involved in the production, processing, 
+                distribution, and consumption of energy resources. This includes traditional fossil fuels 
+                and renewable energy sources across five key value chain stages.
+            </p>
+        </div>
+
+        <!-- Value Chain Stages -->
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Value Chain Stages</h2>
+        <div class="value-chain-grid">
+            
+            <!-- Upstream Stage -->
+            <div class="value-chain-stage-card">
+                <div class="value-chain-stage-header value-chain-stage-upstream">
+                    <h3>Upstream</h3>
+                </div>
+                <div class="value-chain-stage-content">
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Exploration and Production (E&P)</div>
+                            <div class="value-chain-sub-item-description">Companies engaged in the search for and extraction of crude oil and natural gas resources.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Raw Materials</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Oilfield Equipment and Services</div>
+                            <div class="value-chain-sub-item-description">Suppliers providing specialized equipment and services for drilling, completion, and maintenance of oil and gas wells.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Equipment</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Mining and Refining of Minerals</div>
+                            <div class="value-chain-sub-item-description">Companies involved in the extraction and initial processing of various minerals and raw materials.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Raw Materials</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Renewable Energy Development</div>
+                            <div class="value-chain-sub-item-description">Development and construction of renewable energy projects including solar, wind, and hydroelectric facilities.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Development</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Midstream Stage -->
+            <div class="value-chain-stage-card">
+                <div class="value-chain-stage-header value-chain-stage-midstream">
+                    <h3>Midstream</h3>
+                </div>
+                <div class="value-chain-stage-content">
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Pipeline Transportation</div>
+                            <div class="value-chain-sub-item-description">Companies that own and operate pipeline networks for transporting oil, natural gas, and refined products.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Transportation</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Storage and Terminals</div>
+                            <div class="value-chain-sub-item-description">Facilities for storing crude oil, refined products, and natural gas, including tank farms and underground storage.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Storage</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Processing and Refining</div>
+                            <div class="value-chain-sub-item-description">Conversion of crude oil into refined products such as gasoline, diesel, jet fuel, and petrochemicals.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Processing</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products/Services Stage -->
+            <div class="value-chain-stage-card">
+                <div class="value-chain-stage-header value-chain-stage-products">
+                    <h3>Products & Services</h3>
+                </div>
+                <div class="value-chain-stage-content">
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Refined Petroleum Products</div>
+                            <div class="value-chain-sub-item-description">Gasoline, diesel fuel, heating oil, jet fuel, and other petroleum-based products for various applications.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Products</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Natural Gas Products</div>
+                            <div class="value-chain-sub-item-description">Natural gas for heating, electricity generation, and industrial processes, including LNG and compressed natural gas.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Products</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Electricity Generation</div>
+                            <div class="value-chain-sub-item-description">Power generation from various sources including fossil fuels, nuclear, and renewable energy technologies.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Services</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Petrochemicals</div>
+                            <div class="value-chain-sub-item-description">Chemical products derived from petroleum and natural gas, used in plastics, fertilizers, and other industrial applications.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Products</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Distribution Stage -->
+            <div class="value-chain-stage-card">
+                <div class="value-chain-stage-header value-chain-stage-distribution">
+                    <h3>Distribution</h3>
+                </div>
+                <div class="value-chain-stage-content">
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Retail Fuel Stations</div>
+                            <div class="value-chain-sub-item-description">Gas stations and fuel retailers providing gasoline, diesel, and other automotive fuels to consumers.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Retail</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Wholesale Distribution</div>
+                            <div class="value-chain-sub-item-description">Bulk distribution of energy products to commercial and industrial customers, including fuel distributors and marketers.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Wholesale</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Utility Distribution</div>
+                            <div class="value-chain-sub-item-description">Electric and gas utilities that distribute energy to residential, commercial, and industrial end users.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Utilities</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Stage -->
+            <div class="value-chain-stage-card">
+                <div class="value-chain-stage-header value-chain-stage-customers">
+                    <h3>End Customers</h3>
+                </div>
+                <div class="value-chain-stage-content">
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Residential Consumers</div>
+                            <div class="value-chain-sub-item-description">Households using energy for heating, cooling, lighting, and transportation needs.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">B2C</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Commercial Businesses</div>
+                            <div class="value-chain-sub-item-description">Office buildings, retail establishments, and service businesses requiring energy for operations.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">B2B</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Industrial Customers</div>
+                            <div class="value-chain-sub-item-description">Manufacturing facilities, chemical plants, and heavy industry requiring large amounts of energy for production processes.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">B2B</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Transportation Sector</div>
+                            <div class="value-chain-sub-item-description">Airlines, shipping companies, trucking, and other transportation services requiring fuel for operations.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">B2B</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Key Insights Section -->
+        <div class="value-chain-info-section">
+            <div class="value-chain-info-header">
+                Key Industry Insights
+            </div>
+            <div class="value-chain-info-content">
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Market Dynamics</h4>
+                        <p class="text-gray-600 text-sm">
+                            The energy industry is experiencing significant transformation with the global shift towards renewable energy sources, 
+                            increasing focus on sustainability, and technological advancements in energy storage and distribution.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Value Creation Opportunities</h4>
+                        <p class="text-gray-600 text-sm">
+                            Key opportunities exist in renewable energy development, energy efficiency technologies, 
+                            smart grid infrastructure, and carbon capture and storage solutions.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Industry Challenges</h4>
+                        <p class="text-gray-600 text-sm">
+                            Major challenges include regulatory compliance, environmental concerns, price volatility, 
+                            infrastructure aging, and the need for substantial capital investments in new technologies.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Handle URL parameters and update breadcrumb
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const companyName = urlParams.get('company');
+            const companyId = urlParams.get('id');
+            
+            // Update breadcrumb with company name
+            const breadcrumbCompany = document.getElementById('breadcrumbCompany');
+            if (companyName) {
+                breadcrumbCompany.textContent = companyName;
+                
+                // Update page title
+                document.title = `${companyName} - Value Chain Analysis`;
+                
+                // Add click event listener to breadcrumb company name
+                breadcrumbCompany.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (companyId) {
+                        window.location.href = `../../detail.html?id=${companyId}`;
+                    } else {
+                        window.history.back();
+                    }
+                });
+                
+                // Setup clickable company name in header
+                const companyNameLink = document.getElementById('companyNameLink');
+                const clickableCompanyName = document.getElementById('clickableCompanyName');
+                if (companyNameLink && clickableCompanyName) {
+                    clickableCompanyName.textContent = companyName;
+                    companyNameLink.style.display = 'block';
+                    
+                    // Add click event listener
+                    clickableCompanyName.addEventListener('click', function() {
+                        if (companyId) {
+                            window.location.href = `../../detail.html?id=${companyId}`;
+                        } else {
+                            window.history.back();
+                        }
+                    });
+                }
+            } else {
+                // Fallback if no company name provided
+                breadcrumbCompany.textContent = 'Company Details';
+            }
+            
+            console.log('Energy Industry Value Chain Analysis loaded');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value Chain Analysis - CSI300 Platform</title>
+    
+    <!-- Framework and styling imports matching MEM Dashboard -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../src/assets/css/base/main.css">
+    <link rel="stylesheet" href="assets/value-chain.css">
+    
+    <style>
+        /* Clean professional styles - Trading Economics inspired */
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #ffffff;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333333;
+        }
+        
+        /* Industry card styles - clean and minimal */
+        .industry-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .industry-card:hover {
+            border-color: #d1d5db;
+        }
+        
+        .industry-header {
+            background: #f8f9fa;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 16px;
+        }
+        
+        .industry-body {
+            padding: 20px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        .status-available {
+            background-color: #f0f9ff;
+            color: #0369a1;
+            border: 1px solid #e0f2fe;
+        }
+        
+        .status-coming-soon {
+            background-color: #fafafa;
+            color: #525252;
+            border: 1px solid #e5e5e5;
+        }
+        
+        /* Header styles - clean and minimal */
+        .main-header {
+            background: #ffffff;
+            color: #333333;
+            padding: 20px 0;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 2rem;
+        }
+        
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            background-color: #f8f9fa;
+            color: #374151;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .back-button:hover {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        
+        .back-button svg {
+            margin-right: 0.5rem;
+        }
+        
+        /* Vertical layout for industries */
+        .industries-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="content-container">
+            <a href="../" class="back-button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m12 19-7-7 7-7"/>
+                    <path d="m19 12H5"/>
+                </svg>
+                Back to CSI300 Dashboard
+            </a>
+            <h1 class="text-2xl font-semibold mb-2 text-gray-900">Value Chain Analysis</h1>
+            <p class="text-gray-600">Explore industry-specific value chain frameworks and analysis tools</p>
+        </div>
+    </header>
+
+    <main class="content-container">
+        <div class="industries-container">
+            
+            <!-- Energy Industry -->
+            <div class="industry-card" onclick="openIndustryDetail('energy')">
+                <div class="industry-header">
+                    <h3 class="font-semibold mb-1">Energy Industry</h3>
+                    <p class="text-sm opacity-90">Oil, Gas, Renewable Energy</p>
+                </div>
+                <div class="industry-body">
+                    <div class="mb-4 text-left">
+                        <span class="status-badge status-available">Available</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">
+                        Comprehensive value chain analysis covering upstream exploration, 
+                        midstream processing, downstream distribution, and renewable energy sectors.
+                    </p>
+                    <div class="text-sm text-gray-500">
+                        <div class="mb-2"><strong>Key Stages:</strong></div>
+                        <ul class="list-disc ml-4 space-y-1">
+                            <li>Upstream (Exploration & Production)</li>
+                            <li>Midstream (Processing & Transportation)</li>
+                            <li>Downstream (Refining & Distribution)</li>
+                            <li>End Customers & Markets</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technology Industry -->
+            <div class="industry-card" onclick="showComingSoon('Technology')">
+                <div class="industry-header">
+                    <h3 class="font-semibold mb-1">Technology</h3>
+                    <p class="text-sm opacity-90">Software, Hardware, Semiconductors</p>
+                </div>
+                <div class="industry-body">
+                    <div class="mb-4 text-left">
+                        <span class="status-badge status-coming-soon">Coming Soon</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">
+                        Technology sector value chain analysis including R&D, manufacturing, 
+                        distribution, and customer support across hardware and software segments.
+                    </p>
+                    <div class="text-sm text-gray-500">
+                        <div class="mb-2"><strong>Planned Stages:</strong></div>
+                        <ul class="list-disc ml-4 space-y-1">
+                            <li>Research & Development</li>
+                            <li>Design & Engineering</li>
+                            <li>Manufacturing & Assembly</li>
+                            <li>Distribution & Support</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Services -->
+            <div class="industry-card" onclick="showComingSoon('Financial Services')">
+                <div class="industry-header">
+                    <h3 class="font-semibold mb-1">Financial Services</h3>
+                    <p class="text-sm opacity-90">Banking, Insurance, Investment</p>
+                </div>
+                <div class="industry-body">
+                    <div class="mb-4 text-left">
+                        <span class="status-badge status-coming-soon">Coming Soon</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">
+                        Financial services value chain covering customer acquisition, 
+                        product development, risk management, and service delivery.
+                    </p>
+                    <div class="text-sm text-gray-500">
+                        <div class="mb-2"><strong>Planned Stages:</strong></div>
+                        <ul class="list-disc ml-4 space-y-1">
+                            <li>Customer Acquisition</li>
+                            <li>Product Development</li>
+                            <li>Risk Assessment</li>
+                            <li>Service Delivery</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Healthcare & Pharmaceuticals -->
+            <div class="industry-card" onclick="showComingSoon('Healthcare')">
+                <div class="industry-header">
+                    <h3 class="font-semibold mb-1">Healthcare</h3>
+                    <p class="text-sm opacity-90">Pharmaceuticals, Medical Devices</p>
+                </div>
+                <div class="industry-body">
+                    <div class="mb-4 text-left">
+                        <span class="status-badge status-coming-soon">Coming Soon</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">
+                        Healthcare value chain analysis from R&D and clinical trials 
+                        to manufacturing, distribution, and patient care delivery.
+                    </p>
+                    <div class="text-sm text-gray-500">
+                        <div class="mb-2"><strong>Planned Stages:</strong></div>
+                        <ul class="list-disc ml-4 space-y-1">
+                            <li>Research & Development</li>
+                            <li>Clinical Trials</li>
+                            <li>Manufacturing & Quality</li>
+                            <li>Distribution & Care</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consumer Goods -->
+            <div class="industry-card" onclick="showComingSoon('Consumer Goods')">
+                <div class="industry-header">
+                    <h3 class="font-semibold mb-1">Consumer Goods</h3>
+                    <p class="text-sm opacity-90">FMCG, Retail, E-commerce</p>
+                </div>
+                <div class="industry-body">
+                    <div class="mb-4 text-left">
+                        <span class="status-badge status-coming-soon">Coming Soon</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">
+                        Consumer goods value chain covering product development, 
+                        manufacturing, marketing, distribution, and retail operations.
+                    </p>
+                    <div class="text-sm text-gray-500">
+                        <div class="mb-2"><strong>Planned Stages:</strong></div>
+                        <ul class="list-disc ml-4 space-y-1">
+                            <li>Product Development</li>
+                            <li>Manufacturing</li>
+                            <li>Marketing & Branding</li>
+                            <li>Retail & Distribution</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Materials & Manufacturing -->
+            <div class="industry-card" onclick="showComingSoon('Materials')">
+                <div class="industry-header">
+                    <h3 class="font-semibold mb-1">Materials</h3>
+                    <p class="text-sm opacity-90">Chemicals, Metals, Construction</p>
+                </div>
+                <div class="industry-body">
+                    <div class="mb-4 text-left">
+                        <span class="status-badge status-coming-soon">Coming Soon</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4">
+                        Materials and manufacturing value chain analysis covering 
+                        raw material sourcing, processing, manufacturing, and distribution.
+                    </p>
+                    <div class="text-sm text-gray-500">
+                        <div class="mb-2"><strong>Planned Stages:</strong></div>
+                        <ul class="list-disc ml-4 space-y-1">
+                            <li>Raw Material Sourcing</li>
+                            <li>Processing & Refining</li>
+                            <li>Manufacturing</li>
+                            <li>Distribution & Logistics</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        function openIndustryDetail(industry) {
+            // Navigate to the specific industry detail page in the same window
+            window.location.href = `${industry}/detail.html`;
+        }
+
+        function showComingSoon(industryName) {
+            alert(`${industryName} value chain analysis is coming soon! Currently, only Energy industry analysis is available.`);
+        }
+
+        // Simple click handling - no animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Clean initialization without animations
+            console.log('Value Chain Analysis loaded');
+        });
+    </script>
+</body>
+</html>

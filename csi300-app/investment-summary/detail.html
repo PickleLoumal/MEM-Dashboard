@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Summary - CSI300 Platform</title>
+    
+    <!-- Framework and styling imports -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../src/assets/css/base/main.css">
+    <link rel="stylesheet" href="assets/investment-summary.css">
+</head>
+<body>
+    
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <div class="breadcrumb">
+            <a href="../index.html">CSI300 Filter</a>
+            <span class="breadcrumb-separator">></span>
+            <a href="../browser.html">Browse Results</a>
+            <span class="breadcrumb-separator">></span>
+            <a href="#" class="breadcrumb-company-link" id="breadcrumbCompany">Loading...</a>
+            <span class="breadcrumb-separator">></span>
+            <span class="breadcrumb-current">Investment Summary</span>
+        </div>
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-spinner">
+            <div class="spinner"></div>
+        </div>
+        
+        <!-- Error State -->
+        <div id="errorState" class="error-message" style="display: none;">
+            <h3>Investment Summary Not Available</h3>
+            <p>No investment summary found for this company. Please check back later.</p>
+        </div>
+        
+        <!-- Investment Summary Content -->
+        <div id="investmentSummaryContent" style="display: none;">
+            <!-- Header -->
+            <div class="investment-summary-header">
+                <h1 id="summaryTitle">Investment Summary</h1>
+                <div class="company-name-link" id="companyNameLink" style="display: none;">
+                    <span class="company-name-clickable" id="clickableCompanyName"></span>
+                </div>
+                
+                <!-- Basic Information Grid -->
+                <div class="investment-summary-basic-info">
+                    <div class="basic-info-item">
+                        <span class="basic-info-label">Date</span>
+                        <span class="basic-info-value" id="reportDate">-</span>
+                    </div>
+                    <div class="basic-info-item">
+                        <span class="basic-info-label">Stock Price (Previous Close)</span>
+                        <span class="basic-info-value" id="stockPrice">-</span>
+                    </div>
+                    <div class="basic-info-item">
+                        <span class="basic-info-label">Market Cap</span>
+                        <span class="basic-info-value" id="marketCap">-</span>
+                    </div>
+                    <div class="basic-info-item">
+                        <span class="basic-info-label">Recommended Action</span>
+                        <span class="basic-info-value">
+                            <span class="recommended-action" id="recommendedAction">-</span>
+                        </span>
+                    </div>
+                    <div class="basic-info-item">
+                        <span class="basic-info-label">Industry</span>
+                        <span class="basic-info-value" id="industry">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Business Overview -->
+            <div class="investment-summary-section">
+                <div class="section-header">Business Overview</div>
+                <div class="section-content" id="businessOverview">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Business Performance -->
+            <div class="investment-summary-section">
+                <div class="section-header">Business Performance</div>
+                <div class="section-content" id="businessPerformance">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Industry Context -->
+            <div class="investment-summary-section">
+                <div class="section-header">Industry Context</div>
+                <div class="section-content" id="industryContext">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Financial Stability and Debt Levels -->
+            <div class="investment-summary-section">
+                <div class="section-header">Financial Stability and Debt Levels</div>
+                <div class="section-content" id="financialStability">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Key Financials and Valuation -->
+            <div class="investment-summary-section">
+                <div class="section-header">Key Financials and Valuation</div>
+                <div class="section-content" id="keyFinancialsValuation">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Big Trends and Big Events -->
+            <div class="investment-summary-section">
+                <div class="section-header">Big Trends and Big Events</div>
+                <div class="section-content" id="bigTrendsEvents">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Customer Segments and Demand Trends -->
+            <div class="investment-summary-section">
+                <div class="section-header">Customer Segments and Demand Trends</div>
+                <div class="section-content" id="customerSegments">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Competitive Landscape -->
+            <div class="investment-summary-section">
+                <div class="section-header">Competitive Landscape</div>
+                <div class="section-content" id="competitiveLandscape">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Risks and Anomalies -->
+            <div class="investment-summary-section">
+                <div class="section-header">Risks and Anomalies</div>
+                <div class="section-content" id="risksAnomalies">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Forecast and Outlook -->
+            <div class="investment-summary-section">
+                <div class="section-header">Forecast and Outlook</div>
+                <div class="section-content" id="forecastOutlook">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Leading Investment Firms and Views -->
+            <div class="investment-summary-section">
+                <div class="section-header">Leading Investment Firms and Views</div>
+                <div class="section-content" id="investmentFirmsViews">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Recommended Action -->
+            <div class="investment-summary-section">
+                <div class="section-header">Recommended Action</div>
+                <div class="section-content" id="recommendedActionDetail">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Industry Ratio and Metric Analysis -->
+            <div class="investment-summary-section">
+                <div class="section-header">Industry Ratio and Metric Analysis</div>
+                <div class="section-content" id="industryRatioAnalysis">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Tariffs and Supply Chain Risks -->
+            <div class="investment-summary-section">
+                <div class="section-header">Tariffs and Supply Chain Risks</div>
+                <div class="section-content" id="tariffsSupplyChainRisks">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Key Takeaways -->
+            <div class="investment-summary-section">
+                <div class="section-header">Key Takeaways</div>
+                <div class="section-content" id="keyTakeaways">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Sources -->
+            <div class="investment-summary-section">
+                <div class="section-header">Sources</div>
+                <div class="section-content" id="sources">
+                    <!-- Content will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class InvestmentSummaryPage {
+            constructor() {
+                this.companyId = null;
+                this.companyName = null;
+                this.apiClient = null;
+                this.init();
+            }
+
+            init() {
+                // Get URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                this.companyId = urlParams.get('id');
+                this.companyName = urlParams.get('company');
+                
+                // Update breadcrumb with company name
+                this.updateBreadcrumb();
+                
+                // Setup global back navigation
+                this.setupGlobalBackNavigation();
+                
+                // Initialize API client
+                this.initApiClient();
+                
+                // Load investment summary data
+                this.loadInvestmentSummary();
+            }
+
+            updateBreadcrumb() {
+                const breadcrumbCompany = document.getElementById('breadcrumbCompany');
+                if (this.companyName) {
+                    breadcrumbCompany.textContent = this.companyName;
+                    // Update page title
+                    document.title = `${this.companyName} - Investment Summary - CSI300 Platform`;
+                    
+                    // Add click event listener to breadcrumb company name
+                    breadcrumbCompany.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.goBackToCompanyDetail();
+                    });
+                } else {
+                    // Fallback if no company name provided
+                    breadcrumbCompany.textContent = 'Company Details';
+                }
+            }
+
+            setupGlobalBackNavigation() {
+                // No longer needed - using clickable company name instead
+            }
+
+            initApiClient() {
+                // Import API client configuration
+                const script = document.createElement('script');
+                script.src = '../config/csi300_api_config.js';
+                script.onload = () => {
+                    const apiScript = document.createElement('script');
+                    apiScript.src = '../assets/js/utils/csi300_api_client.js';
+                    apiScript.onload = () => {
+                        this.apiClient = new CSI300ApiClient();
+                    };
+                    document.head.appendChild(apiScript);
+                };
+                document.head.appendChild(script);
+            }
+
+            async loadInvestmentSummary() {
+                if (!this.companyId) {
+                    this.showError('Company ID not provided');
+                    return;
+                }
+
+                try {
+                    // Wait for API client to be ready
+                    while (!this.apiClient) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+
+                    console.log(`Loading investment summary for company ID: ${this.companyId}`);
+                    
+                    // Fetch investment summary data
+                    const response = await fetch(`http://localhost:8001/api/csi300/api/companies/${this.companyId}/investment_summary/`);
+                    
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            this.showError('Investment summary not available for this company');
+                        } else {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return;
+                    }
+
+                    const investmentSummary = await response.json();
+                    console.log('Investment summary loaded:', investmentSummary);
+                    
+                    this.renderInvestmentSummary(investmentSummary);
+                    
+                } catch (error) {
+                    console.error('Error loading investment summary:', error);
+                    this.showError('Failed to load investment summary. Please try again later.');
+                }
+            }
+
+            renderInvestmentSummary(data) {
+                // Hide loading state
+                document.getElementById('loadingState').style.display = 'none';
+                
+                // Show content
+                document.getElementById('investmentSummaryContent').style.display = 'block';
+                
+                // Update title and company name link
+                document.getElementById('summaryTitle').textContent = 'Investment Summary';
+                
+                // Setup clickable company name
+                const companyNameLink = document.getElementById('companyNameLink');
+                const clickableCompanyName = document.getElementById('clickableCompanyName');
+                if (companyNameLink && clickableCompanyName) {
+                    clickableCompanyName.textContent = data.company_name || this.companyName;
+                    companyNameLink.style.display = 'block';
+                    
+                    // Add click event listener
+                    clickableCompanyName.addEventListener('click', () => {
+                        this.goBackToCompanyDetail();
+                    });
+                }
+                
+                // Update basic information
+                document.getElementById('reportDate').textContent = this.formatDate(data.report_date);
+                document.getElementById('stockPrice').textContent = `CNY ${data.stock_price_previous_close}`;
+                document.getElementById('marketCap').textContent = data.market_cap_display;
+                
+                const recommendedActionElement = document.getElementById('recommendedAction');
+                recommendedActionElement.textContent = data.recommended_action;
+                recommendedActionElement.className = `recommended-action ${data.recommended_action.toLowerCase()}`;
+                
+                // Get industry from company data or use a default
+                document.getElementById('industry').textContent = 'Cybersecurity Software and Internet Services'; // This should come from company data
+                
+                // Update all sections
+                this.updateSection('businessOverview', data.business_overview);
+                this.updateSection('businessPerformance', data.business_performance);
+                this.updateSection('industryContext', data.industry_context);
+                this.updateSection('financialStability', data.financial_stability);
+                this.updateSection('keyFinancialsValuation', data.key_financials_valuation);
+                this.updateSection('bigTrendsEvents', data.big_trends_events);
+                this.updateSection('customerSegments', data.customer_segments);
+                this.updateSection('competitiveLandscape', data.competitive_landscape);
+                this.updateSection('risksAnomalies', data.risks_anomalies);
+                this.updateSection('forecastOutlook', data.forecast_outlook);
+                this.updateSection('investmentFirmsViews', data.investment_firms_views);
+                this.updateSection('recommendedActionDetail', data.recommended_action_detail);
+                this.updateSection('industryRatioAnalysis', data.industry_ratio_analysis);
+                this.updateSection('tariffsSupplyChainRisks', data.tariffs_supply_chain_risks);
+                this.updateSection('keyTakeaways', data.key_takeaways);
+                
+                // Handle sources with links
+                this.updateSourcesSection(data.sources);
+                
+                // Update page title
+                document.title = `Investment Summary: ${data.company_name} - CSI300 Platform`;
+            }
+
+            updateSection(elementId, content) {
+                const element = document.getElementById(elementId);
+                if (element && content) {
+                    // Convert line breaks to paragraphs
+                    const paragraphs = content.split('\n').filter(p => p.trim()).map(p => `<p>${p.trim()}</p>`).join('');
+                    element.innerHTML = paragraphs;
+                }
+            }
+
+            updateSourcesSection(sources) {
+                const element = document.getElementById('sources');
+                if (element && sources) {
+                    // Parse sources and create links
+                    const sourceLines = sources.split('\n').filter(line => line.trim());
+                    let sourcesList = '<ul class="sources-list">';
+                    
+                    sourceLines.forEach(line => {
+                        // Check if line contains a URL in brackets
+                        const urlMatch = line.match(/\[([^\]]+)\]\(([^)]+)\)/);
+                        if (urlMatch) {
+                            const text = line.replace(urlMatch[0], '');
+                            const linkText = urlMatch[1];
+                            const url = urlMatch[2];
+                            sourcesList += `<li>${text.trim()} <a href="${url}" target="_blank">${linkText}</a></li>`;
+                        } else {
+                            sourcesList += `<li>${line.trim()}</li>`;
+                        }
+                    });
+                    
+                    sourcesList += '</ul>';
+                    element.innerHTML = sourcesList;
+                }
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return '-';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            }
+
+            showError(message) {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('errorState').style.display = 'block';
+                document.getElementById('errorState').innerHTML = `
+                    <h3>Investment Summary Not Available</h3>
+                    <p>${message}</p>
+                `;
+            }
+
+            goBackToCompanyDetail() {
+                // Always go back to company detail page
+                if (this.companyId) {
+                    window.location.href = `../detail.html?id=${this.companyId}`;
+                } else {
+                    window.location.href = '../browser.html';
+                }
+            }
+        }
+
+        // Initialize the page
+        const investmentSummaryPage = new InvestmentSummaryPage();
+    </script>
+</body>
+</html>

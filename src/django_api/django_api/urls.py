@@ -45,6 +45,9 @@ urlpatterns = [
     # BEA API路由
     path('api/bea/', include('bea.urls')),
     
+    # CSI300 API路由
+    path('api/csi300/', include('csi300.urls')),
+    
     # Content API路由
     path('', include('content.urls')),
 ]

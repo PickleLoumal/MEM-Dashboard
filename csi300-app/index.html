@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>CSI300 Company Filter - Standalone Application</title>
+    
+    <!-- Build configuration metadata -->
+    <meta name="build-timestamp" content="2025-Sep">
+    <meta name="application-id" content="CSI300 Dashboard">
+    <meta name="schema-version" content="1.0.0">
+    
+    <!-- Cache control headers for performance optimization -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Framework and styling imports -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Application Configuration -->
+    <script src="config/csi300_api_config.js"></script>
+    <script src="assets/js/utils/csi300_api_client.js"></script>
+    
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #f8f9fa;
+        }
+        
+        .filter-container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+            box-sizing: border-box;
+        }
+        
+        .page-header {
+            margin-bottom: 32px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 8px 0;
+        }
+        
+        .page-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0 0 8px 0;
+        }
+        
+        .total-count {
+            font-size: 13px;
+            color: #059669;
+            font-weight: 500;
+        }
+        
+        .filter-form {
+            text-align: left;
+        }
+        
+        .filter-grid {
+            display: grid;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        
+        .filter-input, .filter-select {
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+            color: #111827;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .filter-select option {
+            padding: 8px 12px;
+            line-height: 1.4;
+            vertical-align: middle;
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 32px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            min-width: 120px;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #1d1e1f;
+            color: white;
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: #2a2a2c;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+        }
+        
+        .loading {
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #dc2626;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                box-sizing: border-box;
+            }
+            
+            .filter-container {
+                padding: 20px;
+                margin: 0;
+                max-width: 100%;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .page-title {
+                font-size: 22px;
+            }
+            
+            .filter-actions {
+                flex-direction: column;
+                gap: 12px;
+                margin-top: 24px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 14px 24px;
+                font-size: 16px;
+                box-sizing: border-box;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="filter-container">
+        <div class="page-header">
+            <h1 class="page-title">CSI300 Company Filter</h1>
+            <p class="page-subtitle">Filter and browse CSI300 index companies</p>
+            <p class="total-count" id="totalCount">Loading total count...</p>
+        </div>
+        
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        
+        <form id="filterForm" class="filter-form">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label class="filter-label">IM Code</label>
+                    <select name="im_code" id="imCodeSelect" class="filter-select">
+                        <option value="">All IM Codes</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Industry</label>
+                    <select name="industry" id="industrySelect" class="filter-select">
+                        <option value="">All Industries</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Market Cap Range (USD Million)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <input type="number" name="market_cap_min" id="marketCapMin" 
+                               class="filter-input" placeholder="Min">
+                        <input type="number" name="market_cap_max" id="marketCapMax" 
+                               class="filter-input" placeholder="Max">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="button" id="viewAllBtn" class="btn btn-secondary">View All</button>
+                <button type="submit" class="btn btn-primary">Apply Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        class CSI300FilterApp {
+            constructor() {
+                this.apiClient = window.csi300ApiClient;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.loadFilterOptions();
+                    this.bindEvents();
+                } catch (error) {
+                    this.showError('Failed to initialize application: ' + error.message);
+                }
+            }
+
+            async loadFilterOptions() {
+                try {
+                    const data = await this.apiClient.getFilterOptions();
+                    
+                    // Update total count
+                    document.getElementById('totalCount').textContent = 
+                        `Total ${data.total_count} companies in database`;
+                    
+                    // Populate IM codes
+                    const imCodeSelect = document.getElementById('imCodeSelect');
+                    data.im_codes.forEach(code => {
+                        if (code) {
+                            const option = document.createElement('option');
+                            option.value = code;
+                            option.textContent = code;
+                            imCodeSelect.appendChild(option);
+                        }
+                    });
+                    
+                    // Populate industries
+                    const industrySelect = document.getElementById('industrySelect');
+                    data.industries.forEach(industry => {
+                        if (industry) {
+                            const option = document.createElement('option');
+                            option.value = industry;
+                            option.textContent = industry;
+                            industrySelect.appendChild(option);
+                        }
+                    });
+                    
+                    // Set market cap placeholders
+                    if (data.market_cap_range.min_cap) {
+                        document.getElementById('marketCapMin').placeholder = 
+                            `Min (${Math.floor(data.market_cap_range.min_cap)})`;
+                    }
+                    if (data.market_cap_range.max_cap) {
+                        document.getElementById('marketCapMax').placeholder = 
+                            `Max (${Math.floor(data.market_cap_range.max_cap)})`;
+                    }
+                    
+                } catch (error) {
+                    this.showError('Failed to load filter options: ' + error.message);
+                }
+            }
+
+            bindEvents() {
+                // Form submission
+                document.getElementById('filterForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.applyFilters();
+                });
+
+                // View all button
+                document.getElementById('viewAllBtn').addEventListener('click', () => {
+                    this.viewAll();
+                });
+            }
+
+            applyFilters() {
+                const formData = new FormData(document.getElementById('filterForm'));
+                const filters = {};
+                
+                for (const [key, value] of formData.entries()) {
+                    if (value.trim()) {
+                        filters[key] = value.trim();
+                    }
+                }
+                
+                // Redirect to browser page with filters
+                const queryParams = new URLSearchParams(filters);
+                window.location.href = `browser.html?${queryParams.toString()}`;
+            }
+
+            viewAll() {
+                window.location.href = 'browser.html';
+            }
+
+            showError(message) {
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+
+            hideError() {
+                document.getElementById('errorMessage').style.display = 'none';
+            }
+        }
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new CSI300FilterApp();
+        });
+    </script>
+</body>
+</html>

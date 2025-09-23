@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Company Details - CSI300 Standalone Application</title>
+    
+    <!-- Build configuration metadata -->
+    <meta name="build-timestamp" content="2025-Sep">
+    <meta name="application-id" content="CSI300 Dashboard">
+    <meta name="schema-version" content="1.0.0">
+    
+    <!-- Framework and styling imports -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Application Configuration -->
+    <script src="config/csi300_api_config.js"></script>
+    <script src="assets/js/utils/csi300_api_client.js"></script>
+    <script src="assets/js/core/company-modal-manager.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+        }
+        
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .company-header {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .company-name {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 8px 0;
+        }
+        
+        .company-ticker {
+            font-size: 18px;
+            color: #6b7280;
+            font-family: monospace;
+            margin-bottom: 16px;
+        }
+        
+        .company-industry {
+            display: inline-block;
+            background: #f8f9fa;
+            color: #1d1e1f;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .company-actions-section {
+            margin: 24px 0;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 22px;
+            border-radius: 980px;
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.2;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.25, 1);
+            cursor: pointer;
+            border: none;
+            min-height: 44px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        .button-primary {
+            background: #374151;
+            color: #fff;
+            box-shadow: 0 1px 8px rgba(55, 65, 81, 0.25);
+        }
+        
+        .button-primary:hover {
+            background: #4b5563;
+            transform: scale(1.02);
+            box-shadow: 0 2px 12px rgba(55, 65, 81, 0.35);
+        }
+        
+        .button-primary:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 6px rgba(55, 65, 81, 0.3);
+        }
+        
+        .button-primary:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(55, 65, 81, 0.3);
+        }
+        
+        .button-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #d6d8db;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .button-secondary:hover {
+            background: #e9ecef;
+            color: #495057;
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .button-secondary:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .button-secondary:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(108, 117, 125, 0.3);
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.9);
+            transition: all 0.3s ease;
+            margin: 20px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .modal-body {
+            color: #374151;
+            line-height: 1.6;
+        }
+        
+        .modal-section {
+            margin-bottom: 16px;
+        }
+        
+        .modal-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .modal-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .modal-value {
+            color: #374151;
+            font-weight: 500;
+            text-align: right;
+            max-width: 200px;
+        }
+        
+        .modal-breakdown {
+            margin: 12px 0;
+            padding: 12px 0;
+            border-top: 1px solid #f3f4f6;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .modal-sub-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 4px 0;
+        }
+        
+        .modal-sub-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .modal-sub-label {
+            color: #6b7280;
+            font-weight: 500;
+            font-size: 13px;
+            flex: 1;
+        }
+        
+        .modal-sub-value {
+            color: #374151;
+            font-weight: 600;
+            font-size: 13px;
+            text-align: right;
+            flex-shrink: 0;
+            max-width: 300px;
+        }
+        
+        .modal-description {
+            color: #374151;
+            font-weight: 400;
+            text-align: left;
+            margin-top: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .breadcrumb {
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            background: transparent !important;
+            background-color: transparent !important;
+            padding: 0 !important;
+            border-bottom: none !important;
+        }
+        
+        .breadcrumb a {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-separator {
+            color: #6b7280;
+            margin: 0 4px;
+            font-weight: 600;
+        }
+        
+        .breadcrumb-current {
+            color: #1f2937;
+            font-weight: 700;
+        }
+        
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+        
+        .detail-section {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            background: #f8f9fa;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 16px;
+        }
+        
+        .section-content {
+            padding: 20px;
+        }
+        
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .field-row:last-child {
+            border-bottom: none;
+        }
+        
+        .field-label {
+            color: #6b7280;
+            font-size: 14px;
+            flex: 1;
+        }
+        
+        .field-value {
+            font-weight: 500;
+            color: #111827;
+            text-align: right;
+            min-width: 100px;
+        }
+        
+        .field-value.positive {
+            color: #059669;
+        }
+        
+        .field-value.negative {
+            color: #dc2626;
+        }
+        
+        .description-section {
+            grid-column: 1 / -1;
+        }
+        
+        .description-text {
+            line-height: 1.6;
+            color: #374151;
+        }
+        
+        .back-button {
+            display: inline-block;
+            background: #1d1e1f;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 24px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .back-button:hover {
+            background: #2a2a2c;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 48px;
+            color: #6b7280;
+        }
+        
+        .error {
+            color: #dc2626;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .details-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .container {
+                padding: 12px;
+            }
+            
+            .company-header {
+                padding: 20px 16px;
+            }
+            
+            .company-name {
+                font-size: 24px;
+            }
+            
+            .breadcrumb {
+                font-size: 12px;
+                gap: 6px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+            
+            .breadcrumb-separator {
+                margin: 0 2px;
+            }
+            
+            
+            .back-button {
+                padding: 10px 20px;
+                font-size: 13px;
+                margin-bottom: 16px;
+                width: 100%;
+                text-align: center;
+                box-sizing: border-box;
+            }
+            
+            .detail-section {
+                margin-bottom: 16px;
+            }
+            
+            .section-content {
+                padding: 16px;
+            }
+            
+            .field-row {
+                padding: 10px 0;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+            
+            .field-label {
+                font-size: 13px;
+                font-weight: 600;
+            }
+            
+            .field-value {
+                font-size: 14px;
+                text-align: left;
+                min-width: auto;
+            }
+            
+            .company-actions-section {
+                margin: 16px 0;
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .button {
+                font-size: 15px;
+                padding: 10px 20px;
+                min-height: 40px;
+            }
+            
+            .modal-content {
+                margin: 10px;
+                padding: 20px;
+                max-height: 90vh;
+            }
+            
+            .modal-title {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index.html">CSI300 Filter</a>
+            <span class="breadcrumb-separator">></span>
+            <a href="browser.html">Browse Results</a>
+            <span class="breadcrumb-separator">></span>
+            <span class="breadcrumb-current" id="breadcrumbCurrent">Loading...</span>
+        </div>
+        
+        <!-- Global back navigation will be handled by hover area -->
+        
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        
+        <div id="loadingIndicator" class="loading">
+            <p>Loading company details...</p>
+        </div>
+        
+        <div id="companyContent" style="display: none;">
+            <div class="company-header" id="companyHeader">
+                <!-- Company header will be populated here -->
+            </div>
+            
+            <div class="company-actions-section">
+                <a class="button button-primary" id="valueChainBtn">Value Chain Analysis</a>
+                <a class="button button-primary" id="investmentSummaryBtn">Investment Summary</a>
+                <a class="button button-primary" id="peersComparisonBtn">Industry Peers Comparison</a>
+            </div>
+            
+            <div class="details-grid" id="detailsGrid">
+                <!-- Details sections will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Value Chain Modal -->
+    <div id="valueChainModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Value Chain Analysis</h2>
+            </div>
+            <div class="modal-body" id="valueChainContent">
+                <!-- Content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Industry Peers Comparison Modal -->
+    <div id="peersComparisonModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Industry Peers Comparison</h2>
+            </div>
+            <div class="modal-body" id="peersComparisonContent">
+                <!-- Content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CSI300DetailApp {
+            constructor() {
+                this.apiClient = window.csi300ApiClient;
+                this.companyId = this.getCompanyIdFromUrl();
+                this.company = null;
+                this.modalManager = new window.CompanyModalManager();
+                // Make instance available globally for button click handlers
+                window.app = this;
+                this.init();
+            }
+
+            getCompanyIdFromUrl() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('id');
+            }
+
+            async init() {
+                if (!this.companyId) {
+                    this.showError('No company ID provided');
+                    return;
+                }
+
+                try {
+                    await this.loadCompanyDetail();
+                } catch (error) {
+                    this.showError('Failed to load company details: ' + error.message);
+                }
+            }
+
+            async loadCompanyDetail() {
+                try {
+                    this.showLoading();
+                    
+                    this.company = await this.apiClient.getCompanyDetail(this.companyId);
+                    
+                    // Initialize modal manager with company data
+                    this.modalManager.init(this.company);
+                    
+                    this.renderCompanyDetail();
+                    this.showContent();
+                    
+                } catch (error) {
+                    this.showError('Failed to load company details: ' + error.message);
+                }
+            }
+
+            renderCompanyDetail() {
+                // Update breadcrumb
+                document.getElementById('breadcrumbCurrent').textContent = this.company.name || 'Unknown Company';
+                
+                // Update document title
+                document.title = `${this.company.name || 'Company'} - CSI300 Details`;
+                
+                // Render company header
+                this.renderCompanyHeader();
+                
+                // Setup button event listeners
+                this.setupButtonListeners();
+                
+                // Render details sections
+                this.renderDetailsGrid();
+            }
+
+            renderCompanyHeader() {
+                const header = document.getElementById('companyHeader');
+                header.innerHTML = `
+                    <h1 class="company-name">${this.company.name || 'Unknown Company'}</h1>
+                    <div class="company-ticker">${this.company.ticker || 'N/A'}</div>
+                    ${this.company.industry ? `<span class="company-industry">${this.company.industry}</span>` : ''}
+                `;
+            }
+
+            setupButtonListeners() {
+                // Use setTimeout to ensure DOM elements are available
+                setTimeout(() => {
+                    const valueChainBtn = document.getElementById('valueChainBtn');
+                    const investmentSummaryBtn = document.getElementById('investmentSummaryBtn');
+                    const peersComparisonBtn = document.getElementById('peersComparisonBtn');
+                    
+                    if (valueChainBtn) {
+                        valueChainBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.showValueChainAnalysis();
+                        });
+                    }
+                    
+                    if (investmentSummaryBtn) {
+                        investmentSummaryBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.openInvestmentSummary();
+                        });
+                    }
+                    
+                    if (peersComparisonBtn) {
+                        peersComparisonBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.showPeersComparison();
+                        });
+                    }
+                }, 100);
+            }
+
+            renderDetailsGrid() {
+                const grid = document.getElementById('detailsGrid');
+                grid.innerHTML = '';
+
+                // Company Description (if available)
+                if (this.company.business_description) {
+                    grid.appendChild(this.createDescriptionSection());
+                }
+
+                // Basic Information
+                grid.appendChild(this.createBasicInfoSection());
+
+                // Market Data
+                grid.appendChild(this.createMarketDataSection());
+
+                // Financial Metrics
+                grid.appendChild(this.createFinancialMetricsSection());
+
+                // Ratio Analysis
+                grid.appendChild(this.createRatioAnalysisSection());
+
+                // Dividend Information
+                if (this.hasDividendData()) {
+                    grid.appendChild(this.createDividendSection());
+                }
+
+                // Risk Assessment
+                if (this.hasRiskData()) {
+                    grid.appendChild(this.createRiskAssessmentSection());
+                }
+            }
+
+            createDescriptionSection() {
+                const section = this.createDetailSection('Company Description');
+                section.className += ' description-section';
+                section.querySelector('.section-content').innerHTML = `
+                    <p class="description-text">${this.company.business_description}</p>
+                `;
+                return section;
+            }
+
+            createBasicInfoSection() {
+                const section = this.createDetailSection('Basic Information');
+                const content = section.querySelector('.section-content');
+                
+                content.appendChild(this.createFieldRow('IM Code', this.company.im_code));
+                content.appendChild(this.createFieldRow('Sub Industry', this.company.sub_industry));
+                content.appendChild(this.createFieldRow('GICS Industry', this.company.gics_industry));
+                content.appendChild(this.createFieldRow('Currency', this.company.currency));
+                content.appendChild(this.createFieldRow('Last Trade Date', this.formatDate(this.company.last_trade_date)));
+                
+                return section;
+            }
+
+            createMarketDataSection() {
+                const section = this.createDetailSection('Market Data');
+                const content = section.querySelector('.section-content');
+                
+                content.appendChild(this.createFieldRow('Current Price (Local Currency)', this.formatNumber(this.company.price_local_currency, 2)));
+                content.appendChild(this.createFieldRow('Market Cap (Local Currency)', this.formatNumber(this.company.market_cap_local, 0)));
+                content.appendChild(this.createFieldRow('Market Cap (USD Million)', this.formatNumber(this.company.market_cap_usd, 0)));
+                content.appendChild(this.createFieldRow('52-Week High', this.formatNumber(this.company.price_52w_high, 2)));
+                content.appendChild(this.createFieldRow('52-Week Low', this.formatNumber(this.company.price_52w_low, 2)));
+                
+                // Total return with color coding
+                const returnValue = this.company.total_return_2018_to_2025;
+                const returnClass = returnValue > 0 ? 'positive' : returnValue < 0 ? 'negative' : '';
+                content.appendChild(this.createFieldRow('Total Return 2018-2025', 
+                    returnValue ? `${this.formatNumber(returnValue, 2)}%` : '-', returnClass));
+                
+                return section;
+            }
+
+            createFinancialMetricsSection() {
+                const section = this.createDetailSection('Financial Metrics');
+                const content = section.querySelector('.section-content');
+                
+                content.appendChild(this.createFieldRow('Total Revenue (Local Currency)', this.formatNumber(this.company.total_revenue_local, 0)));
+                content.appendChild(this.createFieldRow('LTM Revenue (Local Currency)', this.formatNumber(this.company.ltm_revenue_local, 0)));
+                content.appendChild(this.createFieldRow('Net Profits (FY0)', this.formatNumber(this.company.net_profits_fy0, 0)));
+                content.appendChild(this.createFieldRow('Total Assets (Local Currency)', this.formatNumber(this.company.total_assets_local, 0)));
+                content.appendChild(this.createFieldRow('Total Debt (Local Currency)', this.formatNumber(this.company.total_debt_local, 0)));
+                
+                return section;
+            }
+
+            createRatioAnalysisSection() {
+                const section = this.createDetailSection('Ratio Analysis');
+                const content = section.querySelector('.section-content');
+                
+                content.appendChild(this.createFieldRow('P/E Ratio (TTM)', this.formatNumber(this.company.pe_ratio_trailing, 2)));
+                content.appendChild(this.createFieldRow('PEG Ratio', this.formatNumber(this.company.peg_ratio, 2)));
+                
+                // ROE with color coding
+                const roe = this.company.roe_trailing;
+                const roeClass = roe > 15 ? 'positive' : roe < 5 ? 'negative' : '';
+                content.appendChild(this.createFieldRow('ROE (TTM)', 
+                    roe ? `${this.formatNumber(roe, 2)}%` : '-', roeClass));
+                
+                // ROA with color coding
+                const roa = this.company.roa_trailing;
+                const roaClass = roa > 5 ? 'positive' : roa < 2 ? 'negative' : '';
+                content.appendChild(this.createFieldRow('ROA (TTM)', 
+                    roa ? `${this.formatNumber(roa, 2)}%` : '-', roaClass));
+                
+                // Operating Margin with color coding
+                const opMargin = this.company.operating_margin_trailing;
+                const opMarginClass = opMargin > 10 ? 'positive' : opMargin < 5 ? 'negative' : '';
+                content.appendChild(this.createFieldRow('Operating Margin (TTM)', 
+                    opMargin ? `${this.formatNumber(opMargin, 2)}%` : '-', opMarginClass));
+                
+                // Current Ratio with color coding
+                const currentRatio = this.company.current_ratio;
+                const currentRatioClass = currentRatio > 1.5 ? 'positive' : currentRatio < 1 ? 'negative' : '';
+                content.appendChild(this.createFieldRow('Current Ratio (TTM)', 
+                    this.formatNumber(currentRatio, 2), currentRatioClass));
+                
+                return section;
+            }
+
+            createDividendSection() {
+                const section = this.createDetailSection('Dividend Information');
+                const content = section.querySelector('.section-content');
+                
+                content.appendChild(this.createFieldRow('Dividend Yield (FY0)', 
+                    this.company.dividend_yield_fy0 ? `${this.formatNumber(this.company.dividend_yield_fy0, 2)}%` : '-'));
+                content.appendChild(this.createFieldRow('Dividend Payout Ratio', 
+                    this.company.dividend_payout_ratio ? `${this.formatNumber(this.company.dividend_payout_ratio, 2)}%` : '-'));
+                content.appendChild(this.createFieldRow('Dividend (Local Currency)', this.formatNumber(this.company.dividend_local_currency, 2)));
+                
+                return section;
+            }
+
+            createRiskAssessmentSection() {
+                const section = this.createDetailSection('Risk Assessment');
+                const content = section.querySelector('.section-content');
+                
+                // Altman Z Score Manufacturing with color coding
+                const altmanMfg = this.company.altman_z_score_manufacturing;
+                const altmanMfgClass = altmanMfg > 2.99 ? 'positive' : altmanMfg < 1.81 ? 'negative' : '';
+                content.appendChild(this.createFieldRow('Altman Z Score (Manufacturing)', 
+                    this.formatNumber(altmanMfg, 2), altmanMfgClass));
+                
+                // Altman Z Score Non-Manufacturing with color coding
+                const altmanNonMfg = this.company.altman_z_score_non_manufacturing;
+                const altmanNonMfgClass = altmanNonMfg > 2.6 ? 'positive' : altmanNonMfg < 1.1 ? 'negative' : '';
+                content.appendChild(this.createFieldRow('Altman Z Score (Non-Manufacturing)', 
+                    this.formatNumber(altmanNonMfg, 2), altmanNonMfgClass));
+                
+                // Debt to Total Assets with color coding
+                const debtToAssets = this.company.debt_to_total_assets;
+                const debtToAssetsClass = debtToAssets > 60 ? 'negative' : debtToAssets < 30 ? 'positive' : '';
+                content.appendChild(this.createFieldRow('Debt to Total Assets (FY0)', 
+                    debtToAssets ? `${this.formatNumber(debtToAssets, 2)}%` : '-', debtToAssetsClass));
+                
+                // Interest Coverage Ratio with color coding
+                const interestCoverage = this.company.interest_coverage_ratio;
+                const interestCoverageClass = interestCoverage > 5 ? 'positive' : interestCoverage < 2 ? 'negative' : '';
+                content.appendChild(this.createFieldRow('Interest Coverage Ratio (FY0)', 
+                    this.formatNumber(interestCoverage, 2), interestCoverageClass));
+                
+                return section;
+            }
+
+            createDetailSection(title) {
+                const section = document.createElement('div');
+                section.className = 'detail-section';
+                section.innerHTML = `
+                    <div class="section-header">${title}</div>
+                    <div class="section-content"></div>
+                `;
+                return section;
+            }
+
+            createFieldRow(label, value, valueClass = '') {
+                const row = document.createElement('div');
+                row.className = 'field-row';
+                
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'field-label';
+                labelSpan.textContent = label;
+                
+                const valueSpan = document.createElement('span');
+                valueSpan.className = `field-value ${valueClass}`;
+                valueSpan.textContent = value || '-';
+                
+                row.appendChild(labelSpan);
+                row.appendChild(valueSpan);
+                
+                return row;
+            }
+
+            hasRiskData() {
+                return this.company.altman_z_score_manufacturing || 
+                       this.company.altman_z_score_non_manufacturing ||
+                       this.company.debt_to_total_assets ||
+                       this.company.interest_coverage_ratio;
+            }
+
+            hasDividendData() {
+                return this.company.dividend_yield_fy0 || 
+                       this.company.dividend_payout_ratio ||
+                       this.company.dividend_local_currency;
+            }
+
+            formatNumber(value, decimals = 0) {
+                if (value === null || value === undefined || value === '') {
+                    return '-';
+                }
+                
+                const num = parseFloat(value);
+                if (isNaN(num)) {
+                    return '-';
+                }
+                
+                return num.toLocaleString(undefined, {
+                    minimumFractionDigits: decimals,
+                    maximumFractionDigits: decimals
+                });
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return '-';
+                
+                try {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString();
+                } catch (error) {
+                    return dateString;
+                }
+            }
+
+            showLoading() {
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('companyContent').style.display = 'none';
+                this.hideError();
+            }
+
+            showContent() {
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('companyContent').style.display = 'block';
+            }
+
+            showError(message) {
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('companyContent').style.display = 'none';
+            }
+
+            hideError() {
+                document.getElementById('errorMessage').style.display = 'none';
+            }
+
+            // Value Chain Analysis Modal
+            showValueChainAnalysis() {
+                const content = this.modalManager.generateValueChainContent();
+                document.getElementById('valueChainContent').innerHTML = content;
+                this.openModal('valueChainModal');
+            }
+
+            // Industry Peers Comparison Modal
+            showPeersComparison() {
+                const content = this.modalManager.generatePeersComparisonContent();
+                document.getElementById('peersComparisonContent').innerHTML = content;
+                this.openModal('peersComparisonModal');
+            }
+
+            // Modal management methods
+            openModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+
+            closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            openValueChainDetail(industry) {
+                // Map different industries to their corresponding detail pages
+                let targetIndustry = 'energy'; // Default to energy
+                
+                if (industry) {
+                    const industryLower = industry.toLowerCase();
+                    
+                    if (industryLower.includes('energy')) {
+                        targetIndustry = 'energy';
+                    } else if (industryLower.includes('supporting') && industryLower.includes('technolog')) {
+                        targetIndustry = 'supporting-technology';
+                    } else if (industryLower.includes('technology') || industryLower.includes('tech')) {
+                        targetIndustry = 'supporting-technology';
+                    }
+                    // Add more industry mappings here in the future
+                }
+                
+                console.log(`Industry: "${industry}" -> Target: "${targetIndustry}"`);
+                
+                // Navigate directly to the value chain detail page with company context
+                const companyName = this.company ? this.company.name : 'Unknown Company';
+                const companyId = this.companyId;
+                window.location.href = `value-chain/${targetIndustry}/detail.html?company=${encodeURIComponent(companyName)}&id=${companyId}`;
+            }
+
+            openInvestmentSummary() {
+                // Navigate to investment summary page with company context
+                const companyName = this.company ? this.company.name : 'Unknown Company';
+                const companyId = this.companyId;
+                window.location.href = `investment-summary/detail.html?company=${encodeURIComponent(companyName)}&id=${companyId}`;
+            }
+        }
+
+
+        // Close modal when clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const activeModal = document.querySelector('.modal-overlay.active');
+                if (activeModal) {
+                    activeModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+        });
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new CSI300DetailApp();
+        });
+    </script>
+</body>
+</html>
