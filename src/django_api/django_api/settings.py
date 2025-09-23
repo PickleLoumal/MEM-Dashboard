@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'bea',
     'indicators',
     'content',
+    'csi300',     # CSI300 companies data
 ]
 
 MIDDLEWARE = [

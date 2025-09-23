@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>CSI300 Company Browser - Standalone Application</title>
+    
+    <!-- Build configuration metadata -->
+    <meta name="build-timestamp" content="2025-Sep">
+    <meta name="application-id" content="CSI300 Dashboard">
+    <meta name="schema-version" content="1.0.0">
+    
+    <!-- Framework and styling imports -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Application Configuration -->
+    <script src="config/csi300_api_config.js"></script>
+    <script src="assets/js/utils/csi300_api_client.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .filter-section {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .filter-grid {
+            display: grid;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        
+        .filter-input, .filter-select {
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #1d1e1f;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2a2a2c;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .results-section {
+            background: white !important;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        
+        .results-header {
+            background: #f8f9fa !important;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .results-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .results-count {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        
+        .company-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white !important;
+        }
+        
+        .mobile-company-list {
+            display: none;
+        }
+        
+        .company-table th {
+            background: #f8f9fa !important;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 13px;
+        }
+        
+        .company-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 14px;
+            background: white !important;
+        }
+        
+        .company-table tr {
+            transition: background-color 0.2s ease;
+        }
+        
+        .clickable-row {
+            cursor: pointer;
+        }
+        
+        .company-table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .clickable-row:hover {
+            background: #eff6ff !important;
+        }
+        
+        .company-name {
+            font-weight: 500;
+            color: #111827;
+        }
+        
+        .company-ticker {
+            font-family: monospace;
+            color: #6b7280;
+            font-size: 13px;
+        }
+        
+        .market-cap {
+            text-align: right;
+            font-weight: 500;
+        }
+        
+        .price {
+            text-align: right;
+            color: #059669;
+        }
+        
+        .pe-ratio {
+            text-align: right;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 48px 24px;
+            color: #6b7280;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 8px 0;
+        }
+        
+        .page-subtitle {
+            font-size: 16px;
+            color: #6b7280;
+            margin: 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 48px;
+            color: #6b7280;
+        }
+        
+        .error {
+            color: #dc2626;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+
+        /* Mobile hide columns */
+        .mobile-hide {
+            display: table-cell;
+        }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+            
+            .page-title {
+                font-size: 24px;
+                margin-bottom: 12px;
+            }
+            
+            .filter-section {
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .filter-actions {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .btn {
+                width: 100%;
+                text-align: center;
+                font-size: 14px;
+            }
+            
+            .results-section {
+                overflow-x: auto;
+            }
+            
+            .mobile-hide {
+                display: none !important;
+            }
+            
+            /* Mobile card layout */
+            .company-table {
+                display: none;
+            }
+            
+            .mobile-company-list {
+                display: block;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .mobile-company-card {
+                background: white;
+                border-bottom: 1px solid #e5e7eb;
+                padding: 16px 16px;
+                cursor: pointer;
+            }
+            
+            .mobile-company-card:last-child {
+                border-bottom: none;
+            }
+            
+            .mobile-company-card:hover {
+                background: #f9fafb;
+            }
+            
+            .mobile-company-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 12px;
+            }
+            
+            .mobile-company-name {
+                font-size: 16px;
+                font-weight: 600;
+                color: #111827;
+                line-height: 1.3;
+                flex: 1;
+                margin-right: 12px;
+            }
+            
+            .mobile-company-ticker {
+                font-size: 14px;
+                font-weight: 600;
+                color: #909296;
+                background: #f3f4f6;
+                padding: 4px 8px;
+                border-radius: 4px;
+                white-space: nowrap;
+            }
+            
+            .mobile-company-details {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                font-size: 14px;
+            }
+            
+            .mobile-company-detail {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .mobile-company-detail-label {
+                font-size: 12px;
+                color: #6b7280;
+                font-weight: 500;
+                margin-bottom: 2px;
+            }
+            
+            .mobile-company-detail-value {
+                font-size: 14px;
+                color: #111827;
+                font-weight: 400;
+            }
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px;
+            padding: 16px;
+        }
+        
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            background: #f3f4f6;
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination .current-page {
+            background: #1d1e1f;
+            color: white;
+            border-color: #1d1e1f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">CSI300 Search Results</h1>
+            <p class="page-subtitle">
+                <a href="index.html" style="color: #1d1e1f; text-decoration: none;">← Back to Filter</a>
+            </p>
+        </div>
+        
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        
+        <form id="filterForm" class="filter-section">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label class="filter-label">IM Code</label>
+                    <select name="im_code" id="imCodeSelect" class="filter-select">
+                        <option value="">All IM Codes</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Industry</label>
+                    <select name="industry" id="industrySelect" class="filter-select">
+                        <option value="">All Industries</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Market Cap Range (USD Million)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <input type="number" name="market_cap_min" id="marketCapMin" 
+                               class="filter-input" placeholder="Min">
+                        <input type="number" name="market_cap_max" id="marketCapMax" 
+                               class="filter-input" placeholder="Max">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="button" id="clearFiltersBtn" class="btn btn-secondary">Clear Filters</button>
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+            </div>
+        </form>
+        
+        <div class="results-section">
+            <div class="results-header">
+                <h2 class="results-title">Search Results</h2>
+                <p class="results-count" id="resultsCount">Loading...</p>
+            </div>
+            
+            <div id="loadingIndicator" class="loading">
+                <p>Loading companies...</p>
+            </div>
+            
+            <div id="resultsContainer" style="display: none;">
+                <!-- Desktop table view -->
+                <table class="company-table" id="companyTable">
+                    <thead>
+                        <tr>
+                            <th>Company Name</th>
+                            <th>Ticker</th>
+                            <th>IM Code</th>
+                            <th>Industry</th>
+                            <th class="mobile-hide">Market Cap (USD Million)</th>
+                            <th class="mobile-hide">Price (Local Currency)</th>
+                            <th class="mobile-hide">P/E Ratio</th>
+                        </tr>
+                    </thead>
+                    <tbody id="companyTableBody">
+                    </tbody>
+                </table>
+                
+                <!-- Mobile card view -->
+                <div class="mobile-company-list" id="mobileCompanyList">
+                </div>
+                
+                <!-- Pagination -->
+                <div class="pagination" id="pagination">
+                </div>
+            </div>
+            
+            <div id="noResults" class="no-results" style="display: none;">
+                <p>No companies found matching the criteria</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CSI300BrowserApp {
+            constructor() {
+                this.apiClient = window.csi300ApiClient;
+                this.currentFilters = {};
+                this.currentPage = 1;
+                this.pageSize = 20;
+                this.totalResults = 0;
+                this.companies = [];
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.loadFilterOptions();
+                    this.parseUrlFilters();
+                    this.bindEvents();
+                    await this.loadCompanies();
+                } catch (error) {
+                    this.showError('Failed to initialize application: ' + error.message);
+                }
+            }
+
+            async loadFilterOptions() {
+                try {
+                    const data = await this.apiClient.getFilterOptions();
+                    
+                    // Populate IM codes
+                    const imCodeSelect = document.getElementById('imCodeSelect');
+                    data.im_codes.forEach(code => {
+                        if (code) {
+                            const option = document.createElement('option');
+                            option.value = code;
+                            option.textContent = code;
+                            imCodeSelect.appendChild(option);
+                        }
+                    });
+                    
+                    // Populate industries
+                    const industrySelect = document.getElementById('industrySelect');
+                    data.industries.forEach(industry => {
+                        if (industry) {
+                            const option = document.createElement('option');
+                            option.value = industry;
+                            option.textContent = industry;
+                            industrySelect.appendChild(option);
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.error('Failed to load filter options:', error);
+                }
+            }
+
+            parseUrlFilters() {
+                const urlParams = new URLSearchParams(window.location.search);
+                this.currentFilters = {};
+                
+                // Extract filters from URL
+                for (const [key, value] of urlParams.entries()) {
+                    if (value.trim()) {
+                        this.currentFilters[key] = value.trim();
+                    }
+                }
+                
+                // Set form values
+                Object.entries(this.currentFilters).forEach(([key, value]) => {
+                    const element = document.querySelector(`[name="${key}"]`);
+                    if (element) {
+                        element.value = value;
+                    }
+                });
+            }
+
+            bindEvents() {
+                // Form submission
+                document.getElementById('filterForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.applyFilters();
+                });
+
+                // Clear filters button
+                document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+                    this.clearFilters();
+                });
+            }
+
+            async loadCompanies() {
+                try {
+                    this.showLoading();
+                    
+                    const filters = {
+                        ...this.currentFilters,
+                        page_size: this.pageSize,
+                        page: this.currentPage
+                    };
+                    
+                    console.log('Loading companies with filters:', filters);
+                    const response = await this.apiClient.getCompanies(filters);
+                    console.log('API response:', response);
+                    
+                    // Handle Django REST framework paginated response
+                    if (response && typeof response === 'object') {
+                        if (response.results && Array.isArray(response.results)) {
+                            // DRF paginated response format
+                            this.companies = response.results;
+                            this.totalResults = response.count || 0;
+                        } else if (Array.isArray(response)) {
+                            // Direct array response (fallback)
+                            this.companies = response;
+                            this.totalResults = response.length;
+                        } else {
+                            console.error('Unexpected response format:', response);
+                            throw new Error('Unexpected response format from API');
+                        }
+                    } else {
+                        throw new Error('Invalid response from API');
+                    }
+                    
+                    console.log(`Loaded ${this.companies.length} companies for page ${this.currentPage}`);
+                    
+                    this.renderResults();
+                    this.renderPagination();
+                    
+                } catch (error) {
+                    console.error('Load companies error:', error);
+                    this.showError('Failed to load companies: ' + error.message);
+                }
+            }
+
+            renderResults() {
+                if (this.companies.length === 0) {
+                    this.showNoResults();
+                    return;
+                }
+
+                // Update results count
+                document.getElementById('resultsCount').textContent = 
+                    `Found ${this.totalResults} companies`;
+
+                // Render desktop table
+                this.renderDesktopTable();
+                
+                // Render mobile cards
+                this.renderMobileCards();
+                
+                this.showResults();
+            }
+
+            renderDesktopTable() {
+                const tbody = document.getElementById('companyTableBody');
+                tbody.innerHTML = '';
+                
+                this.companies.forEach(company => {
+                    const row = document.createElement('tr');
+                    row.className = 'clickable-row';
+                    row.setAttribute('data-company-id', company.id);
+                    row.addEventListener('click', () => this.openCompanyDetail(company.id));
+                    
+                    row.innerHTML = `
+                        <td class="company-name">${company.name || '-'}</td>
+                        <td class="company-ticker">${company.ticker || '-'}</td>
+                        <td>${company.im_code || '-'}</td>
+                        <td>${company.industry || '-'}</td>
+                        <td class="market-cap mobile-hide">
+                            ${company.market_cap_usd ? Math.floor(company.market_cap_usd).toLocaleString() : '-'}
+                        </td>
+                        <td class="price mobile-hide">
+                            ${company.price_local_currency ? parseFloat(company.price_local_currency).toFixed(2) : '-'}
+                        </td>
+                        <td class="pe-ratio mobile-hide">
+                            ${company.pe_ratio_trailing ? parseFloat(company.pe_ratio_trailing).toFixed(1) : '-'}
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+            }
+
+            renderMobileCards() {
+                const container = document.getElementById('mobileCompanyList');
+                container.innerHTML = '';
+                
+                this.companies.forEach(company => {
+                    const card = document.createElement('div');
+                    card.className = 'mobile-company-card';
+                    card.setAttribute('data-company-id', company.id);
+                    card.addEventListener('click', () => this.openCompanyDetail(company.id));
+                    
+                    card.innerHTML = `
+                        <div class="mobile-company-header">
+                            <div class="mobile-company-name">${company.name || '-'}</div>
+                            <div class="mobile-company-ticker">${company.ticker || '-'}</div>
+                        </div>
+                        <div class="mobile-company-details">
+                            <div class="mobile-company-detail">
+                                <div class="mobile-company-detail-label">IM Code</div>
+                                <div class="mobile-company-detail-value">${company.im_code || '-'}</div>
+                            </div>
+                            <div class="mobile-company-detail">
+                                <div class="mobile-company-detail-label">Industry</div>
+                                <div class="mobile-company-detail-value">${company.industry || '-'}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            }
+
+            renderPagination() {
+                if (this.totalResults <= this.pageSize) {
+                    document.getElementById('pagination').style.display = 'none';
+                    return;
+                }
+
+                const totalPages = Math.ceil(this.totalResults / this.pageSize);
+                const pagination = document.getElementById('pagination');
+                pagination.innerHTML = '';
+                pagination.style.display = 'flex';
+
+                // Previous button
+                const prevBtn = document.createElement('button');
+                prevBtn.textContent = '← Previous';
+                prevBtn.disabled = this.currentPage === 1;
+                prevBtn.addEventListener('click', () => this.goToPage(this.currentPage - 1));
+                pagination.appendChild(prevBtn);
+
+                // Page numbers
+                const maxPagesToShow = 5;
+                let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
+                let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+                if (endPage - startPage + 1 < maxPagesToShow) {
+                    startPage = Math.max(1, endPage - maxPagesToShow + 1);
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.textContent = i;
+                    pageBtn.className = i === this.currentPage ? 'current-page' : '';
+                    pageBtn.addEventListener('click', () => this.goToPage(i));
+                    pagination.appendChild(pageBtn);
+                }
+
+                // Next button
+                const nextBtn = document.createElement('button');
+                nextBtn.textContent = 'Next →';
+                nextBtn.disabled = this.currentPage === totalPages;
+                nextBtn.addEventListener('click', () => this.goToPage(this.currentPage + 1));
+                pagination.appendChild(nextBtn);
+            }
+
+            async goToPage(page) {
+                if (page < 1 || page > Math.ceil(this.totalResults / this.pageSize)) {
+                    return;
+                }
+                
+                console.log(`Navigating to page ${page}`);
+                this.currentPage = page;
+                
+                // Clear cache for pagination to ensure fresh data
+                if (this.apiClient && this.apiClient.clearCache) {
+                    this.apiClient.clearCache();
+                }
+                
+                await this.loadCompanies();
+            }
+
+            applyFilters() {
+                const formData = new FormData(document.getElementById('filterForm'));
+                const filters = {};
+                
+                for (const [key, value] of formData.entries()) {
+                    if (value.trim()) {
+                        filters[key] = value.trim();
+                    }
+                }
+                
+                this.currentFilters = filters;
+                this.currentPage = 1; // Reset to first page
+                this.loadCompanies();
+                
+                // Update URL
+                const queryParams = new URLSearchParams(filters);
+                window.history.pushState({}, '', `browser.html?${queryParams.toString()}`);
+            }
+
+            clearFilters() {
+                document.getElementById('filterForm').reset();
+                this.currentFilters = {};
+                this.currentPage = 1;
+                this.loadCompanies();
+                
+                // Update URL
+                window.history.pushState({}, '', 'browser.html');
+            }
+
+            openCompanyDetail(companyId) {
+                window.location.href = `detail.html?id=${companyId}`;
+            }
+
+            showLoading() {
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('resultsContainer').style.display = 'none';
+                document.getElementById('noResults').style.display = 'none';
+                this.hideError();
+            }
+
+            showResults() {
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('resultsContainer').style.display = 'block';
+                document.getElementById('noResults').style.display = 'none';
+            }
+
+            showNoResults() {
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('resultsContainer').style.display = 'none';
+                document.getElementById('noResults').style.display = 'block';
+                document.getElementById('resultsCount').textContent = 'Found 0 companies';
+            }
+
+            showError(message) {
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+
+            hideError() {
+                document.getElementById('errorMessage').style.display = 'none';
+            }
+        }
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new CSI300BrowserApp();
+        });
+    </script>
+</body>
+</html>
+

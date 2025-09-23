@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supporting Technology Industry Value Chain Analysis - CSI300 Platform</title>
+    
+    <!-- Framework and styling imports -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../src/assets/css/base/main.css">
+    <link rel="stylesheet" href="../assets/value-chain.css">
+</head>
+<body>
+    
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <div class="breadcrumb">
+            <a href="../../index.html">CSI300 Filter</a>
+            <span class="breadcrumb-separator">></span>
+            <a href="../../browser.html">Browse Results</a>
+            <span class="breadcrumb-separator">></span>
+            <a href="#" class="breadcrumb-company-link" id="breadcrumbCompany">Loading...</a>
+            <span class="breadcrumb-separator">></span>
+            <span class="breadcrumb-current">Value Chain Analysis</span>
+        </div>
+        
+        <!-- Global back navigation will be handled by hover area -->
+        
+        <!-- Header -->
+        <div class="value-chain-header">
+            <h1>Supporting Technology Industry Value Chain Analysis</h1>
+            <div class="company-name-link" id="companyNameLink" style="display: none;">
+                <span class="company-name-clickable" id="clickableCompanyName"></span>
+            </div>
+            <p>Comprehensive analysis of the supporting technologies sector from upstream to end customers</p>
+            <div class="value-chain-header-stats">
+                <span class="value-chain-status-badge value-chain-status-available">30 Sub-Industries</span>
+                <span class="value-chain-status-badge value-chain-status-available">5 Value Chain Stages</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <!-- Industry Overview -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Supporting Technology Industry Overview</h2>
+            <p class="text-gray-600 mb-6 text-lg leading-relaxed">
+                The Supporting Technologies industry encompasses a wide range of sectors that provide essential tools, 
+                services, and innovations to enhance the efficiency, productivity, and competitiveness of various other 
+                industries. This includes advancements in information technology, automation, artificial intelligence, 
+                and specialized equipment that facilitate operations across multiple sectors.
+            </p>
+        </div>
+
+        <!-- Value Chain Stages -->
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Value Chain Stages</h2>
+        <div class="value-chain-grid">
+            
+            <!-- Upstream Stage -->
+            <div class="value-chain-stage-card">
+                <div class="value-chain-stage-header value-chain-stage-upstream">
+                    <h3>Upstream</h3>
+                </div>
+                <div class="value-chain-stage-content">
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Raw Materials</div>
+                            <div class="value-chain-sub-item-description">Basic materials such as metals, plastics, and composites used in the production of technological components.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Raw Materials</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Semiconductors</div>
+                            <div class="value-chain-sub-item-description">Essential electronic components that serve as the foundation for most modern electronic devices.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Raw Materials</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Specialized Chemicals</div>
+                            <div class="value-chain-sub-item-description">Chemicals used in the manufacturing of electronic components, including semiconductors and display panels.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Raw Materials</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Gases and Liquids</div>
+                            <div class="value-chain-sub-item-description">Industrial gases and liquids used in various manufacturing processes, such as cooling and cleaning.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Consumables</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Machinery and Equipment</div>
+                            <div class="value-chain-sub-item-description">Heavy machinery and specialized equipment used in the production of technological components.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Equipment</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Fuel and Energy</div>
+                            <div class="value-chain-sub-item-description">Energy sources required for manufacturing processes, including electricity and industrial fuels.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Fuel</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Construction Services</div>
+                            <div class="value-chain-sub-item-description">Contractors and construction companies involved in building manufacturing plants and facilities.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Contractors and Construction Companies</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Components and Parts</div>
+                            <div class="value-chain-sub-item-description">Semi-finished products and components that are assembled into final technological products.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Semi-Finished Products and Components</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Midstream Stage -->
+            <div class="value-chain-stage-card">
+                <div class="value-chain-stage-header value-chain-stage-midstream">
+                    <h3>Midstream</h3>
+                </div>
+                <div class="value-chain-stage-content">
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Design and Engineering</div>
+                            <div class="value-chain-sub-item-description">The process of conceptualizing and designing technological products and systems.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Design and Engineering</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Prototyping</div>
+                            <div class="value-chain-sub-item-description">Creating preliminary models of products to test and refine designs before mass production.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Prototyping</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Manufacturing</div>
+                            <div class="value-chain-sub-item-description">The actual production of technological components and products through various processes.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Manufacturing</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Assembly</div>
+                            <div class="value-chain-sub-item-description">Combining individual components into finished technological products.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Assembly</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Testing and Quality Control</div>
+                            <div class="value-chain-sub-item-description">Ensuring products meet required standards and specifications through rigorous testing.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Testing and Quality Control</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Packaging</div>
+                            <div class="value-chain-sub-item-description">Preparing products for distribution by packaging them appropriately.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Packaging</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products/Services Stage -->
+            <div class="value-chain-stage-card">
+                <div class="value-chain-stage-header value-chain-stage-products">
+                    <h3>Products & Services</h3>
+                </div>
+                <div class="value-chain-stage-content">
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Information Technology Solutions</div>
+                            <div class="value-chain-sub-item-description">Software and hardware products that support data management, communication, and processing.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Software and Hardware</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Automation Systems</div>
+                            <div class="value-chain-sub-item-description">Technologies that automate manufacturing and operational processes to increase efficiency.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Automation</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Artificial Intelligence Applications</div>
+                            <div class="value-chain-sub-item-description">AI-driven solutions that enhance decision-making, predictive analytics, and process optimization.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Artificial Intelligence</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Telecommunications Equipment</div>
+                            <div class="value-chain-sub-item-description">Devices and infrastructure that enable communication networks, including routers and fiber optics.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Telecommunications</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Consumer Electronics</div>
+                            <div class="value-chain-sub-item-description">End-user devices such as smartphones, tablets, and wearable technology.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Consumer Electronics</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Industrial Equipment</div>
+                            <div class="value-chain-sub-item-description">Machinery and tools used in various industries, including robotics and CNC machines.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Industrial Equipment</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Distribution Stage -->
+            <div class="value-chain-stage-card">
+                <div class="value-chain-stage-header value-chain-stage-distribution">
+                    <h3>Distribution</h3>
+                </div>
+                <div class="value-chain-stage-content">
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Distributors</div>
+                            <div class="value-chain-sub-item-description">Companies that purchase products from manufacturers and sell them to retailers or end-users.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Distributors</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Value-Added Resellers (VARs)</div>
+                            <div class="value-chain-sub-item-description">Businesses that add features or services to existing products and resell them as enhanced products.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Value-Added Resellers</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Retailers</div>
+                            <div class="value-chain-sub-item-description">Businesses that sell products directly to consumers, including online and brick-and-mortar stores.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Retailers</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Wholesalers</div>
+                            <div class="value-chain-sub-item-description">Intermediaries that purchase large quantities of products from manufacturers and sell them in smaller quantities to retailers.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Wholesalers</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Logistics Companies</div>
+                            <div class="value-chain-sub-item-description">Firms that manage the transportation, warehousing, and distribution of products.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Logistics Companies</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Stage -->
+            <div class="value-chain-stage-card">
+                <div class="value-chain-stage-header value-chain-stage-customers">
+                    <h3>End Customers</h3>
+                </div>
+                <div class="value-chain-stage-content">
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Manufacturing Industries</div>
+                            <div class="value-chain-sub-item-description">Companies that utilize supporting technologies to enhance their production processes.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Manufacturing Industries</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Service Providers</div>
+                            <div class="value-chain-sub-item-description">Businesses in sectors like healthcare, finance, and education that rely on technology for operations.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Service Providers</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Government Agencies</div>
+                            <div class="value-chain-sub-item-description">Public sector organizations that implement supporting technologies for various functions.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Government Agencies</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Consumers</div>
+                            <div class="value-chain-sub-item-description">Individuals who use consumer electronics and other technological products in daily life.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-primary">Consumers</div>
+                    </div>
+                    
+                    <div class="value-chain-sub-item">
+                        <div class="value-chain-sub-item-content">
+                            <div class="value-chain-sub-item-title">Retailers and Wholesalers</div>
+                            <div class="value-chain-sub-item-description">Businesses that purchase supporting technologies for resale or internal use.</div>
+                        </div>
+                        <div class="value-chain-badge value-chain-badge-secondary">Retailers and Wholesalers</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Key Insights Section -->
+        <div class="value-chain-info-section">
+            <div class="value-chain-info-header">
+                Key Industry Insights
+            </div>
+            <div class="value-chain-info-content">
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Market Dynamics</h4>
+                        <p class="text-gray-600 text-sm">
+                            The supporting technologies industry is experiencing rapid growth driven by digital transformation, 
+                            Industry 4.0 initiatives, and increasing demand for automation and AI-powered solutions across all sectors.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Value Creation Opportunities</h4>
+                        <p class="text-gray-600 text-sm">
+                            Key opportunities exist in artificial intelligence and machine learning, IoT and edge computing, 
+                            cybersecurity solutions, cloud infrastructure, and sustainable technology innovations.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Industry Challenges</h4>
+                        <p class="text-gray-600 text-sm">
+                            Major challenges include rapid technological obsolescence, cybersecurity threats, talent shortage 
+                            in specialized skills, supply chain disruptions, and the need for continuous R&D investment.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Handle URL parameters and update breadcrumb
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const companyName = urlParams.get('company');
+            const companyId = urlParams.get('id');
+            
+            // Update breadcrumb with company name
+            const breadcrumbCompany = document.getElementById('breadcrumbCompany');
+            if (companyName) {
+                breadcrumbCompany.textContent = companyName;
+                
+                // Update page title
+                document.title = `${companyName} - Value Chain Analysis`;
+                
+                // Add click event listener to breadcrumb company name
+                breadcrumbCompany.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (companyId) {
+                        window.location.href = `../../detail.html?id=${companyId}`;
+                    } else {
+                        window.history.back();
+                    }
+                });
+                
+                // Setup clickable company name in header
+                const companyNameLink = document.getElementById('companyNameLink');
+                const clickableCompanyName = document.getElementById('clickableCompanyName');
+                if (companyNameLink && clickableCompanyName) {
+                    clickableCompanyName.textContent = companyName;
+                    companyNameLink.style.display = 'block';
+                    
+                    // Add click event listener
+                    clickableCompanyName.addEventListener('click', function() {
+                        if (companyId) {
+                            window.location.href = `../../detail.html?id=${companyId}`;
+                        } else {
+                            window.history.back();
+                        }
+                    });
+                }
+            } else {
+                // Fallback if no company name provided
+                breadcrumbCompany.textContent = 'Company Details';
+            }
+            
+            console.log('Supporting Technology Industry Value Chain Analysis loaded');
+        });
+    </script>
+</body>
+</html>

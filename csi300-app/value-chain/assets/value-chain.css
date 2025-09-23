@@ -1,0 +1,450 @@
+/* Value Chain Analysis - Clean Professional Styles */
+/* Trading Economics Inspired Design */
+
+/* Import MEM Dashboard base styles */
+@import url('../../../src/assets/css/base/main.css');
+
+/* Base styles - consistent with company detail page */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f8f9fa;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333333;
+}
+
+
+/* Container - consistent with company detail page */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header styles - consistent with company detail page */
+.value-chain-header {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 32px;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.value-chain-header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+}
+
+.value-chain-header p {
+    font-size: 18px;
+    color: #6b7280;
+    margin-bottom: 16px;
+}
+
+/* Clickable Company Name */
+.company-name-link {
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+.company-name-clickable {
+    font-size: 18px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 6px;
+    background: transparent;
+}
+
+.company-name-clickable:hover {
+    color: #374151;
+}
+
+/* Statistics badges in header */
+.value-chain-header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+/* Breadcrumb Navigation */
+.breadcrumb {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #6b7280;
+    background-color: transparent !important;
+    padding: 0 !important;
+    border-bottom: none !important;
+}
+
+.breadcrumb a {
+    color: #6b7280;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* Company name link in breadcrumb - consistent with Browse Results style */
+.breadcrumb-company-link {
+    color: #6b7280 !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.breadcrumb-company-link:hover {
+    text-decoration: underline !important;
+    color: #374151 !important;
+}
+
+.breadcrumb-separator {
+    color: #6b7280;
+    margin: 0 4px;
+    font-weight: 600;
+}
+
+.breadcrumb-current {
+    color: #1f2937;
+    font-weight: 700;
+}
+
+/* Back button styles removed - now using global back navigation */
+
+/* Content container - now using unified .container class */
+
+/* Responsive design - consistent with company detail page */
+@media (max-width: 768px) {
+    .container {
+        padding: 12px;
+    }
+    
+    .value-chain-header {
+        padding: 20px 16px;
+    }
+    
+    .value-chain-header h1 {
+        font-size: 24px;
+    }
+    
+    .breadcrumb {
+        font-size: 12px;
+        gap: 6px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .breadcrumb-separator {
+        margin: 0 2px;
+    }
+    
+    .value-chain-sub-item {
+        padding: 14px 0;
+    }
+    
+    .value-chain-sub-item-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+    
+    .value-chain-sub-item-description {
+        font-size: 13px;
+        text-align: left;
+        min-width: auto;
+        line-height: 1.5;
+        margin-bottom: 8px;
+    }
+    
+    .value-chain-stage-header {
+        font-size: 15px;
+    }
+    
+    .value-chain-stage-header h3 {
+        font-size: 15px;
+    }
+}
+
+/* Industry cards - clean and minimal */
+.value-chain-industry-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.value-chain-industry-card:hover {
+    border-color: #d1d5db;
+}
+
+/* Industry card header - uniform styling */
+.value-chain-industry-header {
+    background: #f8f9fa;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 16px;
+}
+
+/* Industry card body */
+.value-chain-industry-body {
+    padding: 20px;
+}
+
+/* Status badges - pill shape design */
+.value-chain-status-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+.value-chain-status-available {
+    background-color: #f0f9ff;
+    color: #0369a1;
+    border: 1px solid #e0f2fe;
+}
+
+.value-chain-status-coming-soon {
+    background-color: #fafafa;
+    color: #525252;
+    border: 1px solid #e5e5e5;
+}
+
+/* Stage cards for detail pages - clean design optimized for columns */
+.value-chain-stage-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+}
+
+.value-chain-stage-card:hover {
+    border-color: #d1d5db;
+}
+
+/* Stage headers - consistent with company detail page */
+.value-chain-stage-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 16px;
+    background: #f8f9fa;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.value-chain-stage-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Remove all gradient backgrounds and use uniform styling */
+.value-chain-stage-upstream,
+.value-chain-stage-midstream,
+.value-chain-stage-products,
+.value-chain-stage-distribution,
+.value-chain-stage-customers {
+    background: #f8f9fa;
+    color: #1f2937;
+}
+
+/* Stage content - optimized for column layout */
+.value-chain-stage-content {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Sub-items - optimized layout with better spacing and typography */
+.value-chain-sub-item {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+}
+
+.value-chain-sub-item:last-child {
+    border-bottom: none;
+}
+
+.value-chain-sub-item-content {
+    flex: 1;
+    margin-bottom: 8px;
+}
+
+.value-chain-sub-item-title {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    font-size: 15px;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    flex: 1;
+}
+
+.value-chain-sub-item-description {
+    font-weight: 400;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+/* Badges - pill shape design optimized for columns */
+.value-chain-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 18px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    align-self: flex-start;
+    margin-top: 0;
+}
+
+.value-chain-badge-primary {
+    background-color: #f0f9ff;
+    color: #0369a1;
+    border: 1px solid #e0f2fe;
+}
+
+.value-chain-badge-secondary {
+    background-color: #fafafa;
+    color: #525252;
+    border: 1px solid #e5e5e5;
+}
+
+.value-chain-badge-warning {
+    background-color: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fed7aa;
+}
+
+/* Information sections - clean design */
+.value-chain-info-section {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.value-chain-info-header {
+    background: #f8f9fa;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 16px;
+}
+
+.value-chain-info-content {
+    padding: 20px;
+}
+
+/* Grid layouts - horizontal columns for value chain stages */
+.value-chain-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+/* Alternative horizontal layout for larger screens */
+@media (min-width: 1200px) {
+    .value-chain-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+    .value-chain-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    .value-chain-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .value-chain-container {
+        padding: 0 1rem;
+    }
+    
+    .value-chain-header {
+        padding: 1rem 0;
+    }
+    
+    .value-chain-grid {
+        gap: 8px;
+    }
+    
+    .value-chain-sub-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .value-chain-badge {
+        margin-left: 0;
+        margin-top: 4px;
+    }
+}
+
+/* Focus states for accessibility */
+.value-chain-industry-card:focus,
+.value-chain-back-button:focus {
+    outline: 2px solid #0369a1;
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    .value-chain-header {
+        background: #ffffff !important;
+        color: #333333 !important;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+    }
+    
+    .value-chain-industry-card,
+    .value-chain-stage-card,
+    .value-chain-info-section {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
