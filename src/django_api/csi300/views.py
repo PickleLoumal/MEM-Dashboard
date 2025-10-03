@@ -45,12 +45,18 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         market_cap_min = self.request.query_params.get('market_cap_min')
         market_cap_max = self.request.query_params.get('market_cap_max')
         search = self.request.query_params.get('search')
+        industry_search = self.request.query_params.get('industry_search')
+        
+        # Debug logging
+        print(f"Filtering with: im_sector='{im_sector}', industry='{industry}', industry_search='{industry_search}'")
         
         if im_sector:
-            queryset = queryset.filter(im_sector__icontains=im_sector)
+            queryset = queryset.filter(im_sector__exact=im_sector)
+            print(f"After IM Sector filter: {queryset.count()} companies")
         
         if industry:
-            queryset = queryset.filter(industry__icontains=industry)
+            queryset = queryset.filter(industry__exact=industry)
+            print(f"After Industry filter: {queryset.count()} companies")
             
         if gics_industry:
             queryset = queryset.filter(gics_industry__icontains=gics_industry)
@@ -74,35 +80,55 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
                 Q(naming__icontains=search)
             )
         
+        if industry_search:
+            queryset = queryset.filter(
+                Q(industry__icontains=industry_search)
+            )
+            print(f"After Industry search filter: {queryset.count()} companies")
+        
         return queryset.order_by('ticker')
     
     @action(detail=False, methods=['get'])
     def filter_options(self, request):
-        """Get available filter options"""
+        """Get available filter options with optional IM Sector filtering for cascading Industry options"""
         
-        # Get unique IM sectors
-        im_sectors = list(CSI300Company.objects.exclude(
+        # Get query parameter for cascading filter
+        im_sector_filter = request.query_params.get('im_sector')
+        
+        # Base queryset
+        base_queryset = CSI300Company.objects.all()
+        
+        # Get unique IM sectors (not affected by filtering)
+        im_sectors = list(base_queryset.exclude(
             im_sector__isnull=True
         ).exclude(
             im_sector__exact=''
         ).values_list('im_sector', flat=True).distinct().order_by('im_sector'))
         
-        # Get unique sub industries
-        industries = list(CSI300Company.objects.exclude(
+        # Get industries (filtered by IM Sector if provided)
+        industry_queryset = base_queryset.exclude(
             industry__isnull=True
         ).exclude(
             industry__exact=''
-        ).values_list('industry', flat=True).distinct().order_by('industry'))
+        )
         
-        # Get unique GICS industries
-        gics_industries = list(CSI300Company.objects.exclude(
+        # Apply IM Sector filter to industries if specified
+        if im_sector_filter:
+            industry_queryset = industry_queryset.filter(im_sector=im_sector_filter)
+        
+        industries = list(industry_queryset.values_list(
+            'industry', flat=True
+        ).distinct().order_by('industry'))
+        
+        # Get unique GICS industries (not affected by IM Sector filtering)
+        gics_industries = list(base_queryset.exclude(
             gics_industry__isnull=True
         ).exclude(
             gics_industry__exact=''
         ).values_list('gics_industry', flat=True).distinct().order_by('gics_industry'))
         
-        # Get market cap range
-        market_cap_range = CSI300Company.objects.exclude(
+        # Get market cap range (not affected by IM Sector filtering)
+        market_cap_range = base_queryset.exclude(
             market_cap_local__isnull=True
         ).aggregate(
             min_cap=Min('market_cap_local'),
@@ -116,7 +142,10 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
             'market_cap_range': {
                 'min': float(market_cap_range['min_cap']) if market_cap_range['min_cap'] else 0,
                 'max': float(market_cap_range['max_cap']) if market_cap_range['max_cap'] else 0
-            }
+            },
+            # Add metadata about filtering state
+            'filtered_by_sector': bool(im_sector_filter),
+            'sector_filter': im_sector_filter
         }
         
         return Response(data)

@@ -79,9 +79,27 @@ class CSI300ApiClient {
                 const queryParams = new URLSearchParams();
                 
                 // Add filters to query params
-                const imSectorFilter = filters.im_sector || filters.im_code || filters.industry;
-                if (imSectorFilter) queryParams.append('im_sector', imSectorFilter);
-                if (filters.company_search) queryParams.append('search', filters.company_search);
+                if (filters.im_sector || filters.im_code) {
+                    queryParams.append('im_sector', filters.im_sector || filters.im_code);
+                }
+                if (filters.industry) {
+                    queryParams.append('industry', filters.industry);
+                }
+                if (filters.gics_industry) {
+                    queryParams.append('gics_industry', filters.gics_industry);
+                }
+                if (filters.market_cap_min) {
+                    queryParams.append('market_cap_min', filters.market_cap_min);
+                }
+                if (filters.market_cap_max) {
+                    queryParams.append('market_cap_max', filters.market_cap_max);
+                }
+                if (filters.company_search) {
+                    queryParams.append('search', filters.company_search);
+                }
+                if (filters.industry_search) {
+                    queryParams.append('industry_search', filters.industry_search);
+                }
                 
                 // Use Django REST framework pagination parameters
                 if (filters.page_size) queryParams.append('page_size', filters.page_size);
@@ -122,15 +140,17 @@ class CSI300ApiClient {
     }
 
     /**
-     * Get filter options (IM sectors, etc.)
+     * Get filter options (IM sectors, etc.) with optional filtering parameters
      */
-    async getFilterOptions() {
-        const cacheKey = 'filter_options';
+    async getFilterOptions(params = {}) {
+        // Create cache key that includes parameters to avoid stale cache
+        const cacheKey = `filter_options_${JSON.stringify(params)}`;
         
         return await this.getCachedOrFetch(
             cacheKey,
             async () => {
-                const url = `${this.baseUrl}${CSI300Config.ENDPOINTS.FILTER_OPTIONS}`;
+                const queryString = new URLSearchParams(params).toString();
+                const url = `${this.baseUrl}${CSI300Config.ENDPOINTS.FILTER_OPTIONS}${queryString ? '?' + queryString : ''}`;
                 return await this.makeRequest(url);
             },
             CSI300Config.CACHE_CONFIG.FILTER_OPTIONS_TTL

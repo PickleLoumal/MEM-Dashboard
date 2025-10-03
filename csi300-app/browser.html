@@ -425,7 +425,7 @@
                 </div>
 
                 <div class="filter-group">
-                    <label class="filter-label">Industry</label>
+                    <label class="filter-label">Industry within selected sector</label>
                     <select name="industry" id="industrySelect" class="filter-select">
                         <option value="">All Industries</option>
                     </select>
@@ -435,6 +435,12 @@
                     <label class="filter-label">Search Companies</label>
                     <input type="text" name="company_search" id="companySearch" 
                            class="filter-input" placeholder="Search by company name or ticker...">
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Search by Industry</label>
+                    <input type="text" name="industry_search" id="industrySearch" 
+                           class="filter-input" placeholder="Search by industry name...">
                 </div>
             </div>
             
@@ -606,6 +612,19 @@
                     this.clearFilters();
                 });
 
+                // IM Sector change event for cascading Industry filter
+                const imSectorSelect = document.getElementById('imSectorSelect');
+                imSectorSelect.addEventListener('change', (e) => {
+                    this.onImSectorChange(e.target.value);
+                });
+
+                // Industry change event for immediate filtering
+                const industrySelect = document.getElementById('industrySelect');
+                industrySelect.addEventListener('change', (e) => {
+                    console.log('Industry changed to:', e.target.value);
+                    this.applyFilters();
+                });
+
                 // Real-time search
                 const searchInput = document.getElementById('companySearch');
                 let searchTimeout;
@@ -616,6 +635,20 @@
                     
                     searchTimeout = setTimeout(() => {
                         console.log('Applying search filter for:', searchValue);
+                        this.applyFilters();
+                    }, 300); // Debounce for 300ms
+                });
+
+                // Real-time industry search
+                const industrySearchInput = document.getElementById('industrySearch');
+                let industrySearchTimeout;
+                industrySearchInput.addEventListener('input', (e) => {
+                    clearTimeout(industrySearchTimeout);
+                    const searchValue = e.target.value.trim();
+                    console.log('Industry search input changed:', searchValue);
+                    
+                    industrySearchTimeout = setTimeout(() => {
+                        console.log('Applying industry search filter for:', searchValue);
                         this.applyFilters();
                     }, 300); // Debounce for 300ms
                 });
@@ -848,6 +881,114 @@
                 
                 // Update URL
                 window.history.pushState({}, '', 'browser.html');
+            }
+
+            // ===== Cascading Filter Methods =====
+
+            async onImSectorChange(selectedSector) {
+                try {
+                    console.log('IM Sector changed to:', selectedSector);
+                    
+                    // Show loading state for industry dropdown
+                    this.setIndustrySelectLoading(true);
+                    
+                    // Prepare parameters for filtered industry options
+                    const params = selectedSector ? { im_sector: selectedSector } : {};
+                    
+                    // Request filtered industry options
+                    const filterOptions = await this.apiClient.getFilterOptions(params);
+                    console.log('Received filtered options:', filterOptions);
+                    
+                    // Update Industry dropdown options
+                    this.updateIndustryOptions(filterOptions.industries || []);
+                    
+                    // Clear current industry selection if it's not in the new list
+                    this.validateAndClearIndustrySelection(filterOptions.industries || []);
+                    
+                    // Auto-apply filters when IM Sector changes
+                    console.log('Auto-applying filters after IM Sector change');
+                    this.applyFilters();
+                    
+                } catch (error) {
+                    console.error('Failed to load filtered industries:', error);
+                    this.showIndustryLoadError();
+                } finally {
+                    this.setIndustrySelectLoading(false);
+                }
+            }
+
+            updateIndustryOptions(industries) {
+                const industrySelect = document.getElementById('industrySelect');
+                const currentValue = industrySelect.value;
+                
+                // Clear existing options except the "All Industries" option
+                industrySelect.innerHTML = '<option value="">All Industries</option>';
+                
+                // Add new filtered options
+                industries.forEach(industry => {
+                    if (industry) {
+                        const option = document.createElement('option');
+                        option.value = industry;
+                        option.textContent = industry;
+                        industrySelect.appendChild(option);
+                    }
+                });
+                
+                // Try to restore previous selection if it's still available
+                if (currentValue && industries.includes(currentValue)) {
+                    industrySelect.value = currentValue;
+                    console.log('Restored industry selection:', currentValue);
+                } else if (currentValue) {
+                    console.log('Previous industry selection no longer available:', currentValue);
+                }
+            }
+
+            validateAndClearIndustrySelection(availableIndustries) {
+                const industrySelect = document.getElementById('industrySelect');
+                const currentValue = industrySelect.value;
+                
+                if (currentValue && !availableIndustries.includes(currentValue)) {
+                    industrySelect.value = '';
+                    console.log('Cleared incompatible industry selection:', currentValue);
+                    
+                    // Optional: Show user feedback
+                    this.showIndustrySelectionClearedNotice();
+                }
+            }
+
+            setIndustrySelectLoading(isLoading) {
+                const industrySelect = document.getElementById('industrySelect');
+                industrySelect.disabled = isLoading;
+                
+                if (isLoading) {
+                    // Temporarily show loading option
+                    const currentOptions = Array.from(industrySelect.options);
+                    industrySelect.innerHTML = '<option value="">Loading industries...</option>';
+                    
+                    // Store original options for restoration if needed
+                    industrySelect._originalOptions = currentOptions;
+                } else if (industrySelect._originalOptions) {
+                    // Clean up stored options
+                    delete industrySelect._originalOptions;
+                }
+            }
+
+            showIndustryLoadError() {
+                const industrySelect = document.getElementById('industrySelect');
+                industrySelect.innerHTML = '<option value="">Error loading industries</option>';
+                industrySelect.disabled = true;
+                
+                // Re-enable after a short delay
+                setTimeout(() => {
+                    industrySelect.disabled = false;
+                    industrySelect.innerHTML = '<option value="">All Industries</option>';
+                }, 2000);
+            }
+
+            showIndustrySelectionClearedNotice() {
+                // Optional: Implement user notification
+                console.log('Industry selection was cleared due to sector change');
+                // Could add a temporary visual indicator here
             }
 
             openCompanyDetail(companyId) {
