@@ -1,0 +1,10 @@
+FROM 952189540759.dkr.ecr.ap-east-1.amazonaws.com/mem-dashboard:latest
+
+# 复制migration脚本
+COPY scripts/cloud/temp_migrate.py /app/
+
+# 设置工作目录为 /app
+WORKDIR /app
+
+# 默认命令：执行migration
+CMD ["python3", "-u", "/app/temp_migrate.py"]

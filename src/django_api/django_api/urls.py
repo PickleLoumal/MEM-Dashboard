@@ -37,7 +37,7 @@ urlpatterns = [
     path('api/fred-us/', include('fred_us.urls')),      # 美国FRED指标
     
     # 向后兼容路由 - 将旧的/api/fred/重定向到/api/fred-us/
-    path('api/fred/', include('fred_us.urls')),         # 兼容性重定向
+    path('api/fred/', include('fred_us.urls', namespace='fred_us_legacy')),         # 兼容性重定向
     
     # Japan FRED API路由  
     path('api/fred-jp/', include('fred_jp.urls')),
@@ -47,6 +47,9 @@ urlpatterns = [
     
     # CSI300 API路由
     path('api/csi300/', include('csi300.urls')),
+    
+    # CSI300 Django模板路由 (兼容旧版本)
+    path('csi300/', include('csi300.urls', namespace='csi300_legacy')),
     
     # Content API路由
     path('', include('content.urls')),

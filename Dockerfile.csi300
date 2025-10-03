@@ -1,35 +1,16 @@
-# MEM Dashboard Dockerfile with CSI300 Data
-FROM python:3.11-slim
+# CSI300 Backend Service Dockerfile
+# 基于最新的基础镜像(包含所有更新的代码和migrations)
+FROM 952189540759.dkr.ecr.ap-east-1.amazonaws.com/mem-dashboard:csilatest
 
-# 设置工作目录
-WORKDIR /app
+# 工作目录已在基础镜像中设置为/app
+WORKDIR /app/src/django_api
 
-# 安装系统依赖
-RUN apt-get update && apt-get install -y \
-    postgresql-client \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# 复制requirements文件
-COPY requirements.txt .
-
-# 安装Python依赖
-RUN pip install --no-cache-dir -r requirements.txt
-
-# 复制项目文件
-COPY . .
-
-# 创建数据目录
-RUN mkdir -p data/db_export
-
-# 复制数据文件到容器
-COPY data/db_export/ data/db_export/
-
-# 设置执行权限
-RUN chmod +x scripts/aws_import_csi300_data.py
-
-# 暴露端口
+# 暴露Django端口
 EXPOSE 8000
 
-# 启动命令 - 先运行迁移，再导入数据，最后启动服务
-CMD ["sh", "-c", "cd src/django_api && python3 manage.py migrate && cd ../.. && python3 scripts/aws_import_csi300_data.py && cd src/django_api && python3 manage.py runserver 0.0.0.0:8000"]
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health/ || exit 1
+
+# 启动Django服务
+CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]

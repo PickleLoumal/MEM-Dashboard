@@ -1,0 +1,42 @@
+[
+  {
+    "Id": "1",
+    "Arn": "arn:aws:ecs:ap-east-1:ACCOUNT-ID:cluster/mem-dashboard-cluster",
+    "RoleArn": "arn:aws:iam::ACCOUNT-ID:role/EventBridgeECSRole",
+    "EcsParameters": {
+      "TaskDefinitionArn": "arn:aws:ecs:ap-east-1:ACCOUNT-ID:task-definition/mem-dashboard-auto-fetch-task",
+      "LaunchType": "FARGATE",
+      "PlatformVersion": "LATEST",
+      "NetworkConfiguration": {
+        "AwsVpcConfiguration": {
+          "Subnets": [
+            "subnet-0fa889f45ef57ccf2",
+            "subnet-05496838fa2487bfc"
+          ],
+          "SecurityGroups": [
+            "sg-071e127bb3521821a"
+          ],
+          "AssignPublicIp": "DISABLED"
+        }
+      },
+      "TaskCount": 1,
+      "EnableExecuteCommand": false,
+      "EnableECSManagedTags": true,
+      "PropagateTags": "TASK_DEFINITION",
+      "Tags": [
+        {
+          "Key": "Project",
+          "Value": "MEM-Dashboard"
+        },
+        {
+          "Key": "TriggerType", 
+          "Value": "EventBridge"
+        },
+        {
+          "Key": "Purpose",
+          "Value": "AutoDataFetch"
+        }
+      ]
+    }
+  }
+]

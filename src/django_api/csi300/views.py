@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.db.models import Q, Min, Max
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view
@@ -37,21 +36,24 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = CSI300Company.objects.all()
         
         # Filtering
-        im_code = self.request.query_params.get('im_code')
+        im_sector = self.request.query_params.get('im_sector')
         industry = self.request.query_params.get('industry')
-        sector = self.request.query_params.get('sector')
+        legacy_sub_industry = self.request.query_params.get('sub_industry')
+        if not industry and legacy_sub_industry:
+            industry = legacy_sub_industry
+        gics_industry = self.request.query_params.get('gics_industry')
         market_cap_min = self.request.query_params.get('market_cap_min')
         market_cap_max = self.request.query_params.get('market_cap_max')
         search = self.request.query_params.get('search')
         
-        if im_code:
-            queryset = queryset.filter(im_code=im_code)
+        if im_sector:
+            queryset = queryset.filter(im_sector__icontains=im_sector)
         
         if industry:
             queryset = queryset.filter(industry__icontains=industry)
             
-        if sector:
-            queryset = queryset.filter(sub_industry__icontains=sector)
+        if gics_industry:
+            queryset = queryset.filter(gics_industry__icontains=gics_industry)
             
         if market_cap_min:
             try:
@@ -78,26 +80,26 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
     def filter_options(self, request):
         """Get available filter options"""
         
-        # Get unique IM codes
-        im_codes = list(CSI300Company.objects.exclude(
-            im_code__isnull=True
+        # Get unique IM sectors
+        im_sectors = list(CSI300Company.objects.exclude(
+            im_sector__isnull=True
         ).exclude(
-            im_code__exact=''
-        ).values_list('im_code', flat=True).distinct().order_by('im_code'))
+            im_sector__exact=''
+        ).values_list('im_sector', flat=True).distinct().order_by('im_sector'))
         
-        # Get unique industries
+        # Get unique sub industries
         industries = list(CSI300Company.objects.exclude(
             industry__isnull=True
         ).exclude(
             industry__exact=''
         ).values_list('industry', flat=True).distinct().order_by('industry'))
         
-        # Get unique sectors (using sub_industry)
-        sectors = list(CSI300Company.objects.exclude(
-            sub_industry__isnull=True
+        # Get unique GICS industries
+        gics_industries = list(CSI300Company.objects.exclude(
+            gics_industry__isnull=True
         ).exclude(
-            sub_industry__exact=''
-        ).values_list('sub_industry', flat=True).distinct().order_by('sub_industry'))
+            gics_industry__exact=''
+        ).values_list('gics_industry', flat=True).distinct().order_by('gics_industry'))
         
         # Get market cap range
         market_cap_range = CSI300Company.objects.exclude(
@@ -108,9 +110,9 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         )
         
         data = {
-            'im_codes': im_codes,
+            'im_sectors': im_sectors,
             'industries': industries,
-            'sectors': sectors,
+            'gics_industries': gics_industries,
             'market_cap_range': {
                 'min': float(market_cap_range['min_cap']) if market_cap_range['min_cap'] else 0,
                 'max': float(market_cap_range['max_cap']) if market_cap_range['max_cap'] else 0
@@ -164,7 +166,7 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             company = self.get_object()
             
-            if not company.industry:
+            if not company.im_sector:
                 return Response(
                     {'error': 'Company industry information not available'}, 
                     status=status.HTTP_404_NOT_FOUND
@@ -173,7 +175,7 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
             # Get all companies in the same industry
             # Order by market cap descending to calculate rankings
             all_industry_companies = CSI300Company.objects.filter(
-                industry=company.industry
+                im_sector=company.im_sector
             ).exclude(
                 market_cap_local__isnull=True
             ).order_by('-market_cap_local')
@@ -217,10 +219,10 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
                     'id': company.id,
                     'name': company.name,
                     'ticker': company.ticker,
-                    'industry': company.industry,
+                    'im_sector': company.im_sector,
                     'rank': current_company_rank
                 },
-                'industry': company.industry,
+                'industry': company.im_sector,
                 'comparison_data': comparison_data,
                 'total_top_companies_shown': len(top_3_companies),
                 'total_companies_in_industry': all_industry_companies.count()

@@ -1,0 +1,9 @@
+{
+    "deployment_time": "2025-08-29T03:40:39Z",
+    "bucket_name": "mem-dashboard-frontend-production",
+    "distribution_id": "E30XDDEMA55MYQ",
+    "cloudfront_url": "https://d1ht73txi7ykd0.cloudfront.net",
+    "s3_website_url": "http://mem-dashboard-frontend-production.s3-website.ap-east-1.amazonaws.com",
+    "region": "ap-east-1",
+    "alb_dns": "mem-dashboard-alb-1995066194.ap-east-1.elb.amazonaws.com"
+}
