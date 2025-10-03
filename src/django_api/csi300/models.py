@@ -7,9 +7,8 @@ class CSI300Company(models.Model):
     # Basic Company Information
     name = models.CharField(max_length=200, help_text="Company name")
     ticker = models.CharField(max_length=20, blank=True, null=True, help_text="Stock ticker")
-    im_code = models.CharField(max_length=50, blank=True, null=True, help_text="IM Industry Code")
-    industry = models.CharField(max_length=100, blank=True, null=True, help_text="Industry classification")
-    sub_industry = models.CharField(max_length=100, blank=True, null=True, help_text="Sub-industry")
+    im_sector = models.CharField(max_length=150, blank=True, null=True, help_text="IM Sector (combined from im_code and industry)")
+    industry = models.CharField(max_length=100, blank=True, null=True, help_text="Industry")
     gics_industry = models.CharField(max_length=100, blank=True, null=True, help_text="GICS Industry")
     gics_sub_industry = models.CharField(max_length=100, blank=True, null=True, help_text="GICS Sub-industry")
     
@@ -21,7 +20,7 @@ class CSI300Company(models.Model):
     
     # Price Information
     price_local_currency = models.DecimalField(max_digits=20, decimal_places=6, blank=True, null=True, help_text="Price in local currency")
-    currency = models.CharField(max_length=3, blank=True, null=True, help_text="Currency")
+    currency = models.CharField(max_length=20, blank=True, null=True, help_text="Currency")
     total_return_2018_to_2025 = models.DecimalField(max_digits=15, decimal_places=6, blank=True, null=True, help_text="Total return 2018-2025")
     last_trade_date = models.DateField(blank=True, null=True, help_text="Last trade date")
     price_52w_high = models.DecimalField(max_digits=20, decimal_places=6, blank=True, null=True, help_text="52-week high")
@@ -109,31 +108,31 @@ class CSI300Company(models.Model):
 class CSI300InvestmentSummary(models.Model):
     """CSI300 Investment Summary model"""
     
-    company = models.ForeignKey(CSI300Company, on_delete=models.CASCADE, related_name='investment_summaries')
+    company = models.OneToOneField(CSI300Company, on_delete=models.CASCADE, related_name='investment_summary')
     report_date = models.DateField(help_text="Report date")
     
     # Market Data
-    stock_price_previous_close = models.DecimalField(max_digits=10, decimal_places=6, blank=True, null=True, help_text="Previous close price")
-    market_cap_display = models.CharField(max_length=100, blank=True, null=True, help_text="Market cap display format")
-    recommended_action = models.CharField(max_length=50, blank=True, null=True, help_text="Investment recommendation")
-    recommended_action_detail = models.TextField(blank=True, null=True, help_text="Detailed recommendation")
+    stock_price_previous_close = models.DecimalField(max_digits=10, decimal_places=6, default=0, help_text="Previous close price")
+    market_cap_display = models.CharField(max_length=100, default='', help_text="Market cap display format")
+    recommended_action = models.CharField(max_length=50, default='', help_text="Investment recommendation")
+    recommended_action_detail = models.TextField(default='', help_text="Detailed recommendation")
     
     # Analysis Sections
-    business_overview = models.TextField(blank=True, null=True, help_text="Business overview")
-    business_performance = models.TextField(blank=True, null=True, help_text="Business performance analysis")
-    industry_context = models.TextField(blank=True, null=True, help_text="Industry context")
-    financial_stability = models.TextField(blank=True, null=True, help_text="Financial stability analysis")
-    key_financials_valuation = models.TextField(blank=True, null=True, help_text="Key financials and valuation")
-    big_trends_events = models.TextField(blank=True, null=True, help_text="Big trends and events")
-    customer_segments = models.TextField(blank=True, null=True, help_text="Customer segments analysis")
-    competitive_landscape = models.TextField(blank=True, null=True, help_text="Competitive landscape")
-    risks_anomalies = models.TextField(blank=True, null=True, help_text="Risks and anomalies")
-    forecast_outlook = models.TextField(blank=True, null=True, help_text="Forecast and outlook")
-    investment_firms_views = models.TextField(blank=True, null=True, help_text="Investment firms views")
-    industry_ratio_analysis = models.TextField(blank=True, null=True, help_text="Industry ratio analysis")
-    tariffs_supply_chain_risks = models.TextField(blank=True, null=True, help_text="Tariffs and supply chain risks")
-    key_takeaways = models.TextField(blank=True, null=True, help_text="Key takeaways")
-    sources = models.TextField(blank=True, null=True, help_text="Data sources")
+    business_overview = models.TextField(default='', help_text="Business overview")
+    business_performance = models.TextField(default='', help_text="Business performance analysis")
+    industry_context = models.TextField(default='', help_text="Industry context")
+    financial_stability = models.TextField(default='', help_text="Financial stability analysis")
+    key_financials_valuation = models.TextField(default='', help_text="Key financials and valuation")
+    big_trends_events = models.TextField(default='', help_text="Big trends and events")
+    customer_segments = models.TextField(default='', help_text="Customer segments analysis")
+    competitive_landscape = models.TextField(default='', help_text="Competitive landscape")
+    risks_anomalies = models.TextField(default='', help_text="Risks and anomalies")
+    forecast_outlook = models.TextField(default='', help_text="Forecast and outlook")
+    investment_firms_views = models.TextField(default='', help_text="Investment firms views")
+    industry_ratio_analysis = models.TextField(default='', help_text="Industry ratio analysis")
+    tariffs_supply_chain_risks = models.TextField(default='', help_text="Tariffs and supply chain risks")
+    key_takeaways = models.TextField(default='', help_text="Key takeaways")
+    sources = models.TextField(default='', help_text="Data sources")
     
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
@@ -144,7 +143,8 @@ class CSI300InvestmentSummary(models.Model):
         verbose_name = 'CSI300 Investment Summary'
         verbose_name_plural = 'CSI300 Investment Summaries'
         ordering = ['-report_date']
-        unique_together = ['company', 'report_date']
+        # Note: No unique_together constraint needed because we use OneToOneField with company
+        # which automatically ensures uniqueness for company relationships
     
     def __str__(self):
         return f"{self.company.ticker} - {self.report_date}"

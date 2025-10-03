@@ -1,0 +1,134 @@
+# =============================================================================
+# MEM Dashboard - PRIVATE/LOCAL Git Ignore Rules
+# This file contains the complete ignore rules including sensitive references
+# DO NOT COMMIT THIS FILE TO PUBLIC REPOSITORY
+# =============================================================================
+
+# ===== DEVELOPMENT ENVIRONMENT =====
+venv/
+env/
+.venv/
+.env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== ENVIRONMENT & SECRETS =====
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+
+# ===== DATABASE FILES =====
+*.db
+*.sqlite3
+*.sql
+db.sqlite3
+local.db
+
+# ===== LOGS AND RUNTIME =====
+logs/
+*.log
+*.pid
+*.seed
+*.pid.lock
+pids/
+
+# ===== BACKUPS AND ARCHIVES =====
+backup/
+archives/
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.bak
+*.backup
+*.old
+
+# ===== SENSITIVE DOCUMENTATION AND EVIDENCE =====
+.vercelignore
+docs/
+scripts/
+src/backend/
+*.sh
+*.md
+!README.md
+ip_evidence/
+intellectual_property_evidence.json
+SYSTEM_COPYRIGHT_EVIDENCE.json
+JIAJUN_JIANG_COPYRIGHT_EVIDENCE.json
+django_verification_*/
+django_restoration_report_*.txt
+
+# ===== DATA DIRECTORIES =====
+data/csv/
+data/db_export/
+data/excel/
+data/json/
+data/wheels/
+
+# ===== TEMPORARY AND CACHE =====
+temp/
+tmp/
+*.tmp
+.cache/
+.pytest_cache/
+.coverage
+coverage/
+.nyc_output/
+
+# ===== IDE AND EDITOR =====
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+
+# ===== OPERATING SYSTEM =====
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ===== DEPLOYMENT PLATFORMS =====
+.vercel/
+.netlify/
+.now/
+
+# ===== ICLOUD SYNC CONFLICTS =====
+*\ 2/
+*\ 2
+* 2/
+* 2
+*\ (Conflicted\ copy*
+*\ (conflicted\ copy*
+
+# ===== PROJECT-SPECIFIC EXCLUSIONS =====
+config/*_backup.js
+config/deployment/
+config/deployment\ 2/
+config/environment/
+config/environment\ 2/
+config/__pycache__/
+config/__pycache__\ 2/
+
+# Scripts with sensitive content
+scripts/tools/verify_stealth_watermarks.py
+
+# This local gitignore file itself
+.gitignore.local
+

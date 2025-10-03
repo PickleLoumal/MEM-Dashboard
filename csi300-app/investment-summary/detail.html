@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Investment Summary - CSI300 Platform</title>
     
+    <!-- Favicon (using base64 to avoid 404) -->
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==">
+    
     <!-- Framework and styling imports -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../../src/assets/css/base/main.css">
     <link rel="stylesheet" href="assets/investment-summary.css">
 </head>
 <body>
@@ -252,14 +254,15 @@
             }
 
             initApiClient() {
-                // Import API client configuration
+                // Import API client configuration with cache busting
                 const script = document.createElement('script');
-                script.src = '../config/csi300_api_config.js';
+                script.src = '../config/csi300_api_config.js?v=' + Date.now();
                 script.onload = () => {
                     const apiScript = document.createElement('script');
-                    apiScript.src = '../assets/js/utils/csi300_api_client.js';
+                    apiScript.src = '../assets/js/utils/csi300_api_client.js?v=' + Date.now();
                     apiScript.onload = () => {
-                        this.apiClient = new CSI300ApiClient();
+                        // Use the global API client instance that has all methods
+                        this.apiClient = window.csi300ApiClient;
                     };
                     document.head.appendChild(apiScript);
                 };
@@ -280,19 +283,8 @@
 
                     console.log(`Loading investment summary for company ID: ${this.companyId}`);
                     
-                    // Fetch investment summary data
-                    const response = await fetch(`http://localhost:8001/api/csi300/api/companies/${this.companyId}/investment_summary/`);
-                    
-                    if (!response.ok) {
-                        if (response.status === 404) {
-                            this.showError('Investment summary not available for this company');
-                        } else {
-                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                        }
-                        return;
-                    }
-
-                    const investmentSummary = await response.json();
+                    // Use API client method for consistent configuration and error handling
+                    const investmentSummary = await this.apiClient.getInvestmentSummary(this.companyId);
                     console.log('Investment summary loaded:', investmentSummary);
                     
                     this.renderInvestmentSummary(investmentSummary);

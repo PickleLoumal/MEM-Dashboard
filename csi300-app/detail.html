@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Company Details - CSI300 Standalone Application</title>
     
+    <!-- Favicon (using base64 to avoid 404) -->
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==">
+    
     <!-- Build configuration metadata -->
     <meta name="build-timestamp" content="2025-Sep">
     <meta name="application-id" content="CSI300 Dashboard">
@@ -17,6 +20,7 @@
     <!-- Application Configuration -->
     <script src="config/csi300_api_config.js?v=20250923"></script>
     <script src="assets/js/utils/csi300_api_client.js?v=20250923"></script>
+    <script src="assets/js/utils/csi300_error_handler.js?v=20250923"></script>
     <script src="assets/js/core/company-modal-manager.js?v=20250923"></script>
     
     <style>
@@ -523,7 +527,7 @@
             <div class="company-actions-section">
                 <a class="button button-primary" id="valueChainBtn">Value Chain Analysis</a>
                 <a class="button button-primary" id="investmentSummaryBtn">Investment Summary</a>
-                <a class="button button-primary" id="peersComparisonBtn">Industry Peers Comparison</a>
+                <a class="button button-primary" id="peersComparisonBtn">IM Sector Peers Comparison</a>
             </div>
             
             <div class="details-grid" id="detailsGrid">
@@ -544,11 +548,11 @@
         </div>
     </div>
 
-    <!-- Industry Peers Comparison Modal -->
+    <!-- IM Sector Peers Comparison Modal -->
     <div id="peersComparisonModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Industry Peers Comparison</h2>
+                <h2 class="modal-title">IM Sector Peers Comparison</h2>
             </div>
             <div class="modal-body" id="peersComparisonContent">
                 <!-- Content will be populated here -->
@@ -622,11 +626,23 @@
 
             renderCompanyHeader() {
                 const header = document.getElementById('companyHeader');
+                const imSector = this.company ? (this.company.im_sector || this.company.im_code || '') : '';
+                const industry = this.company ? (this.company.industry || '') : '';
                 header.innerHTML = `
                     <h1 class="company-name">${this.company.name || 'Unknown Company'}</h1>
                     <div class="company-ticker">${this.company.ticker || 'N/A'}</div>
-                    ${this.company.industry ? `<span class="company-industry">${this.company.industry}</span>` : ''}
+                    ${imSector ? `<span class="company-industry">${imSector}</span>` : ''}
+                    ${industry && industry !== imSector ? `<span class="company-industry">${industry}</span>` : ''}
                 `;
+            }
+
+            getImSectorValue() {
+                if (!this.company) return '';
+                return this.company.im_sector || this.company.industry || this.company.im_code || '';
+            }
+
+            getImSectorDisplay() {
+                return this.getImSectorValue() || 'Unknown IM Sector';
             }
 
             setupButtonListeners() {
@@ -704,8 +720,11 @@
                 const section = this.createDetailSection('Basic Information');
                 const content = section.querySelector('.section-content');
                 
-                content.appendChild(this.createFieldRow('IM Code', this.company.im_code));
-                content.appendChild(this.createFieldRow('Sub Industry', this.company.sub_industry));
+                content.appendChild(this.createFieldRow('IM Sector', this.getImSectorDisplay()));
+                content.appendChild(this.createFieldRow('Industry', this.company.industry));
+                if (this.company.sub_industry) {
+                    content.appendChild(this.createFieldRow('Secondary Industry', this.company.sub_industry));
+                }
                 content.appendChild(this.createFieldRow('GICS Industry', this.company.gics_industry));
                 content.appendChild(this.createFieldRow('Currency', this.company.currency));
                 content.appendChild(this.createFieldRow('Last Trade Date', this.formatDate(this.company.last_trade_date)));
@@ -922,7 +941,7 @@
                 this.openModal('valueChainModal');
             }
 
-            // Industry Peers Comparison Modal
+            // IM Sector Peers Comparison Modal
             async showPeersComparison() {
                 // Show loading state in the current view
                 const loadingOverlay = this.createLoadingOverlay();
@@ -981,7 +1000,7 @@
                 overlay.innerHTML = `
                     <div style="background: white; padding: 30px 40px; border-radius: 12px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
                         <div style="display: inline-block; width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;"></div>
-                        <p style="margin: 0; color: #666; font-size: 16px; font-weight: 500;">Loading industry comparison...</p>
+                        <p style="margin: 0; color: #666; font-size: 16px; font-weight: 500;">Loading IM sector comparison...</p>
                     </div>
                 `;
                 
@@ -1005,24 +1024,24 @@
                 }
             }
 
-            openValueChainDetail(industry) {
-                // Map different industries to their corresponding detail pages
+            openValueChainDetail(imSector) {
+                // Map different IM sectors to their corresponding detail pages
                 let targetIndustry = 'energy'; // Default to energy
                 
-                if (industry) {
-                    const industryLower = industry.toLowerCase();
+                if (imSector) {
+                    const sectorLower = imSector.toLowerCase();
                     
-                    if (industryLower.includes('energy')) {
+                    if (sectorLower.includes('energy')) {
                         targetIndustry = 'energy';
-                    } else if (industryLower.includes('supporting') && industryLower.includes('technolog')) {
+                    } else if (sectorLower.includes('supporting') && sectorLower.includes('technolog')) {
                         targetIndustry = 'supporting-technology';
-                    } else if (industryLower.includes('technology') || industryLower.includes('tech')) {
+                    } else if (sectorLower.includes('technology') || sectorLower.includes('tech')) {
                         targetIndustry = 'supporting-technology';
                     }
                     // Add more industry mappings here in the future
                 }
                 
-                console.log(`Industry: "${industry}" -> Target: "${targetIndustry}"`);
+                console.log(`IM Sector: "${imSector}" -> Target: "${targetIndustry}"`);
                 
                 // Navigate directly to the value chain detail page with company context
                 const companyName = this.company ? this.company.name : 'Unknown Company';

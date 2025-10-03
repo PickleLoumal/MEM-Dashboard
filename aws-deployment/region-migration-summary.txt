@@ -1,0 +1,22 @@
+AWS区域迁移摘要
+===============
+
+迁移时间: Tue Aug 26 13:54:28 HKT 2025
+源区域: us-west-2
+目标区域: ap-east-1 (香港)
+部署模式: 完整模式（含ALB）
+
+已更新的文件:
+- config/environment.env
+- ecs/ecs-task-definition.json
+- ecs/ecs-service.json
+
+下一步操作:
+1. 运行 ./scripts/setup-infrastructure.sh 在新区域创建基础设施
+2. 运行 ./scripts/deploy-ecs.sh 部署应用
+3. 测试数据库连接和应用功能
+
+注意事项:
+- 数据库需要在新区域重新创建或迁移
+- 所有AWS资源将在新区域产生费用
+- 旧区域资源需要手动清理

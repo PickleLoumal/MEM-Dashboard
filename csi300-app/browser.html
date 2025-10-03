@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>CSI300 Company Browser - Standalone Application</title>
     
+    <!-- Favicon (using base64 to avoid 404) -->
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==">
+    
     <!-- Build configuration metadata -->
     <meta name="build-timestamp" content="2025-Sep">
     <meta name="application-id" content="CSI300 Dashboard">
@@ -15,8 +18,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Application Configuration -->
-    <script src="config/csi300_api_config.js"></script>
+    <script src="config/csi300_api_config.js?v=20250924"></script>
     <script src="assets/js/utils/csi300_api_client.js"></script>
+    <script src="assets/js/utils/csi300_error_handler.js"></script>
     
     <style>
         * {
@@ -414,12 +418,12 @@
         <form id="filterForm" class="filter-section">
             <div class="filter-grid">
                 <div class="filter-group">
-                    <label class="filter-label">IM Code</label>
-                    <select name="im_code" id="imCodeSelect" class="filter-select">
-                        <option value="">All IM Codes</option>
+                    <label class="filter-label">IM Sector</label>
+                    <select name="im_sector" id="imSectorSelect" class="filter-select">
+                        <option value="">All IM Sectors</option>
                     </select>
                 </div>
-                
+
                 <div class="filter-group">
                     <label class="filter-label">Industry</label>
                     <select name="industry" id="industrySelect" class="filter-select">
@@ -457,8 +461,7 @@
                         <tr>
                             <th>Company Name</th>
                             <th>Ticker</th>
-                            <th>IM Code</th>
-                            <th>Industry</th>
+                            <th>IM Sector</th>
                             <th class="mobile-hide">Market Cap (USD Million)</th>
                             <th class="mobile-hide">Price (Local Currency)</th>
                             <th class="mobile-hide">P/E Ratio</th>
@@ -486,6 +489,19 @@
     <script>
         class CSI300BrowserApp {
             constructor() {
+                // Initialize API client with error checking
+                if (!window.CSI300Config) {
+                    console.error('CSI300Config not loaded');
+                    this.showError('Configuration not loaded. Please refresh the page.');
+                    return;
+                }
+                
+                if (!window.csi300ApiClient) {
+                    console.error('CSI300ApiClient not loaded');
+                    this.showError('API client not loaded. Please refresh the page.');
+                    return;
+                }
+                
                 this.apiClient = window.csi300ApiClient;
                 this.currentFilters = {};
                 this.currentPage = 1;
@@ -510,20 +526,31 @@
                 try {
                     const data = await this.apiClient.getFilterOptions();
                     
-                    // Populate IM codes
-                    const imCodeSelect = document.getElementById('imCodeSelect');
-                    data.im_codes.forEach(code => {
-                        if (code) {
+                    const imSectorSelect = document.getElementById('imSectorSelect');
+                    const industrySelect = document.getElementById('industrySelect');
+
+                    const imSectors = (data.im_sectors && data.im_sectors.length)
+                        ? data.im_sectors
+                        : (data.im_codes && data.im_codes.length)
+                            ? data.im_codes
+                            : (data.industries || []);
+
+                    imSectors.forEach(sector => {
+                        if (sector) {
                             const option = document.createElement('option');
-                            option.value = code;
-                            option.textContent = code;
-                            imCodeSelect.appendChild(option);
+                            option.value = sector;
+                            option.textContent = sector;
+                            imSectorSelect.appendChild(option);
                         }
                     });
-                    
-                    // Populate industries
-                    const industrySelect = document.getElementById('industrySelect');
-                    data.industries.forEach(industry => {
+
+                    const industries = (data.industries && data.industries.length)
+                        ? data.industries
+                        : (data.im_sectors && data.im_sectors.length)
+                            ? data.im_sectors
+                            : (data.im_codes || []);
+
+                    industries.forEach(industry => {
                         if (industry) {
                             const option = document.createElement('option');
                             option.value = industry;
@@ -547,6 +574,16 @@
                         this.currentFilters[key] = value.trim();
                     }
                 }
+
+                // Normalize legacy filter names
+                if (!this.currentFilters.im_sector && this.currentFilters.im_code) {
+                    this.currentFilters.im_sector = this.currentFilters.im_code;
+                }
+                if (!this.currentFilters.industry && this.currentFilters.sub_industry) {
+                    this.currentFilters.industry = this.currentFilters.sub_industry;
+                }
+                delete this.currentFilters.im_code;
+                delete this.currentFilters.sub_industry;
                 
                 // Set form values
                 Object.entries(this.currentFilters).forEach(([key, value]) => {
@@ -651,6 +688,7 @@
                 tbody.innerHTML = '';
                 
                 this.companies.forEach(company => {
+                    const imSector = company.im_sector || company.industry || company.im_code || '-';
                     const row = document.createElement('tr');
                     row.className = 'clickable-row';
                     row.setAttribute('data-company-id', company.id);
@@ -659,8 +697,7 @@
                     row.innerHTML = `
                         <td class="company-name">${company.name || '-'}</td>
                         <td class="company-ticker">${company.ticker || '-'}</td>
-                        <td>${company.im_code || '-'}</td>
-                        <td>${company.industry || '-'}</td>
+                        <td>${imSector}</td>
                         <td class="market-cap mobile-hide">
                             ${company.market_cap_usd ? Math.floor(company.market_cap_usd).toLocaleString() : '-'}
                         </td>
@@ -685,6 +722,9 @@
                     card.className = 'mobile-company-card';
                     card.setAttribute('data-company-id', company.id);
                     card.addEventListener('click', () => this.openCompanyDetail(company.id));
+                    const imSector = company.im_sector || company.im_code || '';
+                    const industry = company.industry || '';
+                    const secondaryIndustry = company.sub_industry || company.gics_industry || '';
                     
                     card.innerHTML = `
                         <div class="mobile-company-header">
@@ -692,14 +732,21 @@
                             <div class="mobile-company-ticker">${company.ticker || '-'}</div>
                         </div>
                         <div class="mobile-company-details">
+                            ${imSector ? `
                             <div class="mobile-company-detail">
-                                <div class="mobile-company-detail-label">IM Code</div>
-                                <div class="mobile-company-detail-value">${company.im_code || '-'}</div>
-                            </div>
+                                <div class="mobile-company-detail-label">IM Sector</div>
+                                <div class="mobile-company-detail-value">${imSector}</div>
+                            </div>` : ''}
+                            ${industry ? `
                             <div class="mobile-company-detail">
                                 <div class="mobile-company-detail-label">Industry</div>
-                                <div class="mobile-company-detail-value">${company.industry || '-'}</div>
-                            </div>
+                                <div class="mobile-company-detail-value">${industry}</div>
+                            </div>` : ''}
+                            ${secondaryIndustry ? `
+                            <div class="mobile-company-detail">
+                                <div class="mobile-company-detail-label">Secondary Industry</div>
+                                <div class="mobile-company-detail-value">${secondaryIndustry}</div>
+                            </div>` : ''}
                         </div>
                     `;
                     
