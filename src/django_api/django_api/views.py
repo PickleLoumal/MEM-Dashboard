@@ -56,16 +56,28 @@ def global_health_check(request):
     """全局健康检查端点 - 前端和Docker健康检查使用"""
     try:
         from django.db import connection
-        
+
         # 检查数据库连接
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
             database_available = True
+
+        # 检查CSI300组件
+        try:
+            from csi300.models import CSI300Company
+            csi300_available = True
+            total_companies = CSI300Company.objects.count()
+        except Exception:
+            csi300_available = False
+            total_companies = 0
+
     except Exception:
         database_available = False
-    
+        csi300_available = False
+        total_companies = 0
+
     return Response({
-        'status': 'healthy' if database_available else 'degraded',
+        'status': 'healthy' if (database_available and csi300_available) else 'degraded',
         'timestamp': datetime.now().isoformat(),
         'service': 'MEM Dashboard Django API',
         'environment': 'development',
@@ -73,8 +85,10 @@ def global_health_check(request):
         'version': '2.0.0',
         'components': {
             'fred_us': 'available',
-            'fred_jp': 'available', 
+            'fred_jp': 'available',
             'bea': 'available',
-            'content': 'available'
-        }
+            'content': 'available',
+            'csi300': 'available' if csi300_available else 'unavailable'
+        },
+        'csi300_companies_count': total_companies
     })

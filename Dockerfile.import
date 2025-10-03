@@ -1,0 +1,11 @@
+FROM 952189540759.dkr.ecr.ap-east-1.amazonaws.com/mem-dashboard:csilatest
+
+# 复制新的数据文件（包含im_sector）
+COPY data/db_export/csi300_companies_with_im_sector.json /app/data/csi300_companies_new.json
+COPY scripts/cloud/temp_import.py /app/
+
+# 设置工作目录为 /app (与aws_import_csi300_data.py相同)
+WORKDIR /app
+
+# 默认命令：执行数据导入
+CMD ["python3", "-u", "/app/temp_import.py"]

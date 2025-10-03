@@ -58,16 +58,16 @@ class CompanyModalManager {
         }
 
         const companyName = this.companyData.name || 'Unknown Company';
-        const industry = this.companyData.industry || 'Unknown Industry';
+        const imSector = this.getCompanyImSector();
         const marketCap = this.formatCurrency(this.companyData.market_cap_usd);
         const peRatio = this.companyData.pe_ratio_trailing || 'N/A';
 
         // Special content for Kweichow Moutai Co Ltd
         if (companyName.includes('Kweichow Moutai') || companyName.includes('茅台')) {
-            return this.getMoutaiValueChainContent(companyName, industry, marketCap, peRatio);
+            return this.getMoutaiValueChainContent(companyName, imSector, marketCap, peRatio);
         }
 
-        return this.getGenericValueChainContent(companyName, industry, marketCap, peRatio);
+        return this.getGenericValueChainContent(companyName, imSector, marketCap, peRatio);
     }
 
     /**
@@ -89,14 +89,14 @@ class CompanyModalManager {
                     <span class="modal-value">${this.companyData.name || 'Unknown Company'}</span>
                 </div>
                 <div class="modal-row">
-                    <span class="modal-label">Industry</span>
-                    <span class="modal-value">${this.companyData.industry || 'Unknown Industry'}</span>
+                    <span class="modal-label">IM Sector</span>
+                    <span class="modal-value">${this.getCompanyImSector()}</span>
                 </div>
             </div>
             <div id="peersComparisonData" style="margin-top: 20px;">
                 <div style="text-align: center; padding: 20px;">
                     <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                    <p style="margin-top: 10px; color: #666;">Loading industry peers comparison...</p>
+                    <p style="margin-top: 10px; color: #666;">Loading IM sector peers comparison...</p>
                 </div>
             </div>
         `;
@@ -113,6 +113,7 @@ class CompanyModalManager {
 
         try {
             const data = await window.csi300ApiClient.getIndustryPeersComparison(this.companyData.id);
+            const imSector = data.industry || data.im_sector || this.getCompanyImSector();
             
             // Calculate ranking metrics
             const currentRank = data.target_company.rank;
@@ -135,11 +136,11 @@ class CompanyModalManager {
                         <span class="modal-value">${this.companyData.name || 'Unknown Company'}</span>
                     </div>
                     <div class="modal-row">
-                        <span class="modal-label">Industry</span>
-                        <span class="modal-value">${data.industry}</span>
+                        <span class="modal-label">IM Sector</span>
+                        <span class="modal-value">${imSector}</span>
                     </div>
                     
-                    <!-- Industry Ranking Indicator - Bar Chart Style -->
+                    <!-- IM Sector Ranking Indicator - Bar Chart Style -->
                     <div style="margin-top: 20px; padding: 15px 0;">
                         <!-- Professional Ranking Display -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -150,7 +151,7 @@ class CompanyModalManager {
                                 </div>
                                 <!-- Market Position -->
                                 <div>
-                                    <span style="font-weight: 600; color: #2c3e50; font-size: 14px;">Industry Ranking</span>
+                                    <span style="font-weight: 600; color: #2c3e50; font-size: 14px;">IM Sector Ranking</span>
                                     <span style="font-size: 12px; color: #6c757d; margin-left: 8px;">${this.getMarketPosition(percentileBeat)} Position</span>
                                 </div>
                             </div>
@@ -261,11 +262,11 @@ class CompanyModalManager {
                     </div>
                 `;
                 
-                // Add "Top 3 in industry" subtitle after the first Current Company only
+                // Add "Top 3 in sector" subtitle after the first Current Company only
                 if (isCurrentCompany && !subtitleAdded) {
                     html += `
                         <div style="margin: 15px 0 10px 0; padding: 8px 0; color: #666; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                            Top 3 in ${data.industry} industry
+                            Top 3 in ${imSector} sector
                         </div>
                     `;
                     subtitleAdded = true;
@@ -290,13 +291,14 @@ class CompanyModalManager {
         try {
             const data = await window.csi300ApiClient.getIndustryPeersComparison(this.companyData.id);
             const comparisonContainer = document.getElementById('peersComparisonData');
+            const imSector = data.industry || data.im_sector || this.getCompanyImSector();
             
             if (!comparisonContainer) return;
             
             // Create comparison table HTML
             let html = `
                 <div style="margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 4px;">
-                    <strong>Industry:</strong> ${data.industry}<br>
+                    <strong>IM Sector:</strong> ${imSector}<br>
                     <small style="color: #666;">Comparing with top ${data.total_peers_found} companies by market capitalization</small>
                 </div>
                 
@@ -365,7 +367,7 @@ class CompanyModalManager {
                 <div style="margin-top: 15px; padding: 10px; background-color: #f0f8ff; border-radius: 4px; border-left: 4px solid #2196f3;">
                     <strong>Analysis Framework:</strong>
                     <ul style="margin: 5px 0 0 20px; color: #666;">
-                        <li><strong>Market Capitalization:</strong> Size-based comparison within industry</li>
+                        <li><strong>Market Capitalization:</strong> Size-based comparison within IM sector</li>
                         <li><strong>P/E Ratio:</strong> Valuation relative to earnings</li>
                         <li><strong>ROE:</strong> Return on Equity - profitability efficiency</li>
                         <li><strong>EPS Growth:</strong> Earnings per share growth rate</li>
@@ -381,7 +383,7 @@ class CompanyModalManager {
             if (comparisonContainer) {
                 comparisonContainer.innerHTML = `
                     <div style="text-align: center; padding: 20px; color: #dc3545;">
-                        <p><strong>Unable to load industry peers comparison</strong></p>
+                        <p><strong>Unable to load IM sector peers comparison</strong></p>
                         <small>${error.message}</small>
                         <br><br>
                         <button onclick="window.app.modalManager.loadIndustryPeersData()" 
@@ -397,7 +399,8 @@ class CompanyModalManager {
     /**
      * Specific Value Chain content for Kweichow Moutai
      */
-    getMoutaiValueChainContent(companyName, industry, marketCap, peRatio) {
+    getMoutaiValueChainContent(companyName, imSector, marketCap, peRatio) {
+        const sectorDisplay = imSector || 'Unknown IM Sector';
         return `
             <div class="modal-section">
                 <div class="modal-row">
@@ -405,8 +408,8 @@ class CompanyModalManager {
                     <span class="modal-value">${companyName}</span>
                 </div>
                 <div class="modal-row">
-                    <span class="modal-label">Industry</span>
-                    <span class="modal-value">${industry}</span>
+                    <span class="modal-label">IM Sector</span>
+                    <span class="modal-value">${sectorDisplay}</span>
                 </div>
                 <div class="modal-row">
                     <span class="modal-label">Market Cap</span>
@@ -479,7 +482,7 @@ class CompanyModalManager {
             </div>
 
             <div style="margin-top: 24px; text-align: center;">
-                <button class="button button-secondary" id="viewDetailBtn" onclick="window.app.openValueChainDetail('${industry}')">
+                <button class="button button-secondary" id="viewDetailBtn" onclick="window.app.openValueChainDetail('${imSector || ''}')">
                     View Detail
                 </button>
             </div>
@@ -490,6 +493,7 @@ class CompanyModalManager {
      * Specific Peers Comparison content for Kweichow Moutai
      */
     getMoutaiPeersContent(companyName, industry, imCode) {
+        const sectorDisplay = industry || imCode || 'Unknown IM Sector';
         return `
             <div class="modal-section">
                 <div class="modal-row">
@@ -497,17 +501,13 @@ class CompanyModalManager {
                     <span class="modal-value">${companyName}</span>
                 </div>
                 <div class="modal-row">
-                    <span class="modal-label">Industry</span>
-                    <span class="modal-value">${industry}</span>
-                </div>
-                <div class="modal-row">
-                    <span class="modal-label">IM Code</span>
-                    <span class="modal-value">${imCode}</span>
+                    <span class="modal-label">IM Sector</span>
+                    <span class="modal-value">${sectorDisplay}</span>
                 </div>
             </div>
 
             <div class="modal-breakdown">
-                <h4 style="color: #1f2937; margin: 0 0 12px 0; font-size: 16px;">Key Industry Peers</h4>
+                <h4 style="color: #1f2937; margin: 0 0 12px 0; font-size: 16px;">Key IM Sector Peers</h4>
                 
                 <div class="modal-sub-item">
                     <span class="modal-sub-label">Wuliangye Yibin Co Ltd</span>
@@ -566,6 +566,7 @@ class CompanyModalManager {
      * Generic Value Chain content for other companies
      */
     getGenericValueChainContent(companyName, industry, marketCap, peRatio) {
+        const sectorDisplay = industry || 'Unknown IM Sector';
         return `
             <div class="modal-section">
                 <div class="modal-row">
@@ -573,8 +574,8 @@ class CompanyModalManager {
                     <span class="modal-value">${companyName}</span>
                 </div>
                 <div class="modal-row">
-                    <span class="modal-label">Industry</span>
-                    <span class="modal-value">${industry}</span>
+                    <span class="modal-label">IM Sector</span>
+                    <span class="modal-value">${sectorDisplay}</span>
                 </div>
                 <div class="modal-row">
                     <span class="modal-label">Market Cap</span>
@@ -618,11 +619,11 @@ class CompanyModalManager {
             <div class="modal-description">
                 <strong>Value Chain Summary:</strong> Comprehensive analysis of ${companyName}'s value creation process 
                 from upstream activities to end customer delivery. This summary provides an overview of key operational 
-                stages, competitive positioning, and strategic value drivers within the ${industry} sector.
+                stages, competitive positioning, and strategic value drivers within the ${sectorDisplay} sector.
             </div>
 
             <div style="margin-top: 24px; text-align: center;">
-                <button class="button button-secondary" id="viewDetailBtn" onclick="window.app.openValueChainDetail('${industry}')">
+                <button class="button button-secondary" id="viewDetailBtn" onclick="window.app.openValueChainDetail('${industry || ''}')">
                     View Detail
                 </button>
             </div>
@@ -633,6 +634,7 @@ class CompanyModalManager {
      * Generic Peers Comparison content for other companies
      */
     getGenericPeersContent(companyName, industry, imCode) {
+        const sectorDisplay = industry || imCode || 'Unknown IM Sector';
         return `
             <div class="modal-section">
                 <div class="modal-row">
@@ -640,12 +642,8 @@ class CompanyModalManager {
                     <span class="modal-value">${companyName}</span>
                 </div>
                 <div class="modal-row">
-                    <span class="modal-label">Industry</span>
-                    <span class="modal-value">${industry}</span>
-                </div>
-                <div class="modal-row">
-                    <span class="modal-label">IM Code</span>
-                    <span class="modal-value">${imCode}</span>
+                    <span class="modal-label">IM Sector</span>
+                    <span class="modal-value">${sectorDisplay}</span>
                 </div>
             </div>
 
@@ -708,6 +706,17 @@ class CompanyModalManager {
         } else {
             return `$${numValue.toLocaleString()}`;
         }
+    }
+
+    /**
+     * Retrieve company's IM sector with legacy fallback
+     * @param {Object} company - Optional company override
+     * @returns {string} Display-ready IM sector
+     */
+    getCompanyImSector(company = null) {
+        const source = company || this.companyData;
+        if (!source) return 'Unknown IM Sector';
+        return source.im_sector || source.industry || source.im_code || 'Unknown IM Sector';
     }
 }
 

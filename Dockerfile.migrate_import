@@ -1,0 +1,14 @@
+FROM 952189540759.dkr.ecr.ap-east-1.amazonaws.com/mem-dashboard:latest
+
+# 复制最新的migrations
+COPY src/django_api/csi300/migrations/ /app/src/django_api/csi300/migrations/
+
+# 复制数据文件和导入脚本
+COPY data/db_export/csi300_companies_new.json /app/data/
+COPY scripts/cloud/temp_migrate_import.py /app/
+
+# 设置工作目录为 /app (与aws_import_csi300_data.py相同)
+WORKDIR /app
+
+# 默认命令：执行migration和数据导入
+CMD ["python3", "-u", "/app/temp_migrate_import.py"]

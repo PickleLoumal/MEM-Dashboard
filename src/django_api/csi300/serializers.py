@@ -16,7 +16,7 @@ class CSI300CompanyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CSI300Company
         fields = [
-            'id', 'ticker', 'name', 'im_code', 'industry', 
+            'id', 'ticker', 'name', 'im_sector', 'industry', 
             'market_cap_local', 'market_cap_usd', 'pe_ratio_trailing', 'roe_trailing', 'price_local_currency'
         ]
 
@@ -24,9 +24,9 @@ class CSI300CompanyListSerializer(serializers.ModelSerializer):
 class CSI300FilterOptionsSerializer(serializers.Serializer):
     """Serializer for filter options"""
     
-    im_codes = serializers.ListField(child=serializers.CharField())
+    im_sectors = serializers.ListField(child=serializers.CharField())
     industries = serializers.ListField(child=serializers.CharField())
-    sectors = serializers.ListField(child=serializers.CharField())
+    gics_industries = serializers.ListField(child=serializers.CharField())
     market_cap_range = serializers.DictField()
 
 
@@ -54,7 +54,7 @@ class CSI300IndustryPeersComparisonSerializer(serializers.ModelSerializer):
     class Meta:
         model = CSI300Company
         fields = [
-            'id', 'ticker', 'name', 'industry',
+            'id', 'ticker', 'name', 'im_sector',
             'market_cap_local', 'market_cap_usd', 'market_cap_display',
             'pe_ratio_trailing', 'pe_ratio_display',
             'pb_ratio_display', 

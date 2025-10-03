@@ -17,7 +17,9 @@ from pathlib import Path
 # 尝试加载环境变量（如果dotenv可用）
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    # 优先加载本地开发环境变量
+    load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env.local'))
+    load_dotenv()  # 作为fallback加载默认.env
 except ImportError:
     # dotenv不可用时，使用环境变量
     pass
@@ -102,11 +104,11 @@ WSGI_APPLICATION = 'django_api.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'mem_dashboard'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'password'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+        'NAME': 'mem_dashboard',
+        'USER': 'postgres',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -145,7 +147,14 @@ USE_TZ = True  # 启用时区支持
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Additional locations of static files (only include if directory exists)
+STATICFILES_DIRS = []
+static_dir = os.path.join(BASE_DIR, 'static')
+if os.path.exists(static_dir):
+    STATICFILES_DIRS.append(static_dir)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -174,6 +183,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:8000",  # Django开发服务器
     "http://127.0.0.1:8000",
+    "https://d3ex2kglhlhbyr.cloudfront.net",  # CloudFront前端
+    "http://mem-dashboard-alb-1995066194.ap-east-1.elb.amazonaws.com",  # ALB直接访问
 ]
 
 # 日志配置
