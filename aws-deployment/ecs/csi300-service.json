@@ -1,0 +1,55 @@
+{
+  "serviceName": "csi300-backend-service",
+  "cluster": "mem-dashboard-cluster",
+  "taskDefinition": "csi300-backend-task",
+  "desiredCount": 1,
+  "launchType": "FARGATE",
+  "platformVersion": "LATEST",
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "subnets": [
+        "subnet-0fa889f45ef57ccf2",
+        "subnet-05496838fa2487bfc"
+      ],
+      "securityGroups": [
+        "sg-071e127bb3521821a"
+      ],
+      "assignPublicIp": "DISABLED"
+    }
+  },
+  "loadBalancers": [
+    {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:ap-east-1:952189540759:targetgroup/mem-dashboard-tg/292f9e307ff7c1f4",
+      "containerName": "csi300-backend-container",
+      "containerPort": 8000
+    }
+  ],
+  "serviceRegistries": [],
+  "deploymentConfiguration": {
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 50,
+    "deploymentCircuitBreaker": {
+      "enable": true,
+      "rollback": true
+    }
+  },
+  "placementConstraints": [],
+  "placementStrategy": [],
+  "enableExecuteCommand": true,
+  "enableECSManagedTags": true,
+  "propagateTags": "SERVICE",
+  "tags": [
+    {
+      "key": "Project",
+      "value": "CSI300-Dashboard"
+    },
+    {
+      "key": "Environment",
+      "value": "production"
+    },
+    {
+      "key": "ManagedBy",
+      "value": "ECS"
+    }
+  ]
+}

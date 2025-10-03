@@ -27,7 +27,7 @@ class BeaIndicator(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        managed = False  # 遵循WARNING要求
+        managed = True  # 改为True让Django管理此表
         db_table = 'bea_indicators'
         unique_together = ('series_id', 'time_period')
         ordering = ['-date']

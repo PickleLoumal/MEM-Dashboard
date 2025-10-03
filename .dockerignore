@@ -1,0 +1,141 @@
+# Git and version control
+.git
+.github
+.gitignore
+.gitignore.local
+.gitmessage
+
+# Documentation and logs
+docs/
+logs/
+*.log
+*.md
+!README.md
+
+# Development and IDE
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+.env/
+
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files and sensitive credentials
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+
+# Data directories (但保留db_export用于数据导入)
+data/csv/
+data/excel/
+data/json/
+data/wheels/
+# 允许data/db_export用于数据导入
+!data/db_export/
+backup/
+archives/
+temp/
+tmp/
+
+# Operating system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.DocumentRevisions-V100/
+.fseventsd/
+.TemporaryItems/
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Test files and cache
+test/
+tests/
+.pytest_cache/
+.coverage
+coverage/
+.cache/
+.nyc_output/
+
+# Build artifacts
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.bak
+*.backup
+*.old
+
+# AWS deployment (keep structure but ignore sensitive files)
+aws-deployment/scripts/
+infrastructure.env
+
+# Sensitive documentation and evidence
+.vercelignore
+ip_evidence/
+intellectual_property_evidence.json
+SYSTEM_COPYRIGHT_EVIDENCE.json
+JIAJUN_JIANG_COPYRIGHT_EVIDENCE.json
+django_verification_*/
+django_restoration_report_*.txt
+
+# Database files
+*.db
+*.sqlite3
+*.sql
+db.sqlite3
+local.db
+
+# Runtime files
+*.pid
+*.seed
+*.pid.lock
+pids/
+
+# Project specific sensitive files
+settings.json
+config/deployment/
+config/environment/
+config/*_backup.js
+# 允许scripts/import_data_to_aws.py用于数据导入
+scripts/tools/verify_stealth_watermarks.py
+# 保留导入脚本
+!scripts/import_data_to_aws.py
+
+# Deployment platforms
+.vercel/
+.netlify/
+.now/
+
+# iCloud conflicts
+*\ 2/
+*\ 2
+* 2/
+* 2
+*\ (Conflicted\ copy*
+*\ (conflicted\ copy*

@@ -62,7 +62,7 @@ class CSI300ApiClient {
      * Health check endpoint
      */
     async healthCheck() {
-        const url = `${this.baseUrl}/api/health/`;
+        const url = `${this.baseUrl}${CSI300Config.ENDPOINTS.HEALTH_CHECK}`;
         return await this.makeRequest(url);
     }
 
@@ -79,8 +79,8 @@ class CSI300ApiClient {
                 const queryParams = new URLSearchParams();
                 
                 // Add filters to query params
-                if (filters.im_code) queryParams.append('im_code', filters.im_code);
-                if (filters.industry) queryParams.append('industry', filters.industry);
+                const imSectorFilter = filters.im_sector || filters.im_code || filters.industry;
+                if (imSectorFilter) queryParams.append('im_sector', imSectorFilter);
                 if (filters.company_search) queryParams.append('search', filters.company_search);
                 
                 // Use Django REST framework pagination parameters
@@ -95,7 +95,7 @@ class CSI300ApiClient {
                     queryParams.append('page', page);
                 }
 
-                const url = `${this.baseUrl}/api/csi300/api/companies/?${queryParams.toString()}`;
+                const url = `${this.baseUrl}${CSI300Config.ENDPOINTS.COMPANIES_LIST}?${queryParams.toString()}`;
                 console.log('API Request URL:', url);
                 console.log('Request filters:', filters);
                 return await this.makeRequest(url);
@@ -114,7 +114,7 @@ class CSI300ApiClient {
         return await this.getCachedOrFetch(
             cacheKey,
             async () => {
-                const url = `${this.baseUrl}/api/csi300/api/companies/${companyId}/`;
+                const url = `${this.baseUrl}${CSI300Config.ENDPOINTS.COMPANY_DETAIL.replace('{id}', companyId)}`;
                 return await this.makeRequest(url);
             },
             CSI300Config.CACHE_CONFIG.COMPANIES_TTL
@@ -122,7 +122,7 @@ class CSI300ApiClient {
     }
 
     /**
-     * Get filter options (IM codes, industries, etc.)
+     * Get filter options (IM sectors, etc.)
      */
     async getFilterOptions() {
         const cacheKey = 'filter_options';
@@ -130,7 +130,7 @@ class CSI300ApiClient {
         return await this.getCachedOrFetch(
             cacheKey,
             async () => {
-                const url = `${this.baseUrl}/api/csi300/api/companies/filter_options/`;
+                const url = `${this.baseUrl}${CSI300Config.ENDPOINTS.FILTER_OPTIONS}`;
                 return await this.makeRequest(url);
             },
             CSI300Config.CACHE_CONFIG.FILTER_OPTIONS_TTL
@@ -141,8 +141,24 @@ class CSI300ApiClient {
      * Search companies by name or ticker
      */
     async searchCompanies(query) {
-        const url = `${this.baseUrl}/api/csi300/api/companies/search/?q=${encodeURIComponent(query)}`;
+        const url = `${this.baseUrl}${CSI300Config.ENDPOINTS.COMPANIES_LIST}?search=${encodeURIComponent(query)}`;
         return await this.makeRequest(url);
+    }
+
+    /**
+     * Get investment summary for a specific company
+     */
+    async getInvestmentSummary(companyId) {
+        const cacheKey = `investment_summary_${companyId}`;
+        
+        return await this.getCachedOrFetch(
+            cacheKey,
+            async () => {
+                const url = `${this.baseUrl}/api/csi300/api/companies/${companyId}/investment_summary/`;
+                return await this.makeRequest(url);
+            },
+            CSI300Config.CACHE_CONFIG.COMPANY_DETAIL_TTL
+        );
     }
 
     /**
@@ -154,6 +170,7 @@ class CSI300ApiClient {
         return await this.getCachedOrFetch(
             cacheKey,
             async () => {
+                // Note: This endpoint is not in the ENDPOINTS config, using direct path
                 const url = `${this.baseUrl}/api/csi300/api/companies/${companyId}/industry_peers_comparison/`;
                 return await this.makeRequest(url);
             },

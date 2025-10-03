@@ -4,7 +4,7 @@ CSI300 Standalone Application is a separated frontend application for browsing a
 
 ## Features
 
-- **Company Filtering**: Filter companies by IM code, industry, and market capitalization
+- **Company Filtering**: Filter companies by IM sector and market capitalization
 - **Company Browser**: Browse companies with pagination and mobile-responsive design
 - **Company Details**: View detailed financial metrics, ratios, and business information
 - **REST API Integration**: Communicates with Django backend via REST API
@@ -85,7 +85,7 @@ const CSI300Config = {
 
 ### Main Filter Page (index.html)
 
-- Select filters for IM code, industry, and market cap range
+- Select filters for IM sector and market cap range
 - Click "Apply Filter" to view filtered results
 - Click "View All" to see all companies
 

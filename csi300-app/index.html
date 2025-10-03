@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>CSI300 Company Filter - Standalone Application</title>
     
+    <!-- Favicon (using base64 to avoid 404) -->
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==">
+    
     <!-- Build configuration metadata -->
     <meta name="build-timestamp" content="2025-Sep">
     <meta name="application-id" content="CSI300 Dashboard">
@@ -20,8 +23,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Application Configuration -->
-    <script src="config/csi300_api_config.js"></script>
+    <script src="config/csi300_api_config.js?v=20250924"></script>
     <script src="assets/js/utils/csi300_api_client.js"></script>
+    <script src="assets/js/utils/csi300_error_handler.js"></script>
     
     <style>
         body {
@@ -220,16 +224,9 @@
         <form id="filterForm" class="filter-form">
             <div class="filter-grid">
                 <div class="filter-group">
-                    <label class="filter-label">IM Code</label>
-                    <select name="im_code" id="imCodeSelect" class="filter-select">
-                        <option value="">All IM Codes</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Industry</label>
-                    <select name="industry" id="industrySelect" class="filter-select">
-                        <option value="">All Industries</option>
+                    <label class="filter-label">IM Sector</label>
+                    <select name="im_sector" id="imSectorSelect" class="filter-select">
+                        <option value="">All IM Sectors</option>
                     </select>
                 </div>
                 
@@ -272,39 +269,41 @@
                     const data = await this.apiClient.getFilterOptions();
                     
                     // Update total count
-                    document.getElementById('totalCount').textContent = 
-                        `Total ${data.total_count} companies in database`;
+                    const totalCount = data.total_count ?? data.company_count ?? data.total_companies ?? null;
+                    document.getElementById('totalCount').textContent = totalCount
+                        ? `Total ${totalCount} companies in database`
+                        : 'CSI300 company filters ready';
                     
-                    // Populate IM codes
-                    const imCodeSelect = document.getElementById('imCodeSelect');
-                    data.im_codes.forEach(code => {
-                        if (code) {
+                    // Populate IM sectors
+                    const imSectorSelect = document.getElementById('imSectorSelect');
+                    const imSectors = (data.im_sectors && data.im_sectors.length)
+                        ? data.im_sectors
+                        : (data.im_codes && data.im_codes.length)
+                            ? data.im_codes
+                            : (data.industries || []);
+
+                    imSectors.forEach(sector => {
+                        if (sector) {
                             const option = document.createElement('option');
-                            option.value = code;
-                            option.textContent = code;
-                            imCodeSelect.appendChild(option);
-                        }
-                    });
-                    
-                    // Populate industries
-                    const industrySelect = document.getElementById('industrySelect');
-                    data.industries.forEach(industry => {
-                        if (industry) {
-                            const option = document.createElement('option');
-                            option.value = industry;
-                            option.textContent = industry;
-                            industrySelect.appendChild(option);
+                            option.value = sector;
+                            option.textContent = sector;
+                            imSectorSelect.appendChild(option);
                         }
                     });
                     
                     // Set market cap placeholders
-                    if (data.market_cap_range.min_cap) {
-                        document.getElementById('marketCapMin').placeholder = 
-                            `Min (${Math.floor(data.market_cap_range.min_cap)})`;
-                    }
-                    if (data.market_cap_range.max_cap) {
-                        document.getElementById('marketCapMax').placeholder = 
-                            `Max (${Math.floor(data.market_cap_range.max_cap)})`;
+                    if (data.market_cap_range) {
+                        const minCap = data.market_cap_range.min ?? data.market_cap_range.min_cap;
+                        if (minCap) {
+                            document.getElementById('marketCapMin').placeholder = 
+                                `Min (${Math.floor(minCap)})`;
+                        }
+
+                        const maxCap = data.market_cap_range.max ?? data.market_cap_range.max_cap;
+                        if (maxCap) {
+                            document.getElementById('marketCapMax').placeholder = 
+                                `Max (${Math.floor(maxCap)})`;
+                        }
                     }
                     
                 } catch (error) {

@@ -1,0 +1,17 @@
+MEM Dashboard 部署配置摘要
+生成时间: Tue Aug 26 14:18:39 HKT 2025
+
+网络配置:
+- VPC: vpc-06821bd95f90aed5b
+- 私有子网A: subnet-0fa889f45ef57ccf2
+- 私有子网B: subnet-05496838fa2487bfc
+- ECS安全组: sg-071e127bb3521821a
+- RDS安全组: sg-05468a10704715ec2
+- ALB安全组: sg-08f0b19558c64db33
+
+负载均衡器:
+- ALB ARN: arn:aws:elasticloadbalancing:ap-east-1:952189540759:loadbalancer/app/mem-dashboard-alb/0caf32403f9ed233
+- Target Group ARN: arn:aws:elasticloadbalancing:ap-east-1:952189540759:targetgroup/mem-dashboard-tg/292f9e307ff7c1f4
+
+数据库:
+- RDS端点: mem-dashboard-db.ctmsw8kwgt4a.ap-east-1.rds.amazonaws.com

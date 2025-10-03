@@ -8,18 +8,18 @@
   "networkConfiguration": {
     "awsvpcConfiguration": {
       "subnets": [
-        "subnet-private-1a",
-        "subnet-private-1b"
+        "subnet-0fa889f45ef57ccf2",
+        "subnet-05496838fa2487bfc"
       ],
       "securityGroups": [
-        "sg-ecs-tasks"
+        "sg-071e127bb3521821a"
       ],
       "assignPublicIp": "DISABLED"
     }
   },
   "loadBalancers": [
     {
-      "targetGroupArn": "arn:aws:elasticloadbalancing:us-west-2:ACCOUNT-ID:targetgroup/mem-dashboard-tg/1234567890123456",
+      "targetGroupArn": "arn:aws:elasticloadbalancing:ap-east-1:952189540759:targetgroup/mem-dashboard-tg/292f9e307ff7c1f4",
       "containerName": "mem-dashboard-container",
       "containerPort": 8000
     }

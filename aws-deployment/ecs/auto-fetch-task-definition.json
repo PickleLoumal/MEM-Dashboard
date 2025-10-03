@@ -1,0 +1,102 @@
+{
+  "family": "mem-dashboard-auto-fetch-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT-ID:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT-ID:role/mem-dashboard-task-role",
+  "containerDefinitions": [
+    {
+      "name": "mem-dashboard-auto-fetch-container",
+      "image": "ACCOUNT-ID.dkr.ecr.ap-east-1.amazonaws.com/mem-dashboard:latest",
+      "essential": true,
+      "command": [
+        "python", 
+        "src/django_api/manage.py", 
+        "run_auto_fetch",
+        "--frequency=hourly",
+        "--output-json"
+      ],
+      "environment": [
+        {
+          "name": "ENVIRONMENT",
+          "value": "production"
+        },
+        {
+          "name": "AWS_DEFAULT_REGION",
+          "value": "ap-east-1"
+        },
+        {
+          "name": "DJANGO_SETTINGS_MODULE",
+          "value": "django_api.settings"
+        },
+        {
+          "name": "PYTHONPATH",
+          "value": "/app/src"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DB_HOST",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:ACCOUNT-ID:secret:mem-dashboard/database:host::"
+        },
+        {
+          "name": "DB_NAME",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:ACCOUNT-ID:secret:mem-dashboard/database:dbname::"
+        },
+        {
+          "name": "DB_USER",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:ACCOUNT-ID:secret:mem-dashboard/database:username::"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:ACCOUNT-ID:secret:mem-dashboard/database:password::"
+        },
+        {
+          "name": "DB_PORT",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:ACCOUNT-ID:secret:mem-dashboard/database:port::"
+        },
+        {
+          "name": "FRED_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:ACCOUNT-ID:secret:mem-dashboard/api-keys:fred_api_key::"
+        },
+        {
+          "name": "BEA_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:ACCOUNT-ID:secret:mem-dashboard/api-keys:bea_api_key::"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/mem-dashboard-auto-fetch",
+          "awslogs-region": "ap-east-1",
+          "awslogs-stream-prefix": "auto-fetch"
+        }
+      },
+      "stopTimeout": 120,
+      "mountPoints": [],
+      "volumesFrom": []
+    }
+  ],
+  "volumes": [],
+  "placementConstraints": [],
+  "tags": [
+    {
+      "key": "Project",
+      "value": "MEM-Dashboard"
+    },
+    {
+      "key": "Environment", 
+      "value": "production"
+    },
+    {
+      "key": "Purpose",
+      "value": "AutoDataFetch"
+    },
+    {
+      "key": "ManagedBy",
+      "value": "EventBridge"
+    }
+  ]
+}

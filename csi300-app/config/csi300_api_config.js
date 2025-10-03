@@ -4,17 +4,17 @@
  */
 
 const CSI300Config = {
-    // Base API URL - pointing to Django backend
+    // Use CloudFront for both static files and API proxy - all HTTPS
     BASE_URL: 'http://localhost:8001',
     API_BASE: '/api/csi300',
-    
-    // Django CSI300 app endpoints (keeping compatibility with Django backend)
+
+    // CSI300 app endpoints (CloudFront API paths)
     ENDPOINTS: {
         COMPANIES_LIST: '/api/csi300/api/companies/',
         COMPANY_DETAIL: '/api/csi300/api/companies/{id}/',
         FILTER_OPTIONS: '/api/csi300/api/companies/filter_options/',
-        SEARCH: '/api/csi300/api/companies/search/',
-        HEALTH_CHECK: '/api/health/'
+        SEARCH: '/api/csi300/api/companies/',  // Use the main companies endpoint with search parameter
+        HEALTH_CHECK: '/api/csi300/health/'
     },
     
     // Application settings
@@ -36,6 +36,7 @@ const CSI300Config = {
     // Cache settings
     CACHE_CONFIG: {
         COMPANIES_TTL: 300000, // 5 minutes
+        COMPANY_DETAIL_TTL: 300000, // 5 minutes
         FILTER_OPTIONS_TTL: 600000, // 10 minutes
         ENABLED: true
     }
