@@ -36,7 +36,7 @@ class AIEconomicChatSystem:
         self.session_start_time = datetime.now()
         
         self.ai_config = {
-            'api_key': os.getenv('GROK_API_KEY', 'xai-cvJvJSW2ZLXqypPjOHmDFhxOCsAL6y0I5xUS05Z2l1C3b1U9UeGNeJMi8NLWYG5j17DROUiRMOgXuaYZ'),
+            'api_key': os.getenv('GROK_API_KEY'),  # API key should be set in environment variable
             'api_base_url': os.getenv('GROK_API_BASE_URL', 'https://api.x.ai/v1'),
             'model': 'grok-3',
             'max_tokens': 2000,
