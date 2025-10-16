@@ -21,56 +21,80 @@
     <!-- Framework and styling imports -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Global Navigation -->
+    <link rel="stylesheet" href="assets/css/global-nav.css">
+    <script src="assets/js/components/global-nav.js"></script>
     
     <!-- Application Configuration -->
-    <script src="config/csi300_api_config.js?v=20250924"></script>
-    <script src="assets/js/utils/csi300_api_client.js"></script>
-    <script src="assets/js/utils/csi300_error_handler.js"></script>
+    <script src="config/csi300_api_config.js?v=20251007-fix"></script>
+    <script src="assets/js/utils/csi300_api_client.js?v=20251007-fix"></script>
+    <script src="assets/js/utils/csi300_error_handler.js?v=20251007-fix"></script>
+    <link rel="stylesheet" href="assets/css/app-base.css">
     
     <style>
         body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--app-body-bg);
+            font-family: var(--app-font-family);
+            color: var(--app-text);
+        }
+        
+        .page-shell {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 72px 24px 48px;
+            box-sizing: border-box;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
+            gap: 24px;
+        }
+        
+        .filter-card-wrapper {
+            width: 100%;
+            display: flex;
             justify-content: center;
-            padding: 20px;
-            box-sizing: border-box;
-            background-color: #f8f9fa;
         }
         
         .filter-container {
-            max-width: 600px;
-            width: 100%;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
+            text-align: left;
             padding: 32px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            text-align: center;
-            box-sizing: border-box;
+            border-radius: var(--app-radius-lg);
+            box-shadow: var(--app-shadow-subtle);
+            width: 100%;
+            max-width: 720px;
         }
         
         .page-header {
-            margin-bottom: 32px;
+            margin: 0;
+            text-align: center;
+            width: 100%;
+            max-width: 720px;
         }
         
         .page-title {
-            font-size: 28px;
-            font-weight: 600;
-            color: #1f2937;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--app-heading);
             margin: 0 0 8px 0;
+            letter-spacing: -0.01em;
         }
         
         .page-subtitle {
-            font-size: 14px;
-            color: #6b7280;
-            margin: 0 0 8px 0;
+            font-size: 16px;
+            color: var(--app-text-muted);
+            margin: 0 0 12px 0;
+            font-weight: 400;
         }
         
         .total-count {
             font-size: 13px;
-            color: #059669;
+            color: var(--app-success);
             font-weight: 500;
+            margin: 0 0 16px 0;
         }
         
         .filter-form {
@@ -79,6 +103,7 @@
         
         .filter-grid {
             display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 24px;
             margin-bottom: 32px;
         }
@@ -86,167 +111,143 @@
         .filter-group {
             display: flex;
             flex-direction: column;
+            min-width: 0;
+            gap: 6px;
         }
         
         .filter-label {
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 8px;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
+            color: var(--app-text);
         }
         
-        .filter-input, .filter-select {
-            padding: 12px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            font-size: 14px;
-            background: white;
-            color: #111827;
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-        }
-        
-        .filter-input:focus, .filter-select:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        .filter-input,
+        .filter-select {
+            transition:
+                border-color var(--app-transition-speed) ease,
+                box-shadow var(--app-transition-speed) ease,
+                background-color var(--app-transition-speed) ease;
         }
         
         .filter-select option {
             padding: 8px 12px;
             line-height: 1.4;
-            vertical-align: middle;
         }
         
         .filter-actions {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
             margin-top: 32px;
         }
         
         .btn {
-            padding: 12px 24px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 500;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            transition: all 0.15s ease-in-out;
-            min-width: 120px;
+            min-width: 140px;
             text-align: center;
-            display: inline-block;
+            transition:
+                background-color var(--app-transition-speed) ease,
+                color var(--app-transition-speed) ease,
+                box-shadow var(--app-transition-speed) ease;
         }
         
         .btn-primary {
-            background: #1d1e1f;
-            color: white;
-            border: none;
+            background: #1f2937;
+            color: #FFF;
         }
         
         .btn-primary:hover {
-            background: #2a2a2c;
+            background: #111827;
         }
         
         .btn-secondary {
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #d1d5db;
+            background: var(--app-surface-muted);
+            color: var(--app-heading);
+            border: 1px solid var(--app-border);
         }
         
         .btn-secondary:hover {
-            background: #e5e7eb;
-            border-color: #9ca3af;
+            background: #e6e9ee;
         }
         
         .loading {
-            color: #6b7280;
+            color: var(--app-text-muted);
             font-style: italic;
         }
         
         .error {
-            color: #dc2626;
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            padding: 12px;
-            border-radius: 4px;
             margin-bottom: 16px;
         }
-
+        
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-                box-sizing: border-box;
+            .page-shell {
+                padding: 64px 16px 32px;
+                gap: 16px;
             }
             
             .filter-container {
-                padding: 20px;
-                margin: 0;
-                max-width: 100%;
-                width: 100%;
-                box-sizing: border-box;
+                padding: 28px 20px;
             }
             
-            .page-title {
-                font-size: 22px;
+            .filter-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
             }
             
             .filter-actions {
                 flex-direction: column;
-                gap: 12px;
-                margin-top: 24px;
-                width: 100%;
-                box-sizing: border-box;
             }
             
             .btn {
                 width: 100%;
-                padding: 14px 24px;
-                font-size: 16px;
-                box-sizing: border-box;
-                max-width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <div class="filter-container">
+    <main class="page-shell app-shell">
         <div class="page-header">
             <h1 class="page-title">CSI300 Company Filter</h1>
             <p class="page-subtitle">Filter and browse CSI300 index companies</p>
-            <p class="total-count" id="totalCount">Loading total count...</p>
         </div>
         
-        <div id="errorMessage" class="error" style="display: none;"></div>
-        
-        <form id="filterForm" class="filter-form">
-            <div class="filter-grid">
-                <div class="filter-group">
-                    <label class="filter-label">IM Sector</label>
-                    <select name="im_sector" id="imSectorSelect" class="filter-select">
-                        <option value="">All IM Sectors</option>
-                    </select>
-                </div>
+        <div class="filter-card-wrapper">
+            <div class="filter-container app-card">
+                <p class="total-count" id="totalCount">Loading total count...</p>
                 
-                <div class="filter-group">
-                    <label class="filter-label">Market Cap Range (USD Million)</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <input type="number" name="market_cap_min" id="marketCapMin" 
-                               class="filter-input" placeholder="Min">
-                        <input type="number" name="market_cap_max" id="marketCapMax" 
-                               class="filter-input" placeholder="Max">
+                <div id="errorMessage" class="error app-notice" style="display: none;"></div>
+                
+                <form id="filterForm" class="filter-form">
+                    <div class="filter-grid app-form-grid app-form-grid--two">
+                        <div class="filter-group app-form-field">
+                            <label class="filter-label app-label">IM Sector</label>
+                            <select name="im_sector" id="imSectorSelect" class="filter-select app-select">
+                                <option value="">All IM Sectors</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group app-form-field">
+                            <label class="filter-label app-label">Industry within selected sector</label>
+                            <select name="industry" id="industrySelect" class="filter-select app-select">
+                                <option value="">All Industries</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group app-form-field">
+                            <label class="filter-label app-label">Search Companies</label>
+                            <input type="text" name="company_search" id="companySearch" 
+                                   class="filter-input app-input" placeholder="Search by company name or ticker...">
+                        </div>
+                        
+                        <div class="filter-group app-form-field">
+                            <label class="filter-label app-label">Search by Industry</label>
+                            <input type="text" name="industry_search" id="industrySearch" 
+                                   class="filter-input app-input" placeholder="Search by industry name...">
+                        </div>
                     </div>
-                </div>
+                    
+                    <div class="filter-actions app-actions app-actions--center">
+                        <button type="button" id="viewAllBtn" class="btn btn-secondary app-button app-button--secondary">Clear Filters</button>
+                        <button type="submit" class="btn btn-primary app-button app-button--primary">Apply Filters</button>
+                    </div>
+                </form>
             </div>
-            
-            <div class="filter-actions">
-                <button type="button" id="viewAllBtn" class="btn btn-secondary">View All</button>
-                <button type="submit" class="btn btn-primary">Apply Filter</button>
-            </div>
-        </form>
-    </div>
+        </div>
+    </main>
 
     <script>
         class CSI300FilterApp {
@@ -291,20 +292,22 @@
                         }
                     });
                     
-                    // Set market cap placeholders
-                    if (data.market_cap_range) {
-                        const minCap = data.market_cap_range.min ?? data.market_cap_range.min_cap;
-                        if (minCap) {
-                            document.getElementById('marketCapMin').placeholder = 
-                                `Min (${Math.floor(minCap)})`;
-                        }
+                    // Populate Industries
+                    const industrySelect = document.getElementById('industrySelect');
+                    const industries = (data.industries && data.industries.length)
+                        ? data.industries
+                        : (data.im_sectors && data.im_sectors.length)
+                            ? data.im_sectors
+                            : (data.im_codes || []);
 
-                        const maxCap = data.market_cap_range.max ?? data.market_cap_range.max_cap;
-                        if (maxCap) {
-                            document.getElementById('marketCapMax').placeholder = 
-                                `Max (${Math.floor(maxCap)})`;
+                    industries.forEach(industry => {
+                        if (industry) {
+                            const option = document.createElement('option');
+                            option.value = industry;
+                            option.textContent = industry;
+                            industrySelect.appendChild(option);
                         }
-                    }
+                    });
                     
                 } catch (error) {
                     this.showError('Failed to load filter options: ' + error.message);
@@ -318,10 +321,53 @@
                     this.applyFilters();
                 });
 
-                // View all button
+                // Clear filters button
                 document.getElementById('viewAllBtn').addEventListener('click', () => {
                     this.viewAll();
                 });
+                
+                // IM Sector change - cascade to Industry
+                document.getElementById('imSectorSelect').addEventListener('change', async (e) => {
+                    await this.onImSectorChange(e.target.value);
+                });
+            }
+            
+            async onImSectorChange(selectedSector) {
+                try {
+                    const industrySelect = document.getElementById('industrySelect');
+                    
+                    // Show loading state
+                    industrySelect.disabled = true;
+                    industrySelect.innerHTML = '<option value="">Loading...</option>';
+                    
+                    // Prepare parameters for filtered industry options
+                    const params = selectedSector ? { im_sector: selectedSector } : {};
+                    
+                    // Request filtered industry options
+                    const filterOptions = await this.apiClient.getFilterOptions(params);
+                    console.log('Received filtered options:', filterOptions);
+                    
+                    // Update Industry dropdown options
+                    industrySelect.innerHTML = '<option value="">All Industries</option>';
+                    const industries = filterOptions.industries || [];
+                    industries.forEach(industry => {
+                        if (industry) {
+                            const option = document.createElement('option');
+                            option.value = industry;
+                            option.textContent = industry;
+                            industrySelect.appendChild(option);
+                        }
+                    });
+                    
+                    industrySelect.disabled = false;
+                    console.log(`Updated industry dropdown with ${industries.length} options`);
+                    
+                } catch (error) {
+                    console.error('Failed to load industry options:', error);
+                    const industrySelect = document.getElementById('industrySelect');
+                    industrySelect.innerHTML = '<option value="">All Industries</option>';
+                    industrySelect.disabled = false;
+                }
             }
 
             applyFilters() {
