@@ -16,11 +16,20 @@
     <!-- Framework and styling imports -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Global Navigation -->
+    <link rel="stylesheet" href="assets/css/global-nav.css">
+    <script src="assets/js/components/global-nav.js"></script>
     
     <!-- Application Configuration -->
-    <script src="config/csi300_api_config.js?v=20250924"></script>
-    <script src="assets/js/utils/csi300_api_client.js"></script>
-    <script src="assets/js/utils/csi300_error_handler.js"></script>
+    <script src="config/csi300_api_config.js?v=20251007-fix"></script>
+    <script src="assets/js/utils/csi300_api_client.js?v=20251007-fix"></script>
+    <script src="assets/js/utils/csi300_error_handler.js?v=20251007-fix"></script>
+    
+    <!-- Column Selector Components -->
+    <link rel="stylesheet" href="assets/css/column-selector.css?v=20251009">
+    <script src="config/column-manifest.js?v=20251009"></script>
+    <script src="assets/js/components/column-selector.js?v=20251009"></script>
     
     <style>
         * {
@@ -28,21 +37,25 @@
         }
         
         body {
+            margin: 0;
             background-color: #f8f9fa;
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #1f2937;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 80px 24px 48px;
         }
         
         .filter-section {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-            padding: 24px;
-            margin-bottom: 24px;
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            margin-bottom: 28px;
+            box-shadow: none;
+            border: none;
         }
         
         .filter-grid {
@@ -85,47 +98,49 @@
         }
         
         .btn {
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: 12px 28px;
+            border-radius: 999px;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
             text-decoration: none;
             border: none;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
         
         .btn-primary {
-            background: #1d1e1f;
-            color: white;
+            background: #111827;
+            color: #ffffff;
         }
         
         .btn-primary:hover {
-            background: #2a2a2c;
+            background: #0f172a;
         }
         
         .btn-secondary {
-            background: #f3f4f6;
-            color: #374151;
+            background: #eef1f6;
+            color: #111827;
         }
         
         .btn-secondary:hover {
-            background: #e5e7eb;
+            background: #e2e5ec;
         }
         
         .results-section {
-            background: white !important;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.97) !important;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08);
             box-sizing: border-box;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
         }
         
         .results-header {
-            background: #f8f9fa !important;
-            padding: 16px 24px;
-            border-bottom: 1px solid #e5e7eb;
+            background: transparent !important;
+            padding: 24px 32px 16px;
+            border-bottom: 1px solid rgba(240, 242, 245, 0.6);
         }
         
         .results-title {
@@ -216,21 +231,22 @@
         }
         
         .page-header {
-            text-align: center;
-            margin-bottom: 32px;
+            text-align: left;
+            margin-bottom: 40px;
         }
         
         .page-title {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 700;
-            color: #1f2937;
-            margin: 0 0 8px 0;
+            color: #111827;
+            margin: 0;
+            letter-spacing: -0.01em;
         }
         
         .page-subtitle {
             font-size: 16px;
             color: #6b7280;
-            margin: 0;
+            margin: 12px 0 0 0;
         }
         
         .loading {
@@ -402,15 +418,25 @@
             color: white;
             border-color: #1d1e1f;
         }
+        
+        /* Dynamic Column Styles */
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-left {
+            text-align: left;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="page-header">
             <h1 class="page-title">CSI300 Search Results</h1>
-            <p class="page-subtitle">
-                <a href="index.html" style="color: #1d1e1f; text-decoration: none;">← Back to Filter</a>
-            </p>
         </div>
         
         <div id="errorMessage" class="error" style="display: none;"></div>
@@ -452,8 +478,13 @@
         
         <div class="results-section">
             <div class="results-header">
-                <h2 class="results-title">Search Results</h2>
-                <p class="results-count" id="resultsCount">Loading...</p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 class="results-title">Search Results</h2>
+                        <p class="results-count" id="resultsCount">Loading...</p>
+                    </div>
+                    <div id="columnSelectorContainer"></div>
+                </div>
             </div>
             
             <div id="loadingIndicator" class="loading">
@@ -514,18 +545,42 @@
                 this.pageSize = 20;
                 this.totalResults = 0;
                 this.companies = [];
+                this.columnSelector = null;
+                this.selectedColumns = [];
+                this.pinnedColumns = [];
                 this.init();
             }
 
             async init() {
                 try {
                     await this.loadFilterOptions();
+                    this.initColumnSelector();
                     this.parseUrlFilters();
                     this.bindEvents();
                     await this.loadCompanies();
                 } catch (error) {
                     this.showError('Failed to initialize application: ' + error.message);
                 }
+            }
+            
+            initColumnSelector() {
+                if (!window.CSI300ColumnManifest || !window.CSI300ColumnSelector) {
+                    console.warn('Column selector components not loaded');
+                    return;
+                }
+                
+                this.columnSelector = new CSI300ColumnSelector(CSI300ColumnManifest, {
+                    container: '#columnSelectorContainer',
+                    onColumnChange: (data) => {
+                        this.selectedColumns = data.columns;
+                        this.pinnedColumns = data.pinnedColumns;
+                        this.renderResults();
+                    }
+                });
+                
+                // Get initial column selection
+                this.selectedColumns = this.columnSelector.getSelectedColumns();
+                this.pinnedColumns = this.columnSelector.getPinnedColumns().map(c => c.id);
             }
 
             async loadFilterOptions() {
@@ -717,33 +772,215 @@
             }
 
             renderDesktopTable() {
+                const table = document.getElementById('companyTable');
+                const thead = table.querySelector('thead');
                 const tbody = document.getElementById('companyTableBody');
+                
+                // Use selected columns or fallback to default
+                const columns = this.selectedColumns.length > 0 
+                    ? this.selectedColumns 
+                    : this.getDefaultColumns();
+                
+                // Render table header
+                thead.innerHTML = '<tr>' + columns.map(col => {
+                    const isPinned = this.pinnedColumns.includes(col.id);
+                    const alignClass = col.align === 'right' ? 'text-right' : '';
+                    const hideClass = !col.defaultVisible && window.innerWidth <= 768 ? 'mobile-hide' : '';
+                    return `<th class="${alignClass} ${hideClass}" style="${isPinned ? 'position: sticky; left: 0; z-index: 10; background: #f8f9fa;' : ''}">${col.displayName}</th>`;
+                }).join('') + '</tr>';
+                
+                // Render table body
                 tbody.innerHTML = '';
                 
                 this.companies.forEach(company => {
-                    const imSector = company.im_sector || company.industry || company.im_code || '-';
                     const row = document.createElement('tr');
                     row.className = 'clickable-row';
                     row.setAttribute('data-company-id', company.id);
                     row.addEventListener('click', () => this.openCompanyDetail(company.id));
                     
-                    row.innerHTML = `
-                        <td class="company-name">${company.name || '-'}</td>
-                        <td class="company-ticker">${company.ticker || '-'}</td>
-                        <td>${imSector}</td>
-                        <td class="market-cap mobile-hide">
-                            ${company.market_cap_usd ? Math.floor(company.market_cap_usd).toLocaleString() : '-'}
-                        </td>
-                        <td class="price mobile-hide">
-                            ${company.price_local_currency ? parseFloat(company.price_local_currency).toFixed(2) : '-'}
-                        </td>
-                        <td class="pe-ratio mobile-hide">
-                            ${company.pe_ratio_trailing ? parseFloat(company.pe_ratio_trailing).toFixed(1) : '-'}
-                        </td>
-                    `;
+                    row.innerHTML = columns.map(col => {
+                        const isPinned = this.pinnedColumns.includes(col.id);
+                        const value = this.formatCellValue(company, col);
+                        const alignClass = col.align === 'right' ? 'text-right' : '';
+                        const hideClass = !col.defaultVisible && window.innerWidth <= 768 ? 'mobile-hide' : '';
+                        const cellClass = this.getCellClass(col);
+                        return `<td class="${cellClass} ${alignClass} ${hideClass}" style="${isPinned ? 'position: sticky; left: 0; z-index: 5; background: white;' : ''}">${value}</td>`;
+                    }).join('');
                     
                     tbody.appendChild(row);
                 });
+            }
+            
+            getDefaultColumns() {
+                if (!window.CSI300ColumnManifest) {
+                    return [
+                        { id: 'name', displayName: 'Company Name', format: 'text-bold', align: 'left', defaultVisible: true },
+                        { id: 'ticker', displayName: 'Ticker', format: 'monospace', align: 'left', defaultVisible: true },
+                        { id: 'im_sector', displayName: 'IM Sector', format: 'text', align: 'left', defaultVisible: true },
+                        { id: 'market_cap_usd', displayName: 'Market Cap (USD M)', format: 'currency-millions', align: 'right', defaultVisible: true },
+                        { id: 'price_local_currency', displayName: 'Price (Local)', format: 'currency', align: 'right', defaultVisible: true },
+                        { id: 'pe_ratio_trailing', displayName: 'P/E Ratio', format: 'number', align: 'right', defaultVisible: true, decimals: 1 }
+                    ];
+                }
+                
+                const defaultView = CSI300ColumnManifest.presetViews.find(v => v.id === 'default');
+                return defaultView.columns.map(colId => 
+                    CSI300ColumnManifest.columns.find(c => c.id === colId)
+                ).filter(Boolean);
+            }
+            
+            formatCellValue(company, column) {
+                // Map column IDs to company data fields (using actual database field names)
+                const fieldMap = {
+                    // Basic fields
+                    'ticker': 'ticker',
+                    'name': 'name',
+                    'company_name': 'name',
+                    'im_sector': 'im_sector',
+                    'sector': 'im_sector',
+                    'industry': 'industry',
+                    'sub_industry': 'industry',
+                    'gics_industry': 'gics_industry',
+                    'gics_sub_industry': 'gics_sub_industry',
+                    
+                    // Market cap & price
+                    'market_cap': 'market_cap_usd',
+                    'market_cap_usd': 'market_cap_usd',
+                    'market_cap_local': 'market_cap_local',
+                    'price': 'price_local_currency',
+                    'price_local_currency': 'price_local_currency',
+                    'currency': 'currency',
+                    'price_52w_high': 'price_52w_high',
+                    'price_52w_low': 'price_52w_low',
+                    'last_trade_date': 'last_trade_date',
+                    'total_return_2018_to_2025': 'total_return_2018_to_2025',
+                    
+                    // Valuation ratios
+                    'pe_ratio': 'pe_ratio_trailing',
+                    'pe_ratio_trailing': 'pe_ratio_trailing',
+                    'pe_ratio_consensus': 'pe_ratio_consensus',
+                    'peg_ratio': 'peg_ratio',
+                    
+                    // Profitability
+                    'roe': 'roe_trailing',
+                    'roe_trailing': 'roe_trailing',
+                    'roa': 'roa_trailing',
+                    'roa_trailing': 'roa_trailing',
+                    'operating_margin': 'operating_margin_trailing',
+                    'operating_margin_trailing': 'operating_margin_trailing',
+                    'operating_profits_per_share': 'operating_profits_per_share',
+                    'net_profits_fy0': 'net_profits_fy0',
+                    
+                    // EPS
+                    'eps_trailing': 'eps_trailing',
+                    'eps_actual_fy0': 'eps_actual_fy0',
+                    'eps_forecast_fy1': 'eps_forecast_fy1',
+                    'eps_growth_percent': 'eps_growth_percent',
+                    
+                    // Risk metrics
+                    'debt_equity': 'debt_to_equity',
+                    'debt_to_equity': 'debt_to_equity',
+                    'debt_to_total_assets': 'debt_to_total_assets',
+                    'interest_coverage': 'interest_coverage_ratio',
+                    'interest_coverage_ratio': 'interest_coverage_ratio',
+                    'current_ratio': 'current_ratio',
+                    'quick_ratio': 'quick_ratio',
+                    'altman_z_score_manufacturing': 'altman_z_score_manufacturing',
+                    'altman_z_score_non_manufacturing': 'altman_z_score_non_manufacturing',
+                    
+                    // Financial data
+                    'total_revenue_local': 'total_revenue_local',
+                    'ltm_revenue_local': 'ltm_revenue_local',
+                    'ntm_revenue_local': 'ntm_revenue_local',
+                    'total_assets_local': 'total_assets_local',
+                    'net_assets_local': 'net_assets_local',
+                    'total_debt_local': 'total_debt_local',
+                    'ebitda_fy0': 'ebitda_fy0',
+                    'ebitda_fy_minus_1': 'ebitda_fy_minus_1',
+                    'cash_flow_operations_fy0': 'cash_flow_operations_fy0',
+                    'cash_flow_operations_fy_minus_1': 'cash_flow_operations_fy_minus_1',
+                    'interest_expense_fy0': 'interest_expense_fy0',
+                    'effective_interest_rate': 'effective_interest_rate',
+                    'asset_turnover_ltm': 'asset_turnover_ltm',
+                    'operating_leverage': 'operating_leverage',
+                    
+                    // Dividends
+                    'dividend_yield_fy0': 'dividend_yield_fy0',
+                    'dividend_payout_ratio': 'dividend_payout_ratio',
+                    'dividend_local_currency': 'dividend_local_currency',
+                    'dividend_3yr_cagr': 'dividend_3yr_cagr',
+                    'dividend_5yr_cagr': 'dividend_5yr_cagr',
+                    'dividend_10yr_cagr': 'dividend_10yr_cagr'
+                };
+                
+                const field = fieldMap[column.id] || column.id;
+                let value = company[field];
+                
+                // Fallback for sector
+                if (column.id === 'sector' && !value) {
+                    value = company.industry || company.im_code || '-';
+                }
+                
+                if (value === null || value === undefined || value === '') {
+                    return '<span style="color: #9ca3af;">-</span>';
+                }
+                
+                // Format based on column format
+                if (!window.CSI300ColumnManifest) {
+                    return value;
+                }
+                
+                const formatter = CSI300ColumnManifest.formatters[column.format];
+                if (formatter) {
+                    const formatted = formatter(value, column.decimals);
+                    
+                    // Apply colorization for price and profitability metrics
+                    if (column.colorize) {
+                        const numValue = parseFloat(value);
+                        if (!isNaN(numValue)) {
+                            const color = numValue >= 0 ? '#059669' : '#dc2626';
+                            return `<span style="color: ${color};">${formatted}</span>`;
+                        }
+                    }
+                    
+                    // Handle max display for large values
+                    if (column.maxDisplay && parseFloat(value) > column.maxDisplay) {
+                        return `<span title="${formatted} - ${column.tooltip || 'Value exceeds display limit'}">${column.maxDisplay}+</span>`;
+                    }
+                    
+                    return formatted;
+                }
+                
+                // Default formatting
+                if (column.format === 'monospace') {
+                    return `<span class="company-ticker">${value}</span>`;
+                }
+                if (column.format === 'text-bold') {
+                    return `<span class="company-name">${value}</span>`;
+                }
+                if (column.format === 'chip') {
+                    return `<span style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${value}</span>`;
+                }
+                
+                return value;
+            }
+            
+            getCellClass(column) {
+                const classes = [];
+                
+                if (column.format === 'text-bold') {
+                    classes.push('company-name');
+                } else if (column.format === 'monospace') {
+                    classes.push('company-ticker');
+                } else if (column.id === 'market_cap') {
+                    classes.push('market-cap');
+                } else if (column.id === 'price') {
+                    classes.push('price');
+                } else if (column.id === 'pe_ratio') {
+                    classes.push('pe-ratio');
+                }
+                
+                return classes.join(' ');
             }
 
             renderMobileCards() {
@@ -1035,4 +1272,3 @@
     </script>
 </body>
 </html>
-

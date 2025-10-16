@@ -17,259 +17,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Global Navigation -->
+    <link rel="stylesheet" href="assets/css/global-nav.css">
+    <script src="assets/js/components/global-nav.js"></script>
+    
     <!-- Application Configuration -->
     <script src="config/csi300_api_config.js?v=20250923"></script>
     <script src="assets/js/utils/csi300_api_client.js?v=20250923"></script>
     <script src="assets/js/utils/csi300_error_handler.js?v=20250923"></script>
     <script src="assets/js/core/company-modal-manager.js?v=20250923"></script>
+    <link rel="stylesheet" href="assets/css/app-base.css">
     
     <style>
-        * {
-            box-sizing: border-box;
-        }
-        
         body {
-            background-color: #f8f9fa;
+            margin: 0;
+            background-color: var(--app-body-bg);
+            color: var(--app-text);
         }
         
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .company-header {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-            padding: 32px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        
-        .company-name {
-            font-size: 36px;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 0 0 8px 0;
-        }
-        
-        .company-ticker {
-            font-size: 18px;
-            color: #6b7280;
-            font-family: monospace;
-            margin-bottom: 16px;
-        }
-        
-        .company-industry {
-            display: inline-block;
-            background: #f8f9fa;
-            color: #1d1e1f;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 500;
-            border: 1px solid #e5e7eb;
-        }
-        
-        .company-actions-section {
-            margin: 24px 0;
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-        
-        .button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 22px;
-            border-radius: 980px;
-            font-size: 16px;
-            font-weight: 400;
-            line-height: 1.2;
-            text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.25, 1);
-            cursor: pointer;
-            border: none;
-            min-height: 44px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-        
-        .button-primary {
-            background: #374151;
-            color: #fff;
-            box-shadow: 0 1px 8px rgba(55, 65, 81, 0.25);
-        }
-        
-        .button-primary:hover {
-            background: #4b5563;
-            transform: scale(1.02);
-            box-shadow: 0 2px 12px rgba(55, 65, 81, 0.35);
-        }
-        
-        .button-primary:active {
-            transform: scale(0.98);
-            box-shadow: 0 1px 6px rgba(55, 65, 81, 0.3);
-        }
-        
-        .button-primary:focus {
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(55, 65, 81, 0.3);
-        }
-        
-        .button-secondary {
-            background: #f8f9fa;
-            color: #495057;
-            border: 1px solid #d6d8db;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .button-secondary:hover {
-            background: #e9ecef;
-            color: #495057;
-            transform: scale(1.02);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-        
-        .button-secondary:active {
-            transform: scale(0.98);
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .button-secondary:focus {
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(108, 117, 125, 0.3);
-        }
-        
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-        
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 700px;
-            max-height: 80vh;
-            overflow-y: auto;
-            position: relative;
-            transform: scale(0.9);
-            transition: all 0.3s ease;
-            margin: 20px;
-            width: 90%;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        
-        .modal-overlay.active .modal-content {
-            transform: scale(1);
-        }
-        
-        .modal-header {
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1f2937;
-            margin: 0;
-        }
-        
-        .modal-body {
-            color: #374151;
-            line-height: 1.6;
-        }
-        
-        .modal-section {
-            margin-bottom: 16px;
-        }
-        
-        .modal-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .modal-label {
-            color: #6b7280;
-            font-weight: 500;
-        }
-        
-        .modal-value {
-            color: #374151;
-            font-weight: 500;
-            text-align: right;
-            max-width: 200px;
-        }
-        
-        .modal-breakdown {
-            margin: 12px 0;
-            padding: 12px 0;
-            border-top: 1px solid #f3f4f6;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        
-        .modal-sub-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            padding: 4px 0;
-        }
-        
-        .modal-sub-item:last-child {
-            margin-bottom: 0;
-        }
-        
-        .modal-sub-label {
-            color: #6b7280;
-            font-weight: 500;
-            font-size: 13px;
-            flex: 1;
-        }
-        
-        .modal-sub-value {
-            color: #374151;
-            font-weight: 600;
-            font-size: 13px;
-            text-align: right;
-            flex-shrink: 0;
-            max-width: 300px;
-        }
-        
-        .modal-description {
-            color: #374151;
-            font-weight: 400;
-            text-align: left;
-            margin-top: 12px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            font-size: 14px;
-            line-height: 1.5;
+            padding: 32px 24px 48px;
         }
         
         .breadcrumb {
@@ -278,53 +47,104 @@
             align-items: center;
             gap: 8px;
             font-size: 14px;
-            background: transparent !important;
-            background-color: transparent !important;
-            padding: 0 !important;
-            border-bottom: none !important;
+            color: var(--app-text-muted);
+            flex-wrap: wrap;
         }
         
         .breadcrumb a {
-            color: #6b7280;
+            color: var(--app-text-muted);
             text-decoration: none;
             font-weight: 600;
         }
         
         .breadcrumb a:hover {
-            text-decoration: underline;
+            color: var(--app-heading);
         }
         
         .breadcrumb-separator {
-            color: #6b7280;
-            margin: 0 4px;
+            color: var(--app-text-subtle);
             font-weight: 600;
         }
         
         .breadcrumb-current {
-            color: #1f2937;
+            color: var(--app-heading);
             font-weight: 700;
+        }
+        
+        .company-header {
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: var(--app-shadow-subtle);
+        }
+        
+        .company-name {
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--app-heading);
+            margin: 0 0 8px;
+            letter-spacing: -0.01em;
+        }
+        
+        .company-ticker {
+            font-size: 18px;
+            color: var(--app-text-muted);
+            font-family: monospace;
+            margin-bottom: 16px;
+        }
+        
+        .company-industry {
+            margin: 4px;
+        }
+        
+        .company-actions-section {
+            margin: 24px 0 32px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .button {
+            font-size: 15px;
+            font-weight: 600;
+        }
+        
+        .button-primary {
+            background: #1f2937;
+            color: #ffffff;
+        }
+        
+        .button-primary:hover {
+            background: #111827;
+        }
+        
+        .button-secondary {
+            background: var(--app-surface-muted);
+            color: var(--app-heading);
+            border: 1px solid var(--app-border);
+        }
+        
+        .button-secondary:hover {
+            background: #e6e9ee;
         }
         
         .details-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
             gap: 24px;
         }
         
         .detail-section {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
         .section-header {
-            background: #f8f9fa;
+            background: var(--app-surface-muted);
             padding: 16px 20px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--app-border);
             font-weight: 600;
-            color: #1f2937;
+            color: var(--app-heading);
             font-size: 16px;
         }
         
@@ -333,11 +153,12 @@
         }
         
         .field-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #f3f4f6;
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+            gap: 12px;
+            align-items: baseline;
+            padding: 10px 0;
+            border-bottom: 1px solid #eaecf0;
         }
         
         .field-row:last-child {
@@ -345,107 +166,187 @@
         }
         
         .field-label {
-            color: #6b7280;
+            color: var(--app-text-muted);
             font-size: 14px;
-            flex: 1;
+            font-weight: 500;
         }
         
         .field-value {
-            font-weight: 500;
-            color: #111827;
+            font-weight: 600;
+            color: var(--app-heading);
             text-align: right;
-            min-width: 100px;
+            min-width: 0;
         }
         
         .field-value.positive {
-            color: #059669;
+            color: var(--app-success);
         }
         
         .field-value.negative {
             color: #dc2626;
         }
         
-        .description-section {
-            grid-column: 1 / -1;
+        .description-section .section-content {
+            background: var(--app-surface);
+            border-radius: var(--app-radius-md);
         }
         
         .description-text {
             line-height: 1.6;
-            color: #374151;
+            color: var(--app-text);
+            margin: 0;
         }
         
-        .back-button {
-            display: inline-block;
-            background: #1d1e1f;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 4px;
-            text-decoration: none;
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity var(--app-transition-speed) ease, visibility var(--app-transition-speed) ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: var(--app-surface);
+            border-radius: var(--app-radius-lg);
+            padding: 24px;
+            max-width: 720px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin: 20px;
+            width: 90%;
+            box-shadow: var(--app-shadow-soft);
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--app-border);
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--app-heading);
+            margin: 0;
+        }
+        
+        .modal-body {
+            color: var(--app-text);
+            line-height: 1.6;
+        }
+        
+        .modal-section {
+            margin-bottom: 16px;
+        }
+        
+        .modal-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+            gap: 12px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            align-items: baseline;
+        }
+        
+        .modal-label {
+            color: var(--app-text-muted);
             font-weight: 500;
-            margin-bottom: 24px;
-            transition: background-color 0.2s ease;
         }
         
-        .back-button:hover {
-            background: #2a2a2c;
+        .modal-value {
+            color: var(--app-heading);
+            font-weight: 600;
+            text-align: right;
+            max-width: none;
+        }
+        
+        .modal-breakdown {
+            margin: 16px 0;
+            padding: 12px 0;
+            border-top: 1px solid #eaecf0;
+            border-bottom: 1px solid #eaecf0;
+        }
+        
+        .modal-sub-item {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+            gap: 12px;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+        
+        .modal-sub-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .modal-sub-label {
+            color: var(--app-text-muted);
+            font-weight: 500;
+            font-size: 13px;
+        }
+        
+        .modal-sub-value {
+            color: var(--app-heading);
+            font-weight: 600;
+            font-size: 13px;
+            text-align: right;
+        }
+        
+        .modal-description {
+            color: var(--app-text);
+            background: var(--app-surface-muted);
+            border-radius: var(--app-radius-md);
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 14px;
         }
         
         .loading {
             text-align: center;
             padding: 48px;
-            color: #6b7280;
+            color: var(--app-text-muted);
         }
         
         .error {
-            color: #dc2626;
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            padding: 12px;
-            border-radius: 4px;
             margin-bottom: 16px;
         }
-
-        @media (max-width: 768px) {
+        
+        @media (max-width: 900px) {
             .details-grid {
                 grid-template-columns: 1fr;
-                gap: 16px;
             }
-            
+        }
+        
+        @media (max-width: 768px) {
             .container {
-                padding: 12px;
+                padding: 24px 16px 32px;
             }
             
             .company-header {
-                padding: 20px 16px;
+                padding: 24px 20px;
             }
             
             .company-name {
-                font-size: 24px;
+                font-size: 26px;
             }
             
-            .breadcrumb {
-                font-size: 12px;
-                gap: 6px;
-                margin-bottom: 20px;
-                flex-wrap: wrap;
+            .company-actions-section {
+                flex-direction: column;
+                align-items: stretch;
             }
             
-            .breadcrumb-separator {
-                margin: 0 2px;
-            }
-            
-            
-            .back-button {
-                padding: 10px 20px;
-                font-size: 13px;
-                margin-bottom: 16px;
+            .button {
                 width: 100%;
-                text-align: center;
-                box-sizing: border-box;
-            }
-            
-            .detail-section {
-                margin-bottom: 16px;
             }
             
             .section-content {
@@ -453,33 +354,14 @@
             }
             
             .field-row {
-                padding: 10px 0;
-                flex-direction: column;
-                align-items: flex-start;
+                grid-template-columns: 1fr;
                 gap: 4px;
-            }
-            
-            .field-label {
-                font-size: 13px;
-                font-weight: 600;
+                text-align: left;
             }
             
             .field-value {
-                font-size: 14px;
                 text-align: left;
-                min-width: auto;
-            }
-            
-            .company-actions-section {
-                margin: 16px 0;
-                flex-direction: column;
-                gap: 12px;
-            }
-            
-            .button {
-                font-size: 15px;
-                padding: 10px 20px;
-                min-height: 40px;
+                font-size: 14px;
             }
             
             .modal-content {
@@ -487,13 +369,8 @@
                 padding: 20px;
                 max-height: 90vh;
             }
-            
-            .modal-title {
-                font-size: 18px;
-            }
         }
         
-        /* Loading spinner animation for modal */
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -502,32 +379,24 @@
 </head>
 <body>
     
-    <div class="container">
-        <div class="breadcrumb">
-            <a href="index.html">CSI300 Filter</a>
-            <span class="breadcrumb-separator">></span>
-            <a href="browser.html">Browse Results</a>
-            <span class="breadcrumb-separator">></span>
-            <span class="breadcrumb-current" id="breadcrumbCurrent">Loading...</span>
-        </div>
-        
-        <!-- Global back navigation will be handled by hover area -->
-        
-        <div id="errorMessage" class="error" style="display: none;"></div>
+    <company-global-nav></company-global-nav>
+
+    <div class="container app-shell">
+        <div id="errorMessage" class="error app-notice" style="display: none;"></div>
         
         <div id="loadingIndicator" class="loading">
             <p>Loading company details...</p>
         </div>
         
         <div id="companyContent" style="display: none;">
-            <div class="company-header" id="companyHeader">
+            <div class="company-header app-card" id="companyHeader">
                 <!-- Company header will be populated here -->
             </div>
             
-            <div class="company-actions-section">
-                <a class="button button-primary" id="valueChainBtn">Value Chain Analysis</a>
-                <a class="button button-primary" id="investmentSummaryBtn">Investment Summary</a>
-                <a class="button button-primary" id="peersComparisonBtn">IM Sector Peers Comparison</a>
+            <div class="company-actions-section app-actions">
+                <a class="button button-primary app-button app-button--primary" id="valueChainBtn">Value Chain Analysis</a>
+                <a class="button button-primary app-button app-button--primary" id="investmentSummaryBtn">Investment Summary</a>
+                <a class="button button-primary app-button app-button--primary" id="peersComparisonBtn">IM Sector Peers Comparison</a>
             </div>
             
             <div class="details-grid" id="detailsGrid">
@@ -631,8 +500,8 @@
                 header.innerHTML = `
                     <h1 class="company-name">${this.company.name || 'Unknown Company'}</h1>
                     <div class="company-ticker">${this.company.ticker || 'N/A'}</div>
-                    ${imSector ? `<span class="company-industry">${imSector}</span>` : ''}
-                    ${industry && industry !== imSector ? `<span class="company-industry">${industry}</span>` : ''}
+                    ${imSector ? `<span class="company-industry app-tag">${imSector}</span>` : ''}
+                    ${industry && industry !== imSector ? `<span class="company-industry app-tag">${industry}</span>` : ''}
                 `;
             }
 
@@ -844,7 +713,7 @@
 
             createDetailSection(title) {
                 const section = document.createElement('div');
-                section.className = 'detail-section';
+                section.className = 'detail-section app-card';
                 section.innerHTML = `
                     <div class="section-header">${title}</div>
                     <div class="section-content"></div>

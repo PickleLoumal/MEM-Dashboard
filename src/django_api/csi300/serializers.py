@@ -11,13 +11,56 @@ class CSI300CompanySerializer(serializers.ModelSerializer):
 
 
 class CSI300CompanyListSerializer(serializers.ModelSerializer):
-    """Simplified serializer for company list view"""
+    """Serializer for company list view - includes all fields that exist in the database model"""
     
     class Meta:
         model = CSI300Company
         fields = [
-            'id', 'ticker', 'name', 'im_sector', 'industry', 
-            'market_cap_local', 'market_cap_usd', 'pe_ratio_trailing', 'roe_trailing', 'price_local_currency'
+            # Basic Information
+            'id', 'ticker', 'name', 'im_sector', 'industry', 'gics_industry', 'gics_sub_industry',
+            'naming', 'business_description', 'company_info', 'directors',
+            'currency', 'last_trade_date',
+            
+            # Market Data
+            'price_local_currency', 'market_cap_local', 'market_cap_usd',
+            'price_52w_high', 'price_52w_low', 'total_return_2018_to_2025',
+            
+            # Revenue
+            'total_revenue_local', 'ltm_revenue_local', 'ntm_revenue_local',
+            
+            # Assets & Liabilities
+            'total_assets_local', 'net_assets_local', 'total_debt_local',
+            
+            # Profitability
+            'net_profits_fy0', 'operating_margin_trailing', 'operating_profits_per_share',
+            'roe_trailing', 'roa_trailing',
+            
+            # Earnings Per Share
+            'eps_trailing', 'eps_actual_fy0', 'eps_forecast_fy1', 'eps_growth_percent',
+            
+            # Financial Ratios
+            'asset_turnover_ltm', 'operating_leverage',
+            
+            # Risk Metrics
+            'altman_z_score_manufacturing', 'altman_z_score_non_manufacturing',
+            
+            # Cash Flow
+            'ebitda_fy0', 'ebitda_fy_minus_1',
+            'cash_flow_operations_fy0', 'cash_flow_operations_fy_minus_1',
+            
+            # Interest & Debt
+            'interest_expense_fy0', 'effective_interest_rate',
+            'interest_coverage_ratio', 'debt_to_total_assets', 'debt_to_equity',
+            
+            # Liquidity Ratios
+            'current_ratio', 'quick_ratio',
+            
+            # Valuation Ratios
+            'pe_ratio_trailing', 'pe_ratio_consensus', 'peg_ratio',
+            
+            # Dividends
+            'dividend_yield_fy0', 'dividend_payout_ratio', 'dividend_local_currency',
+            'dividend_3yr_cagr', 'dividend_5yr_cagr', 'dividend_10yr_cagr'
         ]
 
 

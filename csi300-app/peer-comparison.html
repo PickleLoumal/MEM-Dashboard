@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>CSI300 Peer Comparison - Standalone Application</title>
+
+    <!-- Favicon (using base64 to avoid 404) -->
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==">
+
+    <!-- Build configuration metadata -->
+    <meta name="build-timestamp" content="2025-Sep">
+    <meta name="application-id" content="CSI300 Dashboard">
+    <meta name="schema-version" content="1.0.0">
+
+    <!-- Framework and styling imports -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Global Navigation -->
+    <link rel="stylesheet" href="assets/css/global-nav.css">
+    <script src="assets/js/components/global-nav.js"></script>
+
+    <!-- Application Configuration -->
+    <script src="config/csi300_api_config.js?v=20251007-fix"></script>
+    <script src="assets/js/utils/csi300_api_client.js?v=20251007-fix"></script>
+    <script src="assets/js/utils/csi300_error_handler.js?v=20251007-fix"></script>
+
+    <!-- Column Selector Components -->
+    <link rel="stylesheet" href="assets/css/column-selector.css?v=20251009">
+    <script src="config/column-manifest.js?v=20251009"></script>
+    <script src="assets/js/components/column-selector.js?v=20251009"></script>
+    <link rel="stylesheet" href="assets/css/app-base.css">
+    
+    <style>
+        body {
+            margin: 0;
+            background-color: var(--app-body-bg);
+            color: var(--app-text);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 24px 48px;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--app-heading);
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+
+        .page-subtitle {
+            font-size: 15px;
+            color: var(--app-text-muted);
+            margin-top: 8px;
+        }
+
+        .quick-comparing-header {
+            margin: 32px 0 16px;
+        }
+
+        .quick-comparing-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--app-heading);
+            margin: 0;
+        }
+
+        .quick-comparing-subtitle {
+            font-size: 14px;
+            color: var(--app-text-muted);
+            margin: 4px 0 0 0;
+        }
+
+        .quick-comparing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .quick-comparing-card {
+            border-radius: var(--app-radius-lg);
+            padding: 18px 20px;
+            border: 1px solid var(--app-border);
+            box-shadow: var(--app-shadow-subtle);
+            transition:
+                background-color var(--app-transition-speed) ease,
+                box-shadow var(--app-transition-speed) ease;
+        }
+
+        .quick-comparing-card:hover {
+            background: var(--app-surface-muted);
+            box-shadow: var(--app-shadow-hover);
+        }
+
+        .quick-company-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--app-heading);
+            margin: 0 0 10px 0;
+        }
+
+        .quick-company-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quick-meta-row {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .quick-meta-label {
+            font-size: 12px;
+            color: var(--app-text-muted);
+            font-weight: 500;
+        }
+
+        .quick-meta-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--app-heading);
+        }
+
+        .quick-comparing-note {
+            font-size: 12px;
+            color: var(--app-text-subtle);
+            margin-top: 12px;
+        }
+
+        .filter-section {
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            box-shadow: var(--app-shadow-subtle);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 24px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            color: var(--app-text);
+        }
+
+        .filter-input,
+        .filter-select {
+            width: 100%;
+            transition:
+                border-color var(--app-transition-speed) ease,
+                box-shadow var(--app-transition-speed) ease,
+                background-color var(--app-transition-speed) ease;
+        }
+
+        .suggestions-dropdown {
+            position: absolute;
+            top: calc(100% + 2px);
+            left: 0;
+            right: 0;
+            background: var(--app-surface);
+            border: 1px solid var(--app-border);
+            border-radius: var(--app-radius-md);
+            box-shadow: var(--app-shadow-subtle);
+            z-index: 1000;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .suggestion-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 1px solid #eaecf0;
+            transition: background-color var(--app-transition-speed) ease;
+        }
+
+        .suggestion-item:hover {
+            background: var(--app-surface-muted);
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn {
+            min-width: 120px;
+            transition:
+                background-color var(--app-transition-speed) ease,
+                color var(--app-transition-speed) ease,
+                box-shadow var(--app-transition-speed) ease;
+        }
+
+        .btn-primary {
+            background: #1f2937;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: #111827;
+        }
+
+        .btn-secondary {
+            background: var(--app-surface-muted);
+            color: var(--app-heading);
+            border: 1px solid var(--app-border);
+        }
+
+        .btn-secondary:hover {
+            background: #e6e9ee;
+        }
+
+        .results-section {
+            margin-top: 24px;
+            overflow: hidden;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 28px 16px;
+            border-bottom: 1px solid var(--app-border);
+        }
+
+        .results-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--app-heading);
+            margin: 0;
+        }
+
+        .results-count {
+            color: var(--app-text-muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+
+        .company-table {
+            width: 100%;
+            border: none;
+            border-radius: 0;
+        }
+
+        .company-table thead {
+            background: var(--app-surface-muted);
+        }
+
+        .company-table th {
+            font-weight: 600;
+            color: var(--app-text);
+            font-size: 13px;
+        }
+
+        .company-table td {
+            font-size: 14px;
+        }
+
+        .company-table tr {
+            transition: background-color var(--app-transition-speed) ease;
+        }
+
+        .company-table tr:hover {
+            background: #f5f7fb;
+        }
+
+        .related-companies-row td {
+            background: var(--app-surface-muted);
+            font-weight: 600;
+            color: var(--app-text);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            padding: 10px 16px;
+        }
+
+        .clickable-row {
+            cursor: pointer;
+        }
+
+        .mobile-company-list {
+            display: none;
+        }
+
+        .company-name {
+            font-weight: 500;
+            color: var(--app-heading);
+        }
+
+        .company-ticker {
+            font-family: monospace;
+            color: var(--app-text-muted);
+            font-size: 13px;
+        }
+
+        .market-cap {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .price {
+            text-align: right;
+            color: var(--app-success);
+        }
+
+        .pe-ratio {
+            text-align: right;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--app-text-muted);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 48px;
+            color: var(--app-text-muted);
+        }
+
+        .error {
+            margin-bottom: 16px;
+        }
+
+        .mobile-hide {
+            display: table-cell;
+        }
+
+        @media (max-width: 900px) {
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-actions {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 72px 16px 32px;
+            }
+
+            .page-title {
+                font-size: 26px;
+            }
+
+            .filter-section {
+                padding: 20px;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .results-section {
+                overflow-x: auto;
+            }
+
+            .results-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .mobile-company-list {
+                display: block;
+                margin: 0;
+                padding: 0;
+            }
+
+            .mobile-hide {
+                display: none !important;
+            }
+
+            .company-table {
+                display: none;
+            }
+
+            .mobile-company-card {
+                background: var(--app-surface);
+                border-bottom: 1px solid var(--app-border);
+                padding: 16px;
+                cursor: pointer;
+                transition: background-color var(--app-transition-speed) ease;
+            }
+
+            .mobile-company-card:hover {
+                background: var(--app-surface-muted);
+            }
+
+            .mobile-company-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 12px;
+            }
+
+            .mobile-company-name {
+                font-size: 16px;
+                font-weight: 600;
+                color: var(--app-heading);
+                line-height: 1.3;
+                flex: 1;
+                margin-right: 12px;
+            }
+
+            .mobile-company-ticker {
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--app-heading);
+                background: var(--app-surface-muted);
+                padding: 4px 8px;
+                border-radius: var(--app-radius-md);
+                white-space: nowrap;
+            }
+
+            .mobile-company-details {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                font-size: 14px;
+            }
+
+            .mobile-company-detail-label {
+                font-size: 12px;
+                color: var(--app-text-muted);
+                font-weight: 500;
+                margin-bottom: 2px;
+            }
+
+            .mobile-company-detail-value {
+                font-size: 14px;
+                color: var(--app-text);
+            }
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container app-shell">
+                <div class="page-header">
+            <h1 class="page-title">CSI300 Peer Comparison</h1>
+            <p class="page-subtitle">
+                Compare companies within the same IM sector or industry
+            </p>
+        </div>
+
+        <div class="quick-comparing-header">
+            <h2 class="quick-comparing-title">Quick Comparing</h2>
+            <p class="quick-comparing-subtitle">A curated look at leading CSI300 names across key segments.</p>
+        </div>
+        <div class="quick-comparing-grid"></div>
+        <p class="quick-comparing-note"></p>
+
+        <div id="errorMessage" class="error app-notice" style="display: none;"></div>
+
+        <form id="comparisonForm" class="filter-section app-card">
+            <div class="filter-grid app-form-grid app-form-grid--two">
+                <div class="filter-group app-form-field" style="position: relative;">
+                    <label class="filter-label app-label">Primary Company</label>
+                    <input type="text" name="primary_company" id="primaryCompanySearch"
+                           class="filter-input app-input" placeholder="Search for a company to compare...">
+                    <div id="primaryCompanySuggestions" class="suggestions-dropdown" style="display: none;"></div>
+                </div>
+
+                <div class="filter-group app-form-field">
+                    <label class="filter-label app-label">Comparison Type</label>
+                    <select name="comparison_type" id="comparisonTypeSelect" class="filter-select app-select">
+                        <option value="im_sector">Same IM Sector</option>
+                        <option value="industry">Same Industry</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-actions app-actions">
+                <button type="button" id="clearComparisonBtn" class="btn btn-secondary app-button app-button--secondary">Clear</button>
+                <button type="submit" class="btn btn-primary app-button app-button--primary">Find Peers</button>
+            </div>
+        </form>
+
+        <div class="results-section app-card">
+            <div class="results-header">
+                <div>
+                    <h2 class="results-title">Peer Companies</h2>
+                    <p class="results-count" id="resultsCount">Select a company to find peers</p>
+                </div>
+                <div id="columnSelectorContainer"></div>
+            </div>
+
+            <div id="loadingIndicator" class="loading">
+                <p>Ready to find peer companies...</p>
+            </div>
+
+            <div id="resultsContainer" style="display: none;">
+                <!-- Desktop table view -->
+                <table class="company-table app-table" id="companyTable">
+                    <thead>
+                        <tr>
+                            <th>Company Name</th>
+                            <th>Ticker</th>
+                            <th>IM Sector</th>
+                            <th>Industry</th>
+                            <th class="mobile-hide">Market Cap (USD Million)</th>
+                            <th class="mobile-hide">Price (Local Currency)</th>
+                            <th class="mobile-hide">P/E Ratio</th>
+                        </tr>
+                    </thead>
+                    <tbody id="companyTableBody">
+                    </tbody>
+                </table>
+
+                <!-- Mobile card view -->
+                <div class="mobile-company-list" id="mobileCompanyList">
+                </div>
+            </div>
+
+            <div id="noResults" class="no-results" style="display: none;">
+                <p>No peer companies found</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CSI300PeerComparisonApp {
+            constructor() {
+                // Initialize API client with error checking
+                if (!window.CSI300Config) {
+                    console.error('CSI300Config not loaded');
+                    this.showError('Configuration not loaded. Please refresh the page.');
+                    return;
+                }
+
+                if (!window.csi300ApiClient) {
+                    console.error('CSI300ApiClient not loaded');
+                    this.showError('API client not loaded. Please refresh the page.');
+                    return;
+                }
+
+                this.apiClient = window.csi300ApiClient;
+                this.selectedCompany = null;
+                this.peerCompanies = [];
+                this.columnSelector = null;
+                this.selectedColumns = [];
+                this.pinnedColumns = [];
+                this.quickComparingData = new Map();
+                this.init();
+            }
+
+            async init() {
+                try {
+                    this.initColumnSelector();
+                    this.bindEvents();
+                    await this.initQuickComparing();
+                } catch (error) {
+                    this.showError('Failed to initialize application: ' + error.message);
+                }
+            }
+
+            initColumnSelector() {
+                if (!window.CSI300ColumnManifest || !window.CSI300ColumnSelector) {
+                    console.warn('Column selector components not loaded');
+                    return;
+                }
+
+                this.columnSelector = new CSI300ColumnSelector(CSI300ColumnManifest, {
+                    container: '#columnSelectorContainer',
+                    onColumnChange: (data) => {
+                        this.selectedColumns = data.columns;
+                        this.pinnedColumns = data.pinnedColumns;
+                        this.renderResults();
+                    }
+                });
+
+                // Get initial column selection
+                this.selectedColumns = this.columnSelector.getSelectedColumns();
+                this.pinnedColumns = this.columnSelector.getPinnedColumns().map(c => c.id);
+            }
+
+            bindEvents() {
+                // Form submission
+                document.getElementById('comparisonForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.findPeers();
+                });
+
+                // Clear button
+                document.getElementById('clearComparisonBtn').addEventListener('click', () => {
+                    this.clearComparison();
+                });
+
+                // Primary company search with autocomplete
+                const primarySearchInput = document.getElementById('primaryCompanySearch');
+                let searchTimeout;
+
+                primarySearchInput.addEventListener('input', (e) => {
+                    const searchValue = e.target.value.trim();
+
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(async () => {
+                        if (searchValue.length >= 2) {
+                            await this.showCompanySuggestions(searchValue);
+                        } else {
+                            this.hideCompanySuggestions();
+                        }
+                    }, 300);
+                });
+
+                // Hide suggestions when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.filter-group')) {
+                        this.hideCompanySuggestions();
+                    }
+                });
+            }
+
+            async initQuickComparing() {
+                const grid = document.querySelector('.quick-comparing-grid');
+                if (!grid) {
+                    return;
+                }
+
+                await this.populateQuickComparingGrid(grid);
+                this.attachQuickComparingEvents();
+            }
+
+            async populateQuickComparingGrid(grid) {
+                const fallbackCompanies = [
+                    {
+                        id: 'fallback-600519',
+                        name: 'Kweichow Moutai Co Ltd',
+                        ticker: '600519.SS',
+                        industry: 'Alcoholic Beverages (Distillers & Vintners, specifically Baijiu production)',
+                        im_sector: 'C2 - Food'
+                    },
+                    {
+                        id: 'fallback-601318',
+                        name: 'Ping An Insurance',
+                        ticker: '601318.SS',
+                        industry: 'Insurance',
+                        im_sector: 'Financials'
+                    },
+                    {
+                        id: 'fallback-300750',
+                        name: 'CATL',
+                        ticker: '300750.SZ',
+                        industry: 'Battery Manufacturing',
+                        im_sector: 'Industrials'
+                    },
+                    {
+                        id: 'fallback-600036',
+                        name: 'China Merchants Bank',
+                        ticker: '600036.SS',
+                        industry: 'Banking',
+                        im_sector: 'Financials'
+                    },
+                    {
+                        id: 'fallback-000858',
+                        name: 'Wuliangye Yibin Co Ltd',
+                        ticker: '000858.SZ',
+                        industry: 'Alcoholic Beverages (Distilled Spirits - Baijiu)',
+                        im_sector: 'C2 - Food'
+                    }
+                ];
+
+                this.quickComparingData.clear();
+
+                try {
+                    const response = await this.apiClient.getCompanies({ page_size: 200 });
+                    let companies = response.results || response || [];
+
+                    companies = companies.filter(company =>
+                        company && company.name && company.ticker && (company.industry || company.im_sector)
+                    );
+
+                    if (companies.length >= 5) {
+                        companies = this.getRandomSample(companies, 5);
+                    } else {
+                        companies = this.buildQuickComparingFallback(companies, fallbackCompanies);
+                    }
+
+                    this.renderQuickComparingCards(grid, companies);
+                } catch (error) {
+                    console.warn('Quick comparing fetch failed:', error);
+                    this.renderQuickComparingCards(grid, fallbackCompanies);
+                }
+            }
+
+            buildQuickComparingFallback(existing, fallback) {
+                const merged = [...existing];
+                const seen = new Set(existing.map(item => (item.id || item.ticker || '').toString()));
+
+                for (const item of fallback) {
+                    if (merged.length >= 5) break;
+                    const key = (item.id || item.ticker || '').toString();
+                    if (!seen.has(key)) {
+                        merged.push({ ...item });
+                        seen.add(key);
+                    }
+                }
+
+                while (merged.length < 5) {
+                    merged.push({ ...fallback[merged.length % fallback.length] });
+                }
+
+                return merged.slice(0, 5);
+            }
+
+            getRandomSample(array, count) {
+                const clone = [...array];
+                for (let i = clone.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [clone[i], clone[j]] = [clone[j], clone[i]];
+                }
+                return clone.slice(0, count);
+            }
+
+            renderQuickComparingCards(grid, companies) {
+                grid.innerHTML = '';
+
+                companies.forEach((company, index) => {
+                    const storedCompany = {
+                        ...company,
+                        id: company.id || company.ticker || `fallback-${index}`,
+                        name: company.name || company.ticker || 'Unknown Company',
+                        ticker: company.ticker || '',
+                        industry: company.industry || '—',
+                        im_sector: company.im_sector || '—'
+                    };
+
+                    this.quickComparingData.set(String(storedCompany.id), storedCompany);
+
+                    const card = document.createElement('article');
+                    card.className = 'quick-comparing-card app-card';
+                    card.setAttribute('role', 'button');
+                    card.setAttribute('tabindex', '0');
+                    card.dataset.companyId = String(storedCompany.id);
+                    card.dataset.companySearch = storedCompany.name || storedCompany.ticker;
+                    card.dataset.companyMatch = (storedCompany.name || '').toLowerCase();
+                    if (storedCompany.ticker) {
+                        card.dataset.companyTicker = storedCompany.ticker;
+                    }
+
+                    card.innerHTML = `
+                        <h3 class="quick-company-name">${storedCompany.name || 'Unknown Company'}</h3>
+                        <div class="quick-company-meta">
+                            <div class="quick-meta-row">
+                                <span class="quick-meta-label">Industry</span>
+                                <span class="quick-meta-value quick-meta-industry">${storedCompany.industry || '—'}</span>
+                            </div>
+                            <div class="quick-meta-row">
+                                <span class="quick-meta-label">IM Sector</span>
+                                <span class="quick-meta-value quick-meta-sector">${storedCompany.im_sector || '—'}</span>
+                            </div>
+                        </div>
+                    `;
+
+                    grid.appendChild(card);
+                });
+            }
+
+            attachQuickComparingEvents() {
+                const cards = document.querySelectorAll('.quick-comparing-card');
+                cards.forEach(card => {
+                    card.addEventListener('click', async () => {
+                        await this.handleQuickComparingCardClick(card);
+                    });
+
+                    card.addEventListener('keydown', async (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            await this.handleQuickComparingCardClick(card);
+                        }
+                    });
+                });
+            }
+
+            async showCompanySuggestions(searchTerm) {
+                try {
+                    const companies = await this.apiClient.getCompanies({
+                        company_search: searchTerm,
+                        page_size: 10
+                    });
+
+                    const suggestions = companies.results || companies || [];
+                    const suggestionsContainer = document.getElementById('primaryCompanySuggestions');
+
+                    if (suggestions.length === 0) {
+                        this.hideCompanySuggestions();
+                        return;
+                    }
+
+                    suggestionsContainer.innerHTML = '';
+
+                    suggestions.forEach(company => {
+                        const suggestionItem = document.createElement('div');
+                        suggestionItem.className = 'suggestion-item';
+
+                        suggestionItem.innerHTML = `
+                            <div style="font-weight: 500; color: #111827;">${company.name}</div>
+                            <div style="font-size: 12px; color: #6b7280;">${company.ticker} • ${company.im_sector || 'No sector'}</div>
+                        `;
+
+                        suggestionItem.addEventListener('click', () => {
+                            this.selectCompany(company);
+                        });
+
+                        suggestionsContainer.appendChild(suggestionItem);
+                    });
+
+                    suggestionsContainer.style.display = 'block';
+
+                } catch (error) {
+                    console.error('Failed to load company suggestions:', error);
+                }
+            }
+
+            hideCompanySuggestions() {
+                document.getElementById('primaryCompanySuggestions').style.display = 'none';
+            }
+
+            selectCompany(company) {
+                this.selectedCompany = company;
+                document.getElementById('primaryCompanySearch').value = company.name;
+                this.hideCompanySuggestions();
+            }
+
+            async handleQuickComparingCardClick(card) {
+                const companyId = card.dataset.companyId;
+                let company = companyId ? this.quickComparingData.get(companyId) : null;
+
+                if (!company) {
+                    company = await this.fetchQuickComparingCompany(card);
+                }
+
+                if (!company) {
+                    this.showError('Unable to load company data for quick comparison.');
+                    return;
+                }
+
+                this.hideError();
+                this.selectCompany(company);
+                await this.findPeers();
+
+                const resultsSection = document.querySelector('.results-section');
+                if (resultsSection) {
+                    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            async fetchQuickComparingCompany(card) {
+                const ticker = (card.dataset.companyTicker || '').toLowerCase();
+                const searchTerm = card.dataset.companySearch || ticker;
+                const matchTerm = (card.dataset.companyMatch || searchTerm).toLowerCase();
+
+                if (!searchTerm) {
+                    return null;
+                }
+
+                try {
+                    let companies = [];
+
+                    if (ticker) {
+                        const tickerResponse = await this.apiClient.getCompanies({
+                            company_search: ticker,
+                            page_size: 10
+                        });
+                        companies = Array.isArray(tickerResponse) ? tickerResponse : (tickerResponse.results || []);
+                        const exactTicker = companies.find(item => (item.ticker || '').toLowerCase() === ticker);
+                        if (exactTicker) {
+                            return exactTicker;
+                        }
+                    }
+
+                    const response = await this.apiClient.searchCompanies(searchTerm);
+                    companies = Array.isArray(response) ? response : (response.results || []);
+                    return companies.find(item => (item.ticker || '').toLowerCase() === ticker)
+                        || companies.find(item => (item.name || '').toLowerCase().includes(matchTerm))
+                        || companies[0] || null;
+                } catch (error) {
+                    console.warn('Quick comparing lookup failed for', searchTerm, error);
+                    return null;
+                }
+            }
+
+            async findPeers() {
+                if (!this.selectedCompany) {
+                    this.showError('Please select a company first');
+                    return;
+                }
+
+                try {
+                    this.showLoading();
+
+                    const comparisonType = document.getElementById('comparisonTypeSelect').value;
+
+                    // Get all companies in the same sector/industry
+                    const filters = {};
+                    if (comparisonType === 'im_sector') {
+                        filters.im_sector = this.selectedCompany.im_sector;
+                    } else {
+                        filters.industry = this.selectedCompany.industry;
+                    }
+
+                    const response = await this.apiClient.getCompanies({
+                        ...filters,
+                        page_size: 1000 // Get all companies, not just paginated
+                    });
+
+                    // Filter out the selected company itself
+                    this.peerCompanies = (response.results || response || []).filter(
+                        company => company.id !== this.selectedCompany.id
+                    );
+
+                    console.log(`Found ${this.peerCompanies.length} peer companies`);
+
+                    this.renderResults();
+
+                } catch (error) {
+                    console.error('Failed to find peers:', error);
+                    this.showError('Failed to find peer companies: ' + error.message);
+                }
+            }
+
+            renderResults() {
+                if (this.peerCompanies.length === 0) {
+                    this.showNoResults();
+                    return;
+                }
+
+                // Update results count
+                const comparisonType = document.getElementById('comparisonTypeSelect').value;
+                const comparisonLabel = comparisonType === 'im_sector' ? 'IM sector' : 'industry';
+                document.getElementById('resultsCount').textContent =
+                    `Found ${this.peerCompanies.length} companies in the same ${comparisonLabel} as ${this.selectedCompany.name}`;
+
+                // Render desktop table
+                this.renderDesktopTable();
+
+                // Render mobile cards
+                this.renderMobileCards();
+
+                this.showResults();
+            }
+
+            escapeHtml(value) {
+                if (value === null || value === undefined) {
+                    return '';
+                }
+                return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            renderDesktopTable() {
+                const table = document.getElementById('companyTable');
+                const thead = table.querySelector('thead');
+                const tbody = document.getElementById('companyTableBody');
+
+                // Use selected columns or fallback to default
+                const columns = this.selectedColumns.length > 0
+                    ? this.selectedColumns
+                    : this.getDefaultColumns();
+
+                // Render table header
+                thead.innerHTML = '<tr>' + columns.map(col => {
+                    const alignClass = col.align === 'right' ? 'text-right' : '';
+                    const hideClass = !col.defaultVisible && window.innerWidth <= 768 ? 'mobile-hide' : '';
+                    return `<th class="${alignClass} ${hideClass}">${col.displayName}</th>`;
+                }).join('') + '</tr>';
+
+                // Render table body
+                tbody.innerHTML = '';
+
+                const rows = [];
+                if (this.selectedCompany) {
+                    rows.push({ type: 'company', company: this.selectedCompany, isSelected: true });
+                    if (this.peerCompanies.length > 0) {
+                        rows.push({ type: 'divider' });
+                    }
+                }
+                this.peerCompanies.forEach(company => rows.push({ type: 'company', company, isSelected: false }));
+
+                rows.forEach(item => {
+                    if (item.type === 'divider') {
+                        const dividerRow = document.createElement('tr');
+                        dividerRow.className = 'related-companies-row';
+                        dividerRow.innerHTML = `<td colspan="${columns.length}">Related Companies</td>`;
+                        tbody.appendChild(dividerRow);
+                        return;
+                    }
+
+                    const { company, isSelected } = item;
+                    const row = document.createElement('tr');
+                    row.className = 'clickable-row';
+
+                    if (company && company.id) {
+                        row.setAttribute('data-company-id', company.id);
+                        row.addEventListener('click', () => this.openCompanyDetail(company.id));
+                    }
+
+                    row.innerHTML = columns.map(col => {
+                        const value = this.formatCellValue(company, col, { isSelected });
+                        const alignClass = col.align === 'right' ? 'text-right' : '';
+                        const hideClass = !col.defaultVisible && window.innerWidth <= 768 ? 'mobile-hide' : '';
+                        const cellClass = this.getCellClass(col);
+                        const classes = [cellClass, alignClass, hideClass].filter(Boolean).join(' ').trim();
+                        const classAttr = classes ? ` class="${classes}"` : '';
+                        return `<td${classAttr}>${value}</td>`;
+                    }).join('');
+
+                    tbody.appendChild(row);
+                });
+            }
+
+            getDefaultColumns() {
+                if (!window.CSI300ColumnManifest) {
+                    return [
+                        { id: 'name', displayName: 'Company Name', format: 'text-bold', align: 'left', defaultVisible: true },
+                        { id: 'ticker', displayName: 'Ticker', format: 'monospace', align: 'left', defaultVisible: true },
+                        { id: 'im_sector', displayName: 'IM Sector', format: 'text', align: 'left', defaultVisible: true },
+                        { id: 'industry', displayName: 'Industry', format: 'text', align: 'left', defaultVisible: true },
+                        { id: 'market_cap_usd', displayName: 'Market Cap (USD M)', format: 'currency-millions', align: 'right', defaultVisible: true },
+                        { id: 'price_local_currency', displayName: 'Price (Local)', format: 'currency', align: 'right', defaultVisible: true },
+                        { id: 'pe_ratio_trailing', displayName: 'P/E Ratio', format: 'number', align: 'right', defaultVisible: true, decimals: 1 }
+                    ];
+                }
+
+                const defaultView = CSI300ColumnManifest.presetViews.find(v => v.id === 'default');
+                return defaultView.columns.map(colId =>
+                    CSI300ColumnManifest.columns.find(c => c.id === colId)
+                ).filter(Boolean);
+            }
+
+            formatCellValue(company, column, options = {}) {
+                const { isSelected = false } = options;
+                // Map column IDs to company data fields (using actual database field names)
+                const fieldMap = {
+                    // Basic fields
+                    'ticker': 'ticker',
+                    'name': 'name',
+                    'company_name': 'name',
+                    'im_sector': 'im_sector',
+                    'sector': 'im_sector',
+                    'industry': 'industry',
+                    'sub_industry': 'industry',
+                    'gics_industry': 'gics_industry',
+                    'gics_sub_industry': 'gics_sub_industry',
+
+                    // Market cap & price
+                    'market_cap': 'market_cap_usd',
+                    'market_cap_usd': 'market_cap_usd',
+                    'market_cap_local': 'market_cap_local',
+                    'price': 'price_local_currency',
+                    'price_local_currency': 'price_local_currency',
+                    'currency': 'currency',
+                    'price_52w_high': 'price_52w_high',
+                    'price_52w_low': 'price_52w_low',
+                    'last_trade_date': 'last_trade_date',
+                    'total_return_2018_to_2025': 'total_return_2018_to_2025',
+
+                    // Valuation ratios
+                    'pe_ratio': 'pe_ratio_trailing',
+                    'pe_ratio_trailing': 'pe_ratio_trailing',
+                    'pe_ratio_consensus': 'pe_ratio_consensus',
+                    'peg_ratio': 'peg_ratio',
+
+                    // Profitability
+                    'roe': 'roe_trailing',
+                    'roe_trailing': 'roe_trailing',
+                    'roa': 'roa_trailing',
+                    'roa_trailing': 'roa_trailing',
+                    'operating_margin': 'operating_margin_trailing',
+                    'operating_margin_trailing': 'operating_margin_trailing',
+                    'operating_profits_per_share': 'operating_profits_per_share',
+                    'net_profits_fy0': 'net_profits_fy0',
+
+                    // EPS
+                    'eps_trailing': 'eps_trailing',
+                    'eps_actual_fy0': 'eps_actual_fy0',
+                    'eps_forecast_fy1': 'eps_forecast_fy1',
+                    'eps_growth_percent': 'eps_growth_percent',
+
+                    // Risk metrics
+                    'debt_equity': 'debt_to_equity',
+                    'debt_to_equity': 'debt_to_equity',
+                    'debt_to_total_assets': 'debt_to_total_assets',
+                    'interest_coverage': 'interest_coverage_ratio',
+                    'interest_coverage_ratio': 'interest_coverage_ratio',
+                    'current_ratio': 'current_ratio',
+                    'quick_ratio': 'quick_ratio',
+                    'altman_z_score_manufacturing': 'altman_z_score_manufacturing',
+                    'altman_z_score_non_manufacturing': 'altman_z_score_non_manufacturing',
+
+                    // Financial data
+                    'total_revenue_local': 'total_revenue_local',
+                    'ltm_revenue_local': 'ltm_revenue_local',
+                    'ntm_revenue_local': 'ntm_revenue_local',
+                    'total_assets_local': 'total_assets_local',
+                    'net_assets_local': 'net_assets_local',
+                    'total_debt_local': 'total_debt_local',
+                    'ebitda_fy0': 'ebitda_fy0',
+                    'ebitda_fy_minus_1': 'ebitda_fy_minus_1',
+                    'cash_flow_operations_fy0': 'cash_flow_operations_fy0',
+                    'cash_flow_operations_fy_minus_1': 'cash_flow_operations_fy_minus_1',
+                    'interest_expense_fy0': 'interest_expense_fy0',
+                    'effective_interest_rate': 'effective_interest_rate',
+                    'asset_turnover_ltm': 'asset_turnover_ltm',
+                    'operating_leverage': 'operating_leverage',
+
+                    // Dividends
+                    'dividend_yield_fy0': 'dividend_yield_fy0',
+                    'dividend_payout_ratio': 'dividend_payout_ratio',
+                    'dividend_local_currency': 'dividend_local_currency',
+                    'dividend_3yr_cagr': 'dividend_3yr_cagr',
+                    'dividend_5yr_cagr': 'dividend_5yr_cagr',
+                    'dividend_10yr_cagr': 'dividend_10yr_cagr'
+                };
+
+                const field = fieldMap[column.id] || column.id;
+                let value = company[field];
+
+                // Fallback for sector
+                if (column.id === 'sector' && !value) {
+                    value = company.industry || company.im_code || '-';
+                }
+
+                if (value === null || value === undefined || value === '') {
+                    return '<span style="color: #9ca3af;">-</span>';
+                }
+
+                // Format based on column format
+                if (!window.CSI300ColumnManifest) {
+                    return this.formatDefaultCell(value, column, isSelected);
+                }
+
+                const formatter = CSI300ColumnManifest.formatters[column.format];
+                if (formatter) {
+                    const formatted = formatter(value, column.decimals);
+
+                    // Apply colorization for price and profitability metrics
+                    if (column.colorize) {
+                        const numValue = parseFloat(value);
+                        if (!isNaN(numValue)) {
+                            const color = numValue >= 0 ? '#059669' : '#dc2626';
+                            return `<span style="color: ${color};">${formatted}</span>`;
+                        }
+                    }
+
+                    // Handle max display for large values
+                    if (column.maxDisplay && parseFloat(value) > column.maxDisplay) {
+                        return `<span title="${formatted} - ${column.tooltip || 'Value exceeds display limit'}">${column.maxDisplay}+</span>`;
+                    }
+
+                    return formatted;
+                }
+
+                return this.formatDefaultCell(value, column, isSelected);
+            }
+
+            formatDefaultCell(value, column, isSelected) {
+                if (column.format === 'monospace') {
+                    return `<span class="company-ticker">${this.escapeHtml(String(value))}</span>`;
+                }
+                if (column.format === 'text-bold') {
+                    const nameText = this.escapeHtml(String(value));
+                    const currentLabel = isSelected ? this.getCurrentCompanyBadge() : '';
+                    return `<span class="company-name">${nameText}</span>${currentLabel}`;
+                }
+                if (column.format === 'chip') {
+                    return `<span style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${this.escapeHtml(String(value))}</span>`;
+                }
+
+                return this.escapeHtml(String(value));
+            }
+
+            getCellClass(column) {
+                if (column.format === 'text-bold') {
+                    return 'company-name';
+                }
+                if (column.format === 'monospace') {
+                    return 'company-ticker';
+                }
+                if (column.id === 'market_cap') {
+                    return 'market-cap';
+                }
+                if (column.id === 'price') {
+                    return 'price';
+                }
+                if (column.id === 'pe_ratio') {
+                    return 'pe-ratio';
+                }
+                return '';
+            }
+
+            getCurrentCompanyBadge() {
+                return '<span style="color: #2196f3; font-size: 11px; font-weight: 600; margin-left: 10px; display: inline-flex; align-items: center;"><span style="display: inline-block; width: 6px; height: 6px; background: #2196f3; border-radius: 50%; margin-right: 6px; box-shadow: 0 0 8px rgba(33, 150, 243, 0.4), 0 0 3px rgba(33, 150, 243, 0.6);"></span>Current Company</span>';
+            }
+
+            renderMobileCards() {
+                const container = document.getElementById('mobileCompanyList');
+                container.innerHTML = '';
+
+                const items = [];
+                if (this.selectedCompany) {
+                    items.push({ company: this.selectedCompany, isSelected: true });
+                }
+                this.peerCompanies.forEach(company => items.push({ company, isSelected: false }));
+
+                items.forEach(({ company, isSelected }) => {
+                    const card = document.createElement('div');
+                    card.className = 'mobile-company-card';
+
+                    if (company.id) {
+                        card.setAttribute('data-company-id', company.id);
+                    }
+
+                    card.addEventListener('click', () => {
+                        if (company.id) {
+                            this.openCompanyDetail(company.id);
+                        }
+                    });
+
+                    const currentLabel = isSelected ? `<div style="margin-top: 6px;">${this.getCurrentCompanyBadge()}</div>` : '';
+
+                    card.innerHTML = `
+                        <div class="mobile-company-header">
+                            <div class="mobile-company-name">${company.name || '-'}</div>
+                            <div class="mobile-company-ticker">${company.ticker || '-'}</div>
+                        </div>
+                        ${currentLabel}
+                        <div class="mobile-company-details">
+                            <div class="mobile-company-detail">
+                                <div class="mobile-company-detail-label">IM Sector</div>
+                                <div class="mobile-company-detail-value">${company.im_sector || '-'}</div>
+                            </div>
+                            <div class="mobile-company-detail">
+                                <div class="mobile-company-detail-label">Industry</div>
+                                <div class="mobile-company-detail-value">${company.industry || '-'}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    container.appendChild(card);
+                });
+            }
+
+            clearComparison() {
+                this.selectedCompany = null;
+                this.peerCompanies = [];
+                document.getElementById('primaryCompanySearch').value = '';
+                document.getElementById('resultsCount').textContent = 'Select a company to find peers';
+                this.showLoading();
+            }
+
+            openCompanyDetail(companyId) {
+                window.location.href = `detail.html?id=${companyId}`;
+            }
+
+            showLoading() {
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('resultsContainer').style.display = 'none';
+                document.getElementById('noResults').style.display = 'none';
+                this.hideError();
+            }
+
+            showResults() {
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('resultsContainer').style.display = 'block';
+                document.getElementById('noResults').style.display = 'none';
+            }
+
+            showNoResults() {
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('resultsContainer').style.display = 'none';
+                document.getElementById('noResults').style.display = 'block';
+                document.getElementById('resultsCount').textContent = 'No peer companies found';
+            }
+
+            showError(message) {
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+
+            hideError() {
+                document.getElementById('errorMessage').style.display = 'none';
+            }
+        }
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new CSI300PeerComparisonApp();
+        });
+    </script>
+</body>
+</html>

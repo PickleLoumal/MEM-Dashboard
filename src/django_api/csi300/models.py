@@ -8,7 +8,7 @@ class CSI300Company(models.Model):
     name = models.CharField(max_length=200, help_text="Company name")
     ticker = models.CharField(max_length=20, blank=True, null=True, help_text="Stock ticker")
     im_sector = models.CharField(max_length=150, blank=True, null=True, help_text="IM Sector (combined from im_code and industry)")
-    industry = models.CharField(max_length=100, blank=True, null=True, help_text="Industry")
+    industry = models.CharField(max_length=500, blank=True, null=True, help_text="Industry")
     gics_industry = models.CharField(max_length=100, blank=True, null=True, help_text="GICS Industry")
     gics_sub_industry = models.CharField(max_length=100, blank=True, null=True, help_text="GICS Sub-industry")
     
@@ -70,7 +70,7 @@ class CSI300Company(models.Model):
     # Interest & Debt
     interest_expense_fy0 = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True, help_text="Interest expense FY0")
     effective_interest_rate = models.DecimalField(max_digits=10, decimal_places=6, blank=True, null=True, help_text="Effective interest rate")
-    interest_coverage_ratio = models.DecimalField(max_digits=10, decimal_places=6, blank=True, null=True, help_text="Interest coverage ratio")
+    interest_coverage_ratio = models.DecimalField(max_digits=15, decimal_places=6, blank=True, null=True, help_text="Interest coverage ratio")
     debt_to_total_assets = models.DecimalField(max_digits=10, decimal_places=6, blank=True, null=True, help_text="Debt to total assets")
     debt_to_equity = models.DecimalField(max_digits=10, decimal_places=6, blank=True, null=True, help_text="Debt to equity")
     
@@ -113,7 +113,7 @@ class CSI300InvestmentSummary(models.Model):
     
     # Market Data
     stock_price_previous_close = models.DecimalField(max_digits=10, decimal_places=6, default=0, help_text="Previous close price")
-    market_cap_display = models.CharField(max_length=100, default='', help_text="Market cap display format")
+    market_cap_display = models.CharField(max_length=200, default='', help_text="Market cap display format")
     recommended_action = models.CharField(max_length=50, default='', help_text="Investment recommendation")
     recommended_action_detail = models.TextField(default='', help_text="Detailed recommendation")
     
