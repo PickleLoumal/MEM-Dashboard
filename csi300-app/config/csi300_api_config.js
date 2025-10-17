@@ -4,7 +4,7 @@
  */
 
 const CSI300Config = {
-    // Use CloudFront for both static files and API proxy - all HTTPS
+    // Use CloudFront as unified entry point - handles both frontend and API proxy
     BASE_URL: 'http://localhost:8001',
     API_BASE: '/api/csi300',
 

@@ -217,7 +217,7 @@
 
         .btn-primary {
             background: #1f2937;
-            color: #ffffff;
+            color: #FFF;
         }
 
         .btn-primary:hover {
@@ -587,6 +587,8 @@
                 this.selectedColumns = [];
                 this.pinnedColumns = [];
                 this.quickComparingData = new Map();
+                this.pendingComparisonFilters = null;
+                this.isRestoringState = false; // Flag to prevent clearing state during restoration
                 this.init();
             }
 
@@ -595,6 +597,7 @@
                     this.initColumnSelector();
                     this.bindEvents();
                     await this.initQuickComparing();
+                    await this.restoreStateFromSession();
                 } catch (error) {
                     this.showError('Failed to initialize application: ' + error.message);
                 }
@@ -864,8 +867,23 @@
 
             selectCompany(company) {
                 this.selectedCompany = company;
+                this.pendingComparisonFilters = null;
                 document.getElementById('primaryCompanySearch').value = company.name;
                 this.hideCompanySuggestions();
+            }
+
+            buildComparisonFilters(company, comparisonType) {
+                if (!company) {
+                    return {};
+                }
+
+                const filters = {};
+                if (comparisonType === 'im_sector' && company.im_sector) {
+                    filters.im_sector = company.im_sector;
+                } else if (comparisonType === 'industry' && company.industry) {
+                    filters.industry = company.industry;
+                }
+                return filters;
             }
 
             async handleQuickComparingCardClick(card) {
@@ -937,12 +955,17 @@
 
                     const comparisonType = document.getElementById('comparisonTypeSelect').value;
 
-                    // Get all companies in the same sector/industry
-                    const filters = {};
-                    if (comparisonType === 'im_sector') {
-                        filters.im_sector = this.selectedCompany.im_sector;
-                    } else {
-                        filters.industry = this.selectedCompany.industry;
+                    let filters = this.pendingComparisonFilters
+                        ? { ...this.pendingComparisonFilters }
+                        : this.buildComparisonFilters(this.selectedCompany, comparisonType);
+
+                    this.pendingComparisonFilters = null;
+
+                    if (!filters || Object.keys(filters).length === 0) {
+                        this.showError('Selected company does not have enough data to find peers.');
+                        this.peerCompanies = [];
+                        this.showNoResults();
+                        return;
                     }
 
                     const response = await this.apiClient.getCompanies({
@@ -984,6 +1007,7 @@
                 this.renderMobileCards();
 
                 this.showResults();
+                this.storePeerState();
             }
 
             escapeHtml(value) {
@@ -1294,12 +1318,26 @@
             clearComparison() {
                 this.selectedCompany = null;
                 this.peerCompanies = [];
+                this.pendingComparisonFilters = null;
                 document.getElementById('primaryCompanySearch').value = '';
                 document.getElementById('resultsCount').textContent = 'Select a company to find peers';
                 this.showLoading();
+                try {
+                    sessionStorage.removeItem('csi300PeerState');
+                    sessionStorage.removeItem('csi300LastListType');
+                    sessionStorage.removeItem('csi300LastPeerUrl');
+                } catch (error) {
+                    console.warn('Failed to clear stored peer comparison state:', error);
+                }
             }
 
             openCompanyDetail(companyId) {
+                try {
+                    this.storePeerState();
+                    sessionStorage.setItem('csi300LastListType', 'peer');
+                } catch (error) {
+                    console.warn('Failed to capture peer comparison context before navigating to detail:', error);
+                }
                 window.location.href = `detail.html?id=${companyId}`;
             }
 
@@ -1321,6 +1359,7 @@
                 document.getElementById('resultsContainer').style.display = 'none';
                 document.getElementById('noResults').style.display = 'block';
                 document.getElementById('resultsCount').textContent = 'No peer companies found';
+                this.storePeerState();
             }
 
             showError(message) {
@@ -1329,6 +1368,167 @@
                 errorElement.style.display = 'block';
 
                 document.getElementById('loadingIndicator').style.display = 'none';
+            }
+
+            async restoreStateFromSession() {
+                this.isRestoringState = true; // Set flag to prevent state clearing
+                
+                try {
+                    let lastType = sessionStorage.getItem('csi300LastListType');
+                    let storedState = sessionStorage.getItem('csi300PeerState');
+                    
+                    // If sessionStorage is empty, try localStorage backup
+                    if (!lastType || !storedState) {
+                        console.log('[Peer Comparison] Session storage empty, checking localStorage backup');
+                        const backupType = localStorage.getItem('csi300LastListTypeBackup');
+                        const backupState = localStorage.getItem('csi300PeerStateBackup');
+                        
+                        if (backupType && backupState) {
+                            try {
+                                const backup = JSON.parse(backupState);
+                                // Check if backup is not too old (within 1 hour)
+                                if (backup.timestamp && (Date.now() - backup.timestamp) < 3600000) {
+                                    console.log('[Peer Comparison] Using localStorage backup');
+                                    lastType = backupType;
+                                    storedState = backupState;
+                                    
+                                    // Restore to sessionStorage
+                                    sessionStorage.setItem('csi300LastListType', lastType);
+                                    sessionStorage.setItem('csi300PeerState', storedState);
+                                } else {
+                                    console.log('[Peer Comparison] Backup too old, clearing');
+                                    localStorage.removeItem('csi300PeerStateBackup');
+                                    localStorage.removeItem('csi300LastListTypeBackup');
+                                }
+                            } catch (error) {
+                                console.warn('[Peer Comparison] Failed to parse backup:', error);
+                            }
+                        }
+                    }
+                    
+                    console.log('[Peer Comparison] Restoring state, lastType:', lastType);
+                    
+                    if (lastType && lastType !== 'peer') {
+                        console.log('[Peer Comparison] Not a peer list context, skipping restore');
+                        this.isRestoringState = false;
+                        return;
+                    }
+
+                    if (!storedState) {
+                        console.log('[Peer Comparison] No stored state found (session or backup)');
+                        this.isRestoringState = false;
+                        return;
+                    }
+
+                    const state = JSON.parse(storedState);
+                    console.log('[Peer Comparison] Parsed state:', state);
+                    
+                    if (!state || !state.selectedCompany || !state.selectedCompany.id) {
+                        console.warn('[Peer Comparison] Invalid state structure');
+                        this.isRestoringState = false;
+                        return;
+                    }
+
+                    // Show loading indicator during restore
+                    this.showLoading();
+
+                    const primarySearchInput = document.getElementById('primaryCompanySearch');
+                    if (primarySearchInput) {
+                        primarySearchInput.value = state.selectedCompany.name || '';
+                    }
+
+                    const comparisonSelect = document.getElementById('comparisonTypeSelect');
+                    if (comparisonSelect && state.comparisonType) {
+                        comparisonSelect.value = state.comparisonType;
+                    }
+
+                    this.pendingComparisonFilters = state.filters ? { ...state.filters } : null;
+
+                    let restoredCompany = { ...state.selectedCompany };
+
+                    if (this.pendingComparisonFilters) {
+                        if (this.pendingComparisonFilters.im_sector && !restoredCompany.im_sector) {
+                            restoredCompany.im_sector = this.pendingComparisonFilters.im_sector;
+                        }
+                        if (this.pendingComparisonFilters.industry && !restoredCompany.industry) {
+                            restoredCompany.industry = this.pendingComparisonFilters.industry;
+                        }
+                    }
+
+                    try {
+                        if (this.apiClient && restoredCompany.id) {
+                            const detail = await this.apiClient.getCompanyDetail(restoredCompany.id);
+                            if (detail && typeof detail === 'object') {
+                                restoredCompany = { ...restoredCompany, ...detail };
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('Failed to hydrate peer comparison company detail:', error);
+                    }
+
+                    this.selectedCompany = restoredCompany;
+
+                    const currentPath = `${window.location.pathname}${window.location.search}`;
+                    sessionStorage.setItem('csi300LastPeerUrl', currentPath);
+                    sessionStorage.setItem('csi300LastListType', 'peer');
+                    
+                    console.log('[Peer Comparison] Calling findPeers to restore results');
+                    await this.findPeers();
+                } catch (error) {
+                    console.error('[Peer Comparison] Failed to restore peer comparison state:', error);
+                    this.hideLoading();
+                    // Show default empty state
+                    document.getElementById('resultsCount').textContent = 'Select a company to find peers';
+                } finally {
+                    this.isRestoringState = false; // Always clear the flag
+                }
+            }
+
+            storePeerState() {
+                try {
+                    // Don't clear state while we're restoring it
+                    if (this.isRestoringState) {
+                        console.log('[Peer Comparison] Skipping state storage during restoration');
+                        return;
+                    }
+
+                    const comparisonSelect = document.getElementById('comparisonTypeSelect');
+                    const comparisonType = comparisonSelect ? comparisonSelect.value : '';
+
+                    const currentPath = `${window.location.pathname}${window.location.search}`;
+
+                    if (this.selectedCompany && this.selectedCompany.id) {
+                        const storedCompany = JSON.parse(JSON.stringify(this.selectedCompany));
+                        const filters = this.buildComparisonFilters(this.selectedCompany, comparisonType);
+
+                        const stateToStore = {
+                            comparisonType,
+                            selectedCompany: storedCompany,
+                            filters,
+                            timestamp: Date.now()
+                        };
+
+                        // Store in both sessionStorage and localStorage for redundancy
+                        sessionStorage.setItem('csi300LastListType', 'peer');
+                        sessionStorage.setItem('csi300PeerState', JSON.stringify(stateToStore));
+                        sessionStorage.setItem('csi300LastPeerUrl', currentPath);
+                        
+                        // Backup to localStorage (expires after 1 hour)
+                        localStorage.setItem('csi300PeerStateBackup', JSON.stringify(stateToStore));
+                        localStorage.setItem('csi300LastListTypeBackup', 'peer');
+                        
+                        console.log('[Peer Comparison] Stored state (both session and local):', stateToStore);
+                    } else {
+                        console.log('[Peer Comparison] No company selected, clearing state');
+                        sessionStorage.removeItem('csi300PeerState');
+                        sessionStorage.removeItem('csi300LastListType');
+                        sessionStorage.removeItem('csi300LastPeerUrl');
+                        // Don't clear localStorage backup immediately
+                        this.pendingComparisonFilters = null;
+                    }
+                } catch (error) {
+                    console.error('[Peer Comparison] Failed to store peer comparison state:', error);
+                }
             }
 
             hideError() {

@@ -434,7 +434,7 @@ body {
 /* Print styles */
 @media print {
     .value-chain-header {
-        background: #ffffff !important;
+        background: #FFF !important;
         color: #333333 !important;
         -webkit-print-color-adjust: exact;
         color-adjust: exact;
@@ -447,4 +447,3 @@ body {
         page-break-inside: avoid;
     }
 }
-
