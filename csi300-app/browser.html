@@ -27,20 +27,16 @@
     <script src="assets/js/utils/csi300_error_handler.js?v=20251007-fix"></script>
     
     <!-- Column Selector Components -->
-    <link rel="stylesheet" href="assets/css/column-selector.css?v=20251009">
-    <script src="config/column-manifest.js?v=20251009"></script>
-    <script src="assets/js/components/column-selector.js?v=20251009"></script>
+    <link rel="stylesheet" href="assets/css/column-selector.css?v=20251016">
+    <script src="config/column-manifest.js?v=20251016"></script>
+    <script src="assets/js/components/column-selector.js?v=20251016"></script>
+    <link rel="stylesheet" href="assets/css/app-base.css">
     
     <style>
-        * {
-            box-sizing: border-box;
-        }
-        
         body {
             margin: 0;
-            background-color: #f8f9fa;
-            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            color: #1f2937;
+            background-color: var(--app-body-bg);
+            color: var(--app-text);
         }
         
         .container {
@@ -49,164 +45,162 @@
             padding: 80px 24px 48px;
         }
         
+        .page-header {
+            margin-bottom: 32px;
+        }
+        
+        .page-title {
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--app-heading);
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+        
+        .page-subtitle {
+            font-size: 15px;
+            color: var(--app-text-muted);
+            margin-top: 8px;
+        }
+        
         .filter-section {
-            background: transparent;
-            border-radius: 0;
-            padding: 0;
+            padding: 24px 28px;
             margin-bottom: 28px;
-            box-shadow: none;
-            border: none;
+            box-shadow: var(--app-shadow-subtle);
         }
         
         .filter-grid {
             display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 24px;
-            margin-bottom: 32px;
         }
         
         .filter-group {
             display: flex;
             flex-direction: column;
+            gap: 6px;
         }
         
         .filter-label {
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 8px;
-            font-size: 13px;
-            text-transform: uppercase;
+            color: var(--app-text);
         }
         
-        .filter-input, .filter-select {
-            padding: 12px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            font-size: 14px;
-            background: white;
-        }
-        
-        .filter-input:focus, .filter-select:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        .filter-input,
+        .filter-select {
+            width: 100%;
+            transition:
+                border-color var(--app-transition-speed) ease,
+                box-shadow var(--app-transition-speed) ease,
+                background-color var(--app-transition-speed) ease;
         }
         
         .filter-actions {
             display: flex;
             gap: 12px;
             justify-content: flex-end;
+            margin-top: 24px;
         }
         
         .btn {
-            padding: 12px 28px;
-            border-radius: 999px;
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            min-width: 140px;
+            transition:
+                background-color var(--app-transition-speed) ease,
+                color var(--app-transition-speed) ease,
+                box-shadow var(--app-transition-speed) ease;
         }
         
         .btn-primary {
-            background: #111827;
-            color: #ffffff;
+            background: #1f2937;
+            color: #FFF;
         }
         
         .btn-primary:hover {
-            background: #0f172a;
+            background: #111827;
         }
         
         .btn-secondary {
-            background: #eef1f6;
-            color: #111827;
+            background: var(--app-surface-muted);
+            color: var(--app-heading);
+            border: 1px solid var(--app-border);
         }
         
         .btn-secondary:hover {
-            background: #e2e5ec;
+            background: #e6e9ee;
         }
         
         .results-section {
-            background: rgba(255, 255, 255, 0.97) !important;
-            border-radius: 20px;
+            margin-top: 24px;
             overflow: hidden;
-            box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08);
-            box-sizing: border-box;
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
+            box-shadow: none;
+            border: 1px solid var(--app-border);
+            border-radius: var(--app-radius-lg);
         }
         
         .results-header {
-            background: transparent !important;
-            padding: 24px 32px 16px;
-            border-bottom: 1px solid rgba(240, 242, 245, 0.6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 28px 16px;
+            border-bottom: 1px solid var(--app-border);
         }
         
         .results-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
-            color: #1f2937;
+            color: var(--app-heading);
             margin: 0;
         }
         
         .results-count {
-            color: #6b7280;
+            color: var(--app-text-muted);
             font-size: 14px;
             margin-top: 4px;
         }
         
         .company-table {
             width: 100%;
-            border-collapse: collapse;
-            background: white !important;
+            border: none;
+            border-radius: 0;
         }
         
-        .mobile-company-list {
-            display: none;
+        .company-table thead {
+            background: var(--app-surface-muted);
         }
         
         .company-table th {
-            background: #f8f9fa !important;
-            padding: 12px 16px;
-            text-align: left;
             font-weight: 600;
-            color: #374151;
-            border-bottom: 1px solid #e5e7eb;
+            color: var(--app-text);
             font-size: 13px;
         }
         
         .company-table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #f3f4f6;
             font-size: 14px;
-            background: white !important;
         }
         
         .company-table tr {
-            transition: background-color 0.2s ease;
+            transition: background-color var(--app-transition-speed) ease;
+        }
+        
+        .company-table tbody tr:hover td {
+            background: #f5f7fb;
         }
         
         .clickable-row {
             cursor: pointer;
         }
         
-        .company-table tr:hover {
-            background: #f9fafb;
-        }
-        
-        .clickable-row:hover {
-            background: #eff6ff !important;
+        .mobile-company-list {
+            display: none;
         }
         
         .company-name {
             font-weight: 500;
-            color: #111827;
+            color: var(--app-heading);
         }
         
         .company-ticker {
             font-family: monospace;
-            color: #6b7280;
+            color: var(--app-text-muted);
             font-size: 13px;
         }
         
@@ -217,7 +211,7 @@
         
         .price {
             text-align: right;
-            color: #059669;
+            color: var(--app-success);
         }
         
         .pe-ratio {
@@ -227,164 +221,83 @@
         .no-results {
             text-align: center;
             padding: 48px 24px;
-            color: #6b7280;
+            color: var(--app-text-muted);
         }
         
         .page-header {
             text-align: left;
-            margin-bottom: 40px;
-        }
-        
-        .page-title {
-            font-size: 36px;
-            font-weight: 700;
-            color: #111827;
-            margin: 0;
-            letter-spacing: -0.01em;
-        }
-        
-        .page-subtitle {
-            font-size: 16px;
-            color: #6b7280;
-            margin: 12px 0 0 0;
         }
         
         .loading {
             text-align: center;
             padding: 48px;
-            color: #6b7280;
+            color: var(--app-text-muted);
         }
         
         .error {
-            color: #dc2626;
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            padding: 12px;
-            border-radius: 4px;
             margin-bottom: 16px;
         }
-
-        /* Mobile hide columns */
-        .mobile-hide {
-            display: table-cell;
+        
+        .mobile-company-card {
+            background: var(--app-surface);
+            border-bottom: 1px solid var(--app-border);
+            padding: 16px;
+            cursor: pointer;
+            transition: background-color var(--app-transition-speed) ease;
         }
         
-        /* Mobile Responsive Styles */
-        @media (max-width: 768px) {
-            .container {
-                padding: 12px;
-            }
-            
-            .page-title {
-                font-size: 24px;
-                margin-bottom: 12px;
-            }
-            
-            .filter-section {
-                padding: 16px;
-                margin-bottom: 16px;
-            }
-            
-            .filter-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-            
-            .filter-actions {
-                flex-direction: column;
-                gap: 12px;
-            }
-            
-            .btn {
-                width: 100%;
-                text-align: center;
-                font-size: 14px;
-            }
-            
-            .results-section {
-                overflow-x: auto;
-            }
-            
-            .mobile-hide {
-                display: none !important;
-            }
-            
-            /* Mobile card layout */
-            .company-table {
-                display: none;
-            }
-            
-            .mobile-company-list {
-                display: block;
-                margin: 0;
-                padding: 0;
-            }
-            
-            .mobile-company-card {
-                background: white;
-                border-bottom: 1px solid #e5e7eb;
-                padding: 16px 16px;
-                cursor: pointer;
-            }
-            
-            .mobile-company-card:last-child {
-                border-bottom: none;
-            }
-            
-            .mobile-company-card:hover {
-                background: #f9fafb;
-            }
-            
-            .mobile-company-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                margin-bottom: 12px;
-            }
-            
-            .mobile-company-name {
-                font-size: 16px;
-                font-weight: 600;
-                color: #111827;
-                line-height: 1.3;
-                flex: 1;
-                margin-right: 12px;
-            }
-            
-            .mobile-company-ticker {
-                font-size: 14px;
-                font-weight: 600;
-                color: #909296;
-                background: #f3f4f6;
-                padding: 4px 8px;
-                border-radius: 4px;
-                white-space: nowrap;
-            }
-            
-            .mobile-company-details {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-                font-size: 14px;
-            }
-            
-            .mobile-company-detail {
-                display: flex;
-                flex-direction: column;
-            }
-            
-            .mobile-company-detail-label {
-                font-size: 12px;
-                color: #6b7280;
-                font-weight: 500;
-                margin-bottom: 2px;
-            }
-            
-            .mobile-company-detail-value {
-                font-size: 14px;
-                color: #111827;
-                font-weight: 400;
-            }
+        .mobile-company-card:hover {
+            background: var(--app-surface-muted);
+        }
+        
+        .mobile-company-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .mobile-company-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--app-heading);
+            line-height: 1.3;
+            flex: 1;
+            margin-right: 12px;
+        }
+        
+        .mobile-company-ticker {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--app-heading);
+            background: var(--app-surface-muted);
+            padding: 4px 8px;
+            border-radius: var(--app-radius-md);
+            white-space: nowrap;
+        }
+        
+        .mobile-company-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .mobile-company-detail {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .mobile-company-detail-label {
+            font-size: 12px;
+            color: var(--app-text-muted);
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .mobile-company-detail-value {
+            font-size: 14px;
+            color: var(--app-text);
         }
         
         .pagination {
@@ -398,14 +311,17 @@
         
         .pagination button {
             padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            background: white;
-            border-radius: 4px;
+            border: 1px solid var(--app-border);
+            background: var(--app-surface);
+            border-radius: var(--app-radius-md);
             cursor: pointer;
+            transition:
+                background-color var(--app-transition-speed) ease,
+                border-color var(--app-transition-speed) ease;
         }
         
         .pagination button:hover:not(:disabled) {
-            background: #f3f4f6;
+            background: var(--app-surface-muted);
         }
         
         .pagination button:disabled {
@@ -419,7 +335,10 @@
             border-color: #1d1e1f;
         }
         
-        /* Dynamic Column Styles */
+        .mobile-hide {
+            display: table-cell;
+        }
+        
         .text-right {
             text-align: right;
         }
@@ -431,60 +350,116 @@
         .text-center {
             text-align: center;
         }
+        
+        @media (max-width: 900px) {
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-actions {
+                justify-content: flex-start;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 72px 16px 32px;
+            }
+            
+            .page-title {
+                font-size: 26px;
+            }
+            
+            .filter-section {
+                padding: 20px;
+            }
+            
+            .filter-actions {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .results-section {
+                overflow-x: auto;
+            }
+            
+            .results-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            
+            .mobile-company-list {
+                display: block;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .mobile-hide {
+                display: none !important;
+            }
+            
+            .company-table {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container app-shell">
         <div class="page-header">
             <h1 class="page-title">CSI300 Search Results</h1>
         </div>
         
-        <div id="errorMessage" class="error" style="display: none;"></div>
+        <div id="errorMessage" class="error app-notice" style="display: none;"></div>
         
-        <form id="filterForm" class="filter-section">
-            <div class="filter-grid">
-                <div class="filter-group">
-                    <label class="filter-label">IM Sector</label>
-                    <select name="im_sector" id="imSectorSelect" class="filter-select">
+        <form id="filterForm" class="filter-section app-card">
+            <div class="filter-grid app-form-grid app-form-grid--two">
+                <div class="filter-group app-form-field">
+                    <label class="filter-label app-label">IM Sector</label>
+                    <select name="im_sector" id="imSectorSelect" class="filter-select app-select">
                         <option value="">All IM Sectors</option>
                     </select>
                 </div>
 
-                <div class="filter-group">
-                    <label class="filter-label">Industry within selected sector</label>
-                    <select name="industry" id="industrySelect" class="filter-select">
+                <div class="filter-group app-form-field">
+                    <label class="filter-label app-label">Industry within selected sector</label>
+                    <select name="industry" id="industrySelect" class="filter-select app-select">
                         <option value="">All Industries</option>
                     </select>
                 </div>
                 
-                <div class="filter-group">
-                    <label class="filter-label">Search Companies</label>
+                <div class="filter-group app-form-field">
+                    <label class="filter-label app-label">Search Companies</label>
                     <input type="text" name="company_search" id="companySearch" 
-                           class="filter-input" placeholder="Search by company name or ticker...">
+                           class="filter-input app-input" placeholder="Search by company name or ticker...">
                 </div>
                 
-                <div class="filter-group">
-                    <label class="filter-label">Search by Industry</label>
+                <div class="filter-group app-form-field">
+                    <label class="filter-label app-label">Search by Industry</label>
                     <input type="text" name="industry_search" id="industrySearch" 
-                           class="filter-input" placeholder="Search by industry name...">
+                           class="filter-input app-input" placeholder="Search by industry name...">
                 </div>
             </div>
             
-            <div class="filter-actions">
-                <button type="button" id="clearFiltersBtn" class="btn btn-secondary">Clear Filters</button>
-                <button type="submit" class="btn btn-primary">Apply Filters</button>
+            <div class="filter-actions app-actions">
+                <button type="button" id="clearFiltersBtn" class="btn btn-secondary app-button app-button--secondary">Clear Filters</button>
+                <button type="submit" class="btn btn-primary app-button app-button--primary">Apply Filters</button>
             </div>
         </form>
         
-        <div class="results-section">
+        <div class="results-section app-card">
             <div class="results-header">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h2 class="results-title">Search Results</h2>
-                        <p class="results-count" id="resultsCount">Loading...</p>
-                    </div>
-                    <div id="columnSelectorContainer"></div>
+                <div>
+                    <h2 class="results-title">Search Results</h2>
+                    <p class="results-count" id="resultsCount">Loading...</p>
                 </div>
+                <div id="columnSelectorContainer"></div>
             </div>
             
             <div id="loadingIndicator" class="loading">
@@ -493,7 +468,7 @@
             
             <div id="resultsContainer" style="display: none;">
                 <!-- Desktop table view -->
-                <table class="company-table" id="companyTable">
+                <table class="company-table app-table" id="companyTable">
                     <thead>
                         <tr>
                             <th>Company Name</th>
@@ -769,6 +744,7 @@
                 this.renderMobileCards();
                 
                 this.showResults();
+                this.storeBrowserState();
             }
 
             renderDesktopTable() {
@@ -786,7 +762,9 @@
                     const isPinned = this.pinnedColumns.includes(col.id);
                     const alignClass = col.align === 'right' ? 'text-right' : '';
                     const hideClass = !col.defaultVisible && window.innerWidth <= 768 ? 'mobile-hide' : '';
-                    return `<th class="${alignClass} ${hideClass}" style="${isPinned ? 'position: sticky; left: 0; z-index: 10; background: #f8f9fa;' : ''}">${col.displayName}</th>`;
+                    const pinnedClass = isPinned ? 'pinned-column' : '';
+                    const classList = [alignClass, hideClass, pinnedClass].filter(Boolean).join(' ');
+                    return `<th class="${classList}">${col.displayName}</th>`;
                 }).join('') + '</tr>';
                 
                 // Render table body
@@ -804,7 +782,9 @@
                         const alignClass = col.align === 'right' ? 'text-right' : '';
                         const hideClass = !col.defaultVisible && window.innerWidth <= 768 ? 'mobile-hide' : '';
                         const cellClass = this.getCellClass(col);
-                        return `<td class="${cellClass} ${alignClass} ${hideClass}" style="${isPinned ? 'position: sticky; left: 0; z-index: 5; background: white;' : ''}">${value}</td>`;
+                        const pinnedClass = isPinned ? 'pinned-column' : '';
+                        const classList = [cellClass, alignClass, hideClass, pinnedClass].filter(Boolean).join(' ');
+                        return `<td class="${classList}">${value}</td>`;
                     }).join('');
                     
                     tbody.appendChild(row);
@@ -1107,7 +1087,10 @@
                 
                 // Update URL
                 const queryParams = new URLSearchParams(filters);
-                window.history.pushState({}, '', `browser.html?${queryParams.toString()}`);
+                const queryString = queryParams.toString();
+                const targetPath = queryString ? `browser.html?${queryString}` : 'browser.html';
+                window.history.pushState({}, '', targetPath);
+                this.storeBrowserState();
             }
 
             clearFilters() {
@@ -1118,6 +1101,7 @@
                 
                 // Update URL
                 window.history.pushState({}, '', 'browser.html');
+                this.storeBrowserState();
             }
 
             // ===== Cascading Filter Methods =====
@@ -1229,6 +1213,12 @@
             }
 
             openCompanyDetail(companyId) {
+                try {
+                    sessionStorage.setItem('csi300LastListType', 'browser');
+                    this.storeBrowserState();
+                } catch (error) {
+                    console.warn('Failed to capture browser context before navigating to detail:', error);
+                }
                 window.location.href = `detail.html?id=${companyId}`;
             }
 
@@ -1250,6 +1240,7 @@
                 document.getElementById('resultsContainer').style.display = 'none';
                 document.getElementById('noResults').style.display = 'block';
                 document.getElementById('resultsCount').textContent = 'Found 0 companies';
+                this.storeBrowserState();
             }
 
             showError(message) {
@@ -1258,6 +1249,16 @@
                 errorElement.style.display = 'block';
                 
                 document.getElementById('loadingIndicator').style.display = 'none';
+            }
+
+            storeBrowserState() {
+                try {
+                    const currentState = `${window.location.pathname}${window.location.search}`;
+                    sessionStorage.setItem('csi300LastBrowserUrl', currentState);
+                    sessionStorage.setItem('csi300LastListType', 'browser');
+                } catch (error) {
+                    console.warn('Failed to store browser state:', error);
+                }
             }
 
             hideError() {

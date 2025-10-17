@@ -44,12 +44,13 @@
         .page-shell {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 72px 24px 48px;
+            padding: 24px;
             box-sizing: border-box;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 24px;
         }
         
@@ -60,7 +61,7 @@
         }
         
         .filter-container {
-            text-align: left;
+            text-align: center;
             padding: 32px;
             border-radius: var(--app-radius-lg);
             box-shadow: var(--app-shadow-subtle);
@@ -95,10 +96,17 @@
             color: var(--app-success);
             font-weight: 500;
             margin: 0 0 16px 0;
+            text-align: center;
         }
         
         .filter-form {
-            text-align: left;
+            width: 100%;
+            max-width: 720px;
+            margin: 0 auto;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .filter-grid {
@@ -106,6 +114,9 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 24px;
             margin-bottom: 32px;
+            justify-items: center;
+            justify-content: center;
+            width: 100%;
         }
         
         .filter-group {
@@ -113,14 +124,20 @@
             flex-direction: column;
             min-width: 0;
             gap: 6px;
+            align-items: flex-start;
+            text-align: left;
+            width: 100%;
         }
         
         .filter-label {
             color: var(--app-text);
+            width: 100%;
         }
         
         .filter-input,
         .filter-select {
+            width: 100%;
+            max-width: 360px;
             transition:
                 border-color var(--app-transition-speed) ease,
                 box-shadow var(--app-transition-speed) ease,
@@ -134,6 +151,10 @@
         
         .filter-actions {
             margin-top: 32px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
         }
         
         .btn {
@@ -175,7 +196,7 @@
         
         @media (max-width: 768px) {
             .page-shell {
-                padding: 64px 16px 32px;
+                padding: 24px 16px;
                 gap: 16px;
             }
             

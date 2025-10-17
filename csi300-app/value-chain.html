@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Value Chains - CSI300 Standalone Application</title>
+
+    <!-- Favicon (using base64 to avoid 404) -->
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==">
+
+    <!-- Framework and styling imports -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Global Navigation -->
+    <link rel="stylesheet" href="assets/css/global-nav.css">
+    <script src="assets/js/components/global-nav.js"></script>
+
+    <!-- Base Styles -->
+    <link rel="stylesheet" href="assets/css/app-base.css">
+
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--app-body-bg);
+            color: var(--app-text);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .coming-soon-shell {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 24px;
+        }
+
+        .coming-soon-card {
+            text-align: center;
+            max-width: 640px;
+            padding: 64px 60px;
+            border-radius: 32px;
+            background: var(--app-surface);
+            box-shadow: 0 22px 48px rgba(15, 23, 42, 0.14);
+        }
+
+        .coming-soon-eyebrow {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--app-text-subtle);
+            margin-bottom: 16px;
+        }
+
+        .coming-soon-title {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin: 0 0 16px;
+            color: var(--app-heading);
+        }
+
+        .coming-soon-copy {
+            font-size: 16px;
+            color: var(--app-text-muted);
+            margin: 0 0 12px;
+        }
+
+        .coming-soon-copy + .coming-soon-copy {
+            margin-top: 0;
+        }
+
+        @media (max-width: 768px) {
+            .coming-soon-card {
+                padding: 48px 32px;
+                border-radius: 24px;
+            }
+
+            .coming-soon-title {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <company-global-nav></company-global-nav>
+
+    <main class="coming-soon-shell">
+        <div class="coming-soon-card">
+            <div class="coming-soon-eyebrow">Value Chains</div>
+            <h1 class="coming-soon-title">Coming Soon</h1>
+            <p class="coming-soon-copy">Understand each CSI300 industry at a glance — from how products flow across the value chain to the user segments they serve.</p>
+            <p class="coming-soon-copy">Hover sub-industries for instant explainers, layer on financial factors to compare performance, and surface leading companies in every segment.</p>
+        </div>
+    </main>
+</body>
+</html>

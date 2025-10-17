@@ -11,21 +11,17 @@
     <!-- Framework and styling imports -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/app-base.css">
+    <link rel="stylesheet" href="../assets/css/global-nav.css">
     <link rel="stylesheet" href="assets/investment-summary.css">
+    <script src="../assets/js/components/global-nav.js"></script>
+    
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
 </head>
 <body>
     
-    <div class="container">
-        <!-- Breadcrumb Navigation -->
-        <div class="breadcrumb">
-            <a href="../index.html">CSI300 Filter</a>
-            <span class="breadcrumb-separator">></span>
-            <a href="../browser.html">Browse Results</a>
-            <span class="breadcrumb-separator">></span>
-            <a href="#" class="breadcrumb-company-link" id="breadcrumbCompany">Loading...</a>
-            <span class="breadcrumb-separator">></span>
-            <span class="breadcrumb-current">Investment Summary</span>
-        </div>
+    <div class="container app-shell">
         <!-- Loading State -->
         <div id="loadingState" class="loading-spinner">
             <div class="spinner"></div>
@@ -177,13 +173,6 @@
                 </div>
             </div>
             
-            <!-- Tariffs and Supply Chain Risks -->
-            <div class="investment-summary-section">
-                <div class="section-header">Tariffs and Supply Chain Risks</div>
-                <div class="section-content" id="tariffsSupplyChainRisks">
-                    <!-- Content will be populated here -->
-                </div>
-            </div>
             
             <!-- Key Takeaways -->
             <div class="investment-summary-section">
@@ -193,13 +182,6 @@
                 </div>
             </div>
             
-            <!-- Sources -->
-            <div class="investment-summary-section">
-                <div class="section-header">Sources</div>
-                <div class="section-content" id="sources">
-                    <!-- Content will be populated here -->
-                </div>
-            </div>
         </div>
     </div>
 
@@ -232,20 +214,10 @@
             }
 
             updateBreadcrumb() {
-                const breadcrumbCompany = document.getElementById('breadcrumbCompany');
                 if (this.companyName) {
-                    breadcrumbCompany.textContent = this.companyName;
-                    // Update page title
                     document.title = `${this.companyName} - Investment Summary - CSI300 Platform`;
-                    
-                    // Add click event listener to breadcrumb company name
-                    breadcrumbCompany.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        this.goBackToCompanyDetail();
-                    });
                 } else {
-                    // Fallback if no company name provided
-                    breadcrumbCompany.textContent = 'Company Details';
+                    document.title = 'Investment Summary - CSI300 Platform';
                 }
             }
 
@@ -302,6 +274,11 @@
                 // Show content
                 document.getElementById('investmentSummaryContent').style.display = 'block';
                 
+                // Update cached company name if provided in payload
+                if (data.company_name) {
+                    this.companyName = data.company_name;
+                }
+                
                 // Update title and company name link
                 document.getElementById('summaryTitle').textContent = 'Investment Summary';
                 
@@ -320,15 +297,22 @@
                 
                 // Update basic information
                 document.getElementById('reportDate').textContent = this.formatDate(data.report_date);
-                document.getElementById('stockPrice').textContent = `CNY ${data.stock_price_previous_close}`;
-                document.getElementById('marketCap').textContent = data.market_cap_display;
+                document.getElementById('stockPrice').textContent = data.stock_price_previous_close
+                    ? `CNY ${data.stock_price_previous_close}`
+                    : '-';
+                document.getElementById('marketCap').textContent = data.market_cap_display || '-';
                 
                 const recommendedActionElement = document.getElementById('recommendedAction');
-                recommendedActionElement.textContent = data.recommended_action;
-                recommendedActionElement.className = `recommended-action ${data.recommended_action.toLowerCase()}`;
+                const actionText = data.recommended_action || '-';
+                const actionClass = actionText === '-'
+                    ? 'neutral'
+                    : actionText.toLowerCase().replace(/\s+/g, '-');
+                recommendedActionElement.textContent = actionText;
+                recommendedActionElement.className = `recommended-action ${actionClass}`;
                 
                 // Get industry from company data or use a default
-                document.getElementById('industry').textContent = 'Cybersecurity Software and Internet Services'; // This should come from company data
+                const industryValue = data.industry || data.im_sector || '-';
+                document.getElementById('industry').textContent = industryValue;
                 
                 // Update all sections
                 this.updateSection('businessOverview', data.business_overview);
@@ -351,15 +335,33 @@
                 this.updateSourcesSection(data.sources);
                 
                 // Update page title
-                document.title = `Investment Summary: ${data.company_name} - CSI300 Platform`;
+                const titleName = data.company_name || this.companyName || 'Company';
+                document.title = `${titleName} - Investment Summary - CSI300 Platform`;
+
+                // Update global navigation context with current company
+                this.updateGlobalNavigationContext(data);
             }
 
             updateSection(elementId, content) {
                 const element = document.getElementById(elementId);
                 if (element && content) {
-                    // Convert line breaks to paragraphs
-                    const paragraphs = content.split('\n').filter(p => p.trim()).map(p => `<p>${p.trim()}</p>`).join('');
-                    element.innerHTML = paragraphs;
+                    // Parse Markdown to HTML
+                    if (typeof marked !== 'undefined') {
+                        // Configure marked options
+                        marked.setOptions({
+                            breaks: true,        // Convert \n to <br>
+                            gfm: true,          // GitHub Flavored Markdown
+                            headerIds: false,   // Don't add IDs to headers
+                            mangle: false       // Don't escape email addresses
+                        });
+                        
+                        // Parse markdown and set HTML
+                        element.innerHTML = marked.parse(content);
+                    } else {
+                        // Fallback to simple paragraph conversion if marked is not loaded
+                        const paragraphs = content.split('\n').filter(p => p.trim()).map(p => `<p>${p.trim()}</p>`).join('');
+                        element.innerHTML = paragraphs;
+                    }
                 }
             }
 
@@ -405,6 +407,10 @@
                     <h3>Investment Summary Not Available</h3>
                     <p>${message}</p>
                 `;
+
+                if (window.CSI300GlobalNav && typeof window.CSI300GlobalNav.setCompanyContext === 'function') {
+                    window.CSI300GlobalNav.setCompanyContext(null);
+                }
             }
 
             goBackToCompanyDetail() {
@@ -414,6 +420,18 @@
                 } else {
                     window.location.href = '../browser.html';
                 }
+            }
+
+            updateGlobalNavigationContext(data) {
+                if (!window.CSI300GlobalNav || typeof window.CSI300GlobalNav.setCompanyContext !== 'function') {
+                    return;
+                }
+
+                window.CSI300GlobalNav.setCompanyContext({
+                    id: this.companyId,
+                    name: data.company_name || this.companyName || 'Company Insights',
+                    imSector: data.im_sector || data.industry || ''
+                });
             }
         }
 

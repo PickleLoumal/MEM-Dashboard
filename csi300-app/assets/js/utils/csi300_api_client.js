@@ -146,11 +146,15 @@ class CSI300ApiClient {
         // Create cache key that includes parameters to avoid stale cache
         const cacheKey = `filter_options_${JSON.stringify(params)}`;
         
+        console.log('getFilterOptions called with params:', params);
+        console.log('Cache key:', cacheKey);
+        
         return await this.getCachedOrFetch(
             cacheKey,
             async () => {
                 const queryString = new URLSearchParams(params).toString();
                 const url = `${this.baseUrl}${CSI300Config.ENDPOINTS.FILTER_OPTIONS}${queryString ? '?' + queryString : ''}`;
+                console.log('Filter options API URL:', url);
                 return await this.makeRequest(url);
             },
             CSI300Config.CACHE_CONFIG.FILTER_OPTIONS_TTL
