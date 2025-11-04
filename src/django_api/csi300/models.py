@@ -19,7 +19,8 @@ class CSI300Company(models.Model):
     directors = models.CharField(max_length=500, blank=True, null=True, help_text="Directors")
     
     # Price Information
-    price_local_currency = models.DecimalField(max_digits=20, decimal_places=6, blank=True, null=True, help_text="Price in local currency")
+    price_local_currency = models.DecimalField(max_digits=20, decimal_places=6, blank=True, null=True, help_text="Price in local currency (Open)")
+    previous_close = models.DecimalField(max_digits=20, decimal_places=6, blank=True, null=True, help_text="Previous close price")
     currency = models.CharField(max_length=20, blank=True, null=True, help_text="Currency")
     total_return_2018_to_2025 = models.DecimalField(max_digits=15, decimal_places=6, blank=True, null=True, help_text="Total return 2018-2025")
     last_trade_date = models.DateField(blank=True, null=True, help_text="Last trade date")

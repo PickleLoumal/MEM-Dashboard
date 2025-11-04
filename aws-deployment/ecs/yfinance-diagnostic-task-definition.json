@@ -1,0 +1,46 @@
+{
+  "family": "yfinance-diagnostic-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::952189540759:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::952189540759:role/mem-dashboard-task-role",
+  "containerDefinitions": [
+    {
+      "name": "diagnostic-container",
+      "image": "952189540759.dkr.ecr.ap-east-1.amazonaws.com/mem-dashboard:20251030-yfinance-v2-fixed",
+      "essential": true,
+      "command": [
+        "/bin/bash",
+        "-c",
+        "python3 -c \"import sys; import socket; import ssl; import urllib.request; from datetime import datetime; print('='*80); print('🔍 yfinance ECS Diagnostics'); print('='*80); print(f'Time: {datetime.now()}'); print(f'Python: {sys.version}'); print(); print('1️⃣ Testing basic network...'); socket.create_connection(('www.google.com', 80), timeout=5); print('   ✅ Internet: OK'); print(); print('2️⃣ Testing DNS...'); [print(f'   ✅ {d} -> {socket.gethostbyname(d)}') for d in ['query1.finance.yahoo.com', 'finance.yahoo.com']]; print(); print('3️⃣ Testing HTTPS to Yahoo...'); urllib.request.urlopen('https://finance.yahoo.com', timeout=10); print('   ✅ HTTPS: OK'); print(); print('4️⃣ Testing yfinance...'); import yfinance as yf; print(f'   ✅ yfinance: {yf.__version__}'); print(); print('5️⃣ Testing stock data...'); symbols = ['000002.SZ', '601021.SS', 'AAPL']; [print(f'\\n   {s}:') or print(f'      History: {len(h)} days, Close: {h[\\\"Close\\\"].iloc[-1]:.2f}') if not (h := yf.Ticker(s).history(period='5d')).empty else print(f'      ❌ No data') for s in symbols]; print('\\n' + '='*80); print('🏁 Complete'); print('='*80)\""
+      ],
+      "environment": [
+        {
+          "name": "AWS_DEFAULT_REGION",
+          "value": "ap-east-1"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/yfinance-diagnostic",
+          "awslogs-region": "ap-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "key": "Project",
+      "value": "MEM-Dashboard"
+    },
+    {
+      "key": "Purpose",
+      "value": "yfinance-diagnostic"
+    }
+  ]
+}
+

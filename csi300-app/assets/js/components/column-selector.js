@@ -114,6 +114,13 @@ class CSI300ColumnSelector {
         `;
         
         container.insertAdjacentHTML('beforeend', selectorHTML);
+
+        // Move dropdown to document.body so it is not clipped by parent containers
+        const dropdown = container.querySelector('#columnSelectorDropdown');
+        if (dropdown && dropdown.parentElement !== document.body) {
+            document.body.appendChild(dropdown);
+        }
+
         this.renderGroups();
         this.renderPresetViews();
     }
