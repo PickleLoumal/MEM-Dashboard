@@ -14,7 +14,7 @@
 - **PostgreSQL Integration**: Persistent data storage and fast queries
 - **Django REST API**: Robust backend with comprehensive endpoints
 - **Multi-indicator Support**: GDP, CPI, Unemployment, Housing, Money Supply
-- **Cloud Deployment**: Ready for Vercel deployment
+- **Cloud Deployment**: AWS ECS deployment with Docker
 
 ## Database Architecture
 
@@ -214,9 +214,9 @@ bea_series_info:
 +----------------+----------------+----------------+--------------------+
 |  Frontend Tech |  Backend Tech  | Database Tech  | Deployment Tech    |
 +----------------+----------------+----------------+--------------------+
-| - HTML5/CSS3   | - Django 4.2.7 | - PostgreSQL   | - Vercel Cloud     |
-| - JavaScript   | - Django REST  | - psycopg2     | - Docker Ready     |
-| - Tailwind CSS | - Python 3.13  | - Migrations   | - Environment      |
+| - HTML5/CSS3   | - Django 4.2.7 | - PostgreSQL   | - AWS ECS          |
+| - JavaScript   | - Django REST  | - psycopg2     | - Docker           |
+| - Tailwind CSS | - Python 3.13  | - Migrations   | - CloudFormation   |
 | - Responsive   | - CORS Support | - Indexing     | - Shell Scripts    |
 +----------------+----------------+----------------+--------------------+
 ```
@@ -235,7 +235,6 @@ MEM Dashboard/
 │   ├── requirements.txt                    # Python dependencies
 │   ├── runtime.txt                         # Python runtime version
 │   ├── pyrightconfig.json                  # Python type checking config
-│   ├── vercel.json                         # Vercel deployment config
 │   └── README.md                           # Project documentation
 │
 ├── API Configuration (config/)
@@ -351,8 +350,9 @@ python manage.py runserver 8001
 
 ### Deployment
 ```bash
-# Deploy to Vercel
-vercel deploy
+# Deploy to AWS ECS
+cd aws-deployment/scripts
+./deploy-to-ecs.sh
 ```
 
 ## API Endpoints
@@ -371,7 +371,7 @@ vercel deploy
 - **Backend**: Django 4.2.7, Django REST Framework, Python 3.13
 - **Database**: PostgreSQL with psycopg2
 - **Frontend**: HTML5, CSS3, JavaScript, Tailwind CSS
-- **Deployment**: Vercel, Docker-ready
+- **Deployment**: AWS ECS with Docker
 - **APIs**: FRED API, BEA API integration
 
 ---
