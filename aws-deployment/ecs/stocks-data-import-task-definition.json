@@ -1,0 +1,85 @@
+{
+  "family": "stocks-data-import",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::952189540759:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::952189540759:role/mem-dashboard-task-role",
+  "containerDefinitions": [
+    {
+      "name": "stocks-import-container",
+      "image": "952189540759.dkr.ecr.ap-east-1.amazonaws.com/mem-dashboard:20251030-yfinance-v2-fixed",
+      "essential": true,
+      "command": [
+        "/bin/bash",
+        "-c",
+        "set -e && SETTINGS_FILE='/app/src/django_api/django_api/settings.py' && cp \"$SETTINGS_FILE\" \"${SETTINGS_FILE}.backup\" && sed -i \"/^DATABASES = {/,/^}/d\" \"$SETTINGS_FILE\" && cat >> \"$SETTINGS_FILE\" << 'EOF'\nimport os\nDATABASES = {\n    'default': {\n        'ENGINE': 'django.db.backends.postgresql',\n        'NAME': os.environ.get('DB_NAME', 'mem_dashboard'),\n        'USER': os.environ.get('DB_USER', 'postgres'),\n        'PASSWORD': os.environ.get('DB_PASSWORD', ''),\n        'HOST': os.environ.get('DB_HOST', 'localhost'),\n        'PORT': os.environ.get('DB_PORT', '5432'),\n    }\n}\nEOF\n&& echo '✅ Database configuration patched' && cd /app/src/django_api && python3 manage.py migrate --noinput && echo '✅ Migrations completed' && python3 manage.py update_stock_prices && echo '✅ Stock prices updated'"
+      ],
+      "environment": [
+        {
+          "name": "DJANGO_SETTINGS_MODULE",
+          "value": "django_api.settings"
+        },
+        {
+          "name": "PYTHONUNBUFFERED",
+          "value": "1"
+        },
+        {
+          "name": "AWS_DEFAULT_REGION",
+          "value": "ap-east-1"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DB_HOST",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:952189540759:secret:mem-dashboard/database:host::"
+        },
+        {
+          "name": "DB_NAME",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:952189540759:secret:mem-dashboard/database:dbname::"
+        },
+        {
+          "name": "DB_USER",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:952189540759:secret:mem-dashboard/database:username::"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:952189540759:secret:mem-dashboard/database:password::"
+        },
+        {
+          "name": "DB_PORT",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:952189540759:secret:mem-dashboard/database:port::"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-create-group": "true",
+          "awslogs-group": "/ecs/stocks-data-import",
+          "awslogs-region": "ap-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "mountPoints": [],
+      "volumesFrom": []
+    }
+  ],
+  "volumes": [],
+  "placementConstraints": [],
+  "tags": [
+    {
+      "key": "Project",
+      "value": "MEM-Dashboard"
+    },
+    {
+      "key": "Purpose",
+      "value": "StocksDataImport"
+    },
+    {
+      "key": "CreatedDate",
+      "value": "2025-10-30"
+    }
+  ]
+}
+

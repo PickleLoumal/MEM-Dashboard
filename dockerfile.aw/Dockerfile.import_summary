@@ -1,0 +1,16 @@
+FROM 952189540759.dkr.ecr.ap-east-1.amazonaws.com/mem-dashboard:latest
+
+# Copy company data file (missing company)
+COPY data/db_export/missing_company_567.json /app/data/csi300_companies.json
+
+# Copy investment summary data file
+COPY data/db_export/csi300_investment_summaries.json /app/data/csi300_investment_summaries.json
+
+# Copy import script
+COPY scripts/cloud/import_investment_summary.py /app/
+
+# Set working directory
+WORKDIR /app
+
+# Default command: execute import
+CMD ["python3", "-u", "/app/import_investment_summary.py"]
