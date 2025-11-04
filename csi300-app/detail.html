@@ -38,42 +38,135 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 32px 24px 48px;
+            padding: 80px 24px 48px;
         }
         
         
         .company-header {
-            padding: 32px;
-            text-align: center;
-            margin-bottom: 24px;
+            padding: 12px 0 24px;
+            text-align: left;
+            margin-bottom: 0;
+            border-bottom: 1px solid var(--app-border);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .company-description-wrapper {
+            margin-bottom: 32px;
+            padding: 24px 0;
+        }
+
+        .company-description-section {
+            background: var(--app-surface);
+            border-radius: var(--app-radius-md);
+            padding: 22px 24px 24px;
             box-shadow: var(--app-shadow-subtle);
         }
-        
+
+        .company-description-header {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--app-heading);
+            margin: 0 0 16px 0;
+        }
+
+        .company-description-text {
+            line-height: 1.6;
+            color: var(--app-text);
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .company-header-main {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 28px;
+        }
+
+        .company-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1 1 260px;
+        }
+
+        .company-title-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 16px;
+        }
+
         .company-name {
             font-size: 34px;
             font-weight: 700;
             color: var(--app-heading);
-            margin: 0 0 8px;
+            margin: 0;
             letter-spacing: -0.01em;
         }
-        
+
         .company-ticker {
-            font-size: 18px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--app-border);
             color: var(--app-text-muted);
-            font-family: monospace;
-            margin-bottom: 16px;
         }
-        
-        .company-industry {
-            margin: 4px;
+
+        .company-tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        
+
+        .company-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--app-border);
+            color: var(--app-text-muted);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .company-meta-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px 24px;
+            min-width: 220px;
+        }
+
+        .company-meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .company-meta-label {
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--app-text-muted);
+        }
+
+        .company-meta-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--app-heading);
+        }
+
         .company-actions-section {
             margin: 24px 0 32px;
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            justify-content: center;
+            justify-content: flex-start;
         }
         
         .button {
@@ -103,33 +196,36 @@
         .details-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-            gap: 24px;
+            gap: 28px;
+            align-items: stretch;
         }
         
         .detail-section {
             overflow: hidden;
+            border: 1px solid var(--app-border);
         }
         
         .section-header {
             background: var(--app-surface-muted);
-            padding: 16px 20px;
+            padding: 18px 24px;
             border-bottom: 1px solid var(--app-border);
             font-weight: 600;
             color: var(--app-heading);
             font-size: 16px;
+            letter-spacing: 0.02em;
         }
         
         .section-content {
-            padding: 20px;
+            padding: 22px 24px 24px;
         }
         
         .field-row {
             display: grid;
-            grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-            gap: 12px;
+            grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+            gap: 14px;
             align-items: baseline;
-            padding: 10px 0;
-            border-bottom: 1px solid #eaecf0;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--app-border);
         }
         
         .field-row:last-child {
@@ -138,15 +234,18 @@
         
         .field-label {
             color: var(--app-text-muted);
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
         }
-        
+
         .field-value {
             font-weight: 600;
             color: var(--app-heading);
             text-align: right;
             min-width: 0;
+            font-size: 15px;
         }
         
         .field-value.positive {
@@ -300,13 +399,22 @@
         
         @media (max-width: 768px) {
             .container {
-                padding: 24px 16px 32px;
+                padding: 72px 16px 32px;
             }
             
             .company-header {
-                padding: 24px 20px;
+                padding: 10px 0 20px;
             }
             
+            .company-header-main {
+                gap: 20px;
+            }
+
+            .company-meta-list {
+                width: 100%;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+
             .company-name {
                 font-size: 26px;
             }
@@ -320,13 +428,17 @@
                 width: 100%;
             }
             
-            .section-content {
-                padding: 16px;
+            .details-grid {
+                gap: 20px;
             }
-            
+
+            .section-content {
+                padding: 18px;
+            }
+
             .field-row {
                 grid-template-columns: 1fr;
-                gap: 4px;
+                gap: 6px;
                 text-align: left;
             }
             
@@ -359,10 +471,15 @@
             <p>Loading company details...</p>
         </div>
         
+        <div class="company-header" id="companyHeader" style="display: none;">
+            <!-- Company header will be populated here -->
+        </div>
+
+        <div id="companyDescription" class="company-description-wrapper" style="display: none;">
+            <!-- Company description will be populated here -->
+        </div>
+
         <div id="companyContent" style="display: none;">
-            <div class="company-header app-card" id="companyHeader">
-                <!-- Company header will be populated here -->
-            </div>
             
             <div class="company-actions-section app-actions">
                 <a class="button button-primary app-button app-button--primary" id="valueChainBtn">Value Chain Analysis</a>
@@ -459,6 +576,7 @@
                 
                 // Render company header
                 this.renderCompanyHeader();
+                this.renderCompanyDescription();
                 
                 // Setup button event listeners
                 this.setupButtonListeners();
@@ -470,7 +588,8 @@
                     window.CSI300GlobalNav.setCompanyContext({
                         id: this.companyId,
                         name: this.company && this.company.name ? this.company.name : 'Company Insights',
-                        imSector: this.getImSectorValue()
+                        imSector: this.getImSectorValue(),
+                        symbol: this.company && this.company.ticker ? this.company.ticker : ''
                     });
                 }
             }
@@ -479,12 +598,51 @@
                 const header = document.getElementById('companyHeader');
                 const imSector = this.company ? (this.company.im_sector || this.company.im_code || '') : '';
                 const industry = this.company ? (this.company.industry || '') : '';
+                const tags = [];
+                if (imSector) {
+                    tags.push(`<span class="company-tag">${imSector}</span>`);
+                }
+                if (industry && industry !== imSector) {
+                    tags.push(`<span class="company-tag">${industry}</span>`);
+                }
+
+                const metaItems = [];
+                if (this.company && this.company.currency) {
+                    metaItems.push({ label: 'Currency', value: this.company.currency });
+                }
+                if (this.company && this.company.last_trade_date) {
+                    metaItems.push({ label: 'Last Trade Date', value: this.formatDate(this.company.last_trade_date) });
+                }
+                if (this.company && this.company.price_local_currency !== undefined && this.company.price_local_currency !== null) {
+                    metaItems.push({ label: 'Current Price', value: this.formatNumber(this.company.price_local_currency, 2) });
+                }
+                if (this.company && this.company.market_cap_usd !== undefined && this.company.market_cap_usd !== null) {
+                    metaItems.push({ label: 'Market Cap (USD M)', value: this.formatNumber(this.company.market_cap_usd, 0) });
+                }
+
                 header.innerHTML = `
-                    <h1 class="company-name">${this.company.name || 'Unknown Company'}</h1>
-                    <div class="company-ticker">${this.company.ticker || 'N/A'}</div>
-                    ${imSector ? `<span class="company-industry app-tag">${imSector}</span>` : ''}
-                    ${industry && industry !== imSector ? `<span class="company-industry app-tag">${industry}</span>` : ''}
+                    <div class="company-header-main">
+                        <div class="company-title-block">
+                            <div class="company-title-row">
+                                <h1 class="company-name">${this.company.name || 'Unknown Company'}</h1>
+                                <span class="company-ticker">${this.company.ticker || 'N/A'}</span>
+                            </div>
+                            ${tags.length ? `<div class="company-tag-row">${tags.join('')}</div>` : ''}
+                        </div>
+                        ${metaItems.length ? `
+                            <div class="company-meta-list">
+                                ${metaItems.map(item => `
+                                    <div class="company-meta-item">
+                                        <span class="company-meta-label">${item.label}</span>
+                                        <span class="company-meta-value">${item.value}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
                 `;
+
+                header.style.display = 'block';
             }
 
             getImSectorValue() {
@@ -526,14 +684,30 @@
                 }, 100);
             }
 
+            renderCompanyDescription() {
+                const descriptionWrapper = document.getElementById('companyDescription');
+                
+                if (!descriptionWrapper) {
+                    return;
+                }
+
+                // Show description if available
+                if (this.company.business_description) {
+                    descriptionWrapper.innerHTML = `
+                        <div class="company-description-section">
+                            <h3 class="company-description-header">Company Description</h3>
+                            <p class="company-description-text">${this.company.business_description}</p>
+                        </div>
+                    `;
+                    descriptionWrapper.style.display = 'block';
+                } else {
+                    descriptionWrapper.style.display = 'none';
+                }
+            }
+
             renderDetailsGrid() {
                 const grid = document.getElementById('detailsGrid');
                 grid.innerHTML = '';
-
-                // Company Description (if available)
-                if (this.company.business_description) {
-                    grid.appendChild(this.createDescriptionSection());
-                }
 
                 // Basic Information
                 grid.appendChild(this.createBasicInfoSection());
@@ -558,14 +732,6 @@
                 }
             }
 
-            createDescriptionSection() {
-                const section = this.createDetailSection('Company Description');
-                section.className += ' description-section';
-                section.querySelector('.section-content').innerHTML = `
-                    <p class="description-text">${this.company.business_description}</p>
-                `;
-                return section;
-            }
 
             createBasicInfoSection() {
                 const section = this.createDetailSection('Basic Information');
@@ -762,14 +928,24 @@
             }
 
             showLoading() {
-                document.getElementById('loadingIndicator').style.display = 'block';
-                document.getElementById('companyContent').style.display = 'none';
+                const loadingEl = document.getElementById('loadingIndicator');
+                if (loadingEl) loadingEl.style.display = 'block';
+
+                const companyContentEl = document.getElementById('companyContent');
+                if (companyContentEl) companyContentEl.style.display = 'none';
+
+                const headerEl = document.getElementById('companyHeader');
+                if (headerEl) headerEl.style.display = 'none';
+
                 this.hideError();
             }
 
             showContent() {
-                document.getElementById('loadingIndicator').style.display = 'none';
-                document.getElementById('companyContent').style.display = 'block';
+                const loadingEl = document.getElementById('loadingIndicator');
+                if (loadingEl) loadingEl.style.display = 'none';
+
+                const companyContentEl = document.getElementById('companyContent');
+                if (companyContentEl) companyContentEl.style.display = 'block';
             }
 
             showError(message) {
@@ -777,8 +953,14 @@
                 errorElement.textContent = message;
                 errorElement.style.display = 'block';
                 
-                document.getElementById('loadingIndicator').style.display = 'none';
-                document.getElementById('companyContent').style.display = 'none';
+                const loadingEl = document.getElementById('loadingIndicator');
+                if (loadingEl) loadingEl.style.display = 'none';
+
+                const companyContentEl = document.getElementById('companyContent');
+                if (companyContentEl) companyContentEl.style.display = 'none';
+
+                const headerEl = document.getElementById('companyHeader');
+                if (headerEl) headerEl.style.display = 'none';
 
                 if (window.CSI300GlobalNav && typeof window.CSI300GlobalNav.setCompanyContext === 'function') {
                     window.CSI300GlobalNav.setCompanyContext(null);

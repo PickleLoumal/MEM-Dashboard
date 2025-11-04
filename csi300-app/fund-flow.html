@@ -3,31 +3,2444 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Fund Flow - CSI300 Standalone Application</title>
+    <title>Fund Flow Dashboard</title>
+
+    <!-- Favicon (using base64 to avoid 404) -->
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==">
+
+    <!-- Build configuration metadata -->
+    <meta name="build-timestamp" content="2025-Sep">
+    <meta name="application-id" content="CSI300 Dashboard">
+    <meta name="schema-version" content="1.0.0">
+
+    <!-- Framework and styling imports -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Global Navigation -->
     <link rel="stylesheet" href="assets/css/global-nav.css">
     <script src="assets/js/components/global-nav.js"></script>
+
+    <!-- Application Configuration -->
     <link rel="stylesheet" href="assets/css/app-base.css">
+    <link rel="stylesheet" href="assets/css/fund-flow.css">
+
+    <!-- Stocks API Adapter for Django Backend -->
+    <script src="assets/js/stocks_api_adapter.js"></script>
+
+    <!-- TradingView Lightweight Charts - Yahoo Finance style charting -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+
     <style>
-        body { margin:0; min-height:100vh; background: var(--app-body-bg); color: var(--app-text); display:flex; flex-direction:column; }
-        .coming-soon-shell { flex:1 1 auto; display:flex; align-items:center; justify-content:center; padding:120px 24px; }
-        .coming-soon-card { text-align:center; max-width:560px; padding:64px 56px; border-radius:32px; background: var(--app-surface); box-shadow:0 20px 45px rgba(15,23,42,0.12); }
-        .coming-soon-eyebrow { font-size:12px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--app-text-subtle); margin-bottom:16px; }
-        .coming-soon-title { font-size:42px; font-weight:700; letter-spacing:-0.02em; margin:0 0 16px; color:var(--app-heading); }
-        .coming-soon-copy { font-size:16px; color:var(--app-text-muted); margin:0; }
-        @media (max-width:768px) { .coming-soon-card { padding:48px 32px; border-radius:24px; } .coming-soon-title { font-size:32px; } }
+        body {
+            margin: 0;
+            background-color: var(--app-body-bg);
+            color: var(--app-text);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 24px 48px;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--app-heading);
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+
+        .page-subtitle {
+            font-size: 15px;
+            color: var(--app-text-muted);
+            margin-top: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 72px 16px 32px;
+            }
+
+            .page-title {
+                font-size: 26px;
+            }
+        }
     </style>
 </head>
 <body>
-    <company-global-nav></company-global-nav>
-    <main class="coming-soon-shell">
-        <div class="coming-soon-card">
-            <div class="coming-soon-eyebrow">Fund Flow</div>
-            <h1 class="coming-soon-title">Coming Soon</h1>
-            <p class="coming-soon-copy">Track capital rotation across sectors, smart money positioning, and cross-border flows in one dashboard. Coming soon.</p>
-        </div>
+    <div class="container app-shell fund-flow-app">
+        <header class="page-header hero-panel">
+            <h1 class="page-title">Fund Flow</h1>
+            <p class="page-subtitle" id="pageSubtitle">
+                    Real-time liquidity, on-balance volume, and capital flow signals for CSI 300 constituents.
+                </p>
+        </header>
+
+        <main class="fund-flow-main" aria-live="polite">
+            <section class="fund-flow-control-card app-card" aria-label="Fund flow controls" id="stockSearchSection">
+                <div class="fund-flow-field app-form-field fund-flow-search-field">
+                    <label class="fund-flow-label app-label" for="stockSearch">Search Stocks</label>
+                    <div class="fund-flow-search-wrapper">
+                        <input id="stockSearch" type="text" class="app-input fund-flow-search-input" placeholder="Search by name or ticker...">
+                        <button type="button" id="clearStockSearch" class="fund-flow-search-clear" aria-label="Clear search" style="display: none;">✕</button>
+                </div>
+                    <div id="primaryCompanySuggestions" class="suggestions-dropdown" style="display: none;"></div>
+                    </div>
+            </section>
+
+            <section id="stockInfo" class="stock-info-banner is-hidden" aria-live="polite"></section>
+
+            <section id="metricsPanel" class="metrics-panel-inline is-hidden" aria-label="Key metrics">
+                <div id="metricsRow" class="metrics-grid-inline"></div>
+            </section>
+
+            <section id="chartContainer" class="chart-stack-clean" aria-label="Fund flow charts"></section>
+            <section id="signalSummaryContainer" class="signal-summary-section is-hidden" aria-live="polite"></section>
     </main>
+                </div>
+
+    <script>
+        (function() {
+            console.log('🔥 Fund Flow v2.0 - Time Range Selector Active');
+            const stocksApi = window.stocksApiAdapter;
+            let autoRefreshInterval = null;
+            let currentSymbol = null;
+            let allStocks = [];
+            
+            // Persist chart references so we can apply incremental updates
+            let chartInstances = {
+                intradayChart: null,
+                intradayCandleSeries: null,
+                intradayVwapSeries: null,
+                dailyChart: null,
+                dailyCandleSeries: null,
+                dailyCmfHistogram: null,
+                dailyCmfArea: null,
+                dailyObvSeries: null,
+                dailyMa5Series: null,           // OBV moving average (MA5)
+                dailyMa20Series: null,          // OBV moving average (MA20)
+                dailyKlineMa5Series: null,      // Price candle moving average (MA5)
+                dailyKlineMa20Series: null      // Price candle moving average (MA20)
+            };
+
+            const elements = {
+                stockSearch: document.getElementById('stockSearch'),
+                clearStockSearch: document.getElementById('clearStockSearch'),
+                companySuggestions: document.getElementById('primaryCompanySuggestions'),
+                stockInfo: document.getElementById('stockInfo'),
+                metricsPanel: document.getElementById('metricsPanel'),
+                metricsRow: document.getElementById('metricsRow'),
+                chartContainer: document.getElementById('chartContainer'),
+                signalSummary: document.getElementById('signalSummaryContainer')
+            };
+            let visibleSuggestions = [];
+            let activeSuggestionIndex = -1;
+            let autoRefreshEnabled = false;
+            let autoRefreshButton = null;
+            let currentStock = null;
+            let metricsInitialized = false;
+
+            const ACTION_CLASS_MAP = {
+                buy: 'is-buy',
+                sell: 'is-sell',
+                hold: 'is-hold'
+            };
+
+            const COMPONENT_ORDER = ['momentum', 'rsi', 'cmf', 'mfm', 'obv', 'dual_ma', 'divergence', 'grid'];
+            const COMPONENT_LABELS = {
+                momentum: 'Momentum',
+                rsi: 'RSI',
+                cmf: 'CMF',
+                mfm: 'MFM',
+                obv: 'OBV',
+                dual_ma: 'Dual MA',
+                divergence: 'Divergence',
+                grid: 'Grid'
+            };
+
+            function escapeHtml(value) {
+                if (value === null || value === undefined) {
+                    return '';
+                }
+                return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function formatScoreDate(isoString) {
+                if (!isoString) {
+                    return null;
+                }
+                const parsed = new Date(isoString);
+                if (Number.isNaN(parsed.getTime())) {
+                    return null;
+                }
+                return parsed.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: '2-digit'
+                });
+            }
+
+            function formatMultilineText(text) {
+                if (!text) {
+                    return '';
+                }
+                return escapeHtml(text).replace(/\r?\n/g, '<br>');
+            }
+
+            function clampNumber(value, min, max, fallback = 0) {
+                const num = Number(value);
+                if (Number.isFinite(num)) {
+                    return Math.min(Math.max(num, min), max);
+                }
+                return fallback;
+            }
+
+            function renderScoreBlock(score) {
+                if (!score) {
+                    return '<div class="stock-signal-progress empty">No score available.</div>';
+                }
+
+                const totalScore = Number(score.total_score || 0);
+                const actionRaw = (score.recommended_action || '').trim();
+                const actionLabel = actionRaw || 'Hold';
+                const actionKey = actionLabel.toLowerCase();
+                const actionClass = ACTION_CLASS_MAP[actionKey] || ACTION_CLASS_MAP.hold;
+                const signalDate = formatScoreDate(score.signal_date);
+                const executionDate = formatScoreDate(score.execution_date);
+                const stopLoss = Number.isFinite(Number(score.stop_loss_price)) ? Number(score.stop_loss_price).toFixed(4) : '--';
+                const takeProfit = Number.isFinite(Number(score.take_profit_price)) ? Number(score.take_profit_price).toFixed(4) : '--';
+                const positionPct = Number.isFinite(Number(score.suggested_position_pct))
+                    ? `${(Number(score.suggested_position_pct) * 100).toFixed(0)}%`
+                    : '--';
+
+                const components = COMPONENT_ORDER.map(key => {
+                    const comp = (score.score_components && score.score_components[key]) || {};
+                    const raw = Number(comp.raw || 0);
+                    const weighted = Number(comp.weighted || 0);
+                    const notes = Array.isArray(comp.reasons) ? comp.reasons.map(entry => escapeHtml(entry)) : [];
+                    return { key, raw, weighted, notes };
+                }).filter(entry => entry.raw !== 0 || entry.weighted !== 0);
+
+                const positiveEntries = components.filter(entry => entry.weighted > 0);
+                const negativeEntries = components.filter(entry => entry.weighted < 0);
+                const positiveSum = positiveEntries.reduce((sum, entry) => sum + entry.weighted, 0);
+                const negativeSumAbs = negativeEntries.reduce((sum, entry) => sum + Math.abs(entry.weighted), 0);
+                const magnitude = positiveSum + negativeSumAbs;
+
+                let positiveShare = 0;
+                let negativeShare = 0;
+                if (magnitude > 0) {
+                    positiveShare = (positiveSum / magnitude) * 100;
+                    negativeShare = (negativeSumAbs / magnitude) * 100;
+                } else {
+                    if (totalScore > 0) {
+                        positiveShare = 100;
+                    } else if (totalScore < 0) {
+                        negativeShare = 100;
+                    }
+                }
+
+                const sortedEntries = components.sort((a, b) => Math.abs(b.weighted) - Math.abs(a.weighted));
+
+                const componentRows = sortedEntries.length
+                    ? sortedEntries.map(entry => {
+                        const directionClass = entry.weighted >= 0 ? 'is-positive' : 'is-negative';
+                        const notes = entry.notes.length ? `<div class="component-notes">${entry.notes.join('<br>')}</div>` : '';
+                        const displayName = COMPONENT_LABELS[entry.key] || entry.key;
+                        return `
+                            <div class="component-row ${directionClass}">
+                                <div class="component-cell component-name">
+                                    <span class="component-label-text">${escapeHtml(displayName)}</span>
+                                    ${notes}
+                                </div>
+                                <div class="component-cell component-raw">${entry.raw.toFixed(0)}</div>
+                                <div class="component-cell component-weighted">${entry.weighted.toFixed(2)}</div>
+                            </div>
+                        `;
+                    }).join('')
+                    : '<div class="component-row is-empty"><span>No component contributions recorded.</span></div>';
+
+                const actionNotes = score.recommended_action_detail
+                    ? `
+                        <section class="signal-action-notes">
+                            <h3 class="notes-title">Action notes</h3>
+                            <div class="notes-body">${formatMultilineText(score.recommended_action_detail)}</div>
+                        </section>
+                    `
+                    : '';
+
+                return `
+                    <div class="stock-signal-progress ${actionClass}" role="group" aria-label="Trading signals">
+                        <div class="signal-summary-grid">
+                            <section class="signal-overview">
+                                <div class="overview-metric">
+                                    <span class="metric-label">Total score</span>
+                                    <span class="metric-value">${totalScore.toFixed(1)}</span>
+                                </div>
+                                <div class="overview-divider" role="presentation"></div>
+                                <div class="overview-metric">
+                                    <span class="metric-label">Recommended action</span>
+                                    <span class="metric-value action-value">${escapeHtml(actionLabel)}</span>
+                                </div>
+                            </section>
+                            <section class="signal-distribution" aria-label="Signal balance">
+                                <span class="metric-label distribution-label">Contribution balance</span>
+                                <div class="signal-progress-track">
+                                    <span class="progress-axis"></span>
+                                    <div class="progress-fill progress-negative" style="width: ${negativeShare.toFixed(2)}%;"></div>
+                                    <div class="progress-fill progress-positive" style="width: ${positiveShare.toFixed(2)}%;"></div>
+                                </div>
+                                <div class="signal-progress-summary">
+                                    <span class="summary-positive">Positive ${positiveSum.toFixed(2)}</span>
+                                    <span class="summary-negative">Negative -${negativeSumAbs.toFixed(2)}</span>
+                                </div>
+                            </section>
+                            <section class="signal-stat-grid" aria-label="Risk parameters">
+                                <div class="stat-item">
+                                    <span class="metric-label">Signal date</span>
+                                    <span class="stat-value">${signalDate || '--'}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="metric-label">Execution window</span>
+                                    <span class="stat-value">${executionDate || (score.execution_date === null ? '—' : '--')}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="metric-label">Stop loss</span>
+                                    <span class="stat-value">${stopLoss}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="metric-label">Take profit</span>
+                                    <span class="stat-value">${takeProfit}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="metric-label">Position sizing</span>
+                                    <span class="stat-value">${positionPct}</span>
+                                </div>
+                            </section>
+                        </div>
+                        <section class="signal-component-table" aria-label="Component contributions">
+                            <div class="component-header">
+                                <span class="header-name">Component</span>
+                                <span class="header-raw">Raw</span>
+                                <span class="header-weighted">Weighted</span>
+                            </div>
+                            <div class="component-body">
+                                ${componentRows}
+                            </div>
+                        </section>
+                        ${actionNotes}
+                    </div>
+                `;
+            }
+
+            function formatPoints(value, fractionDigits = 2) {
+                if (!Number.isFinite(value)) {
+                    return '--';
+                }
+                const prefix = value > 0 ? '+' : value < 0 ? '' : '';
+                return `${prefix}${value.toFixed(fractionDigits)}`;
+            }
+
+            function updateSignalSummary(score) {
+                if (!elements.signalSummary) {
+                    return;
+                }
+                if (!score) {
+                    elements.signalSummary.classList.add('is-hidden');
+                    elements.signalSummary.innerHTML = '';
+                    return;
+                }
+                elements.signalSummary.innerHTML = renderScoreBlock(score);
+                elements.signalSummary.classList.remove('is-hidden');
+            }
+
+            function resetCachedData() {
+                cachedIntradayData = null;
+                cachedDailyData = null;
+                cachedWeeklyData = null;
+            }
+
+            function showNoSearchResults() {
+                elements.stockInfo.innerHTML = '';
+                elements.stockInfo.classList.add('is-hidden');
+                elements.metricsPanel.classList.add('is-hidden');
+                elements.metricsRow.innerHTML = '';
+                elements.chartContainer.innerHTML = `<div class="chart-panel empty-state">No securities match your search.</div>`;
+                currentStock = null;
+                currentSymbol = null;
+                autoRefreshEnabled = false;
+                applyAutoRefreshState();
+                renderAutoRefreshState();
+                const lastUpdateTimeEl = document.getElementById('lastUpdateTimeValue');
+                const lastUpdateDataEl = document.getElementById('lastUpdateData');
+                if (lastUpdateTimeEl) {
+                    lastUpdateTimeEl.textContent = '--';
+                }
+                if (lastUpdateDataEl) {
+                    lastUpdateDataEl.textContent = '';
+                }
+                updateSignalSummary(null);
+            }
+
+            function hideStockSuggestions() {
+                if (!elements.companySuggestions) {
+                    return;
+                }
+                elements.companySuggestions.innerHTML = '';
+                elements.companySuggestions.style.display = 'none';
+                visibleSuggestions = [];
+                activeSuggestionIndex = -1;
+            }
+
+            function selectStockFromSuggestion(stock) {
+                if (!stock) {
+                    return;
+                }
+
+                elements.stockSearch.value = stock.name || stock.symbol || '';
+                updateSearchInputState();
+                hideStockSuggestions();
+
+                setCurrentStock(stock);
+            }
+
+            function setCurrentStock(stock, { updateSearchField = false } = {}) {
+                if (!stock) {
+                    return;
+                }
+
+                currentStock = stock;
+                currentSymbol = stock.symbol;
+
+                if (updateSearchField && elements.stockSearch) {
+                    elements.stockSearch.value = stock.name || stock.symbol || '';
+                    updateSearchInputState();
+                }
+
+                metricsInitialized = false;
+                resetCachedData();
+                updateStockInfo();
+                applyAutoRefreshState();
+                return loadData();
+            }
+
+            function showStockSuggestions(stocks, query) {
+                if (!elements.companySuggestions) {
+                    return;
+                }
+
+                const trimmedQuery = query?.trim();
+
+                if (!stocks || stocks.length === 0) {
+                    elements.companySuggestions.innerHTML = '';
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.style.cursor = 'default';
+                    item.style.color = '#6b7280';
+                    item.textContent = trimmedQuery ? `No matches found for "${trimmedQuery}"` : 'No matches found';
+                    elements.companySuggestions.appendChild(item);
+                    elements.companySuggestions.style.display = 'block';
+                    visibleSuggestions = [];
+                    activeSuggestionIndex = -1;
+                    return;
+                }
+
+                elements.companySuggestions.innerHTML = '';
+                visibleSuggestions = stocks.slice(0, 10);
+                activeSuggestionIndex = -1;
+
+                visibleSuggestions.forEach((stock, index) => {
+                    const suggestionItem = document.createElement('div');
+                    suggestionItem.className = 'suggestion-item';
+                    const title = document.createElement('div');
+                    title.style.fontWeight = '500';
+                    title.style.color = '#111827';
+                    title.textContent = stock.name || 'Unknown Name';
+
+                    const subtitle = document.createElement('div');
+                    subtitle.style.fontSize = '12px';
+                    subtitle.style.color = '#6b7280';
+                    const marketLabel = stock.market ? ` • ${stock.market}` : '';
+                    subtitle.textContent = `${stock.symbol || '--'}${marketLabel}`;
+
+                    suggestionItem.appendChild(title);
+                    suggestionItem.appendChild(subtitle);
+                    suggestionItem.dataset.index = index;
+                    suggestionItem.addEventListener('click', () => selectStockFromSuggestion(stock));
+                    suggestionItem.addEventListener('mouseenter', () => setActiveSuggestion(index));
+                    elements.companySuggestions.appendChild(suggestionItem);
+                });
+
+                elements.companySuggestions.style.display = 'block';
+                highlightActiveSuggestion();
+            }
+
+            function updateSearchInputState() {
+                if (!elements.clearStockSearch || !elements.stockSearch) {
+                    return;
+                }
+                const hasValue = elements.stockSearch.value.trim().length > 0;
+                elements.clearStockSearch.style.display = hasValue ? 'inline-flex' : 'none';
+            }
+
+            function setActiveSuggestion(index) {
+                if (!visibleSuggestions.length) {
+                    activeSuggestionIndex = -1;
+                    highlightActiveSuggestion();
+                    return;
+                }
+
+                const maxIndex = visibleSuggestions.length - 1;
+                const boundedIndex = Math.max(0, Math.min(index, maxIndex));
+                activeSuggestionIndex = boundedIndex;
+                highlightActiveSuggestion(true);
+            }
+
+            function highlightActiveSuggestion(scrollIntoView = false) {
+                if (!elements.companySuggestions) {
+                    return;
+                }
+
+                const items = elements.companySuggestions.querySelectorAll('.suggestion-item[data-index]');
+                items.forEach((item) => {
+                    const itemIndex = Number(item.dataset.index);
+                    if (itemIndex === activeSuggestionIndex) {
+                        item.classList.add('is-active');
+                        if (scrollIntoView) {
+                            item.scrollIntoView({ block: 'nearest' });
+                        }
+                    } else {
+                        item.classList.remove('is-active');
+                    }
+                });
+            }
+
+            function findMatchingStocks(query) {
+                const normalized = (query || '').trim().toLowerCase();
+                if (!normalized) {
+                    return [];
+                }
+
+                const scored = [];
+
+                allStocks.forEach(stock => {
+                    const name = (stock.name || '').toLowerCase();
+                    const symbol = (stock.symbol || '').toLowerCase();
+
+                    if (!name && !symbol) {
+                        return;
+                    }
+
+                    let score = null;
+
+                    if (symbol === normalized) {
+                        score = 0;
+                    } else if (name === normalized) {
+                        score = 0.5;
+                    } else if (symbol.startsWith(normalized)) {
+                        score = 1;
+                    } else if (name.startsWith(normalized)) {
+                        score = 2;
+                    } else if (symbol.includes(normalized)) {
+                        score = 3;
+                    } else if (name.includes(normalized)) {
+                        score = 4;
+                    }
+
+                    if (score !== null) {
+                        scored.push({ stock, score });
+                    }
+                });
+
+                return scored
+                    .sort((a, b) => {
+                        if (a.score !== b.score) {
+                            return a.score - b.score;
+                        }
+                        const symbolA = (a.stock.symbol || '').toLowerCase();
+                        const symbolB = (b.stock.symbol || '').toLowerCase();
+                        return symbolA.localeCompare(symbolB);
+                    })
+                    .map(entry => entry.stock);
+            }
+
+            function findDirectStockMatch(value) {
+                const normalized = (value || '').trim().toLowerCase();
+                if (!normalized) {
+                    return null;
+                }
+
+                return allStocks.find(stock => {
+                    const name = (stock.name || '').toLowerCase();
+                    const symbol = (stock.symbol || '').toLowerCase();
+                    return symbol === normalized || name === normalized;
+                }) || null;
+            }
+
+            function renderTooltipContent(title, sections) {
+                let html = '';
+                if (title) {
+                    html += `<div class="tooltip-title">${title}</div>`;
+                }
+
+                sections.forEach(section => {
+                    if (!section || !Array.isArray(section.rows) || section.rows.length === 0) {
+                        return;
+                    }
+                    html += '<div class="tooltip-section">';
+                    if (section.title) {
+                        html += `<div class="tooltip-section-header">${section.title}</div>`;
+                    }
+                    section.rows.forEach(row => {
+                        const valueClass = row.valueClass ? ` class="${row.valueClass}"` : '';
+                        html += `<div class="tooltip-metric-row"><span>${row.label}</span><span${valueClass}>${row.value}</span></div>`;
+                    });
+                    html += '</div>';
+                });
+
+                return html;
+            }
+
+            function handleStockSearch(event) {
+                if (!allStocks.length) {
+                    return;
+                }
+
+                const rawValue = event.target.value;
+                updateSearchInputState();
+
+                if (!rawValue.trim()) {
+                    hideStockSuggestions();
+                    return;
+                }
+
+                const matches = findMatchingStocks(rawValue);
+                showStockSuggestions(matches, rawValue);
+            }
+
+            function handleSearchKeydown(event) {
+                if (event.key === 'Escape') {
+                    hideStockSuggestions();
+                    return;
+                }
+
+                if (!visibleSuggestions.length) {
+                    if (event.key === 'Enter') {
+                        const match = findDirectStockMatch(event.target.value);
+                        if (match) {
+                            event.preventDefault();
+                            selectStockFromSuggestion(match);
+                        }
+                    }
+                    return;
+                }
+
+                if (event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    const nextIndex = activeSuggestionIndex + 1;
+                    setActiveSuggestion(nextIndex);
+                } else if (event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    const prevIndex = activeSuggestionIndex === -1 ? visibleSuggestions.length - 1 : activeSuggestionIndex - 1;
+                    setActiveSuggestion(prevIndex);
+                } else if (event.key === 'Enter') {
+                    event.preventDefault();
+                    const targetIndex = activeSuggestionIndex === -1 ? 0 : activeSuggestionIndex;
+                    const stock = visibleSuggestions[targetIndex];
+                    if (stock) {
+                        selectStockFromSuggestion(stock);
+                    }
+                }
+            }
+
+            // Track the active time range (default 1-year view)
+            let currentTimeRange = '1Y';
+            
+            // Cache full datasets to avoid duplicate fetches
+            let cachedIntradayData = null;
+            let cachedDailyData = null;
+            let cachedWeeklyData = null;
+            
+            const timeRangeMap = {
+                '1D': { 
+                    interval: '1m', 
+                    period: '1d', 
+                    chartType: 'intraday',
+                    visibleBars: 240  // Roughly 240 one-minute bars in a trading day
+                },
+                '6M': { 
+                    interval: '1d', 
+                    period: 'max',
+                    chartType: 'kline',
+                    visibleBars: 120  // Roughly 120 trading days in six months
+                },
+                'YTD': { 
+                    interval: '1d', 
+                    period: 'max',
+                    chartType: 'kline',
+                    visibleBars: -1  // Special handling for year-to-date
+                },
+                '1Y': { 
+                    interval: '1d', 
+                    period: 'max',
+                    chartType: 'kline',
+                    visibleBars: 250  // Roughly 250 trading days in one year
+                },
+                '5Y': { 
+                    interval: '1wk', 
+                    period: 'max',
+                    chartType: 'kline',
+                    visibleBars: 260  // Roughly 260 weeks across five years
+                },
+                'All': { 
+                    interval: '1wk', 
+                    period: 'max',
+                    chartType: 'kline',
+                    visibleBars: -1  // Display the entire history
+                }
+            };
+            
+            console.log('📊 Time Range Map loaded:', Object.keys(timeRangeMap));
+            console.log('📍 Default time range:', currentTimeRange);
+
+            // Load stock list from database
+            async function loadStockList() {
+                try {
+                    const stocks = await stocksApi.getStockList('CN');
+                    allStocks = Array.isArray(stocks) ? stocks : [];
+
+                    if (allStocks.length > 0) {
+                        const defaultStock = allStocks[0];
+                        await setCurrentStock(defaultStock, { updateSearchField: true });
+                    } else {
+                        showError('No stocks found in database');
+                    }
+                } catch (error) {
+                    console.error('Failed to load stock list:', error);
+                    showError('Failed to load stock list: ' + error.message);
+                }
+            }
+
+            function updateStockInfo(priceData = null) {
+                if (!currentStock) {
+                    elements.stockInfo.innerHTML = '';
+                    elements.stockInfo.classList.add('is-hidden');
+                    autoRefreshButton = null;
+                    return;
+                }
+
+                const name = currentStock.name || currentStock.symbol || 'Unknown';
+                const symbol = currentStock.symbol || '--';
+
+                const scoreData = priceData?.stock_score || null;
+                const actionRaw = scoreData?.recommended_action || '';
+                const actionKey = actionRaw.toLowerCase();
+                const actionLabel = actionRaw || 'HOLD';
+                const actionClass = actionKey === 'buy' ? 'action-buy' : actionKey === 'sell' ? 'action-sell' : 'action-hold';
+
+                let priceBlock = `
+                    <div class="stock-price-primary">
+                        <div class="price-left">
+                            <span class="price-large">--</span>
+                            <span class="change-large">--</span>
+                        </div>
+                    </div>
+                `;
+
+                if (priceData && priceData.success) {
+                    const priceRaw = priceData.current_price ?? priceData.latest_close;
+                    const changeRaw = priceData.change ?? null;
+                    const changePctRaw = priceData.change_pct ?? null;
+
+                    const price = priceRaw !== undefined && priceRaw !== null ? Number(priceRaw) : NaN;
+                    const change = changeRaw !== undefined && changeRaw !== null ? Number(changeRaw) : NaN;
+                    const changePct = changePctRaw !== undefined && changePctRaw !== null ? Number(changePctRaw) : NaN;
+                    const hasPrice = Number.isFinite(price);
+                    const hasChange = Number.isFinite(change);
+                    const hasChangePct = Number.isFinite(changePct);
+                    const changeClass = hasChange && change >= 0 ? 'positive' : 'negative';
+                    const changeSign = hasChange && change > 0 ? '+' : '';
+                    const changePctSign = hasChangePct && changePct > 0 ? '+' : '';
+
+                    priceBlock = `
+                        <div class="stock-price-primary">
+                            <div class="price-left">
+                                <span class="price-large">${hasPrice ? price.toFixed(2) : '--'}</span>
+                                <span class="change-large ${hasChange ? changeClass : ''}">
+                                    ${hasChange ? `${changeSign}${change.toFixed(2)}` : '--'} (${hasChangePct ? `${changePctSign}${changePct.toFixed(2)}%` : '--'})
+                                </span>
+                            </div>
+</div>
+                    `;
+                }
+
+                elements.stockInfo.innerHTML = `
+                    <div class="stock-header-primary">
+                        <div class="stock-title-stack">
+                            <h1 class="stock-name-large">${name}</h1>
+                            <span class="stock-symbol-large">${symbol}</span>
+                        </div>
+                        <button type="button" class="auto-refresh-toggle" id="autoRefreshToggle" aria-label="Toggle auto refresh" aria-pressed="${autoRefreshEnabled}">
+                            <svg class="auto-refresh-icon" viewBox="0 0 24 24" role="presentation">
+                                <path d="M16.24 7.76a6 6 0 0 0-9.9 2.3M7.76 16.24a6 6 0 0 0 9.9-2.3" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                                <polyline points="3 4 3 10 9 10" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                                <polyline points="21 20 21 14 15 14" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                    </div>
+                    ${priceBlock}
+                    <div class="stock-last-update">
+                        <span class="last-update-label">Last update:</span>
+                        <span class="last-update-time" id="lastUpdateTimeValue">--</span>
+                        <span class="last-update-data" id="lastUpdateData"></span>
+                    </div>
+                `;
+
+                elements.stockInfo.classList.remove('is-hidden');
+                wireAutoRefreshToggle();
+                renderAutoRefreshState();
+                updateSignalSummary(scoreData);
+            }
+
+            function showError(message) {
+                elements.chartContainer.innerHTML = `<div class="chart-panel error-state">${message}</div>`;
+            }
+
+            function showLoading(message = 'Loading data...') {
+                elements.chartContainer.innerHTML = `<div class="chart-panel loading-state">${message}</div>`;
+            }
+
+            function updateLastUpdateTime(dataTimestamp = null) {
+                const timeEl = document.getElementById('lastUpdateTimeValue');
+                const dataEl = document.getElementById('lastUpdateData');
+                if (!timeEl) {
+                    return;
+                }
+
+                const now = new Date();
+                // Format current time in GMT+8 (Asia/Shanghai)
+                const timeStr = now.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    timeZone: 'Asia/Shanghai',
+                    hour12: false
+                });
+
+                const timeText = `${timeStr} GMT+8`;
+                timeEl.textContent = timeText;
+
+                if (dataEl) {
+                    if (dataTimestamp) {
+                        let dataStampText = dataTimestamp;
+                        if (typeof dataTimestamp === 'string') {
+                            const parsed = new Date(dataTimestamp);
+                            if (!Number.isNaN(parsed.getTime())) {
+                                dataStampText = parsed.toLocaleString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    timeZone: 'Asia/Shanghai',
+                                    hour12: false
+                                }) + ' GMT+8';
+                            }
+                        }
+                        dataEl.textContent = ` · Data: ${dataStampText}`;
+                    } else {
+                        dataEl.textContent = '';
+                    }
+                }
+            }
+
+            function wireAutoRefreshToggle() {
+                const button = document.getElementById('autoRefreshToggle');
+                if (!button) {
+                    autoRefreshButton = null;
+                    return;
+                }
+
+                autoRefreshButton = button;
+                autoRefreshButton.onclick = () => {
+                    autoRefreshEnabled = !autoRefreshEnabled;
+                    renderAutoRefreshState();
+                    applyAutoRefreshState();
+                };
+            }
+
+            function renderAutoRefreshState() {
+                if (!autoRefreshButton) {
+                    return;
+                }
+
+                if (autoRefreshEnabled) {
+                    autoRefreshButton.classList.add('is-active');
+                } else {
+                    autoRefreshButton.classList.remove('is-active');
+                }
+                autoRefreshButton.setAttribute('aria-pressed', autoRefreshEnabled ? 'true' : 'false');
+            }
+
+            function applyAutoRefreshState() {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+
+                if (autoRefreshEnabled && currentSymbol) {
+                    autoRefreshInterval = setInterval(() => {
+                        incrementalUpdate();
+                    }, 5000);
+                }
+
+                renderAutoRefreshState();
+            }
+
+
+            function updateMetrics(data) {
+                // Always update the stock header
+                if (data && data.success) {
+                    updateStockInfo(data);
+                }
+                
+                // Avoid re-rendering the metrics grid once it is built
+                if (metricsInitialized) {
+                    return;
+                }
+                
+                if (!data || !data.success) {
+                    elements.metricsPanel.classList.add('is-hidden');
+                    elements.metricsRow.innerHTML = '';
+                    return;
+                }
+
+                elements.metricsPanel.classList.remove('is-hidden');
+                
+                // Populate metrics using API response fields sourced from the database
+                const prevClose = data.previous_close || 0;
+                const open = data.open_price || 0;
+                const dayRange = data.day_range || '--';
+                const volume = data.volume || 0;
+                const high52w = data.price_52w_high || 0;
+                const low52w = data.price_52w_low || 0;
+                
+                // Yahoo Finance style grid with label/value pairs
+                elements.metricsRow.className = 'metrics-grid-yf';
+                    elements.metricsRow.innerHTML = `
+                    <div class="metric-row">
+                        <span class="metric-label-yf">Previous Close</span>
+                        <span class="metric-value-yf">${prevClose > 0 ? prevClose.toFixed(2) : '--'}</span>
+                            </div>
+                    <div class="metric-row">
+                        <span class="metric-label-yf">Open</span>
+                        <span class="metric-value-yf">${open > 0 ? open.toFixed(2) : '--'}</span>
+                        </div>
+                    <div class="metric-row">
+                        <span class="metric-label-yf">Day's Range</span>
+                        <span class="metric-value-yf">${dayRange}</span>
+                            </div>
+                    <div class="metric-row">
+                        <span class="metric-label-yf">52 Week Range</span>
+                        <span class="metric-value-yf">${low52w > 0 && high52w > 0 ? `${low52w.toFixed(2)} - ${high52w.toFixed(2)}` : '--'}</span>
+                        </div>
+                    <div class="metric-row">
+                        <span class="metric-label-yf">Volume</span>
+                        <span class="metric-value-yf">${volume > 0 ? volume.toLocaleString() : '--'}</span>
+                        </div>
+                    `;
+                
+                // Mark the section as initialized
+                metricsInitialized = true;
+            }
+
+            function createCharts(intradayData, historicalData) {
+                elements.chartContainer.innerHTML = '';
+                
+                // Switch between intraday and historical chart layouts
+                if (currentTimeRange === '1D') {
+                    // 1D: Show intraday chart only
+                    if (intradayData && intradayData.success && intradayData.data_points && intradayData.data_points.length > 0) {
+                        createIntradayChartLightweight(intradayData);
+                } else {
+                        showError('No intraday data available');
+                    }
+                } else {
+                    // Longer ranges: show historical composite chart (candles + indicators)
+                    if (historicalData && historicalData.success && historicalData.data_points && historicalData.data_points.length > 0) {
+                        createDailyKlineChart(historicalData);
+                    } else {
+                        showError('No historical data available');
+                    }
+                }
+            }
+
+            function createIntradayChartLightweight(data) {
+                const dataPoints = data.data_points;
+                
+                // Create the chart container with time-range selector
+                const chartSection = document.createElement('section');
+                chartSection.className = 'chart-section-clean';
+                
+                // Generate the selector buttons
+                const timeRanges = ['1D', '6M', 'YTD', '1Y', '5Y', 'All'];
+                const buttonsHTML = timeRanges.map(range => 
+                    `<button class="time-range-btn ${range === currentTimeRange ? 'active' : ''}" data-range="${range}">${range}</button>`
+                ).join('');
+                
+                chartSection.innerHTML = `
+                    <div class="time-range-selector">
+                        ${buttonsHTML}
+                        </div>
+                    <div style="position: relative;">
+                        <div id="intradayChart" class="chart-canvas"></div>
+                        <div id="tooltip-intraday" class="chart-tooltip"></div>
+                            </div>
+                `;
+                elements.chartContainer.appendChild(chartSection);
+                
+                // Wire time-range selector interactions
+                const timeRangeBtns = chartSection.querySelectorAll('.time-range-btn');
+                timeRangeBtns.forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const range = e.target.dataset.range;
+                        if (range === currentTimeRange) return;
+                        
+                        // Update active styles
+                        timeRangeBtns.forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        currentTimeRange = range;
+                        
+                        // Refresh the appropriate chart
+                        await reloadHistoricalChart();
+                    });
+                });
+
+                // TradingView Lightweight Chart with professional styling
+                const container = document.getElementById('intradayChart');
+                const chart = LightweightCharts.createChart(container, {
+                    width: container.clientWidth,
+                    height: 500,
+                    layout: {
+                        background: { color: '#ffffff' },
+                        textColor: '#191919',
+                        fontSize: 12,
+                        fontFamily: 'Trebuchet MS, sans-serif'
+                    },
+                    localization: {
+                        locale: 'en-US'
+                    },
+                    grid: {
+                        vertLines: {
+                            visible: false,
+                            color: 'rgba(197, 203, 206, 0)'
+                        },
+                        horzLines: {
+                            color: 'rgba(197, 203, 206, 0.4)',
+                            style: 0
+                        }
+                    },
+                    crosshair: {
+                        mode: 0,
+                        vertLine: {
+                            color: '#758696',
+                            width: 1,
+                            style: 3,
+                            labelBackgroundColor: '#4682B4'
+                        },
+                        horzLine: {
+                            color: '#758696',
+                            width: 1,
+                            style: 3
+                        }
+                    },
+                    timeScale: {
+                        borderColor: 'rgba(197, 203, 206, 0.8)',
+                        timeVisible: true,
+                        secondsVisible: false,
+                        shiftVisibleRangeOnNewBar: true
+                    },
+                    rightPriceScale: {
+                        borderColor: 'rgba(197, 203, 206, 0.8)',
+                        scaleMargins: {
+                            top: 0.1,
+                            bottom: 0.2
+                        }
+                    }
+                });
+
+                // Keep references for incremental updates
+                chartInstances.intradayChart = chart;
+                
+                // TradingView color scheme for candlesticks
+                const candlestickSeries = chart.addCandlestickSeries({
+                    upColor: '#26a69a',
+                    downColor: '#ef5350',
+                    borderUpColor: '#26a69a',
+                    borderDownColor: '#ef5350',
+                    wickUpColor: '#26a69a',
+                    wickDownColor: '#ef5350',
+                    borderVisible: true
+                });
+                
+                chartInstances.intradayCandleSeries = candlestickSeries;
+
+                // Convert timestamps provided in China Standard Time (UTC+8) into UTC seconds for lightweight-charts
+                const candleData = dataPoints.map(d => {
+                    let timeStr = d.time;
+                    if (timeStr.includes(' ')) {
+                        // Handles values like "2025-01-21 09:31:00" (China Standard Time)
+                        const [date, time] = timeStr.split(' ');
+                        const [year, month, day] = date.split('-');
+                        const [hour, minute, second] = time.split(':');
+                        
+                        // Use Date.UTC to create a UTC timestamp while preserving the original trading session time
+                        const timestamp = Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
+                        
+                        return {
+                            time: timestamp,
+                            open: d.open,
+                            high: d.high,
+                            low: d.low,
+                            close: d.close
+                        };
+                    }
+                    // Handles values like "09:31:00" by assuming the current trading day
+                    const today = new Date();
+                    const [hour, minute, second] = timeStr.split(':');
+                    const timestamp = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
+                    
+                    return {
+                        time: timestamp,
+                        open: d.open,
+                        high: d.high,
+                        low: d.low,
+                        close: d.close
+                    };
+                });
+
+                candlestickSeries.setData(candleData);
+                
+                // Fit the viewport to display all data points
+                chart.timeScale().fitContent();
+
+                // Add VWAP overlay when available
+                let vwapSeries = null;
+                if (dataPoints[0] && dataPoints[0].vwap !== undefined) {
+                    vwapSeries = chart.addLineSeries({
+                        color: '#2962FF',
+                        lineWidth: 2,
+                        title: 'VWAP'
+                    });
+                    
+                    chartInstances.intradayVwapSeries = vwapSeries;
+                    
+                    const vwapData = dataPoints.map(d => {
+                        let timeStr = d.time;
+                        if (timeStr.includes(' ')) {
+                            const [date, time] = timeStr.split(' ');
+                            const [year, month, day] = date.split('-');
+                            const [hour, minute, second] = time.split(':');
+                            // Convert CST timestamps into UTC seconds
+                            const timestamp = Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
+                            return { time: timestamp, value: d.vwap };
+                        }
+                        const today = new Date();
+                        const [hour, minute, second] = timeStr.split(':');
+                        const timestamp = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
+                        return { time: timestamp, value: d.vwap };
+                    });
+                    
+                    vwapSeries.setData(vwapData);
+                }
+                
+                // Enable custom tooltip rendering
+                const tooltip = document.getElementById('tooltip-intraday');
+                chart.subscribeCrosshairMove((param) => {
+                    if (!param.time || param.point.x < 0 || param.point.y < 0) {
+                        tooltip.style.display = 'none';
+                        return;
+                    }
+                    
+                    const candlePrice = param.seriesData.get(candlestickSeries);
+                    const vwapValue = vwapSeries ? param.seriesData.get(vwapSeries) : null;
+                    
+                    if (!candlePrice) {
+                        tooltip.style.display = 'none';
+                        return;
+                    }
+                    
+                    const date = new Date(param.time * 1000);
+                    const timeStr = date.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        timeZone: 'UTC'
+                    });
+                    const dateStr = date.toLocaleDateString('en-US', { timeZone: 'UTC' });
+
+                    const formatFixed = (value, digits = 2) => {
+                        if (typeof value !== 'number' || Number.isNaN(value)) {
+                            return '--';
+                        }
+                        return value.toFixed(digits);
+                    };
+
+                    const formatInteger = (value) => {
+                        if (typeof value !== 'number' || Number.isNaN(value)) {
+                            return '--';
+                        }
+                        return value.toLocaleString('en-US');
+                    };
+
+                    const sections = [];
+                    sections.push({
+                        title: 'Price',
+                        rows: [
+                            { label: 'Open', value: formatFixed(candlePrice.open, 2) },
+                            { label: 'High', value: formatFixed(candlePrice.high, 2), valueClass: 'tooltip-value-positive' },
+                            { label: 'Low', value: formatFixed(candlePrice.low, 2), valueClass: 'tooltip-value-negative' },
+                            { label: 'Close', value: formatFixed(candlePrice.close, 2) }
+                        ]
+                    });
+
+                    if (vwapValue) {
+                        sections.push({
+                            title: 'Volume Weighted',
+                            rows: [
+                                { label: 'VWAP', value: formatFixed(vwapValue.value, 2), valueClass: 'tooltip-value-accent' }
+                            ]
+                        });
+                    }
+
+                    const hoveredIndex = typeof param.time === 'number'
+                        ? candleData.findIndex(point => point.time === param.time)
+                        : -1;
+                    const hoveredSourcePoint = hoveredIndex !== -1 ? dataPoints[hoveredIndex] : null;
+
+                    if (hoveredSourcePoint && typeof hoveredSourcePoint.volume === 'number') {
+                        sections.push({
+                            title: 'Volume',
+                            rows: [
+                                { label: 'Traded Volume', value: formatInteger(hoveredSourcePoint.volume) }
+                            ]
+                        });
+                    }
+
+                    tooltip.innerHTML = renderTooltipContent(`${dateStr} ${timeStr}`, sections);
+                    tooltip.style.display = 'block';
+                    
+                    // Position tooltip near the crosshair
+                    const chartRect = container.getBoundingClientRect();
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    
+                    let left = param.point.x + 15;
+                    let top = param.point.y + 15;
+                    
+                    if (left + tooltipRect.width > chartRect.width) {
+                        left = param.point.x - tooltipRect.width - 15;
+                    }
+                    
+                    if (top + tooltipRect.height > chartRect.height) {
+                        top = param.point.y - tooltipRect.height - 15;
+                    }
+                    
+                    tooltip.style.left = left + 'px';
+                    tooltip.style.top = top + 'px';
+                });
+
+                // Update chart width on resize
+                window.addEventListener('resize', () => {
+                    chart.applyOptions({ width: container.clientWidth });
+                });
+            }
+
+            // Helpers to convert backend timestamps for chart consumption
+            function convertToChartTime(dateStr, isIntraday) {
+                if (isIntraday) {
+                    // Minute-level data: treat the provided China Standard Time as UTC when building the timestamp
+                    if (dateStr.includes(' ')) {
+                        const [date, timeStr] = dateStr.split(' ');
+                        const [year, month, day] = date.split('-');
+                        const [hour, minute, second] = timeStr.split(':');
+                        // Use Date.UTC to build a UTC timestamp
+                        return Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
+                    } else {
+                        return dateStr;
+                    }
+                } else {
+                    // Daily/weekly values use the date portion only (yyyy-mm-dd)
+                    return dateStr.split(' ')[0];
+                }
+            }
+            
+            // Moving average helper
+            function calculateMA(data, period) {
+                const result = [];
+                for (let i = period - 1; i < data.length; i++) {
+                    let sum = 0;
+                    for (let j = 0; j < period; j++) {
+                        sum += data[i - j].value;
+                    }
+                    result.push({
+                        time: data[i].time,
+                        value: sum / period
+                    });
+                }
+                return result;
+            }
+
+            // Part 2: Daily candlesticks combined with CMF and OBV overlays
+            function createDailyKlineChart(data) {
+                const dataPoints = data.data_points;
+                
+                const chartSection = document.createElement('section');
+                chartSection.className = 'chart-section-clean';
+                
+                // Build the time-range selector buttons
+                const timeRanges = ['1D', '6M', 'YTD', '1Y', '5Y', 'All'];
+                const buttonsHTML = timeRanges.map(range => 
+                    `<button class="time-range-btn ${range === currentTimeRange ? 'active' : ''}" data-range="${range}">${range}</button>`
+                ).join('');
+
+                const rangeConfig = timeRangeMap[currentTimeRange];
+                
+                chartSection.innerHTML = `
+                    <div class="time-range-selector">
+                        ${buttonsHTML}
+                        </div>
+                    <div style="position: relative;">
+                        <div id="dailyKlineChart" class="chart-canvas-large"></div>
+                        <div id="tooltip-daily" class="chart-tooltip"></div>
+                        </div>
+                    `;
+                elements.chartContainer.appendChild(chartSection);
+                
+                // Wire up the time-range selector
+                const timeRangeBtns = chartSection.querySelectorAll('.time-range-btn');
+                timeRangeBtns.forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const range = e.target.dataset.range;
+                        if (range === currentTimeRange) return;
+                        
+                        // Update active button styling
+                        timeRangeBtns.forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        currentTimeRange = range;
+                        
+                        // Refresh the historical chart without rebuilding the entire page
+                        await reloadHistoricalChart();
+                    });
+                });
+                
+                const container = document.getElementById('dailyKlineChart');
+                const chart = LightweightCharts.createChart(container, {
+                    width: container.clientWidth,
+                    height: 800,
+                    layout: {
+                        background: { color: '#ffffff' },
+                        textColor: '#191919',
+                        fontSize: 12,
+                        fontFamily: 'Trebuchet MS, sans-serif'
+                    },
+                    localization: {
+                        locale: 'en-US'
+                    },
+                    grid: {
+                        vertLines: {
+                            visible: false,
+                            color: 'rgba(197, 203, 206, 0)'
+                        },
+                        horzLines: {
+                            color: 'rgba(197, 203, 206, 0.4)',
+                            style: 0
+                        }
+                    },
+                    crosshair: {
+                        mode: 0,
+                        vertLine: {
+                            color: '#758696',
+                            width: 1,
+                            style: 3,
+                            labelBackgroundColor: '#4682B4'
+                        },
+                        horzLine: {
+                            color: '#758696',
+                            width: 1,
+                            style: 3
+                        }
+                    },
+                    timeScale: {
+                        borderColor: 'rgba(197, 203, 206, 0.8)',
+                        timeVisible: true,
+                        secondsVisible: false
+                    },
+                    rightPriceScale: {
+                        borderColor: 'rgba(197, 203, 206, 0.8)',
+                        scaleMargins: {
+                            top: 0.05,
+                            bottom: 0.45
+                        }
+                    }
+                });
+                
+                // 保存图表实例供增量更新使用
+                chartInstances.dailyChart = chart;
+                
+                // 主K线系列
+                const candleSeries = chart.addCandlestickSeries({
+                    upColor: '#26a69a',
+                    downColor: '#ef5350',
+                    borderUpColor: '#26a69a',
+                    borderDownColor: '#ef5350',
+                    wickUpColor: '#26a69a',
+                    wickDownColor: '#ef5350',
+                    borderVisible: true,
+                    priceScaleId: 'right'
+                });
+                
+                chartInstances.dailyCandleSeries = candleSeries;
+                
+                // Determine whether data points are intraday timestamps
+                const isIntraday = rangeConfig.interval !== '1d' && rangeConfig.interval !== '1wk' && rangeConfig.interval !== '1mo';
+                
+                const candleData = dataPoints.map(d => ({
+                    time: convertToChartTime(d.date, isIntraday),
+                    open: d.open,
+                    high: d.high,
+                    low: d.low,
+                    close: d.close
+                }));
+                candleSeries.setData(candleData);
+                
+                // 📊 添加 MA5 和 MA20（仅针对非 1D 时间范围）
+                if (currentTimeRange !== '1D') {
+                    // 计算 MA5
+                    const ma5Data = [];
+                    for (let i = 4; i < candleData.length; i++) {
+                        const sum = candleData.slice(i - 4, i + 1).reduce((acc, d) => acc + d.close, 0);
+                        ma5Data.push({
+                            time: candleData[i].time,
+                            value: sum / 5
+                        });
+                    }
+                    
+                    // 计算 MA20
+                    const ma20Data = [];
+                    for (let i = 19; i < candleData.length; i++) {
+                        const sum = candleData.slice(i - 19, i + 1).reduce((acc, d) => acc + d.close, 0);
+                        ma20Data.push({
+                            time: candleData[i].time,
+                            value: sum / 20
+                        });
+                    }
+                    
+                    // 添加 MA5 线（橙色，淡色虚线）
+                    const ma5Series = chart.addLineSeries({
+                        color: 'rgba(255, 152, 0, 0.5)',  // 橙色，50% 透明度
+                        lineWidth: 1,
+                        lineStyle: 2,  // 虚线
+                        priceScaleId: 'right',
+                        title: 'MA5'
+                    });
+                    ma5Series.setData(ma5Data);
+                    chartInstances.dailyKlineMa5Series = ma5Series;
+                    
+                    // 添加 MA20 线（紫色，淡色虚线）
+                    const ma20Series = chart.addLineSeries({
+                        color: 'rgba(156, 39, 176, 0.5)',  // 紫色，50% 透明度
+                        lineWidth: 1,
+                        lineStyle: 2,  // 虚线
+                        priceScaleId: 'right',
+                        title: 'MA20'
+                    });
+                    ma20Series.setData(ma20Data);
+                    chartInstances.dailyKlineMa20Series = ma20Series;
+                }
+                
+                // 设置初始可视范围（使用前面已声明的 rangeConfig）
+                if (rangeConfig && rangeConfig.visibleBars > 0 && candleData.length > 0) {
+                    // 显示最后 N 个bar
+                    const totalBars = candleData.length;
+                    const visibleBars = Math.min(rangeConfig.visibleBars, totalBars);
+                    const fromIndex = Math.max(0, totalBars - visibleBars);
+                    
+                    setTimeout(() => {
+                        chart.timeScale().setVisibleRange({
+                            from: candleData[fromIndex].time,
+                            to: candleData[totalBars - 1].time
+                        });
+                    }, 100);
+                } else if (rangeConfig && rangeConfig.visibleBars === -1 && currentTimeRange === 'YTD') {
+                    // YTD: 显示今年至今的数据
+                    const today = new Date();
+                    const yearStart = `${today.getFullYear()}-01-01`;
+                    const ytdData = candleData.filter(d => d.time >= yearStart);
+                    if (ytdData.length > 0) {
+                        setTimeout(() => {
+                            chart.timeScale().setVisibleRange({
+                                from: ytdData[0].time,
+                                to: candleData[candleData.length - 1].time
+                            });
+                        }, 100);
+                    } else {
+                        chart.timeScale().fitContent();
+                    }
+                } else {
+                    // All 或其他：显示全部
+                    chart.timeScale().fitContent();
+                }
+                
+                // CMF柱状图
+                const cmfHistogram = chart.addHistogramSeries({
+                    color: '#2196F3',
+                    priceFormat: { type: 'price', precision: 4 },
+                    priceScaleId: 'cmf-scale',
+                    scaleMargins: { top: 0.5, bottom: 0.3 }
+                });
+                
+                chartInstances.dailyCmfHistogram = cmfHistogram;
+                
+                const cmfData = dataPoints.map(d => ({
+                    time: convertToChartTime(d.date, isIntraday),
+                    value: d.cmf || 0,
+                    color: (d.cmf || 0) >= 0 ? 'rgba(33, 150, 243, 0.6)' : 'rgba(239, 83, 80, 0.6)'
+                }));
+                cmfHistogram.setData(cmfData);
+                
+                // CMF区域填充叠加
+                const cmfArea = chart.addAreaSeries({
+                    topColor: 'rgba(33, 150, 243, 0.3)',
+                    bottomColor: 'rgba(33, 150, 243, 0.0)',
+                    lineColor: '#2196F3',
+                    lineWidth: 2,
+                    priceScaleId: 'cmf-scale',
+                    priceFormat: { type: 'price', precision: 4 }
+                });
+                
+                chartInstances.dailyCmfArea = cmfArea;
+                
+                cmfArea.setData(cmfData.map(d => ({ time: d.time, value: d.value })));
+                
+                // OBV线系列
+                const obvSeries = chart.addLineSeries({
+                    color: '#FF6D00',
+                    lineWidth: 2,
+                    priceScaleId: 'obv-scale',
+                    scaleMargins: { top: 0.75, bottom: 0.0 },
+                    priceFormat: { type: 'volume' },
+                    title: 'OBV'
+                });
+                
+                chartInstances.dailyObvSeries = obvSeries;
+                
+                const obvData = dataPoints.map(d => ({
+                    time: convertToChartTime(d.date, isIntraday),
+                    value: d.obv || 0
+                }));
+                obvSeries.setData(obvData);
+                
+                // OBV MA5
+                const ma5Data = calculateMA(obvData, 5);
+                const ma5Series = chart.addLineSeries({
+                    color: '#FFAB00',
+                    lineWidth: 1,
+                    priceScaleId: 'obv-scale',
+                    priceFormat: { type: 'volume' },
+                    title: 'MA5'
+                });
+                ma5Series.setData(ma5Data);
+                
+                chartInstances.dailyMa5Series = ma5Series;
+                
+                // OBV MA20
+                const ma20Data = calculateMA(obvData, 20);
+                const ma20Series = chart.addLineSeries({
+                    color: '#00BFA5',
+                    lineWidth: 1,
+                    priceScaleId: 'obv-scale',
+                    priceFormat: { type: 'volume' },
+                    title: 'MA20'
+                });
+                ma20Series.setData(ma20Data);
+                
+                chartInstances.dailyMa20Series = ma20Series;
+                
+                // 配置价格刻度
+                chart.priceScale('cmf-scale').applyOptions({
+                    scaleMargins: { top: 0.5, bottom: 0.3 }
+                });
+                
+                chart.priceScale('obv-scale').applyOptions({
+                    scaleMargins: { top: 0.75, bottom: 0.0 }
+                });
+                
+                // 添加 Tooltip 功能
+                const tooltip = document.getElementById('tooltip-daily');
+                chart.subscribeCrosshairMove((param) => {
+                    if (!param.time || param.point.x < 0 || param.point.y < 0) {
+                        tooltip.style.display = 'none';
+                    return;
+                }
+
+
+                    const candlePrice = param.seriesData.get(candleSeries);
+                    const cmfValue = param.seriesData.get(cmfHistogram);
+                    const obvValue = param.seriesData.get(obvSeries);
+
+                    const priceMa5Series = chartInstances.dailyKlineMa5Series || null;
+                    const priceMa20Series = chartInstances.dailyKlineMa20Series || null;
+                    const obvMa5Series = chartInstances.dailyMa5Series || null;
+                    const obvMa20Series = chartInstances.dailyMa20Series || null;
+
+                    const priceMa5Value = priceMa5Series ? param.seriesData.get(priceMa5Series) : null;
+                    const priceMa20Value = priceMa20Series ? param.seriesData.get(priceMa20Series) : null;
+                    const obvMa5Value = obvMa5Series ? param.seriesData.get(obvMa5Series) : null;
+                    const obvMa20Value = obvMa20Series ? param.seriesData.get(obvMa20Series) : null;
+                    
+                    if (!candlePrice) {
+                        tooltip.style.display = 'none';
+                        return;
+                    }
+
+                    const formatFixed = (value, digits = 2) => {
+                        if (typeof value !== 'number' || Number.isNaN(value)) {
+                            return '--';
+                        }
+                        return value.toFixed(digits);
+                    };
+
+                    const formatSigned = (value, digits = 2) => {
+                        if (typeof value !== 'number' || Number.isNaN(value)) {
+                            return '--';
+                        }
+                        const fixed = value.toFixed(digits);
+                        return value > 0 ? `+${fixed}` : fixed;
+                    };
+
+                    const formatInteger = (value) => {
+                        if (typeof value !== 'number' || Number.isNaN(value)) {
+                            return '--';
+                        }
+                        return value.toLocaleString('en-US');
+                    };
+
+                    let dateLabel;
+                    if (typeof param.time === 'string') {
+                        dateLabel = param.time;
+                    } else {
+                        const date = new Date(param.time * 1000);
+                        const dateFormatter = new Intl.DateTimeFormat('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: '2-digit',
+                            timeZone: 'UTC'
+                        });
+                        dateLabel = dateFormatter.format(date);
+                    }
+
+                    const sections = [];
+
+                    const priceRows = [
+                        { label: 'Open', value: formatFixed(candlePrice.open, 2) },
+                        { label: 'High', value: formatFixed(candlePrice.high, 2), valueClass: 'tooltip-value-positive' },
+                        { label: 'Low', value: formatFixed(candlePrice.low, 2), valueClass: 'tooltip-value-negative' },
+                        { label: 'Close', value: formatFixed(candlePrice.close, 2) }
+                    ];
+
+                    if (priceMa5Value) {
+                        priceRows.push({ label: 'Price MA5', value: formatFixed(priceMa5Value.value, 2), valueClass: 'tooltip-value-accent' });
+                    }
+                    if (priceMa20Value) {
+                        priceRows.push({ label: 'Price MA20', value: formatFixed(priceMa20Value.value, 2), valueClass: 'tooltip-value-accent' });
+                    }
+
+                    sections.push({ title: 'Price', rows: priceRows });
+
+                    const cmfRows = [
+                        {
+                            label: 'CMF',
+                            value: cmfValue ? formatSigned(cmfValue.value, 4) : '--',
+                            valueClass: cmfValue ? (cmfValue.value >= 0 ? 'tooltip-value-positive' : 'tooltip-value-negative') : ''
+                        }
+                    ];
+                    sections.push({ title: 'Chaikin Money Flow', rows: cmfRows });
+
+                    const obvRows = [
+                        {
+                            label: 'OBV',
+                            value: obvValue ? formatInteger(obvValue.value) : '--',
+                            valueClass: obvValue ? (obvValue.value >= 0 ? 'tooltip-value-positive' : 'tooltip-value-negative') : ''
+                        }
+                    ];
+
+                    if (obvMa5Value) {
+                        obvRows.push({ label: 'OBV MA5', value: formatInteger(obvMa5Value.value), valueClass: 'tooltip-value-accent' });
+                    }
+                    if (obvMa20Value) {
+                        obvRows.push({ label: 'OBV MA20', value: formatInteger(obvMa20Value.value), valueClass: 'tooltip-value-accent' });
+                    }
+
+                    sections.push({ title: 'On-Balance Volume', rows: obvRows });
+
+                    tooltip.innerHTML = renderTooltipContent(dateLabel, sections);
+                    tooltip.style.display = 'block';
+                    
+                    // 定位 tooltip（避免超出屏幕）
+                    const chartRect = container.getBoundingClientRect();
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    
+                    let left = param.point.x + 15;
+                    let top = param.point.y + 15;
+                    
+                    // 防止超出右边界
+                    if (left + tooltipRect.width > chartRect.width) {
+                        left = param.point.x - tooltipRect.width - 15;
+                    }
+                    
+                    // 防止超出下边界
+                    if (top + tooltipRect.height > chartRect.height) {
+                        top = param.point.y - tooltipRect.height - 15;
+                    }
+                    
+                    tooltip.style.left = left + 'px';
+                    tooltip.style.top = top + 'px';
+                });
+                
+                // 响应式调整
+                window.addEventListener('resize', () => {
+                    chart.applyOptions({ width: container.clientWidth });
+                });
+            }
+
+            // 旧的图表函数已移除，现在使用TradingView Lightweight Charts
+            
+            function createIntradayChart_DEPRECATED(data) {
+                const dataPoints = data.data_points;
+                const timestamps = dataPoints.map(point => {
+                    if (!point.time) return null;
+                    return point.time.includes(' ') ? point.time.replace(' ', 'T') : point.time;
+                });
+                const opens = dataPoints.map(d => d.open);
+                const highs = dataPoints.map(d => d.high);
+                const lows = dataPoints.map(d => d.low);
+                const closes = dataPoints.map(d => d.close);
+                const volumes = dataPoints.map(d => (typeof d.volume === 'number' ? d.volume : null));
+                const vwaps = dataPoints.map(d => (typeof d.vwap === 'number' ? d.vwap : null));
+
+                const hasVolume = volumes.some(v => typeof v === 'number' && !Number.isNaN(v));
+                const hasVwap = vwaps.some(v => typeof v === 'number' && !Number.isNaN(v));
+
+                const chartSection = document.createElement('section');
+                chartSection.className = 'chart-section-clean';
+                chartSection.innerHTML = `
+                    <h2 class="chart-title-clean">Price Chart</h2>
+                    <div id="intradayChart" class="chart-canvas"></div>
+                `;
+                elements.chartContainer.appendChild(chartSection);
+
+                const candlestickTrace = {
+                    x: timestamps,
+                    open: opens,
+                    high: highs,
+                    low: lows,
+                    close: closes,
+                    type: 'candlestick',
+                    name: 'Price',
+                    increasing: { line: { color: '#059669' }, fillcolor: 'rgba(5, 150, 105, 0.25)' },
+                    decreasing: { line: { color: '#dc2626' }, fillcolor: 'rgba(220, 38, 38, 0.25)' },
+                    xaxis: 'x',
+                    yaxis: 'y',
+                    hovertemplate: '%{x|%H:%M}<br>O %{open:.2f} H %{high:.2f}<br>L %{low:.2f} C %{close:.2f}<extra></extra>',
+                    showlegend: false
+                };
+
+                const traces = [candlestickTrace];
+
+                if (hasVwap) {
+                    traces.push({
+                        x: timestamps,
+                        y: vwaps,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'VWAP',
+                        line: { color: '#2563eb', width: 1.5 },
+                        xaxis: 'x',
+                        yaxis: 'y',
+                        hovertemplate: 'VWAP %{y:.2f}<extra></extra>',
+                        showlegend: false
+                    });
+                }
+
+                if (hasVolume) {
+                    const volumeColors = dataPoints.map(point =>
+                        point.close >= point.open ? 'rgba(5, 150, 105, 0.4)' : 'rgba(220, 38, 38, 0.4)'
+                    );
+
+                    traces.push({
+                        x: timestamps,
+                        y: volumes,
+                        type: 'bar',
+                        name: 'Volume',
+                        marker: { color: volumeColors },
+                        opacity: 0.8,
+                        xaxis: 'x2',
+                        yaxis: 'y2',
+                        hovertemplate: 'Vol %{y:,.0f}<extra></extra>',
+                        showlegend: false
+                    });
+                }
+
+                const layout = {
+                    grid: hasVolume ? {
+                        rows: 2,
+                        columns: 1,
+                        roworder: 'top to bottom',
+                        pattern: 'independent',
+                        heights: [0.7, 0.3]
+                    } : undefined,
+                    xaxis: {
+                        type: 'date',
+                        showgrid: false,
+                        zeroline: false,
+                        tickformat: '%H:%M',
+                        tickfont: { size: 11, color: '#6b7280' },
+                        rangeslider: { visible: false }
+                    },
+                    yaxis: {
+                        gridcolor: '#e5e7eb',
+                        zeroline: false,
+                        tickfont: { size: 11, color: '#6b7280' },
+                        fixedrange: false
+                    },
+                    hovermode: 'x unified',
+                    hoverlabel: {
+                        bgcolor: '#1f2937',
+                        font: { color: '#ffffff', size: 11 }
+                    },
+                    margin: { t: 8, r: 24, b: hasVolume ? 8 : 32, l: 60 },
+                    font: {
+                        family: 'Roboto, -apple-system, sans-serif',
+                        color: '#374151'
+                    },
+                    plot_bgcolor: '#ffffff',
+                    paper_bgcolor: '#ffffff',
+                    showlegend: false
+                };
+
+                if (hasVolume) {
+                    layout.xaxis2 = {
+                        type: 'date',
+                        matches: 'x',
+                        showgrid: false,
+                        zeroline: false,
+                        tickformat: '%H:%M',
+                        tickfont: { size: 10, color: '#9ca3af' }
+                    };
+                    layout.yaxis2 = {
+                        showgrid: true,
+                        gridcolor: '#f3f4f6',
+                        zeroline: false,
+                        tickformat: '~s',
+                        tickfont: { size: 10, color: '#9ca3af' }
+                    };
+                }
+
+                const config = {
+                    responsive: true,
+                    displaylogo: false,
+                    modeBarButtonsToRemove: ['select2d', 'lasso2d', 'autoScale2d', 'toggleSpikelines']
+                };
+
+                Plotly.newPlot('intradayChart', traces, layout, config);
+            }
+
+            function create30DayCharts(data) {
+                const dataPoints = data.data_points;
+                const dates = dataPoints.map(d => d.date);
+                const normalizedDates = dates.map(date => date && date.includes(' ') ? date.split(' ')[0] : date);
+                const opens = dataPoints.map(d => d.open);
+                const highs = dataPoints.map(d => d.high);
+                const lows = dataPoints.map(d => d.low);
+                const closes = dataPoints.map(d => d.close);
+                const volumes = dataPoints.map(d => (typeof d.volume === 'number' ? d.volume : null));
+                const ma5 = dataPoints.map(d => (typeof d.ma5 === 'number' ? d.ma5 : null));
+                const ma10 = dataPoints.map(d => (typeof d.ma10 === 'number' ? d.ma10 : null));
+                const obvValues = dataPoints.map(d => (typeof d.obv === 'number' ? d.obv : null));
+                const obvMa5 = dataPoints.map(d => (typeof d.obv_ma5 === 'number' ? d.obv_ma5 : null));
+                const obvMa10 = dataPoints.map(d => (typeof d.obv_ma10 === 'number' ? d.obv_ma10 : null));
+                const cmfValues = dataPoints.map(d => (typeof d.cmf === 'number' ? d.cmf : null));
+
+                const hasMa5 = ma5.some(v => typeof v === 'number' && !Number.isNaN(v));
+                const hasMa10 = ma10.some(v => typeof v === 'number' && !Number.isNaN(v));
+                const hasVolume = volumes.some(v => typeof v === 'number' && !Number.isNaN(v));
+                const hasObvMa5 = obvMa5.some(v => typeof v === 'number' && !Number.isNaN(v));
+                const hasObvMa10 = obvMa10.some(v => typeof v === 'number' && !Number.isNaN(v));
+
+                const chartSection1 = document.createElement('section');
+                chartSection1.className = 'chart-section-clean';
+                chartSection1.innerHTML = `
+                    <h2 class="chart-title-clean">Chaikin Money Flow</h2>
+                    <div id="cmfChart" class="chart-canvas"></div>
+                `;
+                elements.chartContainer.appendChild(chartSection1);
+
+                const chartSection2 = document.createElement('section');
+                chartSection2.className = 'chart-section-clean';
+                chartSection2.innerHTML = `
+                    <h2 class="chart-title-clean">On-Balance Volume</h2>
+                    <div id="obvChart" class="chart-canvas"></div>
+                `;
+                elements.chartContainer.appendChild(chartSection2);
+
+                const baseFont = {
+                    family: 'Roboto, -apple-system, sans-serif',
+                    color: '#374151'
+                };
+
+                const cmfColors = cmfValues.map(v =>
+                    (typeof v === 'number' && v >= 0) ? '#2563eb' : '#dc2626'
+                );
+
+                const cmfTraces = [{
+                        x: normalizedDates,
+                        y: cmfValues,
+                        type: 'bar',
+                        marker: { color: cmfColors },
+                    hovertemplate: 'CMF %{y:.4f}<extra></extra>',
+                    showlegend: false
+                }];
+
+                const cmfLayout = {
+                    xaxis: {
+                        type: 'date',
+                        tickformat: '%b %d',
+                        rangebreaks: [{ pattern: 'day of week', bounds: [6, 1] }],
+                        showgrid: false,
+                        tickfont: { size: 11, color: '#6b7280' }
+                    },
+                    yaxis: {
+                        gridcolor: '#e5e7eb',
+                        zeroline: true,
+                        zerolinecolor: '#9ca3af',
+                        zerolinewidth: 1,
+                        tickfont: { size: 11, color: '#6b7280' }
+                    },
+                    hovermode: 'x unified',
+                    hoverlabel: {
+                        bgcolor: '#1f2937',
+                        font: { color: '#ffffff', size: 11 }
+                    },
+                    margin: { t: 8, r: 24, b: 32, l: 60 },
+                    font: baseFont,
+                    plot_bgcolor: '#ffffff',
+                    paper_bgcolor: '#ffffff',
+                    showlegend: false
+                };
+
+                const obvTraces = [{
+                    x: normalizedDates,
+                    y: obvValues,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'OBV',
+                    line: { color: '#2563eb', width: 2 },
+                    hovertemplate: 'OBV %{y:,}<extra></extra>',
+                    showlegend: false
+                }];
+
+                if (hasObvMa5) {
+                    obvTraces.push({
+                        x: normalizedDates,
+                        y: obvMa5,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'MA5',
+                        line: { color: '#f97316', width: 1.5 },
+                        hovertemplate: 'MA5 %{y:,}<extra></extra>',
+                        showlegend: false
+                    });
+                }
+
+                if (hasObvMa10) {
+                    obvTraces.push({
+                        x: normalizedDates,
+                        y: obvMa10,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'MA10',
+                        line: { color: '#059669', width: 1.5, dash: 'dash' },
+                        hovertemplate: 'MA10 %{y:,}<extra></extra>',
+                        showlegend: false
+                    });
+                }
+
+                const obvLayout = {
+                    xaxis: {
+                        type: 'date',
+                        tickformat: '%b %d',
+                        rangebreaks: [{ pattern: 'day of week', bounds: [6, 1] }],
+                        showgrid: false,
+                        tickfont: { size: 11, color: '#6b7280' }
+                    },
+                    yaxis: {
+                        gridcolor: '#e5e7eb',
+                        zeroline: false,
+                        tickfont: { size: 11, color: '#6b7280' }
+                    },
+                    hovermode: 'x unified',
+                    hoverlabel: {
+                        bgcolor: '#1f2937',
+                        font: { color: '#ffffff', size: 11 }
+                    },
+                    margin: { t: 8, r: 24, b: 32, l: 60 },
+                    font: baseFont,
+                    plot_bgcolor: '#ffffff',
+                    paper_bgcolor: '#ffffff',
+                    showlegend: false
+                };
+
+                const config = {
+                    responsive: true,
+                    displaylogo: false,
+                    modeBarButtonsToRemove: ['select2d', 'lasso2d', 'autoScale2d', 'toggleSpikelines']
+                };
+
+                Plotly.newPlot('cmfChart', cmfTraces, cmfLayout, config);
+                Plotly.newPlot('obvChart', obvTraces, obvLayout, config);
+            }
+
+            // 重新加载图表（根据时间范围类型）
+            async function reloadHistoricalChart() {
+                if (!currentSymbol) return;
+                
+                // 清空图表容器，显示加载状态
+                elements.chartContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; min-height: 400px; color: #6b7280; font-size: 14px;"><span>Loading data...</span></div>';
+                
+                try {
+                    const rangeConfig = timeRangeMap[currentTimeRange];
+                    
+                    if (rangeConfig.chartType === 'intraday') {
+                        // 1D: 使用缓存的日内分时图数据
+                        if (cachedIntradayData) {
+                            updateMetrics(cachedIntradayData);
+                            createCharts(cachedIntradayData, null);
+                        } else {
+                            const intradayData = await stocksApi.getIntradayData(currentSymbol);
+                            cachedIntradayData = intradayData;
+                            updateMetrics(intradayData);
+                            createCharts(intradayData, null);
+                        }
+                    } else if (rangeConfig.interval === '1d') {
+                        // 使用缓存的日K线数据
+                        if (cachedDailyData) {
+                            updateMetrics(cachedDailyData);
+                            createCharts(null, cachedDailyData);
+                        } else {
+                            const historicalData = await stocksApi.getHistoricalData(
+                                currentSymbol, 
+                                3650,
+                                '1d',
+                                'max'
+                            );
+                            cachedDailyData = historicalData;
+                            updateMetrics(historicalData);
+                            createCharts(null, historicalData);
+                        }
+                    } else if (rangeConfig.interval === '1wk') {
+                        // 使用缓存的周K线数据
+                        if (cachedWeeklyData) {
+                            updateMetrics(cachedWeeklyData);
+                            createCharts(null, cachedWeeklyData);
+                        } else {
+                            const historicalData = await stocksApi.getHistoricalData(
+                                currentSymbol, 
+                                3650,
+                                '1wk',
+                                'max'
+                            );
+                            cachedWeeklyData = historicalData;
+                            updateMetrics(historicalData);
+                            createCharts(null, historicalData);
+                        }
+                    }
+                    
+                    // 平滑滚动到图表位置
+                    setTimeout(() => {
+                        const chartSections = elements.chartContainer.querySelectorAll('.chart-section-clean');
+                        if (chartSections.length > 0) {
+                            chartSections[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }, 100);
+                } catch (error) {
+                    console.error('Error reloading chart:', error);
+                    showError('Error loading data: ' + error.message);
+                }
+            }
+
+            async function loadData() {
+                if (!currentSymbol) return;
+
+                showLoading();
+
+                try {
+                    const rangeConfig = timeRangeMap[currentTimeRange];
+                    console.log(`📊 Loading data for ${currentTimeRange}:`, rangeConfig);
+                    
+                    // 根据 chartType 决定加载什么数据
+                    if (rangeConfig.chartType === 'intraday') {
+                        // 1D: 使用专用的日内分时API（1分钟间隔）
+                        if (!cachedIntradayData) {
+                            console.log('📈 Fetching intraday data (1-minute intervals)...');
+                            cachedIntradayData = await stocksApi.getIntradayData(currentSymbol);
+                            console.log('✅ Intraday data received:', cachedIntradayData?.data_points?.length, 'points');
+                    } else {
+                            console.log('📦 Using cached intraday data');
+                        }
+                        updateMetrics(cachedIntradayData);
+                        createCharts(cachedIntradayData, null);
+                    } else if (rangeConfig.interval === '1d') {
+                        // 6M, YTD, 1Y: 日K线（请求最大数据，缓存）
+                        if (!cachedDailyData) {
+                            console.log(`📈 Fetching daily K-line data (max period)...`);
+                            cachedDailyData = await stocksApi.getHistoricalData(
+                                currentSymbol, 
+                                3650,  // 10年
+                                '1d',
+                                'max'
+                            );
+                            console.log('✅ Daily K-line data received:', cachedDailyData?.data_points?.length, 'points');
+                        } else {
+                            console.log('📦 Using cached daily data');
+                        }
+                        updateMetrics(cachedDailyData);
+                        createCharts(null, cachedDailyData);
+                    } else if (rangeConfig.interval === '1wk') {
+                        // 5Y, All: 周K线（请求最大数据，缓存）
+                        if (!cachedWeeklyData) {
+                            console.log(`📈 Fetching weekly K-line data (max period)...`);
+                            cachedWeeklyData = await stocksApi.getHistoricalData(
+                                currentSymbol, 
+                                3650,  // 10年
+                                '1wk',
+                                'max'
+                            );
+                            console.log('✅ Weekly K-line data received:', cachedWeeklyData?.data_points?.length, 'points');
+                        } else {
+                            console.log('📦 Using cached weekly data');
+                        }
+                        updateMetrics(cachedWeeklyData);
+                        createCharts(null, cachedWeeklyData);
+                    }
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    showError('Error loading data: ' + error.message);
+                }
+            }
+
+            // 增量更新图表数据（不重新创建图表）
+            async function incrementalUpdate() {
+                if (!currentSymbol) return;
+                
+                try {
+                    console.log('🔄 Incremental update...');
+                    const rangeConfig = timeRangeMap[currentTimeRange];
+                    
+                    if (rangeConfig.chartType === 'intraday') {
+                        // 更新分时图
+                        const intradayData = await stocksApi.getIntradayData(currentSymbol);
+                        if (intradayData && intradayData.success && intradayData.data_points) {
+                            updateMetrics(intradayData);
+                            
+                            // 获取最后一个数据点的时间
+                            const lastDataPoint = intradayData.data_points[intradayData.data_points.length - 1];
+                            const lastDataTime = lastDataPoint ? lastDataPoint.time : null;
+                            updateLastUpdateTime(lastDataTime);
+                            
+                            // 如果图表实例存在，直接更新数据
+                            if (chartInstances.intradayCandleSeries && chartInstances.intradayVwapSeries) {
+                                const dataPoints = intradayData.data_points;
+                                
+                                // 转换K线数据
+                                const candleData = dataPoints.map(d => {
+                                    let timeStr = d.time;
+                                    if (timeStr.includes(' ')) {
+                                        const [date, time] = timeStr.split(' ');
+                                        const [year, month, day] = date.split('-');
+                                        const [hour, minute, second] = time.split(':');
+                                        const timestamp = Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
+                                        return {
+                                            time: timestamp,
+                                            open: d.open,
+                                            high: d.high,
+                                            low: d.low,
+                                            close: d.close
+                                        };
+                                    }
+                                    const today = new Date();
+                                    const [hour, minute, second] = timeStr.split(':');
+                                    const timestamp = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
+                                    return {
+                                        time: timestamp,
+                                        open: d.open,
+                                        high: d.high,
+                                        low: d.low,
+                                        close: d.close
+                                    };
+                                });
+                                
+                                // 转换VWAP数据
+                                const vwapData = dataPoints.map(d => {
+                                    let timeStr = d.time;
+                                    if (timeStr.includes(' ')) {
+                                        const [date, time] = timeStr.split(' ');
+                                        const [year, month, day] = date.split('-');
+                                        const [hour, minute, second] = time.split(':');
+                                        const timestamp = Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
+                                        return { time: timestamp, value: d.vwap };
+                                    }
+                                    const today = new Date();
+                                    const [hour, minute, second] = timeStr.split(':');
+                                    const timestamp = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
+                                    return { time: timestamp, value: d.vwap };
+                                });
+                                
+                                // 使用 update() 而不是 setData() 来平滑更新
+                                chartInstances.intradayCandleSeries.setData(candleData);
+                                chartInstances.intradayVwapSeries.setData(vwapData);
+                                console.log('✅ Intraday chart updated:', candleData.length, 'bars');
+                            } else {
+                                // 图表不存在，重新创建
+                                cachedIntradayData = null;
+                        loadData();
+                            }
+                        }
+                    } else if (rangeConfig.interval === '1d' || rangeConfig.interval === '1wk') {
+                        // 更新日K线或周K线
+                        let historicalData;
+                        if (rangeConfig.interval === '1d') {
+                            historicalData = await stocksApi.getHistoricalData(currentSymbol, 3650, '1d', 'max');
+                            cachedDailyData = historicalData;
+                        } else {
+                            historicalData = await stocksApi.getHistoricalData(currentSymbol, 3650, '1wk', 'max');
+                            cachedWeeklyData = historicalData;
+                        }
+                        
+                        if (historicalData && historicalData.success && historicalData.data_points) {
+                            updateMetrics(historicalData);
+                            
+                            // 获取最后一个数据点的时间
+                            const lastDataPoint = historicalData.data_points[historicalData.data_points.length - 1];
+                            const lastDataTime = lastDataPoint ? lastDataPoint.date : null;
+                            updateLastUpdateTime(lastDataTime);
+                            
+                            // 如果图表实例存在，直接更新数据
+                            if (chartInstances.dailyCandleSeries) {
+                                const dataPoints = historicalData.data_points;
+                                const isIntraday = rangeConfig.interval !== '1d' && rangeConfig.interval !== '1wk' && rangeConfig.interval !== '1mo';
+                                
+                                const candleData = dataPoints.map(d => ({
+                                    time: convertToChartTime(d.date, isIntraday),
+                                    open: d.open,
+                                    high: d.high,
+                                    low: d.low,
+                                    close: d.close
+                                }));
+                                
+                                chartInstances.dailyCandleSeries.setData(candleData);
+                                
+                                // 更新 K线的 MA5 和 MA20（仅针对非 1D）
+                                if (currentTimeRange !== '1D' && chartInstances.dailyKlineMa5Series && chartInstances.dailyKlineMa20Series) {
+                                    // 计算 MA5
+                                    const ma5Data = [];
+                                    for (let i = 4; i < candleData.length; i++) {
+                                        const sum = candleData.slice(i - 4, i + 1).reduce((acc, d) => acc + d.close, 0);
+                                        ma5Data.push({
+                                            time: candleData[i].time,
+                                            value: sum / 5
+                                        });
+                                    }
+                                    
+                                    // 计算 MA20
+                                    const ma20Data = [];
+                                    for (let i = 19; i < candleData.length; i++) {
+                                        const sum = candleData.slice(i - 19, i + 1).reduce((acc, d) => acc + d.close, 0);
+                                        ma20Data.push({
+                                            time: candleData[i].time,
+                                            value: sum / 20
+                                        });
+                                    }
+                                    
+                                    chartInstances.dailyKlineMa5Series.setData(ma5Data);
+                                    chartInstances.dailyKlineMa20Series.setData(ma20Data);
+                                }
+                                
+                                // 更新技术指标
+                                if (chartInstances.dailyCmfHistogram && chartInstances.dailyObvSeries) {
+                                    const cmfData = dataPoints.map(d => ({
+                                        time: convertToChartTime(d.date, isIntraday),
+                                        value: d.cmf || 0,
+                                        color: (d.cmf || 0) >= 0 ? 'rgba(33, 150, 243, 0.6)' : 'rgba(239, 83, 80, 0.6)'
+                                    }));
+                                    chartInstances.dailyCmfHistogram.setData(cmfData);
+                                    if (chartInstances.dailyCmfArea) {
+                                        chartInstances.dailyCmfArea.setData(cmfData.map(d => ({ time: d.time, value: d.value })));
+                                    }
+                                    
+                                    const obvData = dataPoints.map(d => ({
+                                        time: convertToChartTime(d.date, isIntraday),
+                                        value: d.obv || 0
+                                    }));
+                                    chartInstances.dailyObvSeries.setData(obvData);
+                                    
+                                    // 更新MA
+                                    if (chartInstances.dailyMa5Series && chartInstances.dailyMa20Series) {
+                                        const ma5Data = calculateMA(obvData, 5);
+                                        const ma20Data = calculateMA(obvData, 20);
+                                        chartInstances.dailyMa5Series.setData(ma5Data);
+                                        chartInstances.dailyMa20Series.setData(ma20Data);
+                                    }
+                                }
+                                
+                                console.log('✅ Daily chart updated:', candleData.length, 'bars');
+                            } else {
+                                // 图表不存在，重新创建
+                                if (rangeConfig.interval === '1d') {
+                                    cachedDailyData = null;
+                                } else {
+                                    cachedWeeklyData = null;
+                                }
+                    loadData();
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Incremental update error:', error);
+                    // 如果增量更新失败，回退到完整重新加载
+                    loadData();
+                }
+            }
+
+            // Event listeners
+            if (elements.stockSearch) {
+                elements.stockSearch.addEventListener('input', (event) => {
+                    handleStockSearch(event);
+                });
+
+                elements.stockSearch.addEventListener('keydown', (event) => {
+                    handleSearchKeydown(event);
+                });
+
+                elements.stockSearch.addEventListener('focus', (event) => {
+                    if (!allStocks.length) {
+                        return;
+                    }
+                    const rawValue = event.target.value;
+                    updateSearchInputState();
+                    if (!rawValue.trim()) {
+                        hideStockSuggestions();
+                        return;
+                    }
+                    const matches = findMatchingStocks(rawValue);
+                    showStockSuggestions(matches, rawValue);
+                });
+            }
+
+            if (elements.clearStockSearch) {
+                elements.clearStockSearch.addEventListener('click', () => {
+                    if (!elements.stockSearch) {
+                        return;
+                    }
+                    elements.stockSearch.value = '';
+                    updateSearchInputState();
+                    hideStockSuggestions();
+                    elements.stockSearch.focus();
+                });
+            }
+
+            document.addEventListener('click', (event) => {
+                if (!event.target.closest('.fund-flow-search-field')) {
+                    hideStockSuggestions();
+                }
+            });
+
+            // Parse URL parameters
+            function getUrlParams() {
+                const params = new URLSearchParams(window.location.search);
+                return {
+                    symbol: params.get('symbol'),
+                    company: params.get('company'),
+                    id: params.get('id')
+                };
+            }
+
+            // Initialize
+            async function init() {
+                const urlParams = getUrlParams();
+                
+                // Check if we're in company-specific mode
+                if (urlParams.symbol && urlParams.company) {
+                    console.log('🎯 Company-specific mode:', urlParams.company, urlParams.symbol);
+                    
+                    // Hide search section in company-specific mode
+                    const stockSearchSection = document.getElementById('stockSearchSection');
+                    if (stockSearchSection) {
+                        stockSearchSection.style.display = 'none';
+                    }
+                    
+                    // Set company context for global navigation
+                    if (window.CSI300GlobalNav && urlParams.id) {
+                        window.CSI300GlobalNav.setCompanyContext({
+                            id: urlParams.id,
+                            name: decodeURIComponent(urlParams.company),
+                            symbol: urlParams.symbol
+                        });
+                    }
+                    
+                    // Load stock list and find the specific stock
+                await loadStockList();
+                    
+                    // Find and load the specific stock
+                    const targetStock = allStocks.find(stock => stock.symbol === urlParams.symbol);
+                    if (targetStock) {
+                        await setCurrentStock(targetStock, { updateSearchField: false });
+                        
+                        // Update company context with full stock data
+                        if (window.CSI300GlobalNav && urlParams.id) {
+                            window.CSI300GlobalNav.setCompanyContext({
+                                id: urlParams.id,
+                                name: targetStock.name,
+                                symbol: targetStock.symbol
+                            });
+                        }
+                    } else {
+                        // If stock not found in list, try to load it directly
+                        console.warn('Stock not found in list, attempting direct load');
+                        await setCurrentStock({ 
+                            symbol: urlParams.symbol, 
+                            name: decodeURIComponent(urlParams.company) 
+                        }, { updateSearchField: false });
+                    }
+                } else {
+                    // Normal mode - show search
+                    await loadStockList();
+                    updateSearchInputState();
+                }
+            }
+
+            init();
+        })();
+    </script>
 </body>
 </html>

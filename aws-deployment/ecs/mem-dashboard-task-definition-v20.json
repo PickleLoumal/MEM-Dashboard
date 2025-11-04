@@ -1,0 +1,111 @@
+{
+  "family": "mem-dashboard-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::952189540759:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::952189540759:role/mem-dashboard-task-role",
+  "containerDefinitions": [
+    {
+      "name": "mem-dashboard-container",
+      "image": "952189540759.dkr.ecr.ap-east-1.amazonaws.com/mem-dashboard:20251030-yfinance-v2-fixed",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "ENVIRONMENT",
+          "value": "production"
+        },
+        {
+          "name": "AWS_DEFAULT_REGION",
+          "value": "ap-east-1"
+        },
+        {
+          "name": "DJANGO_SETTINGS_MODULE",
+          "value": "django_api.settings"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DB_HOST",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:952189540759:secret:mem-dashboard/database:host::"
+        },
+        {
+          "name": "DB_NAME",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:952189540759:secret:mem-dashboard/database:dbname::"
+        },
+        {
+          "name": "DB_USER",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:952189540759:secret:mem-dashboard/database:username::"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:952189540759:secret:mem-dashboard/database:password::"
+        },
+        {
+          "name": "DB_PORT",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:952189540759:secret:mem-dashboard/database:port::"
+        },
+        {
+          "name": "FRED_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:952189540759:secret:mem-dashboard/api-keys:fred_api_key::"
+        },
+        {
+          "name": "BEA_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:ap-east-1:952189540759:secret:mem-dashboard/api-keys:bea_api_key::"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/mem-dashboard",
+          "awslogs-region": "ap-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8000/api/health/ || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "mountPoints": [],
+      "volumesFrom": []
+    }
+  ],
+  "volumes": [],
+  "placementConstraints": [],
+  "tags": [
+    {
+      "key": "Project",
+      "value": "MEM-Dashboard"
+    },
+    {
+      "key": "Environment",
+      "value": "production"
+    },
+    {
+      "key": "Version",
+      "value": "v20-yfinance-fixed"
+    },
+    {
+      "key": "DeploymentDate",
+      "value": "2025-10-30"
+    },
+    {
+      "key": "Changes",
+      "value": "Added pandas numpy yfinance auto-migration"
+    }
+  ]
+}
+
