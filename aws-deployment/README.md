@@ -10,7 +10,6 @@ MEM Dashboard/
 ├── .dockerignore                                 # Docker build ignore file
 ├── requirements.txt                              # Python base dependencies
 ├── runtime.txt                                   # Python runtime version
-├── vercel.json                                   # Vercel deployment configuration
 │
 ├── .github/                                      # GitHub Actions CI/CD
 │   └── workflows/
