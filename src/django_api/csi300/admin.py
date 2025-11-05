@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CSI300Company, CSI300InvestmentSummary
+from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary
 
 
 @admin.register(CSI300Company)
@@ -7,16 +7,57 @@ class CSI300CompanyAdmin(admin.ModelAdmin):
     """Admin interface for CSI300 companies"""
     
     list_display = [
-        'ticker', 'name', 'im_sector', 'price_local_currency',
+        'ticker', 'name', 'region', 'im_sector', 'price_local_currency',
         'market_cap_local', 'pe_ratio_trailing', 'roe_trailing', 'updated_at'
     ]
-    list_filter = ['im_sector', 'gics_industry', 'industry', 'currency', 'last_trade_date']
-    search_fields = ['ticker', 'name', 'naming', 'im_sector', 'gics_industry']
+    list_filter = ['region', 'im_sector', 'gics_industry', 'industry', 'currency', 'last_trade_date']
+    search_fields = ['ticker', 'name', 'naming', 'im_sector', 'gics_industry', 'region']
     readonly_fields = ['created_at', 'updated_at']
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('ticker', 'name', 'naming')
+            'fields': ('ticker', 'name', 'region', 'naming')
+        }),
+        ('Classification', {
+            'fields': ('im_sector', 'industry', 'gics_industry', 'gics_sub_industry')
+        }),
+        ('Price Information', {
+            'fields': ('price_local_currency', 'currency', 'last_trade_date', 'price_52w_high', 'price_52w_low')
+        }),
+        ('Financial Metrics', {
+            'fields': ('market_cap_local', 'market_cap_usd', 'total_assets_local', 'total_revenue_local', 'net_profits_fy0')
+        }),
+        ('Financial Ratios', {
+            'fields': ('pe_ratio_trailing', 'pe_ratio_consensus', 'roe_trailing', 'roa_trailing', 'debt_to_equity')
+        }),
+        ('Earnings & Growth', {
+            'fields': ('eps_trailing', 'eps_actual_fy0', 'eps_forecast_fy1', 'eps_growth_percent')
+        }),
+        ('Company Details', {
+            'fields': ('business_description', 'company_info', 'directors')
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(CSI300HSharesCompany)
+class CSI300HSharesCompanyAdmin(admin.ModelAdmin):
+    """Admin interface for CSI300 H-Shares companies"""
+    
+    list_display = [
+        'ticker', 'name', 'region', 'im_sector', 'price_local_currency',
+        'market_cap_usd', 'pe_ratio_trailing', 'roe_trailing', 'updated_at'
+    ]
+    list_filter = ['region', 'im_sector', 'gics_industry', 'industry', 'currency', 'last_trade_date']
+    search_fields = ['ticker', 'name', 'naming', 'im_sector', 'gics_industry', 'region']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('ticker', 'name', 'region', 'naming')
         }),
         ('Classification', {
             'fields': ('im_sector', 'industry', 'gics_industry', 'gics_sub_industry')
