@@ -376,5 +376,15 @@ cd aws-deployment/scripts
 
 ---
 
+## Testing Linear Integration
+
+This section is added to test Linear and GitHub synchronization (JJJ-24).
+
+- Branch: `jjj-24-alternative-data-source`
+- Purpose: Verify Linear issue tracking integration
+- Date: 2025-11-05
+
+---
+
 **License**: Educational Research License  
 **Last Updated**: June 2025
