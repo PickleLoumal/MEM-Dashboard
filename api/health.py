@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 def handler(request):
-    """Vercel serverless function for health check"""
+    """Health check endpoint handler"""
     
     response_data = {
         'status': 'healthy',

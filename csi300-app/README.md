@@ -64,9 +64,9 @@ npx http-server -p 8080
 
 This application can be deployed to any static hosting service:
 
-- **Vercel**: Deploy the `csi300-app` folder
+- **AWS S3 + CloudFront**: Upload files to S3 bucket (recommended)
 - **Netlify**: Deploy the `csi300-app` folder
-- **AWS S3 + CloudFront**: Upload files to S3 bucket
+- **GitHub Pages**: Deploy via GitHub Actions
 - **GitHub Pages**: Host directly from repository
 - **Apache/Nginx**: Serve as static files
 

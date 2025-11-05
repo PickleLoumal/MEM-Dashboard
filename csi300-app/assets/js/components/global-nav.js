@@ -36,6 +36,7 @@ class GlobalNav {
                             { text: 'Industry Primer', href: 'industry-primers.html' },
                             { text: 'Value Chain Explorer', href: 'value-chain.html' },
                             { text: 'Company Comparison', href: 'peer-comparison.html' },
+                            { text: 'Fund Flow', href: 'fund-flow.html' },
                             { text: 'Competitor Analysis', href: 'competitor-analysis.html' },
                             { text: 'IM View', href: 'im-view.html' }
                         ]
@@ -190,9 +191,9 @@ class GlobalNav {
                         <h3 class="globalnav-submenu-header">Company Insights</h3>
                         <ul class="globalnav-submenu-list">
                             <li class="globalnav-submenu-list-item"><a href="#" class="globalnav-submenu-link" data-nav-action="investment-summary">Investment Summary</a></li>
+                            <li class="globalnav-submenu-list-item"><a href="#" class="globalnav-submenu-link" data-nav-action="fund-flow">Fund Flow</a></li>
                             <li class="globalnav-submenu-list-item"><a href="${this.resolveLink('events-alert.html')}" class="globalnav-submenu-link">Events Alert</a></li>
                             <li class="globalnav-submenu-list-item"><a href="#" class="globalnav-submenu-link" data-nav-action="value-chain">Value Chain Analysis</a></li>
-                            <li class="globalnav-submenu-list-item"><a href="${this.resolveLink('fund-flow.html')}" class="globalnav-submenu-link">Fund Flow</a></li>
                             <li class="globalnav-submenu-list-item"><a href="#" class="globalnav-submenu-link" data-nav-action="back-to-list">Back to List</a></li>
                         </ul>
                     </div>
@@ -203,6 +204,7 @@ class GlobalNav {
                             <li class="globalnav-submenu-list-item"><a href="${this.resolveLink('industry-primers.html')}" class="globalnav-submenu-link globalnav-submenu-link--coming-soon">Industry Primer</a></li>
                             <li class="globalnav-submenu-list-item"><a href="${this.resolveLink('value-chain.html')}" class="globalnav-submenu-link globalnav-submenu-link--coming-soon">Value Chain</a></li>
                             <li class="globalnav-submenu-list-item"><a href="${this.resolveLink('peer-comparison.html')}" class="globalnav-submenu-link">Company Comparison</a></li>
+                            <li class="globalnav-submenu-list-item"><a href="${this.resolveLink('fund-flow.html')}" class="globalnav-submenu-link">Fund Flow</a></li>
                             <li class="globalnav-submenu-list-item"><a href="${this.resolveLink('competitor-analysis.html')}" class="globalnav-submenu-link globalnav-submenu-link--coming-soon">Competitor Analysis</a></li>
                             <li class="globalnav-submenu-list-item"><a href="${this.resolveLink('im-view.html')}" class="globalnav-submenu-link globalnav-submenu-link--coming-soon">IM View</a></li>
                             <li class="globalnav-submenu-list-item"><a href="${this.resolveLink('browser.html')}" class="globalnav-submenu-link">View All</a></li>
@@ -500,9 +502,9 @@ class GlobalNav {
                         title: this.companyMenuTitle,
                         items: [
                             { text: 'Investment Summary', action: 'investment-summary' },
+                            { text: 'Fund Flow', action: 'fund-flow' },
                             { text: 'Events Alert', href: 'events-alert.html' ,comingSoon: true},
-                            { text: 'Value Chain Analysis (demo version)', action: 'value-chain' },
-                            { text: 'Fund Flow', href: 'fund-flow.html' ,comingSoon: true},
+                            { text: 'Value Chain Analysis (demo version)', action: 'value-chain' }
                         ]
                     },
                     {
@@ -522,6 +524,7 @@ class GlobalNav {
                             { text: 'Company Filter', href: 'index.html' },
                             { text: 'Industry Primer', href: 'industry-primers.html', comingSoon: true },
                             { text: 'Value Chain Explorer', href: 'value-chain.html', comingSoon: true },
+                            { text: 'Fund Flow', href: 'fund-flow.html' },
                             { text: 'Competitor Analysis', href: 'competitor-analysis.html', comingSoon: true },
                             { text: 'IM View', href: 'im-view.html', comingSoon: true },
                             { text: 'View All', href: 'browser.html' }
@@ -627,6 +630,31 @@ class GlobalNav {
                     const summaryPath = this.resolveLink('investment-summary/detail.html');
                     window.location.href = `${summaryPath}?company=${targetName}&id=${targetId}`;
                 }
+                handled = true;
+                break;
+            case 'fund-flow':
+                event.preventDefault();
+                if (!hasContext) {
+                    window.location.href = this.resolveLink('fund-flow.html');
+                    handled = true;
+                    break;
+                }
+
+                if (appInstance && typeof appInstance.showFundFlowView === 'function') {
+                    appInstance.showFundFlowView();
+                } else {
+                    const symbol = this.companyContext.symbol;
+                    const targetId = this.companyContext.id;
+                    const detailPath = this.resolveLink('detail.html');
+
+                    if (symbol) {
+                        const fundFlowPath = this.resolveLink('fund-flow.html');
+                        window.location.href = `${fundFlowPath}?symbol=${encodeURIComponent(symbol)}&id=${targetId}`;
+                    } else {
+                        window.location.href = `${detailPath}?id=${encodeURIComponent(targetId)}&view=fund-flow`;
+                    }
+                }
+
                 handled = true;
                 break;
             case 'value-chain':

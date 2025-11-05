@@ -1,0 +1,7 @@
+# TradingView Lightweight Charts for Python
+# 用于生成Yahoo Finance风格的金融图表
+# 参考: https://medium.com/databento/easy-interactive-financial-charts-in-python-just-11-lines-of-code-no-javascript-required-cde338eecd43
+
+lightweight-charts>=1.0.0
+pandas>=1.3.0
+

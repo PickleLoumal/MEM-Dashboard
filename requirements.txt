@@ -17,3 +17,9 @@ gunicorn==21.2.0
 
 # Monitoring (optional)
 sentry-sdk[django]==1.32.0
+
+# Data Analysis & Stock Market (for stocks app)
+pandas==2.1.4
+numpy==1.26.3
+yfinance==0.2.36
+curl-cffi==0.7.0  # Required by yfinance 0.2.36+

@@ -47,10 +47,13 @@ urlpatterns = [
     
     # CSI300 API路由
     path('api/csi300/', include('csi300.urls')),
-    
+
     # CSI300 Django模板路由 (兼容旧版本)
     path('csi300/', include('csi300.urls', namespace='csi300_legacy')),
-    
+
+    # Stock data API路由 (yfinance integration)
+    path('api/stocks/', include('stocks.urls')),
+
     # Content API路由
     path('', include('content.urls')),
 ]
