@@ -23,7 +23,7 @@
     
     <!-- Application Configuration -->
     <script src="config/csi300_api_config.js?v=20251007-fix"></script>
-    <script src="assets/js/utils/csi300_api_client.js?v=20251007-fix"></script>
+    <script src="assets/js/utils/csi300_api_client.js?v=20251106-hk"></script>
     <script src="assets/js/utils/csi300_error_handler.js?v=20251007-fix"></script>
     
     <!-- Column Selector Components -->
@@ -92,6 +92,78 @@
                 border-color var(--app-transition-speed) ease,
                 box-shadow var(--app-transition-speed) ease,
                 background-color var(--app-transition-speed) ease;
+        }
+
+        .filter-help {
+            margin: 0;
+            font-size: 12px;
+            color: var(--app-text-muted);
+        }
+
+        .results-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .region-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            background: rgba(37, 99, 235, 0.12);
+            color: #1f2937;
+            text-transform: uppercase;
+        }
+
+        .region-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #2563eb;
+        }
+
+        .region-badge[data-region="hong-kong"] {
+            background: rgba(220, 38, 38, 0.12);
+            color: #991b1b;
+        }
+
+        .region-badge[data-region="hong-kong"]::before {
+            background: #dc2626;
+        }
+
+        .region-badge[data-region="mainland-china"] {
+            background: rgba(16, 185, 129, 0.12);
+            color: #065f46;
+        }
+
+        .region-badge[data-region="mainland-china"]::before {
+            background: #0f766e;
+        }
+
+        .region-badge[data-region="all"] {
+            background: rgba(107, 114, 128, 0.12);
+            color: #374151;
+        }
+
+        .region-badge[data-region="all"]::before {
+            background: #6b7280;
+        }
+
+        .region-badge[data-region="unknown"] {
+            background: rgba(107, 114, 128, 0.12);
+            color: #4b5563;
+        }
+
+        .region-badge[data-region="unknown"]::before {
+            background: #9ca3af;
         }
         
         .filter-actions {
@@ -202,6 +274,10 @@
             font-family: monospace;
             color: var(--app-text-muted);
             font-size: 13px;
+        }
+
+        .region-cell {
+            min-width: 140px;
         }
         
         .market-cap {
@@ -428,6 +504,14 @@
                 </div>
 
                 <div class="filter-group app-form-field">
+                    <label class="filter-label app-label">Region</label>
+                    <select name="region" id="regionSelect" class="filter-select app-select">
+                        <option value="">All Regions</option>
+                    </select>
+                    <p class="filter-help">Hong Kong reflects the latest H-shares dataset.</p>
+                </div>
+
+                <div class="filter-group app-form-field">
                     <label class="filter-label app-label">Industry within selected sector</label>
                     <select name="industry" id="industrySelect" class="filter-select app-select">
                         <option value="">All Industries</option>
@@ -459,7 +543,10 @@
                     <h2 class="results-title">Search Results</h2>
                     <p class="results-count" id="resultsCount">Loading...</p>
                 </div>
-                <div id="columnSelectorContainer"></div>
+                <div class="results-meta">
+                    <span id="resultsRegionBadge" class="region-badge" data-region="all">All Regions</span>
+                    <div id="columnSelectorContainer"></div>
+                </div>
             </div>
             
             <div id="loadingIndicator" class="loading">
@@ -473,6 +560,7 @@
                         <tr>
                             <th>Company Name</th>
                             <th>Ticker</th>
+                            <th class="mobile-hide">Region</th>
                             <th>IM Sector</th>
                             <th class="mobile-hide">Market Cap (USD Million)</th>
                             <th class="mobile-hide">Price (Local Currency)</th>
@@ -523,6 +611,7 @@
                 this.columnSelector = null;
                 this.selectedColumns = [];
                 this.pinnedColumns = [];
+                this.availableRegions = [];
                 this.init();
             }
 
@@ -530,7 +619,7 @@
                 try {
                     await this.loadFilterOptions();
                     this.initColumnSelector();
-                    this.parseUrlFilters();
+                    await this.parseUrlFilters();
                     this.bindEvents();
                     await this.loadCompanies();
                 } catch (error) {
@@ -558,49 +647,182 @@
                 this.pinnedColumns = this.columnSelector.getPinnedColumns().map(c => c.id);
             }
 
-            async loadFilterOptions() {
+            async loadFilterOptions(params = {}, selectionOverrides = {}) {
                 try {
-                    const data = await this.apiClient.getFilterOptions();
-                    
+                    const data = await this.apiClient.getFilterOptions(params);
                     const imSectorSelect = document.getElementById('imSectorSelect');
                     const industrySelect = document.getElementById('industrySelect');
 
-                    const imSectors = (data.im_sectors && data.im_sectors.length)
-                        ? data.im_sectors
-                        : (data.im_codes && data.im_codes.length)
-                            ? data.im_codes
-                            : (data.industries || []);
+                    // Region options
+                    const regions = this.buildRegionOptions(data);
+                    this.availableRegions = regions;
+                    this.populateRegionSelect(
+                        regions,
+                        selectionOverrides.region !== undefined
+                            ? selectionOverrides.region
+                            : (params.region ?? this.currentFilters.region ?? '')
+                    );
 
-                    imSectors.forEach(sector => {
-                        if (sector) {
-                            const option = document.createElement('option');
-                            option.value = sector;
-                            option.textContent = sector;
-                            imSectorSelect.appendChild(option);
-                        }
-                    });
+                    // IM Sector options
+                    const imSectors = this.buildImSectorOptions(data);
+                    const currentImSectorValue = imSectorSelect ? imSectorSelect.value : '';
+                    const desiredImSector = selectionOverrides.im_sector !== undefined
+                        ? selectionOverrides.im_sector
+                        : (params.im_sector ?? this.currentFilters.im_sector ?? currentImSectorValue ?? '');
+                    this.populateImSectorOptions(imSectors, desiredImSector);
 
-                    const industries = (data.industries && data.industries.length)
-                        ? data.industries
-                        : (data.im_sectors && data.im_sectors.length)
-                            ? data.im_sectors
-                            : (data.im_codes || []);
+                    // Industry options
+                    const industries = this.buildIndustryOptions(data);
+                    const currentIndustryValue = industrySelect ? industrySelect.value : '';
+                    const desiredIndustry = selectionOverrides.industry !== undefined
+                        ? selectionOverrides.industry
+                        : (params.industry ?? this.currentFilters.industry ?? currentIndustryValue ?? '');
 
-                    industries.forEach(industry => {
-                        if (industry) {
-                            const option = document.createElement('option');
-                            option.value = industry;
-                            option.textContent = industry;
-                            industrySelect.appendChild(option);
-                        }
-                    });
+                    if (industrySelect) {
+                        industrySelect.value = desiredIndustry || '';
+                    }
+
+                    this.updateIndustryOptions(industries);
+                    this.validateAndClearIndustrySelection(industries);
                     
                 } catch (error) {
                     console.error('Failed to load filter options:', error);
                 }
             }
 
-            parseUrlFilters() {
+            buildRegionOptions(data) {
+                const regionSet = new Set();
+                if (data && typeof data === 'object') {
+                    const candidateKeys = ['regions', 'available_regions', 'region_options'];
+                    candidateKeys.forEach((key) => {
+                        if (Array.isArray(data[key])) {
+                            data[key].forEach((region) => {
+                                if (region) {
+                                    regionSet.add(region);
+                                }
+                            });
+                        }
+                    });
+
+                    if (data.region_counts && typeof data.region_counts === 'object') {
+                        Object.keys(data.region_counts).forEach((region) => {
+                            if (region) {
+                                regionSet.add(region);
+                            }
+                        });
+                    }
+                }
+
+                if (regionSet.size === 0) {
+                    this.getDefaultRegionOptions().forEach((region) => regionSet.add(region));
+                }
+
+                return Array.from(regionSet).sort((a, b) =>
+                    a.toLowerCase().localeCompare(b.toLowerCase())
+                );
+            }
+
+            getDefaultRegionOptions() {
+                return ['Mainland China', 'Hong Kong'];
+            }
+
+            populateRegionSelect(regions, selectedValue = '') {
+                const regionSelect = document.getElementById('regionSelect');
+                if (!regionSelect) {
+                    return;
+                }
+
+                const values = this.dedupeAndSort(regions);
+                const desiredValue = (selectedValue !== undefined && selectedValue !== null)
+                    ? selectedValue
+                    : (regionSelect.value || '');
+
+                regionSelect.innerHTML = '<option value="">All Regions</option>';
+
+                values.forEach((region) => {
+                    const option = document.createElement('option');
+                    option.value = region;
+                    option.textContent = this.getRegionDisplayLabel(region);
+                    regionSelect.appendChild(option);
+                });
+
+                if (desiredValue && values.includes(desiredValue)) {
+                    regionSelect.value = desiredValue;
+                } else if (desiredValue) {
+                    console.log('Region selection no longer available:', desiredValue);
+                    regionSelect.value = '';
+                }
+            }
+
+            buildImSectorOptions(data) {
+                if (!data || typeof data !== 'object') {
+                    return [];
+                }
+                if (Array.isArray(data.im_sectors) && data.im_sectors.length) {
+                    return data.im_sectors;
+                }
+                if (Array.isArray(data.im_codes) && data.im_codes.length) {
+                    return data.im_codes;
+                }
+                if (Array.isArray(data.industries) && data.industries.length) {
+                    return data.industries;
+                }
+                return [];
+            }
+
+            buildIndustryOptions(data) {
+                if (!data || typeof data !== 'object') {
+                    return [];
+                }
+                if (Array.isArray(data.industries) && data.industries.length) {
+                    return data.industries;
+                }
+                if (Array.isArray(data.im_sectors) && data.im_sectors.length) {
+                    return data.im_sectors;
+                }
+                if (Array.isArray(data.im_codes) && data.im_codes.length) {
+                    return data.im_codes;
+                }
+                return [];
+            }
+
+            populateImSectorOptions(imSectors, selectedValue = '') {
+                const imSectorSelect = document.getElementById('imSectorSelect');
+                if (!imSectorSelect) {
+                    return;
+                }
+
+                const values = this.dedupeAndSort(imSectors);
+                const desiredValue = (selectedValue !== undefined && selectedValue !== null)
+                    ? selectedValue
+                    : (imSectorSelect.value || '');
+
+                imSectorSelect.innerHTML = '<option value="">All IM Sectors</option>';
+
+                values.forEach((sector) => {
+                    const option = document.createElement('option');
+                    option.value = sector;
+                    option.textContent = sector;
+                    imSectorSelect.appendChild(option);
+                });
+
+                if (desiredValue && values.includes(desiredValue)) {
+                    imSectorSelect.value = desiredValue;
+                } else if (desiredValue) {
+                    console.log('Previous IM sector selection no longer available:', desiredValue);
+                    imSectorSelect.value = '';
+                }
+            }
+
+            dedupeAndSort(values) {
+                if (!Array.isArray(values)) {
+                    return [];
+                }
+                const unique = Array.from(new Set(values.filter(Boolean)));
+                return unique.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+            }
+
+            async parseUrlFilters() {
                 const urlParams = new URLSearchParams(window.location.search);
                 this.currentFilters = {};
                 
@@ -628,6 +850,22 @@
                         element.value = value;
                     }
                 });
+
+                // If region filter present in URL, refresh dependent filter options
+                if (this.currentFilters.region) {
+                    try {
+                        await this.loadFilterOptions(
+                            { region: this.currentFilters.region },
+                            {
+                                region: this.currentFilters.region,
+                                im_sector: this.currentFilters.im_sector || '',
+                                industry: this.currentFilters.industry || ''
+                            }
+                        );
+                    } catch (error) {
+                        console.error('Failed to pre-load region-dependent filters:', error);
+                    }
+                }
             }
 
             bindEvents() {
@@ -654,6 +892,13 @@
                     console.log('Industry changed to:', e.target.value);
                     this.applyFilters();
                 });
+
+                const regionSelect = document.getElementById('regionSelect');
+                if (regionSelect) {
+                    regionSelect.addEventListener('change', (e) => {
+                        this.onRegionChange(e.target.value);
+                    });
+                }
 
                 // Real-time search
                 const searchInput = document.getElementById('companySearch');
@@ -736,6 +981,7 @@
                 // Update results count
                 document.getElementById('resultsCount').textContent = 
                     `Found ${this.totalResults} companies`;
+                this.updateResultsMeta();
 
                 // Render desktop table
                 this.renderDesktopTable();
@@ -753,9 +999,24 @@
                 const tbody = document.getElementById('companyTableBody');
                 
                 // Use selected columns or fallback to default
-                const columns = this.selectedColumns.length > 0 
+                let columns = this.selectedColumns.length > 0 
                     ? this.selectedColumns 
                     : this.getDefaultColumns();
+                
+                if (!columns.some(col => col.id === 'region')) {
+                    const regionColumn = {
+                        id: 'region',
+                        displayName: 'Region',
+                        format: 'text',
+                        align: 'left',
+                        defaultVisible: true
+                    };
+                    columns = [
+                        ...columns.slice(0, 2),
+                        regionColumn,
+                        ...columns.slice(2)
+                    ];
+                }
                 
                 // Render table header
                 thead.innerHTML = '<tr>' + columns.map(col => {
@@ -796,6 +1057,7 @@
                     return [
                         { id: 'name', displayName: 'Company Name', format: 'text-bold', align: 'left', defaultVisible: true },
                         { id: 'ticker', displayName: 'Ticker', format: 'monospace', align: 'left', defaultVisible: true },
+                        { id: 'region', displayName: 'Region', format: 'text', align: 'left', defaultVisible: true },
                         { id: 'im_sector', displayName: 'IM Sector', format: 'text', align: 'left', defaultVisible: true },
                         { id: 'market_cap_usd', displayName: 'Market Cap (USD M)', format: 'currency-millions', align: 'right', defaultVisible: true },
                         { id: 'price_local_currency', displayName: 'Price (Local)', format: 'currency', align: 'right', defaultVisible: true },
@@ -816,6 +1078,7 @@
                     'ticker': 'ticker',
                     'name': 'name',
                     'company_name': 'name',
+                    'region': 'region',
                     'im_sector': 'im_sector',
                     'sector': 'im_sector',
                     'industry': 'industry',
@@ -904,6 +1167,10 @@
                 if (value === null || value === undefined || value === '') {
                     return '<span style="color: #9ca3af;">-</span>';
                 }
+
+                if (column.id === 'region') {
+                    return this.renderRegionBadge(value);
+                }
                 
                 // Format based on column format
                 if (!window.CSI300ColumnManifest) {
@@ -944,6 +1211,60 @@
                 
                 return value;
             }
+
+            renderRegionBadge(regionValue) {
+                const normalized = this.normalizeRegionSlug(regionValue);
+                const label = this.getRegionDisplayLabel(regionValue);
+                const dataRegion = normalized || 'unknown';
+                return `<span class="region-badge" data-region="${dataRegion}">${label}</span>`;
+            }
+
+            getRegionDisplayLabel(regionValue) {
+                if (!regionValue) {
+                    return 'Unknown Region';
+                }
+                const normalized = regionValue.toString().trim().toLowerCase();
+                if (normalized === 'hong kong') {
+                    return 'Hong Kong (H-shares)';
+                }
+                if (normalized === 'mainland china') {
+                    return 'Mainland China';
+                }
+                return regionValue;
+            }
+
+            normalizeRegionSlug(regionValue) {
+                if (!regionValue) {
+                    return 'unknown';
+                }
+                return regionValue
+                    .toString()
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+            }
+
+            updateResultsMeta() {
+                const regionBadge = document.getElementById('resultsRegionBadge');
+                if (!regionBadge) {
+                    return;
+                }
+
+                const regionSelect = document.getElementById('regionSelect');
+                const activeRegion = this.currentFilters.region
+                    || (regionSelect ? regionSelect.value : '')
+                    || '';
+
+                if (!activeRegion) {
+                    regionBadge.textContent = 'All Regions';
+                    regionBadge.dataset.region = 'all';
+                    return;
+                }
+
+                regionBadge.textContent = this.getRegionDisplayLabel(activeRegion);
+                regionBadge.dataset.region = this.normalizeRegionSlug(activeRegion);
+            }
             
             getCellClass(column) {
                 const classes = [];
@@ -952,6 +1273,8 @@
                     classes.push('company-name');
                 } else if (column.format === 'monospace') {
                     classes.push('company-ticker');
+                } else if (column.id === 'region') {
+                    classes.push('region-cell');
                 } else if (column.id === 'market_cap') {
                     classes.push('market-cap');
                 } else if (column.id === 'price') {
@@ -975,6 +1298,7 @@
                     const imSector = company.im_sector || company.im_code || '';
                     const industry = company.industry || '';
                     const secondaryIndustry = company.sub_industry || company.gics_industry || '';
+                    const region = company.region || '';
                     
                     card.innerHTML = `
                         <div class="mobile-company-header">
@@ -982,6 +1306,11 @@
                             <div class="mobile-company-ticker">${company.ticker || '-'}</div>
                         </div>
                         <div class="mobile-company-details">
+                            ${region ? `
+                            <div class="mobile-company-detail">
+                                <div class="mobile-company-detail-label">Region</div>
+                                <div class="mobile-company-detail-value">${this.getRegionDisplayLabel(region)}</div>
+                            </div>` : ''}
                             ${imSector ? `
                             <div class="mobile-company-detail">
                                 <div class="mobile-company-detail-label">IM Sector</div>
@@ -1077,6 +1406,7 @@
                 
                 this.currentFilters = filters;
                 this.currentPage = 1; // Reset to first page
+                this.updateResultsMeta();
                 
                 // Clear cache when applying filters to ensure fresh search results
                 if (this.apiClient && this.apiClient.clearCache) {
@@ -1093,10 +1423,21 @@
                 this.storeBrowserState();
             }
 
-            clearFilters() {
+            async clearFilters() {
                 document.getElementById('filterForm').reset();
                 this.currentFilters = {};
                 this.currentPage = 1;
+
+                try {
+                    await this.loadFilterOptions(
+                        {},
+                        { region: '', im_sector: '', industry: '' }
+                    );
+                } catch (error) {
+                    console.error('Failed to reset filter options after clearing:', error);
+                }
+
+                this.updateResultsMeta();
                 this.loadCompanies();
                 
                 // Update URL
@@ -1115,6 +1456,10 @@
                     
                     // Prepare parameters for filtered industry options
                     const params = selectedSector ? { im_sector: selectedSector } : {};
+                    const regionSelect = document.getElementById('regionSelect');
+                    if (regionSelect && regionSelect.value) {
+                        params.region = regionSelect.value;
+                    }
                     
                     // Request filtered industry options
                     const filterOptions = await this.apiClient.getFilterOptions(params);
@@ -1136,6 +1481,35 @@
                 } finally {
                     this.setIndustrySelectLoading(false);
                 }
+            }
+
+            async onRegionChange(selectedRegion) {
+                console.log('Region changed to:', selectedRegion || 'All Regions');
+                
+                // Reset dependent dropdowns before reloading options
+                const imSectorSelect = document.getElementById('imSectorSelect');
+                if (imSectorSelect) {
+                    imSectorSelect.value = '';
+                }
+                const industrySelect = document.getElementById('industrySelect');
+                if (industrySelect) {
+                    industrySelect.value = '';
+                }
+
+                try {
+                    await this.loadFilterOptions(
+                        selectedRegion ? { region: selectedRegion } : {},
+                        {
+                            region: selectedRegion || '',
+                            im_sector: '',
+                            industry: ''
+                        }
+                    );
+                } catch (error) {
+                    console.error('Failed to refresh filters for region change:', error);
+                }
+
+                this.applyFilters();
             }
 
             updateIndustryOptions(industries) {
@@ -1240,6 +1614,7 @@
                 document.getElementById('resultsContainer').style.display = 'none';
                 document.getElementById('noResults').style.display = 'block';
                 document.getElementById('resultsCount').textContent = 'Found 0 companies';
+                this.updateResultsMeta();
                 this.storeBrowserState();
             }
 
