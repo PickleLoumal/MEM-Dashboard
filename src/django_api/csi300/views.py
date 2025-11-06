@@ -1,12 +1,15 @@
 from django.db.models import Q, Min, Max
+from django.http import Http404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
-from .models import CSI300Company, CSI300InvestmentSummary
+from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary
 from .serializers import (
     CSI300CompanySerializer, 
     CSI300CompanyListSerializer,
+    CSI300HSharesCompanySerializer,
+    CSI300HSharesCompanyListSerializer,
     CSI300FilterOptionsSerializer,
     CSI300InvestmentSummarySerializer,
     CSI300IndustryPeersComparisonSerializer
@@ -29,13 +32,33 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
     
     def get_serializer_class(self):
         if self.action == 'list':
+            if self._is_hshares_request():
+                return CSI300HSharesCompanyListSerializer
             return CSI300CompanyListSerializer
+        if self.action == 'retrieve' and self._is_hshares_request():
+            return CSI300HSharesCompanySerializer
         return CSI300CompanySerializer
     
+    def _normalize_region(self, region_value):
+        if not region_value:
+            return None
+        normalized = region_value.strip()
+        if normalized.lower() == 'hong kong (h-shares)':
+            return 'Hong Kong'
+        return normalized
+    
+    def _is_hshares_request(self):
+        region = self._normalize_region(self.request.query_params.get('region'))
+        if not region:
+            return False
+        return region.lower() == 'hong kong'
+    
     def get_queryset(self):
-        queryset = CSI300Company.objects.all()
+        use_hshares = self._is_hshares_request()
+        queryset = CSI300HSharesCompany.objects.all() if use_hshares else CSI300Company.objects.all()
         
         # Filtering
+        region = self._normalize_region(self.request.query_params.get('region'))
         im_sector = self.request.query_params.get('im_sector')
         industry = self.request.query_params.get('industry')
         legacy_sub_industry = self.request.query_params.get('sub_industry')
@@ -49,6 +72,10 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         
         # Debug logging
         print(f"Filtering with: im_sector='{im_sector}', industry='{industry}', industry_search='{industry_search}'")
+        
+        if region:
+            queryset = queryset.filter(region__iexact=region)
+            print(f"After Region filter ('{region}'): {queryset.count()} companies")
         
         if im_sector:
             queryset = queryset.filter(im_sector__exact=im_sector)
@@ -88,54 +115,95 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         
         return queryset.order_by('ticker')
     
+    def retrieve(self, request, *args, **kwargs):
+        pk = kwargs.get(self.lookup_field, None)
+        if pk is None:
+            raise Http404("Company identifier is required")
+        
+        region = self._normalize_region(request.query_params.get('region'))
+        prefer_hshares = bool(region and region.lower() == 'hong kong')
+        
+        primary_model = CSI300HSharesCompany if prefer_hshares else CSI300Company
+        primary_serializer = CSI300HSharesCompanySerializer if prefer_hshares else CSI300CompanySerializer
+        fallback_model = CSI300Company if prefer_hshares else CSI300HSharesCompany
+        fallback_serializer = CSI300CompanySerializer if prefer_hshares else CSI300HSharesCompanySerializer
+        
+        instance = primary_model.objects.filter(pk=pk).first()
+        serializer_class = primary_serializer
+        
+        if instance is None:
+            instance = fallback_model.objects.filter(pk=pk).first()
+            serializer_class = fallback_serializer if instance else primary_serializer
+        
+        if instance is None:
+            raise Http404("Company not found")
+        
+        serializer = serializer_class(instance, context=self.get_serializer_context())
+        return Response(serializer.data)
+    
     @action(detail=False, methods=['get'])
     def filter_options(self, request):
-        """Get available filter options with optional IM Sector filtering for cascading Industry options"""
-        
-        # Get query parameter for cascading filter
+        """Get available filter options with optional cascading filters."""
+
+        region_filter = self._normalize_region(request.query_params.get('region'))
         im_sector_filter = request.query_params.get('im_sector')
-        
-        # Base queryset
-        base_queryset = CSI300Company.objects.all()
-        
-        # Get unique IM sectors (not affected by filtering)
+        base_queryset = CSI300HSharesCompany.objects.all() if region_filter and region_filter.lower() == 'hong kong' else CSI300Company.objects.all()
+
+        if region_filter:
+            base_queryset = base_queryset.filter(region__iexact=region_filter)
+
         im_sectors = list(base_queryset.exclude(
             im_sector__isnull=True
         ).exclude(
             im_sector__exact=''
         ).values_list('im_sector', flat=True).distinct().order_by('im_sector'))
-        
-        # Get industries (filtered by IM Sector if provided)
+
         industry_queryset = base_queryset.exclude(
             industry__isnull=True
         ).exclude(
             industry__exact=''
         )
-        
-        # Apply IM Sector filter to industries if specified
+
         if im_sector_filter:
             industry_queryset = industry_queryset.filter(im_sector=im_sector_filter)
-        
+
         industries = list(industry_queryset.values_list(
             'industry', flat=True
         ).distinct().order_by('industry'))
-        
-        # Get unique GICS industries (not affected by IM Sector filtering)
+
         gics_industries = list(base_queryset.exclude(
             gics_industry__isnull=True
         ).exclude(
             gics_industry__exact=''
         ).values_list('gics_industry', flat=True).distinct().order_by('gics_industry'))
-        
-        # Get market cap range (not affected by IM Sector filtering)
+
         market_cap_range = base_queryset.exclude(
             market_cap_local__isnull=True
         ).aggregate(
             min_cap=Min('market_cap_local'),
             max_cap=Max('market_cap_local')
         )
-        
+
+        region_values = set(
+            CSI300Company.objects.exclude(
+                region__isnull=True
+            ).exclude(
+                region__exact=''
+            ).values_list('region', flat=True)
+        )
+
+        region_values.update(
+            CSI300HSharesCompany.objects.exclude(
+                region__isnull=True
+            ).exclude(
+                region__exact=''
+            ).values_list('region', flat=True)
+        )
+
+        regions = sorted(region_values, key=lambda value: value.lower())
+
         data = {
+            'regions': regions,
             'im_sectors': im_sectors,
             'industries': industries,
             'gics_industries': gics_industries,
@@ -143,11 +211,12 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
                 'min': float(market_cap_range['min_cap']) if market_cap_range['min_cap'] else 0,
                 'max': float(market_cap_range['max_cap']) if market_cap_range['max_cap'] else 0
             },
-            # Add metadata about filtering state
+            'filtered_by_region': bool(region_filter),
+            'region_filter': region_filter,
             'filtered_by_sector': bool(im_sector_filter),
             'sector_filter': im_sector_filter
         }
-        
+
         return Response(data)
     
     @action(detail=False, methods=['get'])
@@ -298,4 +367,3 @@ def health_check(request):
             'error': str(e),
             'database_available': False
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
