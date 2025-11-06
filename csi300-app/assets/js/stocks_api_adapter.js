@@ -71,7 +71,7 @@ class StocksApiAdapter {
      * @param {string} symbol - 股票代码
      * @param {number} days - 天数
      * @param {string} interval - 数据间隔 ('1m', '5m', '15m', '30m', '1h', '1d', '1wk', '1mo')
-     * @param {string} period - yfinance period ('1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y')
+     * @param {string} period - Legacy period string kept for compatibility (ignored by AkShare backend)
      */
     async getHistoricalData(symbol, days = 30, interval = '1d', period = null) {
         try {
@@ -143,4 +143,3 @@ class StocksApiAdapter {
 
 // 创建全局实例
 window.stocksApiAdapter = new StocksApiAdapter();
-
