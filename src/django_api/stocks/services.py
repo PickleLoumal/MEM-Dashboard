@@ -1,23 +1,154 @@
 """
 Stock Data Services - VWAP and Technical Indicators
 Provides calculation services for VWAP, MA, OBV, CMF indicators
-Integrates with yfinance for real-time and historical data
+Integrates with AkShare for real-time and historical data
 """
 
-import yfinance as yf
-import pandas as pd
-import numpy as np
+import asyncio
+from io import StringIO
+import logging
+import os
 from datetime import datetime, timedelta, time as datetime_time
 from typing import Optional, Dict, List
-import logging
-import requests
+
+import pandas as pd
+from django.core.cache import cache
+
+try:  # Optional dependency for distributed caching
+    import redis.asyncio as redis_async  # type: ignore
+except ImportError:  # pragma: no cover - redis not installed
+    redis_async = None
 
 from .models import StockScore
+from .akshare_client import get_minute_data, get_daily_data, MINUTE_PERIOD_MAP
 
 logger = logging.getLogger(__name__)
 
-# Note: yfinance 0.2.36+ handles sessions internally with curl_cffi
-# No need to create custom session - let yfinance handle it
+REDIS_URL = os.getenv('REDIS_URL')
+redis_client = None
+if redis_async and REDIS_URL:
+    try:
+        redis_client = redis_async.from_url(
+            REDIS_URL,
+            encoding='utf-8',
+            decode_responses=True,
+            socket_connect_timeout=1.5,
+        )
+    except Exception as exc:  # pragma: no cover - connection issues
+        logger.warning("Redis unavailable (%s); falling back to local cache only.", exc)
+        redis_client = None
+elif not REDIS_URL:
+    logger.info("REDIS_URL not configured; Redis caching disabled for stock services.")
+
+FULL_DAILY_LOOKBACK_DAYS = 3650  # ~10 years
+FULL_DAILY_CACHE_TIMEOUT = 6 * 3600  # 6 hours
+INTRADAY_CACHE_TIMEOUT = 60
+INTRADAY_INTERVAL_CACHE_TIMEOUT = 120
+DAILY_CACHE_TIMEOUT = 3600
+
+
+def _determine_lookback_days(requested_days: int, interval: str) -> int:
+    """
+    Determine how many calendar days of data to request from AkShare to cover the required range.
+    """
+    if requested_days <= 0:
+        requested_days = 1
+
+    if interval in MINUTE_PERIOD_MAP:
+        return min(max(requested_days, 5), 30)
+
+    if interval == '1wk':
+        return min(max(requested_days * 2, 240), 3650)
+
+    if interval == '1mo':
+        return min(max(requested_days * 2, 480), 3650)
+
+    # Default for daily or other intervals
+    return min(max(requested_days * 2, 120), 3650)
+
+
+def _resample_ohlc(df: pd.DataFrame, rule: str) -> pd.DataFrame:
+    """Resample OHLCV data to a different frequency."""
+    resampled = pd.DataFrame()
+    resampled['Open'] = df['Open'].resample(rule).first()
+    resampled['High'] = df['High'].resample(rule).max()
+    resampled['Low'] = df['Low'].resample(rule).min()
+    resampled['Close'] = df['Close'].resample(rule).last()
+    resampled['Volume'] = df['Volume'].resample(rule).sum()
+    resampled = resampled.dropna(subset=['Open', 'High', 'Low', 'Close'])
+    return resampled
+
+
+def _normalize_cached_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    if isinstance(df.index, pd.Index) and df.index.dtype == object:
+        try:
+            df.index = pd.to_datetime(df.index)
+        except Exception:  # pragma: no cover - best effort conversion
+            pass
+    for column in ('Timestamp', 'Date'):
+        if column in df.columns and not pd.api.types.is_datetime64_any_dtype(df[column]):
+            try:
+                df[column] = pd.to_datetime(df[column])
+            except Exception:  # pragma: no cover - best effort conversion
+                pass
+    return df
+
+
+async def _cache_get_dataframe(key: str) -> Optional[pd.DataFrame]:
+    if redis_client is not None:
+        try:
+            payload = await redis_client.get(key)
+            if payload:
+                df = pd.read_json(StringIO(payload), orient='split')
+                return _normalize_cached_dataframe(df)
+        except Exception as exc:  # pragma: no cover
+            logger.debug("Redis get failed for %s: %s", key, exc)
+
+    cached = cache.get(key)
+    if cached:
+        try:
+            df = pd.read_json(StringIO(cached), orient='split')
+            return _normalize_cached_dataframe(df)
+        except ValueError:
+            cache.delete(key)
+    return None
+
+
+async def _cache_set_dataframe(key: str, df: pd.DataFrame, timeout: int) -> None:
+    payload = df.to_json(orient='split')
+    if redis_client is not None:
+        try:
+            await redis_client.set(key, payload, ex=timeout)
+        except Exception as exc:  # pragma: no cover
+            logger.debug("Redis set failed for %s: %s", key, exc)
+    cache.set(key, payload, timeout=timeout)
+
+
+def _run_async(func, *args, **kwargs):
+    try:
+        return asyncio.run(func(*args, **kwargs))
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        try:
+            return loop.run_until_complete(func(*args, **kwargs))
+        finally:
+            loop.close()
+
+
+async def _get_full_daily_dataframe(symbol: str) -> pd.DataFrame:
+    cache_key = f"akshare:daily-full:{symbol}"
+    cached = await _cache_get_dataframe(cache_key)
+    if cached is not None and not cached.empty:
+        return cached
+
+    end_time = datetime.now()
+    start_time = end_time - timedelta(days=FULL_DAILY_LOOKBACK_DAYS)
+    df = await asyncio.to_thread(get_daily_data, symbol, start_time, end_time)
+    if df.empty:
+        return df
+    df['Date'] = pd.to_datetime(df['Date'])
+    await _cache_set_dataframe(cache_key, df, timeout=FULL_DAILY_CACHE_TIMEOUT)
+    return df
 
 
 class VWAPCalculationService:
@@ -25,9 +156,7 @@ class VWAPCalculationService:
 
     @staticmethod
     def get_latest_stock_score(symbol: str) -> Optional[Dict]:
-        """
-        Fetch latest stored scoring snapshot for a ticker from stock_scores table.
-        """
+        """Fetch latest stored scoring snapshot for a ticker from stock_scores table."""
         if not symbol:
             return None
 
@@ -66,7 +195,7 @@ class VWAPCalculationService:
         except Exception as exc:
             logger.warning("Unable to fetch stock score for %s: %s", symbol, exc)
             return None
-    
+
     @staticmethod
     def filter_trading_hours(df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -74,26 +203,26 @@ class VWAPCalculationService:
         """
         if df.empty:
             return df
-        
+
         if not isinstance(df.index, pd.DatetimeIndex):
             df.index = pd.to_datetime(df.index)
-        
+
         times = df.index.time
         morning_start = datetime_time(9, 15)
         morning_end = datetime_time(11, 30)
         afternoon_start = datetime_time(13, 0)
         afternoon_end = datetime_time(15, 0)
-        
+
         mask = ((times >= morning_start) & (times <= morning_end)) | \
                ((times >= afternoon_start) & (times <= afternoon_end))
-        
+
         filtered_df = df[mask].copy()
-        
+
         if not filtered_df.empty:
             filtered_df = filtered_df[~filtered_df.index.duplicated(keep='first')]
-        
+
         return filtered_df
-    
+
     @staticmethod
     def calculate_vwap(df: pd.DataFrame) -> pd.DataFrame:
         """Calculate VWAP Indicator"""
@@ -104,21 +233,22 @@ class VWAPCalculationService:
         df['Cumulative_Volume'] = df['Volume'].cumsum()
         df['VWAP'] = df['Cumulative_TP_Volume'] / df['Cumulative_Volume']
         return df
-    
+
     @staticmethod
-    def calculate_ma(df: pd.DataFrame, periods: List[int] = [5, 10]) -> pd.DataFrame:
+    def calculate_ma(df: pd.DataFrame, periods: List[int] = None) -> pd.DataFrame:
         """Calculate Moving Averages"""
+        periods = periods or [5, 10]
         df = df.copy()
         for period in periods:
             df[f'MA{period}'] = df['Close'].rolling(window=period).mean()
         return df
-    
+
     @staticmethod
     def calculate_obv(df: pd.DataFrame) -> pd.DataFrame:
         """Calculate On-Balance Volume (OBV)"""
         df = df.copy()
         df['OBV'] = 0.0
-        
+
         for i in range(1, len(df)):
             if df['Close'].iloc[i] > df['Close'].iloc[i-1]:
                 df.loc[df.index[i], 'OBV'] = df['OBV'].iloc[i-1] + df['Volume'].iloc[i]
@@ -126,24 +256,24 @@ class VWAPCalculationService:
                 df.loc[df.index[i], 'OBV'] = df['OBV'].iloc[i-1] - df['Volume'].iloc[i]
             else:
                 df.loc[df.index[i], 'OBV'] = df['OBV'].iloc[i-1]
-        
+
         df['OBV_MA5'] = df['OBV'].rolling(window=5).mean()
         df['OBV_MA10'] = df['OBV'].rolling(window=10).mean()
-        
+
         return df
-    
+
     @staticmethod
     def calculate_cmf(df: pd.DataFrame, period: int = 21) -> pd.DataFrame:
         """Calculate Chaikin Money Flow (CMF)"""
         df = df.copy()
-        
+
         df['MF_Multiplier'] = ((df['Close'] - df['Low']) - (df['High'] - df['Close'])) / (df['High'] - df['Low'])
         df.loc[df['High'] == df['Low'], 'MF_Multiplier'] = 0
         df['MF_Volume'] = df['MF_Multiplier'] * df['Volume']
         df['CMF'] = df['MF_Volume'].rolling(window=period).sum() / df['Volume'].rolling(window=period).sum()
-        
+
         return df
-    
+
     @staticmethod
     def calculate_all_indicators(df: pd.DataFrame) -> pd.DataFrame:
         """Calculate all technical indicators"""
@@ -151,185 +281,156 @@ class VWAPCalculationService:
         df = VWAPCalculationService.calculate_obv(df)
         df = VWAPCalculationService.calculate_cmf(df, 21)
         return df
-    
+
     @staticmethod
     def get_intraday_data(symbol: str, market: str = 'CN') -> Optional[pd.DataFrame]:
-        """
-        Get Intraday Minute-level Data (Real-time)
-        
-        Args:
-            symbol: Stock symbol (e.g., '600519.SS' for China, 'AAPL' for US)
-            market: Market type ('CN' for China, 'US' for US markets)
-        
-        Returns:
-            DataFrame with intraday data or None if failed
-        """
         try:
-            stock = yf.Ticker(symbol)
-            # 使用 period='1d' 获取今日数据，interval='1m' 获取分钟级数据
-            # yfinance 会自动获取最新可用数据
-            df = stock.history(period='1d', interval='1m', prepost=False)
-            
-            if df.empty:
-                logger.warning(f"No intraday data available for {symbol}")
+            df = _run_async(VWAPCalculationService._get_intraday_async, symbol, market)
+            if df is not None and df.empty:
                 return None
-            
-            # 记录数据时间范围用于调试
-            if not df.empty:
-                first_time = df.index[0]
-                last_time = df.index[-1]
-                logger.info(f"Intraday data for {symbol}: {first_time} to {last_time} ({len(df)} bars)")
-            
-            # 过滤掉成交量为0的数据
-            df = df[df['Volume'] > 0]
-            
-            if market == 'CN':
-                df = VWAPCalculationService.filter_trading_hours(df)
-            
             return df
-            
-        except Exception as e:
-            logger.error(f"Failed to get intraday data for {symbol}: {e}")
+        except Exception as exc:  # pragma: no cover - defensive logging
+            logger.error("Failed to get intraday data for %s via AkShare: %s", symbol, exc, exc_info=True)
             return None
-    
+
+    @staticmethod
+    async def _get_intraday_async(symbol: str, market: str) -> pd.DataFrame:
+        cache_key = f"akshare:intraday:{symbol}:{market}"
+        cached = await _cache_get_dataframe(cache_key)
+        if cached is not None and not cached.empty:
+            return cached
+
+        df = await asyncio.to_thread(get_minute_data, symbol, '1m')
+        if df.empty:
+            logger.warning("No intraday data available for %s via AkShare.", symbol)
+            return pd.DataFrame()
+
+        df = df[df['Volume'] > 0]
+
+        if market == 'CN':
+            df = VWAPCalculationService.filter_trading_hours(df)
+
+        if df.empty:
+            logger.warning("Intraday data empty after market-hour filtering for %s.", symbol)
+            return pd.DataFrame()
+
+        await _cache_set_dataframe(cache_key, df, timeout=INTRADAY_CACHE_TIMEOUT)
+
+        logger.info(
+            "Intraday data for %s: %s to %s (%d bars)",
+            symbol,
+            df.index[0],
+            df.index[-1],
+            len(df),
+        )
+
+        return df
+
     @staticmethod
     def get_historical_data(symbol: str, days: int = 30, interval: str = '1d', period: str = None) -> Optional[pd.DataFrame]:
-        """
-        Get Historical Data
-        
-        Args:
-            symbol: Stock symbol
-            days: Number of trading days to retrieve (1-3650 days, supporting up to 10 years)
-            interval: Data interval ('1m', '5m', '15m', '30m', '1h', '1d', '1wk', '1mo')
-            period: yfinance period string ('1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y')
-                   If not provided, will be auto-determined based on days
-        
-        Returns:
-            DataFrame with historical data or None if failed
-        
-        Note:
-            yfinance has limitations on intraday data:
-            - 1m interval: max 7 days
-            - 5m interval: max 60 days
-            - 15m interval: max 60 days
-            - 1h interval: max 730 days
-        """
         try:
-            stock = yf.Ticker(symbol)
-            
-            # Validate interval and adjust period based on yfinance limitations
-            if interval in ['1m', '2m', '5m', '15m', '30m']:
-                # For minute intervals, yfinance has strict limits
-                if interval == '1m':
-                    # 1m interval: max 7 days
-                    if period is None or period not in ['1d', '5d', '7d']:
-                        period = '5d'  # Default to 5 days for 1-minute data
-                        logger.warning(f"1m interval limited to max 7 days, using period={period}")
-                elif interval in ['5m', '15m', '30m']:
-                    # 5m, 15m, 30m interval: max 60 days
-                    if period is None:
-                        period = '5d'  # For 5D range, use 5 days
-                    # Ensure period doesn't exceed 60 days
-                    valid_periods = ['1d', '5d', '1mo']
-                    if period not in valid_periods:
-                        period = '1mo'
-                        logger.warning(f"{interval} interval limited to max 60 days, using period={period}")
-            elif interval == '1h':
-                # 1h interval: max 730 days
-                if period is None:
-                    period = '1mo'
-            else:
-                # Daily or longer intervals - use original logic
-                if period is None:
-                    # Extended period mapping for comprehensive historical data (up to 10 years)
-                    if days <= 5:
-                        period = '5d'
-                    elif days <= 30:
-                        period = '1mo'
-                    elif days <= 60:
-                        period = '3mo'
-                    elif days <= 180:
-                        period = '6mo'
-                    elif days <= 365:
-                        period = '1y'
-                    elif days <= 730:
-                        period = '2y'
-                    elif days <= 1825:
-                        period = '5y'
-                    else:  # 10 years
-                        period = '10y'
-            
-            logger.info(f"Fetching {symbol} data: period={period}, interval={interval}")
-            df = stock.history(period=period, interval=interval)
-            
-            if df.empty:
-                logger.warning(f"No historical data available for {symbol}")
+            df_display = _run_async(
+                VWAPCalculationService._get_historical_async,
+                symbol,
+                days,
+                interval,
+                period,
+            )
+            if df_display is not None and df_display.empty:
                 return None
-            
-            df = df[df['Volume'] > 0].copy()
-            
-            # For intraday intervals (minute-level data), use all data without tail()
-            # For daily intervals, use calculation window
-            if interval in ['1m', '2m', '5m', '15m', '30m', '1h']:
-                # Intraday data - use all available data
-                df_full = df.copy()
-                # For intraday, only calculate indicators if we have enough data points
-                if len(df_full) > 21:  # CMF needs 21 periods
-                    df_full = VWAPCalculationService.calculate_all_indicators(df_full)
-                logger.info(f"Intraday data: {len(df_full)} data points for {symbol} at {interval} interval")
-            else:
-                # Daily or longer intervals - use calculation window
-                min_calc_days = 30
-                calculation_days = max(min_calc_days, min(days * 2, len(df)))
-                df_full = df.tail(calculation_days).copy()
-                df_full = VWAPCalculationService.calculate_all_indicators(df_full)
-                logger.info(f"Daily data: {len(df_full)} data points for {symbol}")
-            
-            # Return all calculated data for maximum chart flexibility
-            df_display = df_full.copy()
-            
-            df_display = df_display.reset_index()
-            
-            # Format date string based on interval type
-            # yfinance uses 'Datetime' for intraday data and 'Date' for daily data
-            if interval in ['1m', '2m', '5m', '15m', '30m', '1h']:
-                # Intraday: include time
-                # Check which column name yfinance used
-                if 'Datetime' in df_display.columns:
-                    df_display['Date_Str'] = df_display['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
-                elif 'Date' in df_display.columns:
-                    df_display['Date_Str'] = df_display['Date'].dt.strftime('%Y-%m-%d %H:%M:%S')
-                else:
-                    # Fallback: use index
-                    df_display['Date_Str'] = df_display.index.strftime('%Y-%m-%d %H:%M:%S')
-            else:
-                # Daily: date only
-                if 'Date' in df_display.columns:
-                    df_display['Date_Str'] = df_display['Date'].dt.strftime('%Y-%m-%d')
-                else:
-                    df_display['Date_Str'] = df_display.index.strftime('%Y-%m-%d')
-            
-            df_display['Trading_Day'] = range(1, len(df_display) + 1)
-            
             return df_display
-            
-        except Exception as e:
-            logger.error(f"Failed to get historical data for {symbol}: {e}")
+        except Exception as exc:  # pragma: no cover - defensive logging
+            logger.error("Failed to get historical data for %s via AkShare: %s", symbol, exc, exc_info=True)
             return None
-    
+
+    @staticmethod
+    async def _get_historical_async(symbol: str, days: int, interval: str, period: Optional[str]) -> pd.DataFrame:
+        if period:
+            logger.info(
+                "Ignoring period=%s for %s; using days=%s with AkShare data.",
+                period,
+                symbol,
+                days,
+            )
+
+        cache_key = f"akshare:hist:{symbol}:{interval}:{days}:{period or 'none'}"
+        cached = await _cache_get_dataframe(cache_key)
+        if cached is not None and not cached.empty:
+            return cached
+
+        if interval in MINUTE_PERIOD_MAP:
+            df = await asyncio.to_thread(get_minute_data, symbol, interval)
+            if df.empty:
+                logger.warning("No %s minute data available for %s via AkShare.", interval, symbol)
+                return pd.DataFrame()
+            df = df[df['Volume'] > 0]
+
+            df_full = df.copy()
+            if len(df_full) > 21:
+                df_full = VWAPCalculationService.calculate_all_indicators(df_full)
+            logger.info(
+                "Intraday data: %d data points for %s at %s interval",
+                len(df_full),
+                symbol,
+                interval,
+            )
+
+            df_display = df_full.reset_index()
+            if 'Datetime' in df_display.columns:
+                df_display = df_display.rename(columns={'Datetime': 'Timestamp'})
+            elif 'index' in df_display.columns:
+                df_display = df_display.rename(columns={'index': 'Timestamp'})
+            df_display['Date_Str'] = df_display['Timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
+            df_display['Trading_Day'] = range(1, len(df_display) + 1)
+            await _cache_set_dataframe(cache_key, df_display, timeout=INTRADAY_INTERVAL_CACHE_TIMEOUT)
+            return df_display
+
+        full_df = await _get_full_daily_dataframe(symbol)
+        if full_df.empty:
+            logger.warning("No historical data available for %s via AkShare.", symbol)
+            return pd.DataFrame()
+
+        full_df = full_df.copy()
+        full_df['Date'] = pd.to_datetime(full_df['Date'])
+
+        lookback_days = _determine_lookback_days(days, interval)
+        cutoff = datetime.now() - timedelta(days=lookback_days)
+        df = full_df[full_df['Date'] >= cutoff].copy()
+        if df.empty:
+            df = full_df.tail(days * 2 or 60).copy()
+
+        df = df.set_index('Date')
+
+        if interval == '1wk':
+            df = _resample_ohlc(df, 'W')
+        elif interval == '1mo':
+            df = _resample_ohlc(df, 'M')
+
+        if df.empty:
+            logger.warning("Historical data empty after processing for %s.", symbol)
+            return pd.DataFrame()
+
+        min_calc_days = 30
+        calculation_days = max(min_calc_days, min(days * 2, len(df)))
+        df_full = df.tail(calculation_days).copy()
+        df_full = VWAPCalculationService.calculate_all_indicators(df_full)
+        logger.info("Historical data: %d data points for %s", len(df_full), symbol)
+
+        df_display = df_full.reset_index()
+        if 'Date' in df_display.columns:
+            df_display = df_display.rename(columns={'Date': 'Timestamp'})
+        elif 'index' in df_display.columns:
+            df_display = df_display.rename(columns={'index': 'Timestamp'})
+        df_display['Date_Str'] = df_display['Timestamp'].dt.strftime('%Y-%m-%d')
+        df_display['Trading_Day'] = range(1, len(df_display) + 1)
+
+        await _cache_set_dataframe(cache_key, df_display, timeout=DAILY_CACHE_TIMEOUT)
+        return df_display
+
     @staticmethod
     def format_intraday_response(df: pd.DataFrame, symbol: str, company_name: str, company_data: dict = None) -> Dict:
         """
         Format intraday data for API response
-        
-        Args:
-            df: DataFrame with intraday data
-            symbol: Stock symbol
-            company_name: Company name
-            company_data: Optional dict with company data from database (previous_close, open, etc.)
-        
-        Returns:
-            Dictionary with formatted data for frontend consumption
         """
         if df is None or df.empty:
             return {
@@ -337,22 +438,22 @@ class VWAPCalculationService:
                 'message': 'No data available',
                 'data': None
             }
-        
+
         df = VWAPCalculationService.calculate_vwap(df)
         open_price = float(df['Open'].iloc[0])
-        
+
         # Use database values if available
         if company_data:
             if company_data.get('previous_close') is not None:
                 previous_close = float(company_data['previous_close'])
             else:
                 previous_close = open_price  # Fallback
-            
+
             if company_data.get('open') is not None:
                 open_price = float(company_data['open'])
         else:
             previous_close = open_price
-        
+
         data_points = []
         for idx, row in df.iterrows():
             data_points.append({
@@ -364,10 +465,10 @@ class VWAPCalculationService:
                 'volume': int(row['Volume']),
                 'vwap': float(row['VWAP'])
             })
-        
+
         latest = df.iloc[-1]
         current_price = float(latest['Close'])
-        
+
         score_snapshot = VWAPCalculationService.get_latest_stock_score(symbol)
 
         return {
@@ -385,26 +486,16 @@ class VWAPCalculationService:
             'day_range': f"{float(df['Low'].min()):.2f} - {float(df['High'].max()):.2f}",
             'data_points': data_points,
             'update_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            # Add database fields if available
             'price_52w_high': company_data.get('price_52w_high') if company_data else None,
             'price_52w_low': company_data.get('price_52w_low') if company_data else None,
             'last_trade_date': str(company_data.get('last_trade_date')) if company_data and company_data.get('last_trade_date') else None,
             'stock_score': score_snapshot
         }
-    
+
     @staticmethod
     def format_historical_response(df: pd.DataFrame, symbol: str, company_name: str, company_data: dict = None) -> Dict:
         """
         Format historical data for API response
-        
-        Args:
-            df: DataFrame with historical data
-            symbol: Stock symbol
-            company_name: Company name
-            company_data: Optional dict with company data from database (previous_close, open, etc.)
-        
-        Returns:
-            Dictionary with formatted data for frontend consumption
         """
         if df is None or df.empty:
             return {
@@ -412,7 +503,7 @@ class VWAPCalculationService:
                 'message': 'No data available',
                 'data': None
             }
-        
+
         data_points = []
         for _, row in df.iterrows():
             point = {
@@ -424,7 +515,7 @@ class VWAPCalculationService:
                 'close': float(row['Close']),
                 'volume': int(row['Volume']),
             }
-            
+
             if pd.notna(row.get('MA5')):
                 point['ma5'] = float(row['MA5'])
             if pd.notna(row.get('MA10')):
@@ -437,25 +528,23 @@ class VWAPCalculationService:
                 point['obv_ma10'] = float(row['OBV_MA10'])
             if pd.notna(row.get('CMF')):
                 point['cmf'] = float(row['CMF'])
-            
+
             data_points.append(point)
-        
+
         latest = df.iloc[-1]
         prev = df.iloc[-2] if len(df) > 1 else latest
-        
-        # Calculate day range from data
+
         high_val = float(df['High'].max())
         low_val = float(df['Low'].min())
         day_range = f"{low_val:.2f} - {high_val:.2f}"
-        
-        # Use database values if available
+
         if company_data:
             previous_close = float(company_data['previous_close']) if company_data.get('previous_close') else float(prev['Close'])
             open_price = float(company_data['open']) if company_data.get('open') else float(latest['Open'])
         else:
             previous_close = float(prev['Close'])
             open_price = float(latest['Open'])
-        
+
         score_snapshot = VWAPCalculationService.get_latest_stock_score(symbol)
 
         return {
@@ -474,7 +563,6 @@ class VWAPCalculationService:
             'obv': int(latest['OBV']) if pd.notna(latest.get('OBV')) else 0,
             'trading_days': len(df),
             'data_points': data_points,
-            # Add database fields if available
             'price_52w_high': company_data.get('price_52w_high') if company_data else None,
             'price_52w_low': company_data.get('price_52w_low') if company_data else None,
             'last_trade_date': str(company_data.get('last_trade_date')) if company_data and company_data.get('last_trade_date') else None,

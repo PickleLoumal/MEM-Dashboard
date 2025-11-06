@@ -118,6 +118,7 @@
                 intradayChart: null,
                 intradayCandleSeries: null,
                 intradayVwapSeries: null,
+                intradayBaselineSeries: null,
                 dailyChart: null,
                 dailyCandleSeries: null,
                 dailyCmfHistogram: null,
@@ -271,14 +272,7 @@
                     }).join('')
                     : '<div class="component-row is-empty"><span>No component contributions recorded.</span></div>';
 
-                const actionNotes = score.recommended_action_detail
-                    ? `
-                        <section class="signal-action-notes">
-                            <h3 class="notes-title">Action notes</h3>
-                            <div class="notes-body">${formatMultilineText(score.recommended_action_detail)}</div>
-                        </section>
-                    `
-                    : '';
+                const actionNotes = '';
 
                 return `
                     <div class="stock-signal-progress ${actionClass}" role="group" aria-label="Trading signals">
@@ -1082,56 +1076,77 @@
 
                 // Keep references for incremental updates
                 chartInstances.intradayChart = chart;
-                
-                // TradingView color scheme for candlesticks
-                const candlestickSeries = chart.addCandlestickSeries({
-                    upColor: '#26a69a',
-                    downColor: '#ef5350',
-                    borderUpColor: '#26a69a',
-                    borderDownColor: '#ef5350',
-                    wickUpColor: '#26a69a',
-                    wickDownColor: '#ef5350',
-                    borderVisible: true
-                });
-                
-                chartInstances.intradayCandleSeries = candlestickSeries;
 
-                // Convert timestamps provided in China Standard Time (UTC+8) into UTC seconds for lightweight-charts
-                const candleData = dataPoints.map(d => {
-                    let timeStr = d.time;
+                const toUtcSeconds = (timeStr) => {
                     if (timeStr.includes(' ')) {
-                        // Handles values like "2025-01-21 09:31:00" (China Standard Time)
                         const [date, time] = timeStr.split(' ');
-                        const [year, month, day] = date.split('-');
-                        const [hour, minute, second] = time.split(':');
-                        
-                        // Use Date.UTC to create a UTC timestamp while preserving the original trading session time
-                        const timestamp = Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
-                        
-                        return {
-                            time: timestamp,
-                            open: d.open,
-                            high: d.high,
-                            low: d.low,
-                            close: d.close
-                        };
+                        const [year, month, day] = date.split('-').map(Number);
+                        const [hour, minute, second] = time.split(':').map(Number);
+                        return Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
                     }
-                    // Handles values like "09:31:00" by assuming the current trading day
                     const today = new Date();
-                    const [hour, minute, second] = timeStr.split(':');
-                    const timestamp = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
-                    
-                    return {
-                        time: timestamp,
-                        open: d.open,
-                        high: d.high,
-                        low: d.low,
-                        close: d.close
-                    };
+                    const [hour, minute, second] = timeStr.split(':').map(Number);
+                    return Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
+                };
+
+                // Use mountain (area) chart for intraday price trend
+                const areaSeries = chart.addAreaSeries({
+                    topColor: 'rgba(38, 166, 154, 0.35)',
+                    bottomColor: 'rgba(38, 166, 154, 0.01)',
+                    lineColor: '#26a69a',
+                    lineWidth: 2,
+                    lineType: LightweightCharts.LineType.Curved,
+                    crosshairMarkerVisible: true,
+                    crosshairMarkerRadius: 6,
+                    lastValueVisible: true,
+                    priceLineVisible: true,
+                    title: 'Price'
                 });
 
-                candlestickSeries.setData(candleData);
-                
+                chartInstances.intradayAreaSeries = areaSeries;
+                chartInstances.intradayCandleSeries = areaSeries; // compatibility with legacy update paths
+                chartInstances.intradayBaselineSeries = null;
+
+                const areaData = dataPoints.map(d => ({
+                    time: toUtcSeconds(d.time),
+                    value: d.close
+                }));
+
+                areaSeries.setData(areaData);
+
+                const previousClose = Number(data.previous_close);
+                const latestClose = dataPoints.length ? Number(dataPoints[dataPoints.length - 1].close) : Number(data.current_price ?? data.latest_close);
+                const isBelowPrevious = Number.isFinite(previousClose) && Number.isFinite(latestClose) && latestClose < previousClose;
+                const bullishColor = 'rgba(38, 166, 154, 0.65)';
+                const bearishColor = 'rgba(239, 83, 80, 0.65)';
+                const topColor = isBelowPrevious ? bearishColor : bullishColor;
+                const lineColor = isBelowPrevious ? '#ef5350' : '#26a69a';
+                const bottomColor = isBelowPrevious ? 'rgba(239, 83, 80, 0.05)' : 'rgba(38, 166, 154, 0.05)';
+
+                areaSeries.applyOptions({
+                    topColor,
+                    bottomColor,
+                    lineColor
+                });
+
+                if (Number.isFinite(previousClose) && areaData.length >= 1) {
+                    const baselineSeries = chart.addLineSeries({
+                        color: '#9E9E9E',
+                        lineWidth: 1,
+                        lineStyle: LightweightCharts.LineStyle.Dotted,
+                        lastValueVisible: false,
+                        priceLineVisible: false,
+                        crosshairMarkerVisible: false
+                    });
+                    const firstTime = areaData[0].time;
+                    const lastTime = areaData[areaData.length - 1].time;
+                    baselineSeries.setData([
+                        { time: firstTime, value: previousClose },
+                        { time: lastTime, value: previousClose }
+                    ]);
+                    chartInstances.intradayBaselineSeries = baselineSeries;
+                }
+
                 // Fit the viewport to display all data points
                 chart.timeScale().fitContent();
 
@@ -1146,21 +1161,10 @@
                     
                     chartInstances.intradayVwapSeries = vwapSeries;
                     
-                    const vwapData = dataPoints.map(d => {
-                        let timeStr = d.time;
-                        if (timeStr.includes(' ')) {
-                            const [date, time] = timeStr.split(' ');
-                            const [year, month, day] = date.split('-');
-                            const [hour, minute, second] = time.split(':');
-                            // Convert CST timestamps into UTC seconds
-                            const timestamp = Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
-                            return { time: timestamp, value: d.vwap };
-                        }
-                        const today = new Date();
-                        const [hour, minute, second] = timeStr.split(':');
-                        const timestamp = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
-                        return { time: timestamp, value: d.vwap };
-                    });
+                    const vwapData = dataPoints.map(d => ({
+                        time: toUtcSeconds(d.time),
+                        value: d.vwap
+                    }));
                     
                     vwapSeries.setData(vwapData);
                 }
@@ -1173,7 +1177,7 @@
                         return;
                     }
                     
-                    const candlePrice = param.seriesData.get(candlestickSeries);
+                    const candlePrice = param.seriesData.get(areaSeries);
                     const vwapValue = vwapSeries ? param.seriesData.get(vwapSeries) : null;
                     
                     if (!candlePrice) {
@@ -2076,13 +2080,13 @@
                         }
                     }
                     
-                    // 平滑滚动到图表位置
-                    setTimeout(() => {
-                        const chartSections = elements.chartContainer.querySelectorAll('.chart-section-clean');
-                        if (chartSections.length > 0) {
-                            chartSections[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                    }, 100);
+                    // 平滑滚动到图表位置 - 已禁用
+                    // setTimeout(() => {
+                    //     const chartSections = elements.chartContainer.querySelectorAll('.chart-section-clean');
+                    //     if (chartSections.length > 0) {
+                    //         chartSections[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    //     }
+                    // }, 100);
                 } catch (error) {
                     console.error('Error reloading chart:', error);
                     showError('Error loading data: ' + error.message);
@@ -2166,64 +2170,77 @@
                             // 获取最后一个数据点的时间
                             const lastDataPoint = intradayData.data_points[intradayData.data_points.length - 1];
                             const lastDataTime = lastDataPoint ? lastDataPoint.time : null;
-                            updateLastUpdateTime(lastDataTime);
+                            const timestampHint = lastDataTime || intradayData.update_time || null;
+                            updateLastUpdateTime(timestampHint);
                             
                             // 如果图表实例存在，直接更新数据
                             if (chartInstances.intradayCandleSeries && chartInstances.intradayVwapSeries) {
                                 const dataPoints = intradayData.data_points;
-                                
-                                // 转换K线数据
-                                const candleData = dataPoints.map(d => {
-                                    let timeStr = d.time;
+
+                                const toUtcSeconds = (timeStr) => {
                                     if (timeStr.includes(' ')) {
                                         const [date, time] = timeStr.split(' ');
-                                        const [year, month, day] = date.split('-');
-                                        const [hour, minute, second] = time.split(':');
-                                        const timestamp = Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
-                                        return {
-                                            time: timestamp,
-                                            open: d.open,
-                                            high: d.high,
-                                            low: d.low,
-                                            close: d.close
-                                        };
+                                        const [year, month, day] = date.split('-').map(Number);
+                                        const [hour, minute, second] = time.split(':').map(Number);
+                                        return Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
                                     }
                                     const today = new Date();
-                                    const [hour, minute, second] = timeStr.split(':');
-                                    const timestamp = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
-                                    return {
-                                        time: timestamp,
-                                        open: d.open,
-                                        high: d.high,
-                                        low: d.low,
-                                        close: d.close
-                                    };
-                                });
-                                
-                                // 转换VWAP数据
-                                const vwapData = dataPoints.map(d => {
-                                    let timeStr = d.time;
-                                    if (timeStr.includes(' ')) {
-                                        const [date, time] = timeStr.split(' ');
-                                        const [year, month, day] = date.split('-');
-                                        const [hour, minute, second] = time.split(':');
-                                        const timestamp = Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
-                                        return { time: timestamp, value: d.vwap };
-                                    }
-                                    const today = new Date();
-                                    const [hour, minute, second] = timeStr.split(':');
-                                    const timestamp = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
-                                    return { time: timestamp, value: d.vwap };
-                                });
-                                
-                                // 使用 update() 而不是 setData() 来平滑更新
-                                chartInstances.intradayCandleSeries.setData(candleData);
+                                    const [hour, minute, second] = timeStr.split(':').map(Number);
+                                    return Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
+                                };
+
+                                const areaData = dataPoints.map(d => ({
+                                    time: toUtcSeconds(d.time),
+                                    value: d.close
+                                }));
+
+                                const vwapData = dataPoints.map(d => ({
+                                    time: toUtcSeconds(d.time),
+                                    value: d.vwap
+                                }));
+
+                                chartInstances.intradayCandleSeries.setData(areaData);
                                 chartInstances.intradayVwapSeries.setData(vwapData);
-                                console.log('✅ Intraday chart updated:', candleData.length, 'bars');
+
+                                const previousClose = Number(intradayData.previous_close);
+                                const latestClose = dataPoints.length ? Number(dataPoints[dataPoints.length - 1].close) : Number(intradayData.current_price ?? intradayData.latest_close);
+                                const isBelowPrevious = Number.isFinite(previousClose) && Number.isFinite(latestClose) && latestClose < previousClose;
+                                const bullishColor = 'rgba(38, 166, 154, 0.65)';
+                                const bearishColor = 'rgba(239, 83, 80, 0.65)';
+                                const topColor = isBelowPrevious ? bearishColor : bullishColor;
+                                const lineColor = isBelowPrevious ? '#ef5350' : '#26a69a';
+                                const bottomColor = isBelowPrevious ? 'rgba(239, 83, 80, 0.05)' : 'rgba(38, 166, 154, 0.05)';
+
+                                chartInstances.intradayCandleSeries.applyOptions({
+                                    topColor,
+                                    bottomColor,
+                                    lineColor
+                                });
+
+                                if (Number.isFinite(previousClose) && areaData.length >= 1) {
+                                    if (!chartInstances.intradayBaselineSeries) {
+                                        chartInstances.intradayBaselineSeries = chartInstances.intradayChart.addLineSeries({
+                                            color: '#9E9E9E',
+                                            lineWidth: 1,
+                                            lineStyle: LightweightCharts.LineStyle.Dotted,
+                                            lastValueVisible: false,
+                                            priceLineVisible: false,
+                                            crosshairMarkerVisible: false
+                                        });
+                                    }
+                                    const firstTime = areaData[0].time;
+                                    const lastTime = areaData[areaData.length - 1].time;
+                                    chartInstances.intradayBaselineSeries.setData([
+                                        { time: firstTime, value: previousClose },
+                                        { time: lastTime, value: previousClose }
+                                    ]);
+                                }
+
+                                console.log('✅ Intraday chart updated:', areaData.length, 'bars');
                             } else {
                                 // 图表不存在，重新创建
                                 cachedIntradayData = null;
-                        loadData();
+                                loadData();
                             }
                         }
                     } else if (rangeConfig.interval === '1d' || rangeConfig.interval === '1wk') {
@@ -2242,8 +2259,9 @@
                             
                             // 获取最后一个数据点的时间
                             const lastDataPoint = historicalData.data_points[historicalData.data_points.length - 1];
-                            const lastDataTime = lastDataPoint ? lastDataPoint.date : null;
-                            updateLastUpdateTime(lastDataTime);
+                            const lastDataTime = lastDataPoint ? (lastDataPoint.date || lastDataPoint.Date_Str || null) : null;
+                            const timestampHint = lastDataTime || historicalData.update_time || null;
+                            updateLastUpdateTime(timestampHint);
                             
                             // 如果图表实例存在，直接更新数据
                             if (chartInstances.dailyCandleSeries) {

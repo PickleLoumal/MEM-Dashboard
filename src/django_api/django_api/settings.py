@@ -64,7 +64,7 @@ INSTALLED_APPS = [
     'indicators',
     'content',
     'csi300',     # CSI300 companies data
-    'stocks',     # Stock data with yfinance integration
+    'stocks',     # Stock data with AkShare integration
 ]
 
 MIDDLEWARE = [
