@@ -811,8 +811,19 @@
                 elements.chartContainer.innerHTML = `<div class="chart-panel error-state">${message}</div>`;
             }
 
-            function showLoading(message = 'Loading data...') {
-                elements.chartContainer.innerHTML = `<div class="chart-panel loading-state">${message}</div>`;
+            function showLoading(message = 'Loading historical data...') {
+                elements.chartContainer.innerHTML = `
+                    <div class="chart-panel loading-state">
+                        <div class="loading-container">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text">${message}</div>
+                            <div class="loading-progress-bar">
+                                <div class="loading-progress-fill"></div>
+                            </div>
+                            <div class="loading-hint">This may take 10-15 seconds for large datasets</div>
+                        </div>
+                    </div>
+                `;
             }
 
             function updateLastUpdateTime(dataTimestamp = null) {
@@ -2030,7 +2041,7 @@
                 if (!currentSymbol) return;
                 
                 // 清空图表容器，显示加载状态
-                elements.chartContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; min-height: 400px; color: #6b7280; font-size: 14px;"><span>Loading data...</span></div>';
+                showLoading('Reloading chart data...');
                 
                 try {
                     const rangeConfig = timeRangeMap[currentTimeRange];
