@@ -5,7 +5,7 @@
 
 const CSI300Config = {
     // Use CloudFront as unified entry point - handles both frontend and API proxy
-    BASE_URL: 'https://d3ex2kglhlhbyr.cloudfront.net',
+    BASE_URL: 'http://localhost:8001',
     API_BASE: '/api/csi300',
 
     // CSI300 app endpoints (CloudFront API paths)

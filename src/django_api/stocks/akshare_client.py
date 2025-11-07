@@ -111,7 +111,7 @@ def get_daily_data(symbol: str, start: datetime, end: datetime, adjust: str = ''
             adjust=adjust,
         )
     except Exception as exc:  # pragma: no cover - upstream failure
-        logger.warning("stock_zh_a_hist failed for %s: %s; trying Tencent fallback.", symbol, exc)
+        logger.debug("stock_zh_a_hist failed for %s: %s; trying Tencent fallback.", symbol, exc)
 
     if df_raw is None or df_raw.empty:
         try:
