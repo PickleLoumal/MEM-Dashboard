@@ -82,6 +82,17 @@
                 </p>
         </header>
 
+        <section id="topPicksSection" class="top-picks-panel" aria-live="polite">
+            <div class="top-picks-header">
+                <div>
+                    <h2 class="top-picks-title">Today's Top Picks</h2>
+                    <p class="top-picks-meta" id="topPicksMeta">Loading latest scores…</p>
+                </div>
+                <button type="button" id="refreshTopPicks" class="app-btn ghost-btn">Refresh</button>
+            </div>
+            <div id="topPicksList" class="top-picks-grid" role="list"></div>
+        </section>
+
         <main class="fund-flow-main" aria-live="polite">
             <section class="fund-flow-control-card app-card" aria-label="Fund flow controls" id="stockSearchSection">
                 <div class="fund-flow-field app-form-field fund-flow-search-field">
@@ -96,6 +107,14 @@
 
             <section id="stockInfo" class="stock-info-banner is-hidden" aria-live="polite"></section>
 
+            <section class="generate-card app-card" aria-label="On-demand scoring" id="generateScoreSection">
+                <div class="generate-card-copy">
+                    <h3>On-demand Signals</h3>
+                    <p>Refresh the latest scoring model for the selected company in real time.</p>
+                </div>
+                <button type="button" id="generateScoreButton" class="app-btn primary-btn" disabled>Generate Score</button>
+            </section>
+
             <section id="metricsPanel" class="metrics-panel-inline is-hidden" aria-label="Key metrics">
                 <div id="metricsRow" class="metrics-grid-inline"></div>
             </section>
@@ -104,6 +123,17 @@
             <section id="signalSummaryContainer" class="signal-summary-section is-hidden" aria-live="polite"></section>
     </main>
                 </div>
+
+    <div id="generationOverlay" class="generation-overlay is-hidden" role="dialog" aria-modal="true">
+        <div class="generation-dialog">
+            <div class="generation-spinner" aria-hidden="true"></div>
+            <div class="generation-copy">
+                <p class="generation-status" id="generationStatus">Preparing score...</p>
+                <pre class="generation-logs" id="generationLogs"></pre>
+            </div>
+            <button type="button" id="closeGenerationOverlay" class="app-btn ghost-btn">Close</button>
+        </div>
+    </div>
 
     <script>
         (function() {
@@ -138,14 +168,30 @@
                 metricsPanel: document.getElementById('metricsPanel'),
                 metricsRow: document.getElementById('metricsRow'),
                 chartContainer: document.getElementById('chartContainer'),
-                signalSummary: document.getElementById('signalSummaryContainer')
+                signalSummary: document.getElementById('signalSummaryContainer'),
+                topPicksSection: document.getElementById('topPicksSection'),
+                topPicksList: document.getElementById('topPicksList'),
+                refreshTopPicks: document.getElementById('refreshTopPicks'),
+                topPicksMeta: document.getElementById('topPicksMeta'),
+                generateButton: document.getElementById('generateScoreButton'),
+                generationOverlay: document.getElementById('generationOverlay'),
+                generationStatus: document.getElementById('generationStatus'),
+                generationLogs: document.getElementById('generationLogs'),
+                closeGenerationOverlay: document.getElementById('closeGenerationOverlay'),
             };
             let visibleSuggestions = [];
             let activeSuggestionIndex = -1;
-            let autoRefreshEnabled = false;
+            let autoRefreshEnabled = true;  // 默认开启自动刷新
             let autoRefreshButton = null;
             let currentStock = null;
             let metricsInitialized = false;
+            let isGenerating = false;
+            let loadingProgressTimer = null;
+            let loadingProgressValue = 0;
+            let topPicksLoadingTimer = null;
+            let topPicksLoadingValue = 0;
+            let topPickCharts = [];
+            updateGenerateButtonState();
 
             const ACTION_CLASS_MAP = {
                 buy: 'is-buy',
@@ -197,6 +243,277 @@
                     return '';
                 }
                 return escapeHtml(text).replace(/\r?\n/g, '<br>');
+            }
+
+            function updateGenerateButtonState() {
+                if (!elements.generateButton) {
+                    return;
+                }
+                if (isGenerating) {
+                    elements.generateButton.disabled = true;
+                    elements.generateButton.textContent = 'Generating…';
+                    return;
+                }
+                if (currentSymbol) {
+                    elements.generateButton.disabled = false;
+                    elements.generateButton.textContent = `Generate Score (${currentSymbol})`;
+                } else {
+                    elements.generateButton.disabled = true;
+                    elements.generateButton.textContent = 'Generate Score';
+                }
+            }
+
+            function calculateChangeMetrics(pick) {
+                const sparkline = Array.isArray(pick.sparkline) ? pick.sparkline : [];
+                const closes = sparkline.map(point => Number(point.close)).filter(Number.isFinite);
+                const last = closes.length ? closes[closes.length - 1] : Number(pick.last_close);
+                const prev = closes.length >= 2 ? closes[closes.length - 2] : Number(pick.previous_close ?? closes[0]);
+                if (!Number.isFinite(last) || !Number.isFinite(prev) || prev === 0) {
+                    return null;
+                }
+                const change = last - prev;
+                const pct = (change / prev) * 100;
+                return {
+                    last,
+                    previous: prev,
+                    change,
+                    pct,
+                    trendUp: change >= 0,
+                };
+            }
+
+            function renderTopPickChart(containerId, sparklinePoints = [], trendUp = true) {
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    return;
+                }
+                if (!Array.isArray(sparklinePoints) || sparklinePoints.length < 2) {
+                    container.innerHTML = '<div class="sparkline-empty">No trend</div>';
+                    return;
+                }
+
+                const chartWidth = Math.max(container.clientWidth || 140, 120);
+                const chartHeight = Math.max(container.clientHeight || 52, 40);
+
+                const chart = LightweightCharts.createChart(container, {
+                    width: chartWidth,
+                    height: chartHeight,
+                    layout: {
+                        background: { color: 'transparent' },
+                        textColor: '#94a3b8',
+                        fontSize: 10,
+                        fontFamily: 'Trebuchet MS, sans-serif',
+                    },
+                    grid: {
+                        vertLines: { visible: false },
+                        horzLines: { visible: false },
+                    },
+                    timeScale: {
+                        visible: false,
+                        borderVisible: false,
+                    },
+                    rightPriceScale: {
+                        visible: false,
+                        borderVisible: false,
+                    },
+                    leftPriceScale: {
+                        visible: false,
+                        borderVisible: false,
+                        scaleMargins: {
+                            top: 0.2,
+                            bottom: 0.1,
+                        },
+                    },
+                    crosshair: {
+                        vertLine: { visible: false },
+                        horzLine: { visible: false },
+                    },
+                    handleScroll: false,
+                    handleScale: false,
+                });
+
+                const color = trendUp ? '#18a957' : '#d64545';
+                const topColor = trendUp ? 'rgba(24, 169, 87, 0.35)' : 'rgba(214, 69, 69, 0.35)';
+                const bottomColor = 'rgba(255, 255, 255, 0)';
+
+                const areaSeries = chart.addAreaSeries({
+                    topColor,
+                    bottomColor,
+                    lineColor: color,
+                    lineWidth: 2,
+                    lineType: LightweightCharts.LineType.Curved,
+                    priceScaleId: 'left',
+                });
+
+                const chartData = sparklinePoints.map(point => {
+                    const value = Number(point.close);
+                    if (!Number.isFinite(value)) {
+                        return null;
+                    }
+                    const dateStr = point.date || point.Date || point.Date_Str;
+                    const timeValue = convertToChartTime(dateStr, false);
+                    return timeValue
+                        ? { time: timeValue, value }
+                        : null;
+                }).filter(Boolean);
+
+                if (!chartData.length) {
+                    chart.remove();
+                    container.innerHTML = '<div class="sparkline-empty">No trend</div>';
+                    return;
+                }
+
+                areaSeries.setData(chartData);
+                chart.timeScale().fitContent();
+
+                if (window.ResizeObserver) {
+                    const observer = new ResizeObserver(() => {
+                        chart.applyOptions({ width: container.clientWidth });
+                        chart.timeScale().fitContent();
+                    });
+                    observer.observe(container);
+                    topPickCharts.push({ chart, observer });
+                } else {
+                    topPickCharts.push({ chart, observer: null });
+                }
+            }
+
+            function renderTopPicks(picks = [], calculationDate = null) {
+                if (!elements.topPicksList) {
+                    return;
+                }
+                if (!picks.length) {
+                    elements.topPicksList.innerHTML = '<div class="top-picks-empty">No scores available yet.</div>';
+                } else {
+                    const chartQueue = [];
+                    elements.topPicksList.innerHTML = picks.map((pick, index) => {
+                        const metrics = calculateChangeMetrics(pick);
+                        const trendClass = metrics ? (metrics.trendUp ? 'is-positive' : 'is-negative') : '';
+                        const changeClass = metrics ? (metrics.trendUp ? 'is-positive' : 'is-negative') : 'is-neutral';
+                        const lastPriceValue = metrics ? metrics.last : Number(pick.last_close);
+                        const changeValue = metrics ? metrics.change : null;
+                        const changePct = metrics ? metrics.pct : null;
+                        const formattedChange = Number.isFinite(changeValue) ? `${changeValue > 0 ? '+' : ''}${changeValue.toFixed(2)}` : '--';
+                        const formattedPct = Number.isFinite(changePct) ? `${changePct > 0 ? '+' : ''}${changePct.toFixed(2)}%` : '--';
+                        const priceDisplay = Number.isFinite(lastPriceValue) ? lastPriceValue.toFixed(2) : '--';
+                        const chartId = `topPickSparkline-${index}`;
+                        chartQueue.push({ id: chartId, data: pick.sparkline || [], trendUp: metrics ? metrics.trendUp : (changeValue ?? 0) >= 0 });
+                        return `
+                            <article class="top-pick-row ${trendClass}" role="listitem" data-symbol="${escapeHtml(pick.symbol)}" data-name="${escapeHtml(pick.name || pick.symbol)}">
+                                <div class="top-pick-info">
+                                    <p class="top-pick-symbol">${escapeHtml(pick.symbol)}</p>
+                                    <p class="top-pick-name">${escapeHtml(pick.name || '')}</p>
+                                </div>
+                                <div class="top-pick-chart-col">
+                                    <div class="top-pick-sparkline" id="${chartId}"></div>
+                                </div>
+                                <div class="top-pick-price-col">
+                                    <span class="price-current">${priceDisplay}</span>
+                                    <span class="price-caption">${escapeHtml(pick.symbol)}</span>
+                                </div>
+                                <div class="top-pick-change-col">
+                                    <span class="change-pill ${changeClass}">${formattedChange} <span class="change-percent">(${formattedPct})</span></span>
+                                </div>
+                            </article>
+                        `;
+                    }).join('');
+                    requestAnimationFrame(() => {
+                        chartQueue.forEach(({ id, data, trendUp }) => renderTopPickChart(id, data, trendUp));
+                    });
+                }
+                if (elements.topPicksMeta) {
+                    elements.topPicksMeta.textContent = calculationDate
+                        ? `Updated ${formatScoreDate(calculationDate) || calculationDate}`
+                        : 'Awaiting latest calculation…';
+                }
+            }
+
+            async function loadTopPicks() {
+                if (!elements.topPicksList) {
+                    return;
+                }
+                elements.topPicksList.innerHTML = `
+                    <div class="top-picks-loading">
+                        <p>Fetching latest scores…</p>
+                        <div class="loading-progress-bar top-picks-progress">
+                            <div class="loading-progress-fill" id="topPicksProgressFill"></div>
+                        </div>
+                    </div>
+                `;
+                startTopPicksProgress();
+                const response = await stocksApi.getTopPicks(5);
+                if (!response || !response.success) {
+                    stopTopPicksProgress();
+                    elements.topPicksList.innerHTML = '<div class="top-picks-empty">Unable to load top picks.</div>';
+                    if (elements.topPicksMeta) {
+                        elements.topPicksMeta.textContent = response?.error || 'Connection issue';
+                    }
+                    return;
+                }
+                completeTopPicksProgress();
+                renderTopPicks(response.picks || [], response.calculation_date || null);
+            }
+
+            function handleTopPickSelection(event) {
+                const card = event.target.closest('.top-pick-row');
+                if (!card) {
+                    return;
+                }
+                const symbol = card.dataset.symbol;
+                const name = card.dataset.name;
+                if (!symbol) {
+                    return;
+                }
+                const stock = allStocks.find(entry => entry.symbol === symbol) || { symbol, name };
+                setCurrentStock(stock, { updateSearchField: true });
+            }
+
+            function showGenerationOverlay(message, logs = [], isError = false) {
+                if (!elements.generationOverlay || !elements.generationStatus || !elements.generationLogs) {
+                    return;
+                }
+                elements.generationOverlay.classList.remove('is-hidden');
+                elements.generationOverlay.classList.toggle('is-error', Boolean(isError));
+                elements.generationStatus.textContent = message;
+                elements.generationLogs.textContent = logs.join('\n');
+            }
+
+            function hideGenerationOverlay() {
+                if (!elements.generationOverlay) {
+                    return;
+                }
+                elements.generationOverlay.classList.add('is-hidden');
+                elements.generationStatus.textContent = 'Preparing score...';
+                elements.generationLogs.textContent = '';
+            }
+
+            async function startGeneration(symbol) {
+                if (!symbol || isGenerating) {
+                    return;
+                }
+                isGenerating = true;
+                showGenerationOverlay(`Generating latest score for ${symbol}…`);
+                updateGenerateButtonState();
+                try {
+                    const response = await stocksApi.generateStockScore(symbol);
+                    if (!response || !response.success) {
+                        const errorMessage = response?.error || 'Unable to generate score.';
+                        showGenerationOverlay(errorMessage, response?.logs || [], true);
+                        return;
+                    }
+                    const logs = response.logs || [];
+                    showGenerationOverlay(`Score updated for ${symbol}`, logs, false);
+                    if (response.score) {
+                        updateSignalSummary(response.score);
+                    }
+                    await loadTopPicks();
+                } catch (error) {
+                    console.error('Generate score failed:', error);
+                    showGenerationOverlay('Unexpected error while generating score.', [error.message], true);
+                } finally {
+                    isGenerating = false;
+                    updateGenerateButtonState();
+                }
             }
 
             function clampNumber(value, min, max, fallback = 0) {
@@ -376,6 +693,7 @@
                 autoRefreshEnabled = false;
                 applyAutoRefreshState();
                 renderAutoRefreshState();
+                updateGenerateButtonState();
                 const lastUpdateTimeEl = document.getElementById('lastUpdateTimeValue');
                 const lastUpdateDataEl = document.getElementById('lastUpdateData');
                 if (lastUpdateTimeEl) {
@@ -416,6 +734,7 @@
 
                 currentStock = stock;
                 currentSymbol = stock.symbol;
+                updateGenerateButtonState();
 
                 if (updateSearchField && elements.stockSearch) {
                     elements.stockSearch.value = stock.name || stock.symbol || '';
@@ -808,7 +1127,63 @@
             }
 
             function showError(message) {
+                stopLoadingProgress();
                 elements.chartContainer.innerHTML = `<div class="chart-panel error-state">${message}</div>`;
+            }
+
+            function stopLoadingProgress() {
+                if (loadingProgressTimer) {
+                    clearInterval(loadingProgressTimer);
+                    loadingProgressTimer = null;
+                }
+            }
+
+            function stopTopPicksProgress() {
+                if (topPicksLoadingTimer) {
+                    clearInterval(topPicksLoadingTimer);
+                    topPicksLoadingTimer = null;
+                }
+            }
+
+            function disposeTopPickCharts() {
+                if (!topPickCharts.length) {
+                    return;
+                }
+                topPickCharts.forEach(entry => {
+                    try {
+                        entry.observer?.disconnect();
+                        entry.chart.remove();
+                    } catch (err) {
+                        console.warn('Top pick chart cleanup failed:', err);
+                    }
+                });
+                topPickCharts = [];
+            }
+
+            function startLoadingProgress() {
+                const fillEl = document.getElementById('loadingProgressFill');
+                if (!fillEl) {
+                    return;
+                }
+                stopLoadingProgress();
+                loadingProgressValue = 0;
+                fillEl.style.width = '0%';
+                loadingProgressTimer = setInterval(() => {
+                    loadingProgressValue = Math.min(loadingProgressValue + (Math.random() * 8 + 2), 90);
+                    fillEl.style.width = `${loadingProgressValue}%`;
+                    if (loadingProgressValue >= 90) {
+                        stopLoadingProgress();
+                    }
+                }, 250);
+            }
+
+            function completeLoadingProgress() {
+                const fillEl = document.getElementById('loadingProgressFill');
+                if (!fillEl) {
+                    return;
+                }
+                stopLoadingProgress();
+                fillEl.style.width = '100%';
             }
 
             function showLoading(message = 'Loading historical data...') {
@@ -818,12 +1193,39 @@
                             <div class="loading-spinner"></div>
                             <div class="loading-text">${message}</div>
                             <div class="loading-progress-bar">
-                                <div class="loading-progress-fill"></div>
+                                <div class="loading-progress-fill" id="loadingProgressFill"></div>
                             </div>
                             <div class="loading-hint">This may take 10-15 seconds for large datasets</div>
                         </div>
                     </div>
                 `;
+                startLoadingProgress();
+            }
+
+            function startTopPicksProgress() {
+                const fillEl = document.getElementById('topPicksProgressFill');
+                if (!fillEl) {
+                    return;
+                }
+                stopTopPicksProgress();
+                topPicksLoadingValue = 0;
+                fillEl.style.width = '0%';
+                topPicksLoadingTimer = setInterval(() => {
+                    topPicksLoadingValue = Math.min(topPicksLoadingValue + (Math.random() * 10 + 5), 95);
+                    fillEl.style.width = `${topPicksLoadingValue}%`;
+                    if (topPicksLoadingValue >= 95) {
+                        stopTopPicksProgress();
+                    }
+                }, 250);
+            }
+
+            function completeTopPicksProgress() {
+                const fillEl = document.getElementById('topPicksProgressFill');
+                if (!fillEl) {
+                    return;
+                }
+                stopTopPicksProgress();
+                fillEl.style.width = '100%';
             }
 
             function updateLastUpdateTime(dataTimestamp = null) {
@@ -971,6 +1373,7 @@
             }
 
             function createCharts(intradayData, historicalData) {
+                completeLoadingProgress();
                 elements.chartContainer.innerHTML = '';
                 
                 // Switch between intraday and historical chart layouts
@@ -1240,7 +1643,7 @@
                     }
 
                     const hoveredIndex = typeof param.time === 'number'
-                        ? candleData.findIndex(point => point.time === param.time)
+                        ? areaData.findIndex(point => point.time === param.time)
                         : -1;
                     const hoveredSourcePoint = hoveredIndex !== -1 ? dataPoints[hoveredIndex] : null;
 
@@ -1295,8 +1698,16 @@
                         return dateStr;
                     }
                 } else {
-                    // Daily/weekly values use the date portion only (yyyy-mm-dd)
-                    return dateStr.split(' ')[0];
+                    if (!dateStr) {
+                        return null;
+                    }
+                    const normalized = dateStr.split(' ')[0];
+                    const parts = normalized.split('-').map(Number);
+                    if (parts.length !== 3 || parts.some(part => Number.isNaN(part))) {
+                        return null;
+                    }
+                    const [year, month, day] = parts;
+                    return Date.UTC(year, month - 1, day) / 1000;
                 }
             }
             
@@ -2404,6 +2815,36 @@
                 }
             });
 
+            if (elements.refreshTopPicks) {
+                elements.refreshTopPicks.addEventListener('click', () => {
+                    loadTopPicks();
+                });
+            }
+
+            if (elements.topPicksList) {
+                elements.topPicksList.addEventListener('click', handleTopPickSelection);
+            }
+
+            if (elements.generateButton) {
+                elements.generateButton.addEventListener('click', () => {
+                    if (currentSymbol) {
+                        startGeneration(currentSymbol);
+                    }
+                });
+            }
+
+            if (elements.closeGenerationOverlay) {
+                elements.closeGenerationOverlay.addEventListener('click', hideGenerationOverlay);
+            }
+
+            if (elements.generationOverlay) {
+                elements.generationOverlay.addEventListener('click', (event) => {
+                    if (event.target === elements.generationOverlay) {
+                        hideGenerationOverlay();
+                    }
+                });
+            }
+
             // Parse URL parameters
             function getUrlParams() {
                 const params = new URLSearchParams(window.location.search);
@@ -2466,6 +2907,7 @@
                     await loadStockList();
                     updateSearchInputState();
                 }
+                await loadTopPicks();
             }
 
             init();

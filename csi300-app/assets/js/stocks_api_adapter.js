@@ -91,6 +91,30 @@ class StocksApiAdapter {
         }
     }
 
+    async getTopPicks(limit = 5) {
+        try {
+            const response = await fetch(`${this.baseUrl}/api/stocks/top-picks/?limit=${limit}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching top picks:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async generateStockScore(symbol) {
+        try {
+            const response = await fetch(`${this.baseUrl}/api/stocks/score/generate/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symbol })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error generating stock score:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
     /**
      * 将API数据转换为图表所需格式（历史数据）
      */

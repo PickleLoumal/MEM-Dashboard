@@ -1,18 +1,66 @@
+import io
+import logging
+import subprocess
+import sys
+from contextlib import redirect_stdout
+from datetime import date
+from pathlib import Path
+
+import pandas as pd
+from django.db.models import Max
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from rest_framework import status
-import logging
-import pandas as pd
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
 from csi300.models import CSI300Company
+from .models import StockScore
 from .services import VWAPCalculationService
 
 logger = logging.getLogger(__name__)
 
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.append(str(PROJECT_ROOT))
+
+try:  # pragma: no cover - optional dependency in Django runtime
+    from scripts.active import daily_score_calculator_db as score_calculator
+except Exception as exc:  # pragma: no cover
+    logger.warning("Unable to import scoring script: %s", exc)
+    score_calculator = None
+
+
+def _run_scoring_subprocess(symbol: str):
+    """Fallback to running the scoring script via subprocess when import fails."""
+    script_path = PROJECT_ROOT / 'scripts' / 'active' / 'daily_score_calculator_db.py'
+    if not script_path.exists():
+        raise RuntimeError('Scoring script not found at %s' % script_path)
+
+    cmd = [
+        sys.executable,
+        str(script_path),
+        '--symbol', symbol,
+        '--batch-size', '1',
+        '--fetch-workers', '1',
+    ]
+    process = subprocess.run(cmd, capture_output=True, text=True, cwd=PROJECT_ROOT)
+    if process.returncode != 0:
+        raise RuntimeError(process.stderr or process.stdout or 'Scoring process failed')
+    logs = process.stdout.splitlines()
+    summary = {
+        'total': 1,
+        'successful': 1,
+        'failed': 0,
+        'symbols': [symbol],
+        'calculation_date': date.today().isoformat(),
+    }
+    return summary, logs
+
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def stock_list(request):
     """获取股票列表 - 从CSI300 Company表读取"""
     try:
@@ -44,6 +92,7 @@ def stock_list(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def intraday_data(request):
     """获取分时数据（1分钟K线）"""
     try:
@@ -87,6 +136,7 @@ def intraday_data(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def historical_data(request):
     """获取历史数据（支持不同时间间隔的K线数据）"""
     try:
@@ -134,6 +184,7 @@ def historical_data(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def fund_flow_page(request):
     """Fund Flow页面 - 重定向到现有的HTML页面"""
     from django.http import FileResponse
@@ -149,6 +200,7 @@ def fund_flow_page(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def lightweight_chart(request):
     """
     生成TradingView Lightweight Charts图表
@@ -237,3 +289,118 @@ def lightweight_chart(request):
             'error': str(e),
             'traceback': traceback.format_exc() if request.user.is_staff else None
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def top_picks(request):
+    """Return today's top scoring stocks to power the dashboard cards."""
+    try:
+        limit = int(request.query_params.get('limit', 5))
+        limit = max(1, min(limit, 12))
+    except (TypeError, ValueError):
+        limit = 5
+
+    latest_date = StockScore.objects.aggregate(latest=Max('calculation_date'))['latest']
+    if not latest_date:
+        return Response({'success': True, 'calculation_date': None, 'picks': []})
+
+    direction = (request.query_params.get('direction') or 'buy').lower()
+    scores_qs = StockScore.objects.filter(calculation_date=latest_date)
+    if direction == 'sell':
+        scores_qs = scores_qs.order_by('total_score')
+    else:
+        scores_qs = scores_qs.order_by('-total_score')
+
+    picks = []
+    for score in scores_qs[:limit]:
+        sparkline = []
+        try:
+            df = VWAPCalculationService.get_historical_data(score.ticker, 90, '1d')
+            if df is not None and not df.empty:
+                df_tail = df.tail(25)
+                sparkline = []
+                for _, row in df_tail.iterrows():
+                    close_value = row.get('Close') if hasattr(row, 'get') else row['Close']
+                    if close_value is None:
+                        continue
+                    date_value = None
+                    if hasattr(row, 'get'):
+                        date_value = row.get('Date') or row.get('date') or row.get('Date_Str')
+                    else:
+                        date_value = row['Date']
+                    if hasattr(date_value, 'strftime'):
+                        date_value = date_value.strftime('%Y-%m-%d')
+                    sparkline.append({
+                        'date': date_value,
+                        'close': float(close_value)
+                    })
+        except Exception as exc:  # pragma: no cover - best-effort sparkline
+            logger.debug('Sparkline fetch failed for %s: %s', score.ticker, exc)
+
+        picks.append({
+            'symbol': score.ticker,
+            'name': score.company_name,
+            'total_score': float(score.total_score) if score.total_score is not None else 0.0,
+            'recommended_action': score.recommended_action or '',
+            'last_close': float(score.last_close) if score.last_close is not None else None,
+            'signal_date': score.signal_date.isoformat() if score.signal_date else None,
+            'sparkline': sparkline,
+        })
+
+    return Response({
+        'success': True,
+        'calculation_date': latest_date.isoformat(),
+        'picks': picks,
+    })
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def generate_stock_score(request):
+    """Trigger a lightweight scoring run for a single ticker."""
+    symbol = (request.data.get('symbol') or request.POST.get('symbol') or '').strip().upper()
+    if not symbol:
+        return Response({'success': False, 'error': 'Symbol is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        company = CSI300Company.objects.get(ticker=symbol)
+    except CSI300Company.DoesNotExist:
+        return Response({'success': False, 'error': f'Symbol {symbol} not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    logs = []
+    summary = None
+    if score_calculator is not None:
+        buffer = io.StringIO()
+        try:
+            with redirect_stdout(buffer):
+                summary = score_calculator.calculate_all_scores(
+                    batch_size=1,
+                    limit=1,
+                    fetch_workers=1,
+                    symbols=[symbol],
+                )
+        except Exception as exc:
+            logger.error('On-demand scoring failed for %s: %s', symbol, exc)
+            return Response({'success': False, 'error': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logs = [line for line in buffer.getvalue().splitlines() if line.strip()]
+    else:
+        try:
+            summary, logs = _run_scoring_subprocess(symbol)
+        except Exception as exc:
+            logger.error('Subprocess scoring failed for %s: %s', symbol, exc)
+            return Response({'success': False, 'error': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    latest_score = VWAPCalculationService.get_latest_stock_score(symbol)
+
+    return Response({
+        'success': True,
+        'summary': summary or {},
+        'logs': logs[-60:],
+        'score': latest_score,
+        'company': {
+            'symbol': symbol,
+            'name': company.name,
+        }
+    })
