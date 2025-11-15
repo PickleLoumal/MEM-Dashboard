@@ -23,6 +23,11 @@ function MEMApiClient(baseUrl = null) {
     }
     this.cache = new Map();
     this.cacheTimeout = 60 * 60 * 1000; // 1 hour cache
+    this.offlineMode = false;
+    this.offlineRetryAfter = 0;
+    this.offlineBackoffMs = 60 * 1000; // retry network every 60 seconds
+    this.networkFailureCount = 0;
+    this.networkFailureThreshold = 3;
     
     // Fallback data for when API calls fail
     this.fallbackData = {
@@ -680,6 +685,43 @@ function MEMApiClient(baseUrl = null) {
                 unit: "Billions of Dollars",
                 source: "BEA Fallback Data"
             }
+        },
+        POLICY_UPDATES_US: {
+            success: true,
+            last_updated: "2025-11-15T09:00:00Z",
+            source: "Fallback Policy Watchlist",
+            data: [
+                {
+                    title: "Treasury finalizes FY2026 deficit-control package",
+                    summary: "Treasury circulated draft language that lowers discretionary spending caps while accelerating quarterly refunding guidance for Q1 2026 auctions.",
+                    category: "Fiscal Policy",
+                    impact_level: "high",
+                    tags: ["Deficit", "Refunding", "Budget Caps"],
+                    status: "active",
+                    source: "U.S. Treasury",
+                    timestamp: "2025-11-15T08:30:00Z"
+                },
+                {
+                    title: "Fed signals fine-tuning to balance sheet runoff pace",
+                    summary: "FOMC staff recommended moving to a 40B per month cap on Treasuries while retaining 20B on MBS to avoid reserve scarcity through year-end.",
+                    category: "Monetary Policy",
+                    impact_level: "medium",
+                    tags: ["QT", "Reserves"],
+                    status: "watching",
+                    source: "Federal Reserve",
+                    timestamp: "2025-11-14T20:00:00Z"
+                },
+                {
+                    title: "Administration issues guidance on strategic semiconductor incentives",
+                    summary: "Commerce Department expanded CHIPS Act incentives to include expedited depreciation schedules and priority export licenses for legacy nodes tied to auto supply chains.",
+                    category: "Industrial Policy",
+                    impact_level: "medium",
+                    tags: ["CHIPS", "Manufacturing"],
+                    status: "active",
+                    source: "Commerce Dept.",
+                    timestamp: "2025-11-14T16:30:00Z"
+                }
+            ]
         }
     };
     
@@ -693,6 +735,14 @@ MEMApiClient.prototype.fetchWithCache = async function(endpoint, cacheKey, fallb
     if (cached && (Date.now() - cached.timestamp) < this.cacheTimeout) {
         console.log(`📋 Using cached data for ${cacheKey}`);
         return cached.data;
+    }
+    
+    // If we're in offline mode and still within the backoff window, short-circuit to fallback
+    if (this.offlineMode && Date.now() < this.offlineRetryAfter) {
+        const offlineFallback = this.tryUseFallbackData(fallbackKey, endpoint, true);
+        if (offlineFallback !== null) {
+            return offlineFallback;
+        }
     }
 
     try {
@@ -709,6 +759,7 @@ MEMApiClient.prototype.fetchWithCache = async function(endpoint, cacheKey, fallb
         }
 
         const data = await response.json();
+        this.resetNetworkHealthState();
         
         // Cache successful response
         this.cache.set(cacheKey, {
@@ -719,11 +770,13 @@ MEMApiClient.prototype.fetchWithCache = async function(endpoint, cacheKey, fallb
         return data;
     } catch (error) {
         console.error(`❌ API call failed for ${endpoint}:`, error);
+        if (this.isLikelyNetworkError(error)) {
+            this.noteNetworkFailure(endpoint, error);
+        }
         
-        // Use fallback data if available
-        if (fallbackKey && this.fallbackData[fallbackKey]) {
-            console.log(`🔄 Using fallback data for ${fallbackKey}`);
-            return this.fallbackData[fallbackKey];
+        const fallbackResponse = this.tryUseFallbackData(fallbackKey, endpoint, this.isLikelyNetworkError(error));
+        if (fallbackResponse !== null) {
+            return fallbackResponse;
         }
         
         throw error;
@@ -732,15 +785,32 @@ MEMApiClient.prototype.fetchWithCache = async function(endpoint, cacheKey, fallb
 
 // Check if the API service is healthy
 MEMApiClient.prototype.checkHealth = async function() {
+    const now = Date.now();
+    
+    if (this.offlineMode && now < this.offlineRetryAfter) {
+        console.warn('🌐 [Offline] Skipping API health check during offline backoff window.');
+        return true;
+    }
+    
     try {
         const response = await fetch(`${this.baseUrl}/health/`, {
             method: 'GET',
             timeout: 5000
         });
-        return response.ok;
+        
+        if (response.ok) {
+            this.resetNetworkHealthState();
+            return true;
+        }
+        
+        console.warn(`⚠️ API health check responded with HTTP ${response.status}. Continuing with fallback data.`);
+        return true;
     } catch (error) {
         console.error('❌ Health check failed:', error);
-        return false;
+        if (this.isLikelyNetworkError(error)) {
+            this.enterOfflineMode('API health endpoint unreachable. Using cached datasets.');
+        }
+        return true;
     }
 };
 
@@ -2451,6 +2521,75 @@ MEMApiClient.prototype.updateInflationDisplay = async function() {
     } catch (error) {
         console.error('❌ [API Client] Failed to update Inflation display:', error);
     }
+};
+
+// Policy updates data source (rendered by PolicyFeedManager)
+MEMApiClient.prototype.getPolicyUpdates = async function(country = 'US') {
+    const normalizedCountry = (country || 'US').toUpperCase();
+    const endpointCountry = normalizedCountry.toLowerCase();
+    const fallbackKey = normalizedCountry === 'US' ? 'POLICY_UPDATES_US' : null;
+    
+    return await this.fetchWithCache(
+        `/policy/updates/?country=${endpointCountry}`,
+        `POLICY_UPDATES_${normalizedCountry}`,
+        fallbackKey
+    );
+};
+
+MEMApiClient.prototype.tryUseFallbackData = function(fallbackKey, endpoint, isNetworkError = false) {
+    if (fallbackKey && this.fallbackData[fallbackKey]) {
+        const prefix = this.offlineMode ? '🌐 [Offline]' : '🔄';
+        console.log(`${prefix} Using fallback data for ${fallbackKey}${endpoint ? ` (endpoint: ${endpoint})` : ''}`);
+        return this.fallbackData[fallbackKey];
+    }
+    
+    if (this.offlineMode && isNetworkError) {
+        console.warn(`🌐 [Offline] No fallback dataset available for ${endpoint}.`);
+    }
+    
+    return null;
+};
+
+MEMApiClient.prototype.isLikelyNetworkError = function(error) {
+    if (!error) {
+        return false;
+    }
+    if (error.name === 'TypeError') {
+        return true;
+    }
+    if (typeof error.message === 'string') {
+        return error.message.toLowerCase().includes('failed to fetch');
+    }
+    return false;
+};
+
+MEMApiClient.prototype.noteNetworkFailure = function(endpoint, error) {
+    if (!this.offlineMode) {
+        this.networkFailureCount += 1;
+        if (this.networkFailureCount >= this.networkFailureThreshold) {
+            this.enterOfflineMode(`Unable to reach API after ${this.networkFailureCount} attempts (last endpoint: ${endpoint})`);
+        }
+    } else {
+        // Already offline, extend the retry window
+        this.offlineRetryAfter = Date.now() + this.offlineBackoffMs;
+    }
+};
+
+MEMApiClient.prototype.enterOfflineMode = function(reason) {
+    if (!this.offlineMode) {
+        console.warn(`🌐 [Offline] ${reason || 'API unreachable. Serving fallback datasets temporarily.'}`);
+    }
+    this.offlineMode = true;
+    this.offlineRetryAfter = Date.now() + this.offlineBackoffMs;
+};
+
+MEMApiClient.prototype.resetNetworkHealthState = function() {
+    if (this.offlineMode) {
+        console.log('🌐 [Offline] Connection restored. Resuming live API calls.');
+    }
+    this.offlineMode = false;
+    this.networkFailureCount = 0;
+    this.offlineRetryAfter = 0;
 };
 
 // Export for use in the main HTML file

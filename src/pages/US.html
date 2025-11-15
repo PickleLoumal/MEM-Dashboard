@@ -31,6 +31,7 @@
     <!-- API Configuration (must load first) -->
     <script src="../../config/api_config.js?v=20250724-debug"></script>
     <script src="../../src/assets/js/utils/api_client.js"></script>
+    <script src="../../src/assets/js/services/policy-feed-manager.js"></script>
     <!-- money_supply_fix.js deprecated - now using automated API integration -->
     <script src="../../src/assets/js/utils/modal-content-manager.js?v=20250716-001"></script>
     <script src="../../src/assets/js/core/navigation.js?v=20250724-debug"></script>
@@ -67,6 +68,57 @@
 
 
     <div class="mx-auto px-2 py-6">
+        
+        <div id="policy-updates-card" class="indicator-card policy-pulse-card">
+            <div class="indicator-header policy-header">
+                <div class="policy-header-left">
+                    <span class="policy-live-dot offline" id="policy-updates-status-dot"></span>
+                    <div>
+                        <div class="policy-title">Policy Pulse Monitor</div>
+                        <div class="policy-subtitle">实时跟踪财政、货币及监管动向</div>
+                    </div>
+                </div>
+                <div class="policy-header-actions">
+                    <button class="policy-refresh-button" id="policy-updates-refresh">Refresh</button>
+                </div>
+            </div>
+            <div class="indicator-content">
+                <div class="policy-meta-bar">
+                    <div class="policy-meta-item">
+                        <span class="policy-meta-label">Last Sync</span>
+                        <span class="policy-meta-value" id="policy-updates-last-sync">Waiting for first update…</span>
+                    </div>
+                    <div class="policy-meta-item">
+                        <span class="policy-meta-label">Source</span>
+                        <span class="policy-meta-value" id="policy-updates-source">Initializing...</span>
+                    </div>
+                </div>
+                <div class="policy-insights-grid">
+                    <div class="policy-insight-card">
+                        <div class="policy-insight-label">Active Signals</div>
+                        <div class="policy-insight-value" id="policy-active-count">--</div>
+                        <div class="policy-insight-footnote">Tracked directives & guidelines</div>
+                    </div>
+                    <div class="policy-insight-card">
+                        <div class="policy-insight-label">Dominant Theme</div>
+                        <div class="policy-insight-value" id="policy-dominant-theme">--</div>
+                        <div class="policy-insight-footnote">Most recurrent policy bucket</div>
+                    </div>
+                    <div class="policy-insight-card">
+                        <div class="policy-insight-label">Impact Bias</div>
+                        <div class="policy-insight-value" id="policy-impact-signal">--</div>
+                        <div class="policy-insight-footnote">Highest urgency flag</div>
+                    </div>
+                </div>
+                <div class="policy-updates-feed" id="policy-updates-feed">
+                    <div class="policy-skeleton">
+                        <div class="policy-skeleton-line w-10/12"></div>
+                        <div class="policy-skeleton-line w-8/12"></div>
+                        <div class="policy-skeleton-line w-6/12"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <div id="gdp-components" class="indicator-card">
             <div class="indicator-header cursor-pointer hover:bg-gray-100 transition-colors" onclick="window.location.href='GDP.html'">GDP Components</div>
@@ -2694,7 +2746,7 @@
         });
         
     </script>
-
+    
     <!-- Vercel Speed Insights -->
     <script>
         window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };

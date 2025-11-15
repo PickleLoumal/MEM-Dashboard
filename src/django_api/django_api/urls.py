@@ -45,6 +45,9 @@ urlpatterns = [
     # BEA API路由
     path('api/bea/', include('bea.urls')),
     
+    # Federal Register policy updates
+    path('api/policy/', include('policy_updates.urls')),
+    
     # CSI300 API路由
     path('api/csi300/', include('csi300.urls')),
 
