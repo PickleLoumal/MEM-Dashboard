@@ -62,6 +62,7 @@ class MainDashboardController {
         
         // Define all indicator categories in a centralized configuration
         this.indicatorCategories = [
+            { name: 'Policy Updates', method: 'updatePolicyUpdatesBoard', priority: 'high' },
             { name: 'Money Supply', method: 'updateMoneySupplyDisplay', priority: 'high' },
             { name: 'Interest Rates', method: 'updateInterestRateDisplay', priority: 'high' },
             { name: 'Banking Sector', method: 'updateBankingSectorDisplay', priority: 'high' },
