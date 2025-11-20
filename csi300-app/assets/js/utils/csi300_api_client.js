@@ -76,42 +76,51 @@ class CSI300ApiClient {
         return await this.getCachedOrFetch(
             cacheKey,
             async () => {
-                const queryParams = new URLSearchParams();
-                
+                const queryPairs = [];
+
                 // Add filters to query params
                 if (filters.im_sector || filters.im_code) {
-                    queryParams.append('im_sector', filters.im_sector || filters.im_code);
+                    queryPairs.push(['im_sector', filters.im_sector || filters.im_code]);
                 }
                 if (filters.industry) {
-                    queryParams.append('industry', filters.industry);
+                    queryPairs.push(['industry', filters.industry]);
                 }
                 if (filters.gics_industry) {
-                    queryParams.append('gics_industry', filters.gics_industry);
+                    queryPairs.push(['gics_industry', filters.gics_industry]);
                 }
                 if (filters.market_cap_min) {
-                    queryParams.append('market_cap_min', filters.market_cap_min);
+                    queryPairs.push(['market_cap_min', filters.market_cap_min]);
                 }
                 if (filters.market_cap_max) {
-                    queryParams.append('market_cap_max', filters.market_cap_max);
+                    queryPairs.push(['market_cap_max', filters.market_cap_max]);
                 }
                 if (filters.company_search) {
-                    queryParams.append('search', filters.company_search);
+                    queryPairs.push(['search', filters.company_search]);
                 }
                 if (filters.industry_search) {
-                    queryParams.append('industry_search', filters.industry_search);
+                    queryPairs.push(['industry_search', filters.industry_search]);
+                }
+                if (typeof filters.region === 'string') {
+                    const regionValue = filters.region.trim();
+                    if (regionValue) {
+                        const normalizedRegion = regionValue.replace(/\s*\(.*\)$/, '');
+                        queryPairs.push(['region', normalizedRegion]);
+                    }
                 }
                 
                 // Use Django REST framework pagination parameters
-                if (filters.page_size) queryParams.append('page_size', filters.page_size);
-                if (filters.page) queryParams.append('page', filters.page);
+                if (filters.page_size) queryPairs.push(['page_size', filters.page_size]);
+                if (filters.page) queryPairs.push(['page', filters.page]);
                 
                 // Legacy support for limit/offset (convert to page-based)
-                if (filters.limit && !filters.page_size) queryParams.append('page_size', filters.limit);
+                if (filters.limit && !filters.page_size) queryPairs.push(['page_size', filters.limit]);
                 if (filters.offset !== undefined && filters.offset > 0 && !filters.page) {
                     const pageSize = filters.limit || filters.page_size || 20;
                     const page = Math.floor(filters.offset / pageSize) + 1;
-                    queryParams.append('page', page);
+                    queryPairs.push(['page', page]);
                 }
+
+                const queryParams = new URLSearchParams(queryPairs);
 
                 const url = `${this.baseUrl}${CSI300Config.ENDPOINTS.COMPANIES_LIST}?${queryParams.toString()}`;
                 console.log('API Request URL:', url);

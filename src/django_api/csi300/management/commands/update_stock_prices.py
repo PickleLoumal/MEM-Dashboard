@@ -3,18 +3,15 @@ Django management command to update stock prices daily
 Usage: python manage.py update_stock_prices
 """
 
-import yfinance as yf
-import requests
+from datetime import datetime, timedelta
+import pandas as pd
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 from csi300.models import CSI300Company
 import logging
 
+from stocks.akshare_client import get_daily_data, normalize_symbol
+
 logger = logging.getLogger(__name__)
-
-# Note: yfinance 0.2.36+ handles sessions internally with curl_cffi
-# No need to create custom session - let yfinance handle it
-
 
 class Command(BaseCommand):
     help = 'Update stock prices (open, previous close, 52w high/low, last trade date) for all CSI300 companies'
@@ -30,6 +27,35 @@ class Command(BaseCommand):
             action='store_true',
             help='Perform a dry run without saving to database',
         )
+
+    @staticmethod
+    def fetch_daily_bars(symbol: str, days: int = 460) -> pd.DataFrame:
+        """
+        Fetch recent daily bars from AkShare for the specified security.
+        Defaults to ~18 months of data to compute 52-week metrics.
+        """
+        end_time = datetime.now()
+        start_time = end_time - timedelta(days=days)
+
+        df = get_daily_data(symbol, start_time, end_time)
+        if df.empty:
+            return df
+
+        df = df.rename(columns={
+            'Date': 'trade_date',
+            'Open': 'open',
+            'High': 'high',
+            'Low': 'low',
+            'Close': 'close',
+            'Volume': 'vol',
+        })
+
+        df['trade_date'] = pd.to_datetime(df['trade_date'], errors='coerce')
+        df = df.dropna(subset=['trade_date'])
+        df = df.sort_values('trade_date')
+        df['pre_close'] = df['close'].shift(1)
+
+        return df
 
     def handle(self, *args, **options):
         symbol_filter = options.get('symbol')
@@ -58,30 +84,55 @@ class Command(BaseCommand):
                 if not company.ticker:
                     self.stdout.write(self.style.WARNING(f'⚠️  Skipping {company.name}: No ticker'))
                     continue
-                
-                # Fetch data from yfinance
-                stock = yf.Ticker(company.ticker)
-                info = stock.info
-                
-                # Get historical data for previous close
-                hist = stock.history(period='5d')
-                
-                if hist.empty:
-                    self.stdout.write(self.style.WARNING(f'⚠️  {company.ticker}: No historical data'))
+
+                if not normalize_symbol(company.ticker):
+                    self.stdout.write(
+                        self.style.ERROR(f'❌ {company.ticker}: Unsupported ticker format for AkShare')
+                    )
                     failed += 1
                     continue
-                
-                # Extract data
-                last_close = float(hist['Close'].iloc[-1]) if len(hist) > 0 else None
-                previous_close = float(hist['Close'].iloc[-2]) if len(hist) > 1 else last_close
-                open_price = float(hist['Open'].iloc[-1]) if len(hist) > 0 else None
-                
-                # Get 52-week high/low
-                fifty_two_week_high = info.get('fiftyTwoWeekHigh')
-                fifty_two_week_low = info.get('fiftyTwoWeekLow')
-                
-                # Get last trade date
-                last_trade_date = hist.index[-1].date() if len(hist) > 0 else None
+
+                hist = self.fetch_daily_bars(company.ticker)
+                if hist.empty:
+                    self.stdout.write(self.style.WARNING(f'⚠️  {company.ticker}: No AkShare data returned'))
+                    failed += 1
+                    continue
+
+                last_row = hist.iloc[-1]
+                open_price = float(last_row['open'])
+                last_close = float(last_row['close'])
+
+                if pd.notna(last_row.get('pre_close')):
+                    previous_close = float(last_row['pre_close'])
+                elif len(hist) > 1:
+                    previous_close = float(hist['close'].iloc[-2])
+                else:
+                    previous_close = last_close
+
+                recent_window = hist.tail(260)
+                if recent_window.empty:
+                    recent_window = hist
+
+                fifty_two_week_high = (
+                    float(recent_window['high'].max()) if not recent_window.empty else None
+                )
+                fifty_two_week_low = (
+                    float(recent_window['low'].min()) if not recent_window.empty else None
+                )
+
+                if pd.isna(fifty_two_week_high):
+                    fifty_two_week_high = None
+                if pd.isna(fifty_two_week_low):
+                    fifty_two_week_low = None
+
+                if pd.isna(open_price):
+                    open_price = None
+                if pd.isna(previous_close):
+                    previous_close = None
+                if pd.isna(last_close):
+                    last_close = None
+
+                last_trade_date = last_row['trade_date'].date()
                 
                 # Prepare update data
                 update_data = {}
@@ -137,4 +188,3 @@ class Command(BaseCommand):
         
         if dry_run:
             self.stdout.write(self.style.WARNING('\n🔍 DRY RUN COMPLETE - No changes were saved'))
-

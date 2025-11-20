@@ -8,7 +8,7 @@ from stocks.services import StockDataService
 class Command(BaseCommand):
     """股票数据更新管理命令"""
 
-    help = 'Update stock data from yfinance'
+    help = 'Update stock data using AkShare'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -43,7 +43,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """执行命令的主要逻辑"""
         self.stdout.write(
-            self.style.SUCCESS('🧪 Starting YFinance Stock Data Update')
+            self.style.SUCCESS('🧪 Starting AkShare Stock Data Update')
         )
 
         # 初始化服务

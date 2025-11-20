@@ -10,7 +10,7 @@
 
     <!-- Build configuration metadata -->
     <meta name="build-timestamp" content="2025-Sep">
-    <meta name="application-id" content="CSI300 Dashboard">
+    <meta name="application-id" content="Chinese Stock Dashboard">
     <meta name="schema-version" content="1.0.0">
 
     <!-- Framework and styling imports -->
@@ -39,9 +39,11 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1536px;
             margin: 0 auto;
             padding: 80px 24px 48px;
+            overflow: visible; /* Allow sidebar to extend beyond container */
+            position: relative;
         }
 
         .page-header {
@@ -78,9 +80,11 @@
         <header class="page-header hero-panel">
             <h1 class="page-title">Fund Flow</h1>
             <p class="page-subtitle" id="pageSubtitle">
-                    Real-time liquidity, on-balance volume, and capital flow signals for CSI 300 constituents.
+                    Real-time liquidity, on-balance volume, and capital flow signals for Chinese stock constituents.
                 </p>
         </header>
+
+        <div class="fund-flow-layout-wrapper">
 
         <main class="fund-flow-main" aria-live="polite">
             <section class="fund-flow-control-card app-card" aria-label="Fund flow controls" id="stockSearchSection">
@@ -96,6 +100,14 @@
 
             <section id="stockInfo" class="stock-info-banner is-hidden" aria-live="polite"></section>
 
+            <section class="generate-card app-card" aria-label="On-demand scoring" id="generateScoreSection">
+                <div class="generate-card-copy">
+                    <h3>On-demand Signals</h3>
+                    <p>Refresh the latest scoring model for the selected company in real time.</p>
+                </div>
+                <button type="button" id="generateScoreButton" class="app-btn primary-btn" disabled>Generate Score</button>
+            </section>
+
             <section id="metricsPanel" class="metrics-panel-inline is-hidden" aria-label="Key metrics">
                 <div id="metricsRow" class="metrics-grid-inline"></div>
             </section>
@@ -103,7 +115,39 @@
             <section id="chartContainer" class="chart-stack-clean" aria-label="Fund flow charts"></section>
             <section id="signalSummaryContainer" class="signal-summary-section is-hidden" aria-live="polite"></section>
     </main>
+
+    <aside class="fund-flow-sidebar">
+        <div class="yf-card">
+            <div class="yf-card-header">
+                <h3 class="yf-card-title">Top Gainers</h3>
+            </div>
+            <div id="topGainersList" class="yf-list">
+                <div class="top-picks-loading"><p>Loading...</p></div>
+            </div>
+        </div>
+
+        <div class="yf-card">
+            <div class="yf-card-header">
+                <h3 class="yf-card-title">Top Losers</h3>
+            </div>
+            <div id="topLosersList" class="yf-list">
+                <div class="top-picks-loading"><p>Loading...</p></div>
+            </div>
+        </div>
+    </aside>
+    </div>
                 </div>
+
+    <div id="generationOverlay" class="generation-overlay is-hidden" role="dialog" aria-modal="true">
+        <div class="generation-dialog">
+            <div class="generation-spinner" aria-hidden="true"></div>
+            <div class="generation-copy">
+                <p class="generation-status" id="generationStatus">Preparing score...</p>
+                <pre class="generation-logs" id="generationLogs"></pre>
+            </div>
+            <button type="button" id="closeGenerationOverlay" class="app-btn ghost-btn">Close</button>
+        </div>
+    </div>
 
     <script>
         (function() {
@@ -118,6 +162,7 @@
                 intradayChart: null,
                 intradayCandleSeries: null,
                 intradayVwapSeries: null,
+                intradayBaselineSeries: null,
                 dailyChart: null,
                 dailyCandleSeries: null,
                 dailyCmfHistogram: null,
@@ -137,14 +182,26 @@
                 metricsPanel: document.getElementById('metricsPanel'),
                 metricsRow: document.getElementById('metricsRow'),
                 chartContainer: document.getElementById('chartContainer'),
-                signalSummary: document.getElementById('signalSummaryContainer')
+                signalSummary: document.getElementById('signalSummaryContainer'),
+                generateButton: document.getElementById('generateScoreButton'),
+                generationOverlay: document.getElementById('generationOverlay'),
+                generationStatus: document.getElementById('generationStatus'),
+                generationLogs: document.getElementById('generationLogs'),
+                closeGenerationOverlay: document.getElementById('closeGenerationOverlay'),
             };
             let visibleSuggestions = [];
             let activeSuggestionIndex = -1;
-            let autoRefreshEnabled = false;
+            let autoRefreshEnabled = true;  // 默认开启自动刷新
             let autoRefreshButton = null;
             let currentStock = null;
             let metricsInitialized = false;
+            let isGenerating = false;
+            let loadingProgressTimer = null;
+            let loadingProgressValue = 0;
+            let topPicksLoadingTimer = null;
+            let topPicksLoadingValue = 0;
+            let topPickCharts = [];
+            updateGenerateButtonState();
 
             const ACTION_CLASS_MAP = {
                 buy: 'is-buy',
@@ -196,6 +253,277 @@
                     return '';
                 }
                 return escapeHtml(text).replace(/\r?\n/g, '<br>');
+            }
+
+            function updateGenerateButtonState() {
+                if (!elements.generateButton) {
+                    return;
+                }
+                if (isGenerating) {
+                    elements.generateButton.disabled = true;
+                    elements.generateButton.textContent = 'Generating…';
+                    return;
+                }
+                if (currentSymbol) {
+                    elements.generateButton.disabled = false;
+                    elements.generateButton.textContent = `Generate Score (${currentSymbol})`;
+                } else {
+                    elements.generateButton.disabled = true;
+                    elements.generateButton.textContent = 'Generate Score';
+                }
+            }
+
+            function calculateChangeMetrics(pick) {
+                const sparkline = Array.isArray(pick.sparkline) ? pick.sparkline : [];
+                const closes = sparkline.map(point => Number(point.close)).filter(Number.isFinite);
+                
+                // 使用 sparkline 最后两个交易日的收盘价计算涨跌
+                if (closes.length >= 2) {
+                    const last = closes[closes.length - 1];
+                    const prev = closes[closes.length - 2];
+                    const change = last - prev;
+                    const pct = (change / prev) * 100;
+                    
+                    return {
+                        last,
+                        previous: prev,
+                        change,
+                        pct,
+                        trendUp: change >= 0,
+                    };
+                }
+                
+                // Fallback: 数据不足时返回 null
+                return null;
+            }
+
+            function renderTopPickChart(containerId, sparklinePoints = [], trendUp = true) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                if (!Array.isArray(sparklinePoints) || sparklinePoints.length < 2) {
+                    container.innerHTML = '<div class="sparkline-empty" style="line-height: 32px; font-size: 10px;">No data</div>';
+                    return;
+                }
+
+                const chartWidth = container.clientWidth || 100;
+                const chartHeight = container.clientHeight || 32;
+
+                const chart = LightweightCharts.createChart(container, {
+                    width: chartWidth,
+                    height: chartHeight,
+                    layout: { background: { color: 'transparent' }, attributionLogo: false },
+                    grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+                    timeScale: { visible: false, borderVisible: false },
+                    rightPriceScale: { visible: false, borderVisible: false },
+                    leftPriceScale: { visible: false, borderVisible: false },
+                    crosshair: { vertLine: { visible: false }, horzLine: { visible: false } },
+                    handleScroll: false,
+                    handleScale: false,
+                });
+
+                const color = trendUp ? '#059669' : '#dc2626'; 
+                const topColor = trendUp ? 'rgba(5, 150, 105, 0.2)' : 'rgba(220, 38, 38, 0.2)';
+                const bottomColor = 'rgba(255, 255, 255, 0)';
+
+                const areaSeries = chart.addAreaSeries({
+                    topColor,
+                    bottomColor,
+                    lineColor: color,
+                    lineWidth: 1.5,
+                    priceLineVisible: false,
+                    crosshairMarkerVisible: false,
+                });
+
+                const chartData = sparklinePoints.map(point => {
+                    const value = Number(point.close);
+                    if (!Number.isFinite(value)) return null;
+                    const dateStr = point.date || point.Date || point.Date_Str;
+                    const timeValue = convertToChartTime(dateStr, false); 
+                    return timeValue ? { time: timeValue, value } : null;
+                }).filter(Boolean);
+
+                if (chartData.length > 0) {
+                    areaSeries.setData(chartData);
+                    chart.timeScale().fitContent();
+                }
+
+                if (window.ResizeObserver) {
+                    const observer = new ResizeObserver(() => {
+                        if (container.clientWidth > 0 && container.clientHeight > 0) {
+                             chart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+                             chart.timeScale().fitContent();
+                        }
+                    });
+                    observer.observe(container);
+                    topPickCharts.push({ chart, observer });
+                } else {
+                    topPickCharts.push({ chart, observer: null });
+                }
+            }
+
+            function renderTopPicksList(containerId, picks, type) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                if (!picks.length) {
+                    container.innerHTML = '<div class="top-picks-empty" style="padding: 16px; font-size: 13px; color: #6b7280;">No data available.</div>';
+                    return;
+                }
+
+                const chartQueue = [];
+                container.innerHTML = picks.map((pick, index) => {
+                    const metrics = calculateChangeMetrics(pick);
+                    
+                    const changeValue = metrics ? metrics.change : 0;
+                    const changePct = metrics ? metrics.pct : 0;
+                    const isPositive = changeValue >= 0;
+                    const changeClass = isPositive ? 'positive' : 'negative';
+                    
+                    const formattedChange = Number.isFinite(changeValue) ? `${isPositive ? '+' : ''}${changeValue.toFixed(2)}` : '--';
+                    const formattedPct = Number.isFinite(changePct) ? `${isPositive ? '+' : ''}${changePct.toFixed(2)}%` : '--';
+                    
+                    const lastPrice = metrics ? metrics.last : Number(pick.last_close);
+                    const priceDisplay = Number.isFinite(lastPrice) ? lastPrice.toFixed(2) : '--';
+                    
+                    const chartId = `${type}Sparkline-${index}`;
+                    chartQueue.push({ id: chartId, data: pick.sparkline || [], trendUp: isPositive });
+
+                    return `
+                        <div class="yf-row" role="button" data-symbol="${escapeHtml(pick.symbol)}" data-name="${escapeHtml(pick.name || pick.symbol)}">
+                            <div class="yf-info">
+                                <span class="yf-symbol">${escapeHtml(pick.symbol)}</span>
+                                <span class="yf-name">${escapeHtml(pick.name || '')}</span>
+                            </div>
+                            <div class="yf-sparkline" id="${chartId}"></div>
+                            <div class="yf-price-block">
+                                <span class="yf-price">${priceDisplay}</span>
+                                <span class="yf-change ${changeClass}">
+                                    ${formattedChange} <span style="opacity: 0.7; font-weight: 400;">(${formattedPct})</span>
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                requestAnimationFrame(() => {
+                    chartQueue.forEach(({ id, data, trendUp }) => renderTopPickChart(id, data, trendUp));
+                });
+            }
+
+            async function loadTopPicks() {
+                const gainerContainer = document.getElementById('topGainersList');
+                const loserContainer = document.getElementById('topLosersList');
+                
+                try {
+                    const [gainersRes, losersRes] = await Promise.all([
+                        stocksApi.getTopPicks(5, 'buy'),
+                        stocksApi.getTopPicks(5, 'sell')
+                    ]);
+
+                    // 为每个 pick 获取实时历史数据（替换后端的 sparkline）
+                    if (gainersRes && gainersRes.success && gainersRes.picks) {
+                        const gainersWithData = await Promise.all(
+                            gainersRes.picks.map(async (pick) => {
+                                const histData = await stocksApi.getHistoricalData(pick.symbol, 90, '1d');
+                                if (histData && histData.success && histData.data_points) {
+                                    // 使用实时 data_points 替换 sparkline
+                                    pick.sparkline = histData.data_points.slice(-25).map(point => ({
+                                        date: point.date,
+                                        close: point.close
+                                    }));
+                                }
+                                return pick;
+                            })
+                        );
+                        renderTopPicksList('topGainersList', gainersWithData, 'gainers');
+                    } else {
+                         if (gainerContainer) gainerContainer.innerHTML = '<div class="top-picks-empty">Failed to load gainers.</div>';
+                    }
+
+                    if (losersRes && losersRes.success && losersRes.picks) {
+                        const losersWithData = await Promise.all(
+                            losersRes.picks.map(async (pick) => {
+                                const histData = await stocksApi.getHistoricalData(pick.symbol, 90, '1d');
+                                if (histData && histData.success && histData.data_points) {
+                                    pick.sparkline = histData.data_points.slice(-25).map(point => ({
+                                        date: point.date,
+                                        close: point.close
+                                    }));
+                                }
+                                return pick;
+                            })
+                        );
+                        renderTopPicksList('topLosersList', losersWithData, 'losers');
+                    } else {
+                         if (loserContainer) loserContainer.innerHTML = '<div class="top-picks-empty">Failed to load losers.</div>';
+                    }
+
+                } catch (e) {
+                    console.error("Error loading top lists:", e);
+                }
+            }
+
+            function handleTopPickSelection(event) {
+                const row = event.target.closest('.yf-row');
+                if (!row) return;
+                const symbol = row.dataset.symbol;
+                const name = row.dataset.name;
+                if (!symbol) return;
+                const stock = allStocks.find(entry => entry.symbol === symbol) || { symbol, name };
+                setCurrentStock(stock, { updateSearchField: true });
+                
+                if (window.innerWidth <= 1024) {
+                    document.querySelector('.fund-flow-main')?.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+
+            function showGenerationOverlay(message, logs = [], isError = false) {
+                if (!elements.generationOverlay || !elements.generationStatus || !elements.generationLogs) {
+                    return;
+                }
+                elements.generationOverlay.classList.remove('is-hidden');
+                elements.generationOverlay.classList.toggle('is-error', Boolean(isError));
+                elements.generationStatus.textContent = message;
+                elements.generationLogs.textContent = logs.join('\n');
+            }
+
+            function hideGenerationOverlay() {
+                if (!elements.generationOverlay) {
+                    return;
+                }
+                elements.generationOverlay.classList.add('is-hidden');
+                elements.generationStatus.textContent = 'Preparing score...';
+                elements.generationLogs.textContent = '';
+            }
+
+            async function startGeneration(symbol) {
+                if (!symbol || isGenerating) {
+                    return;
+                }
+                isGenerating = true;
+                showGenerationOverlay(`Generating latest score for ${symbol}…`);
+                updateGenerateButtonState();
+                try {
+                    const response = await stocksApi.generateStockScore(symbol);
+                    if (!response || !response.success) {
+                        const errorMessage = response?.error || 'Unable to generate score.';
+                        showGenerationOverlay(errorMessage, response?.logs || [], true);
+                        return;
+                    }
+                    const logs = response.logs || [];
+                    showGenerationOverlay(`Score updated for ${symbol}`, logs, false);
+                    if (response.score) {
+                        updateSignalSummary(response.score);
+                    }
+                    await loadTopPicks();
+                } catch (error) {
+                    console.error('Generate score failed:', error);
+                    showGenerationOverlay('Unexpected error while generating score.', [error.message], true);
+                } finally {
+                    isGenerating = false;
+                    updateGenerateButtonState();
+                }
             }
 
             function clampNumber(value, min, max, fallback = 0) {
@@ -271,14 +599,7 @@
                     }).join('')
                     : '<div class="component-row is-empty"><span>No component contributions recorded.</span></div>';
 
-                const actionNotes = score.recommended_action_detail
-                    ? `
-                        <section class="signal-action-notes">
-                            <h3 class="notes-title">Action notes</h3>
-                            <div class="notes-body">${formatMultilineText(score.recommended_action_detail)}</div>
-                        </section>
-                    `
-                    : '';
+                const actionNotes = '';
 
                 return `
                     <div class="stock-signal-progress ${actionClass}" role="group" aria-label="Trading signals">
@@ -382,6 +703,7 @@
                 autoRefreshEnabled = false;
                 applyAutoRefreshState();
                 renderAutoRefreshState();
+                updateGenerateButtonState();
                 const lastUpdateTimeEl = document.getElementById('lastUpdateTimeValue');
                 const lastUpdateDataEl = document.getElementById('lastUpdateData');
                 if (lastUpdateTimeEl) {
@@ -422,6 +744,7 @@
 
                 currentStock = stock;
                 currentSymbol = stock.symbol;
+                updateGenerateButtonState();
 
                 if (updateSearchField && elements.stockSearch) {
                     elements.stockSearch.value = stock.name || stock.symbol || '';
@@ -759,13 +1082,32 @@
                 `;
 
                 if (priceData && priceData.success) {
-                    const priceRaw = priceData.current_price ?? priceData.latest_close;
-                    const changeRaw = priceData.change ?? null;
-                    const changePctRaw = priceData.change_pct ?? null;
+                    let price = NaN;
+                    let change = NaN;
+                    let changePct = NaN;
+                    
+                    // 从 data_points 计算（与蜡烛图一致）
+                    if (priceData.data_points && priceData.data_points.length > 0) {
+                        const lastPoint = priceData.data_points[priceData.data_points.length - 1];
+                        const open = Number(lastPoint.open);
+                        const close = Number(lastPoint.close);
+                        
+                        if (Number.isFinite(close) && Number.isFinite(open) && open > 0) {
+                            price = close;
+                            change = close - open;
+                            changePct = (change / open) * 100;
+                        }
+                    } else {
+                        // Fallback to API fields
+                        const priceRaw = priceData.current_price ?? priceData.latest_close;
+                        const changeRaw = priceData.change ?? null;
+                        const changePctRaw = priceData.change_pct ?? null;
 
-                    const price = priceRaw !== undefined && priceRaw !== null ? Number(priceRaw) : NaN;
-                    const change = changeRaw !== undefined && changeRaw !== null ? Number(changeRaw) : NaN;
-                    const changePct = changePctRaw !== undefined && changePctRaw !== null ? Number(changePctRaw) : NaN;
+                        price = priceRaw !== undefined && priceRaw !== null ? Number(priceRaw) : NaN;
+                        change = changeRaw !== undefined && changeRaw !== null ? Number(changeRaw) : NaN;
+                        changePct = changePctRaw !== undefined && changePctRaw !== null ? Number(changePctRaw) : NaN;
+                    }
+
                     const hasPrice = Number.isFinite(price);
                     const hasChange = Number.isFinite(change);
                     const hasChangePct = Number.isFinite(changePct);
@@ -814,11 +1156,105 @@
             }
 
             function showError(message) {
+                stopLoadingProgress();
                 elements.chartContainer.innerHTML = `<div class="chart-panel error-state">${message}</div>`;
             }
 
-            function showLoading(message = 'Loading data...') {
-                elements.chartContainer.innerHTML = `<div class="chart-panel loading-state">${message}</div>`;
+            function stopLoadingProgress() {
+                if (loadingProgressTimer) {
+                    clearInterval(loadingProgressTimer);
+                    loadingProgressTimer = null;
+                }
+            }
+
+            function stopTopPicksProgress() {
+                if (topPicksLoadingTimer) {
+                    clearInterval(topPicksLoadingTimer);
+                    topPicksLoadingTimer = null;
+                }
+            }
+
+            function disposeTopPickCharts() {
+                if (!topPickCharts.length) {
+                    return;
+                }
+                topPickCharts.forEach(entry => {
+                    try {
+                        entry.observer?.disconnect();
+                        entry.chart.remove();
+                    } catch (err) {
+                        console.warn('Top pick chart cleanup failed:', err);
+                    }
+                });
+                topPickCharts = [];
+            }
+
+            function startLoadingProgress() {
+                const fillEl = document.getElementById('loadingProgressFill');
+                if (!fillEl) {
+                    return;
+                }
+                stopLoadingProgress();
+                loadingProgressValue = 0;
+                fillEl.style.width = '0%';
+                loadingProgressTimer = setInterval(() => {
+                    loadingProgressValue = Math.min(loadingProgressValue + (Math.random() * 8 + 2), 90);
+                    fillEl.style.width = `${loadingProgressValue}%`;
+                    if (loadingProgressValue >= 90) {
+                        stopLoadingProgress();
+                    }
+                }, 250);
+            }
+
+            function completeLoadingProgress() {
+                const fillEl = document.getElementById('loadingProgressFill');
+                if (!fillEl) {
+                    return;
+                }
+                stopLoadingProgress();
+                fillEl.style.width = '100%';
+            }
+
+            function showLoading(message = 'Loading historical data...') {
+                elements.chartContainer.innerHTML = `
+                    <div class="chart-panel loading-state">
+                        <div class="loading-container">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text">${message}</div>
+                            <div class="loading-progress-bar">
+                                <div class="loading-progress-fill" id="loadingProgressFill"></div>
+                            </div>
+                            <div class="loading-hint">This may take 10-15 seconds for large datasets</div>
+                        </div>
+                    </div>
+                `;
+                startLoadingProgress();
+            }
+
+            function startTopPicksProgress() {
+                const fillEl = document.getElementById('topPicksProgressFill');
+                if (!fillEl) {
+                    return;
+                }
+                stopTopPicksProgress();
+                topPicksLoadingValue = 0;
+                fillEl.style.width = '0%';
+                topPicksLoadingTimer = setInterval(() => {
+                    topPicksLoadingValue = Math.min(topPicksLoadingValue + (Math.random() * 10 + 5), 95);
+                    fillEl.style.width = `${topPicksLoadingValue}%`;
+                    if (topPicksLoadingValue >= 95) {
+                        stopTopPicksProgress();
+                    }
+                }, 250);
+            }
+
+            function completeTopPicksProgress() {
+                const fillEl = document.getElementById('topPicksProgressFill');
+                if (!fillEl) {
+                    return;
+                }
+                stopTopPicksProgress();
+                fillEl.style.width = '100%';
             }
 
             function updateLastUpdateTime(dataTimestamp = null) {
@@ -928,11 +1364,33 @@
 
                 elements.metricsPanel.classList.remove('is-hidden');
                 
-                // Populate metrics using API response fields sourced from the database
-                const prevClose = data.previous_close || 0;
-                const open = data.open_price || 0;
-                const dayRange = data.day_range || '--';
-                const volume = data.volume || 0;
+                // 从 data_points 提取最新数据（与蜡烛图一致）
+                let prevClose = 0;
+                let open = 0;
+                let dayRange = '--';
+                let volume = 0;
+                
+                if (data.data_points && data.data_points.length > 0) {
+                    const lastPoint = data.data_points[data.data_points.length - 1];
+                    const prevPoint = data.data_points.length > 1 ? data.data_points[data.data_points.length - 2] : null;
+                    
+                    open = Number(lastPoint.open) || 0;
+                    volume = Number(lastPoint.volume) || 0;
+                    prevClose = prevPoint ? Number(prevPoint.close) : 0;
+                    
+                    const high = Number(lastPoint.high) || 0;
+                    const low = Number(lastPoint.low) || 0;
+                    if (high > 0 && low > 0) {
+                        dayRange = `${low.toFixed(2)} - ${high.toFixed(2)}`;
+                    }
+                } else {
+                    // Fallback to API fields
+                    prevClose = data.previous_close || 0;
+                    open = data.open_price || 0;
+                    dayRange = data.day_range || '--';
+                    volume = data.volume || 0;
+                }
+                
                 const high52w = data.price_52w_high || 0;
                 const low52w = data.price_52w_low || 0;
                 
@@ -966,6 +1424,7 @@
             }
 
             function createCharts(intradayData, historicalData) {
+                completeLoadingProgress();
                 elements.chartContainer.innerHTML = '';
                 
                 // Switch between intraday and historical chart layouts
@@ -1082,56 +1541,60 @@
 
                 // Keep references for incremental updates
                 chartInstances.intradayChart = chart;
-                
-                // TradingView color scheme for candlesticks
-                const candlestickSeries = chart.addCandlestickSeries({
-                    upColor: '#26a69a',
-                    downColor: '#ef5350',
-                    borderUpColor: '#26a69a',
-                    borderDownColor: '#ef5350',
-                    wickUpColor: '#26a69a',
-                    wickDownColor: '#ef5350',
-                    borderVisible: true
-                });
-                
-                chartInstances.intradayCandleSeries = candlestickSeries;
 
-                // Convert timestamps provided in China Standard Time (UTC+8) into UTC seconds for lightweight-charts
-                const candleData = dataPoints.map(d => {
-                    let timeStr = d.time;
+                const toUtcSeconds = (timeStr) => {
                     if (timeStr.includes(' ')) {
-                        // Handles values like "2025-01-21 09:31:00" (China Standard Time)
                         const [date, time] = timeStr.split(' ');
-                        const [year, month, day] = date.split('-');
-                        const [hour, minute, second] = time.split(':');
-                        
-                        // Use Date.UTC to create a UTC timestamp while preserving the original trading session time
-                        const timestamp = Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
-                        
-                        return {
-                            time: timestamp,
-                            open: d.open,
-                            high: d.high,
-                            low: d.low,
-                            close: d.close
-                        };
+                        const [year, month, day] = date.split('-').map(Number);
+                        const [hour, minute, second] = time.split(':').map(Number);
+                        return Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
                     }
-                    // Handles values like "09:31:00" by assuming the current trading day
                     const today = new Date();
-                    const [hour, minute, second] = timeStr.split(':');
-                    const timestamp = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
-                    
-                    return {
-                        time: timestamp,
-                        open: d.open,
-                        high: d.high,
-                        low: d.low,
-                        close: d.close
-                    };
+                    const [hour, minute, second] = timeStr.split(':').map(Number);
+                    return Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
+                };
+
+                // 获取昨日收盘价：优先从缓存的日线数据中提取
+                let previousClose = NaN;
+                if (cachedDailyData && cachedDailyData.data_points && cachedDailyData.data_points.length >= 2) {
+                    // 从日线数据的倒数第二个点获取昨日收盘价
+                    const prevDayPoint = cachedDailyData.data_points[cachedDailyData.data_points.length - 2];
+                    previousClose = Number(prevDayPoint.close);
+                } else {
+                    // Fallback: 使用 API 返回的字段（可能过期）
+                    previousClose = Number(data.previous_close);
+                    console.warn('⚠️ Using API previous_close (may be stale):', previousClose);
+                }
+
+                // 使用 Baseline 图表：高于基准线的部分为绿色，低于基准线的部分为红色
+                const baselineSeries = chart.addBaselineSeries({
+                    baseValue: { type: 'price', price: previousClose },
+                    topLineColor: '#26a69a',
+                    topFillColor1: 'rgba(38, 166, 154, 0.28)',
+                    topFillColor2: 'rgba(38, 166, 154, 0.05)',
+                    bottomLineColor: '#ef5350',
+                    bottomFillColor1: 'rgba(239, 83, 80, 0.05)',
+                    bottomFillColor2: 'rgba(239, 83, 80, 0.28)',
+                    lineWidth: 2,
+                    lineType: LightweightCharts.LineType.Simple,  // 移除圆角
+                    crosshairMarkerVisible: true,
+                    crosshairMarkerRadius: 6,
+                    lastValueVisible: true,
+                    priceLineVisible: true,
+                    title: 'Price'
                 });
 
-                candlestickSeries.setData(candleData);
-                
+                chartInstances.intradayAreaSeries = baselineSeries;
+                chartInstances.intradayCandleSeries = baselineSeries; // compatibility with legacy update paths
+                chartInstances.intradayBaselineSeries = null; // 不再需要单独的基准线
+
+                const baselineData = dataPoints.map(d => ({
+                    time: toUtcSeconds(d.time),
+                    value: d.close
+                }));
+
+                baselineSeries.setData(baselineData);
+
                 // Fit the viewport to display all data points
                 chart.timeScale().fitContent();
 
@@ -1146,21 +1609,10 @@
                     
                     chartInstances.intradayVwapSeries = vwapSeries;
                     
-                    const vwapData = dataPoints.map(d => {
-                        let timeStr = d.time;
-                        if (timeStr.includes(' ')) {
-                            const [date, time] = timeStr.split(' ');
-                            const [year, month, day] = date.split('-');
-                            const [hour, minute, second] = time.split(':');
-                            // Convert CST timestamps into UTC seconds
-                            const timestamp = Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
-                            return { time: timestamp, value: d.vwap };
-                        }
-                        const today = new Date();
-                        const [hour, minute, second] = timeStr.split(':');
-                        const timestamp = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
-                        return { time: timestamp, value: d.vwap };
-                    });
+                    const vwapData = dataPoints.map(d => ({
+                        time: toUtcSeconds(d.time),
+                        value: d.vwap
+                    }));
                     
                     vwapSeries.setData(vwapData);
                 }
@@ -1173,7 +1625,7 @@
                         return;
                     }
                     
-                    const candlePrice = param.seriesData.get(candlestickSeries);
+                    const candlePrice = param.seriesData.get(baselineSeries);
                     const vwapValue = vwapSeries ? param.seriesData.get(vwapSeries) : null;
                     
                     if (!candlePrice) {
@@ -1225,7 +1677,7 @@
                     }
 
                     const hoveredIndex = typeof param.time === 'number'
-                        ? candleData.findIndex(point => point.time === param.time)
+                        ? baselineData.findIndex(point => point.time === param.time)
                         : -1;
                     const hoveredSourcePoint = hoveredIndex !== -1 ? dataPoints[hoveredIndex] : null;
 
@@ -1264,6 +1716,9 @@
                 window.addEventListener('resize', () => {
                     chart.applyOptions({ width: container.clientWidth });
                 });
+
+                // 更新 Stock Info Banner
+                updateStockInfo(data);
             }
 
             // Helpers to convert backend timestamps for chart consumption
@@ -1280,8 +1735,16 @@
                         return dateStr;
                     }
                 } else {
-                    // Daily/weekly values use the date portion only (yyyy-mm-dd)
-                    return dateStr.split(' ')[0];
+                    if (!dateStr) {
+                        return null;
+                    }
+                    const normalized = dateStr.split(' ')[0];
+                    const parts = normalized.split('-').map(Number);
+                    if (parts.length !== 3 || parts.some(part => Number.isNaN(part))) {
+                        return null;
+                    }
+                    const [year, month, day] = parts;
+                    return Date.UTC(year, month - 1, day) / 1000;
                 }
             }
             
@@ -2026,7 +2489,7 @@
                 if (!currentSymbol) return;
                 
                 // 清空图表容器，显示加载状态
-                elements.chartContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; min-height: 400px; color: #6b7280; font-size: 14px;"><span>Loading data...</span></div>';
+                showLoading('Reloading chart data...');
                 
                 try {
                     const rangeConfig = timeRangeMap[currentTimeRange];
@@ -2076,13 +2539,13 @@
                         }
                     }
                     
-                    // 平滑滚动到图表位置
-                    setTimeout(() => {
-                        const chartSections = elements.chartContainer.querySelectorAll('.chart-section-clean');
-                        if (chartSections.length > 0) {
-                            chartSections[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                    }, 100);
+                    // 平滑滚动到图表位置 - 已禁用
+                    // setTimeout(() => {
+                    //     const chartSections = elements.chartContainer.querySelectorAll('.chart-section-clean');
+                    //     if (chartSections.length > 0) {
+                    //         chartSections[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    //     }
+                    // }, 100);
                 } catch (error) {
                     console.error('Error reloading chart:', error);
                     showError('Error loading data: ' + error.message);
@@ -2101,6 +2564,17 @@
                     // 根据 chartType 决定加载什么数据
                     if (rangeConfig.chartType === 'intraday') {
                         // 1D: 使用专用的日内分时API（1分钟间隔）
+                        // 先确保有日线数据（用于计算昨日收盘价基准线）
+                        if (!cachedDailyData) {
+                            cachedDailyData = await stocksApi.getHistoricalData(
+                                currentSymbol, 
+                                3650, 
+                                '1d', 
+                                'max'
+                            );
+                            console.log('✅ Daily data cached:', cachedDailyData?.data_points?.length, 'points');
+                        }
+                        
                         if (!cachedIntradayData) {
                             console.log('📈 Fetching intraday data (1-minute intervals)...');
                             cachedIntradayData = await stocksApi.getIntradayData(currentSymbol);
@@ -2166,64 +2640,60 @@
                             // 获取最后一个数据点的时间
                             const lastDataPoint = intradayData.data_points[intradayData.data_points.length - 1];
                             const lastDataTime = lastDataPoint ? lastDataPoint.time : null;
-                            updateLastUpdateTime(lastDataTime);
+                            const timestampHint = lastDataTime || intradayData.update_time || null;
+                            updateLastUpdateTime(timestampHint);
                             
                             // 如果图表实例存在，直接更新数据
                             if (chartInstances.intradayCandleSeries && chartInstances.intradayVwapSeries) {
                                 const dataPoints = intradayData.data_points;
-                                
-                                // 转换K线数据
-                                const candleData = dataPoints.map(d => {
-                                    let timeStr = d.time;
+
+                                const toUtcSeconds = (timeStr) => {
                                     if (timeStr.includes(' ')) {
                                         const [date, time] = timeStr.split(' ');
-                                        const [year, month, day] = date.split('-');
-                                        const [hour, minute, second] = time.split(':');
-                                        const timestamp = Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
-                                        return {
-                                            time: timestamp,
-                                            open: d.open,
-                                            high: d.high,
-                                            low: d.low,
-                                            close: d.close
-                                        };
+                                        const [year, month, day] = date.split('-').map(Number);
+                                        const [hour, minute, second] = time.split(':').map(Number);
+                                        return Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
                                     }
                                     const today = new Date();
-                                    const [hour, minute, second] = timeStr.split(':');
-                                    const timestamp = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
-                                    return {
-                                        time: timestamp,
-                                        open: d.open,
-                                        high: d.high,
-                                        low: d.low,
-                                        close: d.close
-                                    };
-                                });
-                                
-                                // 转换VWAP数据
-                                const vwapData = dataPoints.map(d => {
-                                    let timeStr = d.time;
-                                    if (timeStr.includes(' ')) {
-                                        const [date, time] = timeStr.split(' ');
-                                        const [year, month, day] = date.split('-');
-                                        const [hour, minute, second] = time.split(':');
-                                        const timestamp = Date.UTC(year, month - 1, day, hour, minute, second) / 1000;
-                                        return { time: timestamp, value: d.vwap };
-                                    }
-                                    const today = new Date();
-                                    const [hour, minute, second] = timeStr.split(':');
-                                    const timestamp = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
-                                    return { time: timestamp, value: d.vwap };
-                                });
-                                
-                                // 使用 update() 而不是 setData() 来平滑更新
-                                chartInstances.intradayCandleSeries.setData(candleData);
+                                    const [hour, minute, second] = timeStr.split(':').map(Number);
+                                    return Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
+                                };
+
+                                // 获取昨日收盘价：从缓存的日线数据中提取
+                                let previousClose = NaN;
+                                if (cachedDailyData && cachedDailyData.data_points && cachedDailyData.data_points.length >= 2) {
+                                    const prevDayPoint = cachedDailyData.data_points[cachedDailyData.data_points.length - 2];
+                                    previousClose = Number(prevDayPoint.close);
+                                } else {
+                                    previousClose = Number(intradayData.previous_close);
+                                    console.warn('⚠️ Incremental update: using API previous_close (may be stale):', previousClose);
+                                }
+
+                                // 更新 baseline series 的基准值
+                                if (Number.isFinite(previousClose)) {
+                                    chartInstances.intradayCandleSeries.applyOptions({
+                                        baseValue: { type: 'price', price: previousClose }
+                                    });
+                                }
+
+                                const baselineData = dataPoints.map(d => ({
+                                    time: toUtcSeconds(d.time),
+                                    value: d.close
+                                }));
+
+                                const vwapData = dataPoints.map(d => ({
+                                    time: toUtcSeconds(d.time),
+                                    value: d.vwap
+                                }));
+
+                                chartInstances.intradayCandleSeries.setData(baselineData);
                                 chartInstances.intradayVwapSeries.setData(vwapData);
-                                console.log('✅ Intraday chart updated:', candleData.length, 'bars');
+
+                                console.log('✅ Intraday chart updated:', baselineData.length, 'bars');
                             } else {
                                 // 图表不存在，重新创建
                                 cachedIntradayData = null;
-                        loadData();
+                                loadData();
                             }
                         }
                     } else if (rangeConfig.interval === '1d' || rangeConfig.interval === '1wk') {
@@ -2242,8 +2712,9 @@
                             
                             // 获取最后一个数据点的时间
                             const lastDataPoint = historicalData.data_points[historicalData.data_points.length - 1];
-                            const lastDataTime = lastDataPoint ? lastDataPoint.date : null;
-                            updateLastUpdateTime(lastDataTime);
+                            const lastDataTime = lastDataPoint ? (lastDataPoint.date || lastDataPoint.Date_Str || null) : null;
+                            const timestampHint = lastDataTime || historicalData.update_time || null;
+                            updateLastUpdateTime(timestampHint);
                             
                             // 如果图表实例存在，直接更新数据
                             if (chartInstances.dailyCandleSeries) {
@@ -2375,6 +2846,36 @@
                 }
             });
 
+            const gainersList = document.getElementById('topGainersList');
+            if (gainersList) {
+                gainersList.addEventListener('click', handleTopPickSelection);
+            }
+
+            const losersList = document.getElementById('topLosersList');
+            if (losersList) {
+                losersList.addEventListener('click', handleTopPickSelection);
+            }
+
+            if (elements.generateButton) {
+                elements.generateButton.addEventListener('click', () => {
+                    if (currentSymbol) {
+                        startGeneration(currentSymbol);
+                    }
+                });
+            }
+
+            if (elements.closeGenerationOverlay) {
+                elements.closeGenerationOverlay.addEventListener('click', hideGenerationOverlay);
+            }
+
+            if (elements.generationOverlay) {
+                elements.generationOverlay.addEventListener('click', (event) => {
+                    if (event.target === elements.generationOverlay) {
+                        hideGenerationOverlay();
+                    }
+                });
+            }
+
             // Parse URL parameters
             function getUrlParams() {
                 const params = new URLSearchParams(window.location.search);
@@ -2437,6 +2938,7 @@
                     await loadStockList();
                     updateSearchInputState();
                 }
+                await loadTopPicks();
             }
 
             init();

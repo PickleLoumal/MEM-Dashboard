@@ -45,13 +45,16 @@ urlpatterns = [
     # BEA API路由
     path('api/bea/', include('bea.urls')),
     
+    # Federal Register policy updates
+    path('api/policy/', include('policy_updates.urls')),
+    
     # CSI300 API路由
     path('api/csi300/', include('csi300.urls')),
 
     # CSI300 Django模板路由 (兼容旧版本)
     path('csi300/', include('csi300.urls', namespace='csi300_legacy')),
 
-    # Stock data API路由 (yfinance integration)
+    # Stock data API路由 (AkShare integration)
     path('api/stocks/', include('stocks.urls')),
 
     # Content API路由
