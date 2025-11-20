@@ -159,161 +159,147 @@
     background: rgba(37, 99, 235, 0.08);
 }
 
-.top-picks-panel {
-    padding: 0 0 24px;
-    margin-bottom: 24px;
-}
-
-.top-picks-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 16px;
-    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
-    padding-bottom: 12px;
-}
-
-.top-picks-title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--app-heading);
-}
-
-.top-picks-meta {
-    margin: 4px 0 0;
-    font-size: 13px;
-    color: var(--app-text-muted);
-}
-
-.top-picks-grid {
-    display: flex;
-    flex-direction: column;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #ffffff;
-    box-shadow: var(--app-shadow-soft, 0 18px 32px -28px rgba(15, 23, 42, 0.45));
-}
-
-.top-pick-row {
-    display: grid;
-    grid-template-columns: minmax(180px, 1.3fr) 150px 120px 140px;
-    gap: 16px;
-    padding: 18px 24px;
-    align-items: center;
-    cursor: pointer;
-    background: transparent;
-}
-
-.top-pick-row + .top-pick-row {
-    border-top: 1px dashed rgba(226, 232, 240, 0.9);
-}
-
-.top-pick-row:hover {
-    background: #f8fafc;
-}
-
-.top-pick-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.top-pick-symbol {
-    margin: 0;
-    font-size: 15px;
-    font-weight: 600;
-    color: #2563eb;
-}
-
-.top-pick-name {
-    margin: 0;
-    font-size: 13px;
-    color: #4b5563;
-}
-
-.top-pick-chart-col {
-    height: 52px;
-    display: flex;
-    align-items: center;
-}
-
-.top-pick-sparkline {
-    height: 52px;
-    min-width: 150px;
+/* Sidebar & Top Picks (Yahoo Finance Style) */
+.fund-flow-layout-wrapper {
+    display: block;
     position: relative;
+    /* Wrapper is centered by container margin:0 auto, max-width:1536px */
 }
 
-.top-pick-sparkline canvas {
+.fund-flow-sidebar {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    width: 340px;
+    margin-left: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Responsive: Move sidebar below if screen is too narrow to fit side-by-side */
+@media (max-width: 1960px) {
+    .fund-flow-sidebar {
+        position: static;
+        margin-left: 0;
+        margin-top: 48px;
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 24px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .fund-flow-sidebar {
+        grid-template-columns: 1fr;
+    }
+}
+
+.yf-card {
+    background: #fff;
     border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    padding-bottom: 8px;
 }
 
-.top-pick-price-col {
-    text-align: right;
+.yf-card-header {
+    padding: 16px 20px 8px;
+    margin-bottom: 4px;
 }
 
-.price-current {
-    display: block;
-    font-weight: 600;
+.yf-card-title {
     font-size: 18px;
-    color: #0f172a;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
 }
 
-.price-caption {
-    display: block;
-    margin-top: 4px;
+.yf-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.yf-row {
+    display: grid;
+    grid-template-columns: 1.2fr 100px 1fr;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px dashed #e5e7eb;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.yf-row:last-child {
+    border-bottom: none;
+}
+
+.yf-row:hover {
+    background: #f9fafb;
+}
+
+.yf-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.yf-symbol {
+    font-weight: 700;
+    color: #2563eb; /* Yahoo blue-ish */
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.yf-name {
     font-size: 12px;
-    color: #94a3b8;
-    letter-spacing: 0.02em;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
 }
 
-.top-pick-change-col {
+.yf-sparkline {
+    height: 32px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.yf-price-block {
     text-align: right;
     display: flex;
     flex-direction: column;
-    gap: 6px;
     align-items: flex-end;
 }
 
-.change-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 999px;
+.yf-price {
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
+    color: #1f2937;
 }
 
-.change-pill.is-positive {
-    background: rgba(22, 163, 74, 0.12);
-    color: #047857;
-}
-
-.change-pill.is-negative {
-    background: rgba(220, 38, 38, 0.12);
-    color: #b91c1c;
-}
-
-.change-percent {
+.yf-change {
     font-size: 12px;
     font-weight: 500;
-    opacity: 0.85;
+    margin-top: 2px;
 }
 
-
-
-.sparkline-empty {
-    font-size: 12px;
-    color: var(--app-text-muted);
+.yf-change.positive {
+    color: #059669;
 }
 
-.top-picks-empty {
-    padding: 24px;
-    text-align: center;
-    color: var(--app-text-muted);
-    font-size: 14px;
+.yf-change.negative {
+    color: #dc2626;
+}
+
+.sparkline-canvas {
+    width: 100%;
+    height: 100%;
 }
 
 .top-picks-loading {
@@ -326,16 +312,17 @@
     gap: 10px;
 }
 
-.sparkline-empty {
-    font-size: 12px;
-    color: #94a3b8;
-    text-align: center;
-    line-height: 52px;
-}
-
 .top-picks-progress .loading-progress-fill {
     background: linear-gradient(90deg, #10b981, #14b8a6, #10b981);
 }
+
+.top-picks-empty {
+    padding: 24px;
+    text-align: center;
+    color: var(--app-text-muted);
+    font-size: 14px;
+}
+
 
 
 .generate-card {

@@ -181,10 +181,9 @@
             const limitedUpdates = updates.slice(0, 5);
             this.feedElement.innerHTML = '';
 
-            limitedUpdates.forEach((entry) => {
+            limitedUpdates.forEach((entry, index) => {
                 const itemEl = document.createElement('div');
                 itemEl.className = 'policy-item';
-                itemEl.setAttribute('data-impact', entry.impact_level);
 
                 itemEl.appendChild(this.renderHeader(entry));
 
@@ -207,6 +206,12 @@
 
                 itemEl.appendChild(this.renderFooter(entry));
                 this.feedElement.appendChild(itemEl);
+
+                if (index !== limitedUpdates.length - 1) {
+                    const divider = document.createElement('hr');
+                    divider.className = 'policy-feed-divider';
+                    this.feedElement.appendChild(divider);
+                }
             });
         }
 

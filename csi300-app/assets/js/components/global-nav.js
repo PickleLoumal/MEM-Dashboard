@@ -144,7 +144,7 @@ class GlobalNav {
             <nav class="globalnav" data-analytics-element-engagement-start="globalnav:onFlyoutOpen" data-analytics-element-engagement-end="globalnav:onFlyoutClose">
                 <div class="globalnav-content">
                     <a href="${this.resolveLink('index.html')}" class="globalnav-brand">
-                        CSI300 Dashboard
+                        Chinese Stock Dashboard
                     </a>
                     <ul class="globalnav-list">
                         <li class="globalnav-item" data-menu="industry">
