@@ -10,7 +10,7 @@
 
     <!-- Build configuration metadata -->
     <meta name="build-timestamp" content="2025-Sep">
-    <meta name="application-id" content="CSI300 Dashboard">
+    <meta name="application-id" content="Chinese Stock Dashboard">
     <meta name="schema-version" content="1.0.0">
 
     <!-- Framework and styling imports -->
@@ -39,9 +39,11 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1536px;
             margin: 0 auto;
             padding: 80px 24px 48px;
+            overflow: visible; /* Allow sidebar to extend beyond container */
+            position: relative;
         }
 
         .page-header {
@@ -78,20 +80,11 @@
         <header class="page-header hero-panel">
             <h1 class="page-title">Fund Flow</h1>
             <p class="page-subtitle" id="pageSubtitle">
-                    Real-time liquidity, on-balance volume, and capital flow signals for CSI 300 constituents.
+                    Real-time liquidity, on-balance volume, and capital flow signals for Chinese stock constituents.
                 </p>
         </header>
 
-        <section id="topPicksSection" class="top-picks-panel" aria-live="polite">
-            <div class="top-picks-header">
-                <div>
-                    <h2 class="top-picks-title">Today's Top Picks</h2>
-                    <p class="top-picks-meta" id="topPicksMeta">Loading latest scores…</p>
-                </div>
-                <button type="button" id="refreshTopPicks" class="app-btn ghost-btn">Refresh</button>
-            </div>
-            <div id="topPicksList" class="top-picks-grid" role="list"></div>
-        </section>
+        <div class="fund-flow-layout-wrapper">
 
         <main class="fund-flow-main" aria-live="polite">
             <section class="fund-flow-control-card app-card" aria-label="Fund flow controls" id="stockSearchSection">
@@ -122,6 +115,27 @@
             <section id="chartContainer" class="chart-stack-clean" aria-label="Fund flow charts"></section>
             <section id="signalSummaryContainer" class="signal-summary-section is-hidden" aria-live="polite"></section>
     </main>
+
+    <aside class="fund-flow-sidebar">
+        <div class="yf-card">
+            <div class="yf-card-header">
+                <h3 class="yf-card-title">Top Gainers</h3>
+            </div>
+            <div id="topGainersList" class="yf-list">
+                <div class="top-picks-loading"><p>Loading...</p></div>
+            </div>
+        </div>
+
+        <div class="yf-card">
+            <div class="yf-card-header">
+                <h3 class="yf-card-title">Top Losers</h3>
+            </div>
+            <div id="topLosersList" class="yf-list">
+                <div class="top-picks-loading"><p>Loading...</p></div>
+            </div>
+        </div>
+    </aside>
+    </div>
                 </div>
 
     <div id="generationOverlay" class="generation-overlay is-hidden" role="dialog" aria-modal="true">
@@ -169,10 +183,6 @@
                 metricsRow: document.getElementById('metricsRow'),
                 chartContainer: document.getElementById('chartContainer'),
                 signalSummary: document.getElementById('signalSummaryContainer'),
-                topPicksSection: document.getElementById('topPicksSection'),
-                topPicksList: document.getElementById('topPicksList'),
-                refreshTopPicks: document.getElementById('refreshTopPicks'),
-                topPicksMeta: document.getElementById('topPicksMeta'),
                 generateButton: document.getElementById('generateScoreButton'),
                 generationOverlay: document.getElementById('generationOverlay'),
                 generationStatus: document.getElementById('generationStatus'),
@@ -266,110 +276,84 @@
             function calculateChangeMetrics(pick) {
                 const sparkline = Array.isArray(pick.sparkline) ? pick.sparkline : [];
                 const closes = sparkline.map(point => Number(point.close)).filter(Number.isFinite);
-                const last = closes.length ? closes[closes.length - 1] : Number(pick.last_close);
-                const prev = closes.length >= 2 ? closes[closes.length - 2] : Number(pick.previous_close ?? closes[0]);
-                if (!Number.isFinite(last) || !Number.isFinite(prev) || prev === 0) {
-                    return null;
+                
+                // 使用 sparkline 最后两个交易日的收盘价计算涨跌
+                if (closes.length >= 2) {
+                    const last = closes[closes.length - 1];
+                    const prev = closes[closes.length - 2];
+                    const change = last - prev;
+                    const pct = (change / prev) * 100;
+                    
+                    return {
+                        last,
+                        previous: prev,
+                        change,
+                        pct,
+                        trendUp: change >= 0,
+                    };
                 }
-                const change = last - prev;
-                const pct = (change / prev) * 100;
-                return {
-                    last,
-                    previous: prev,
-                    change,
-                    pct,
-                    trendUp: change >= 0,
-                };
+                
+                // Fallback: 数据不足时返回 null
+                return null;
             }
 
             function renderTopPickChart(containerId, sparklinePoints = [], trendUp = true) {
                 const container = document.getElementById(containerId);
-                if (!container) {
-                    return;
-                }
+                if (!container) return;
+
                 if (!Array.isArray(sparklinePoints) || sparklinePoints.length < 2) {
-                    container.innerHTML = '<div class="sparkline-empty">No trend</div>';
+                    container.innerHTML = '<div class="sparkline-empty" style="line-height: 32px; font-size: 10px;">No data</div>';
                     return;
                 }
 
-                const chartWidth = Math.max(container.clientWidth || 140, 120);
-                const chartHeight = Math.max(container.clientHeight || 52, 40);
+                const chartWidth = container.clientWidth || 100;
+                const chartHeight = container.clientHeight || 32;
 
                 const chart = LightweightCharts.createChart(container, {
                     width: chartWidth,
                     height: chartHeight,
-                    layout: {
-                        background: { color: 'transparent' },
-                        textColor: '#94a3b8',
-                        fontSize: 10,
-                        fontFamily: 'Trebuchet MS, sans-serif',
-                    },
-                    grid: {
-                        vertLines: { visible: false },
-                        horzLines: { visible: false },
-                    },
-                    timeScale: {
-                        visible: false,
-                        borderVisible: false,
-                    },
-                    rightPriceScale: {
-                        visible: false,
-                        borderVisible: false,
-                    },
-                    leftPriceScale: {
-                        visible: false,
-                        borderVisible: false,
-                        scaleMargins: {
-                            top: 0.2,
-                            bottom: 0.1,
-                        },
-                    },
-                    crosshair: {
-                        vertLine: { visible: false },
-                        horzLine: { visible: false },
-                    },
+                    layout: { background: { color: 'transparent' }, attributionLogo: false },
+                    grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+                    timeScale: { visible: false, borderVisible: false },
+                    rightPriceScale: { visible: false, borderVisible: false },
+                    leftPriceScale: { visible: false, borderVisible: false },
+                    crosshair: { vertLine: { visible: false }, horzLine: { visible: false } },
                     handleScroll: false,
                     handleScale: false,
                 });
 
-                const color = trendUp ? '#18a957' : '#d64545';
-                const topColor = trendUp ? 'rgba(24, 169, 87, 0.35)' : 'rgba(214, 69, 69, 0.35)';
+                const color = trendUp ? '#059669' : '#dc2626'; 
+                const topColor = trendUp ? 'rgba(5, 150, 105, 0.2)' : 'rgba(220, 38, 38, 0.2)';
                 const bottomColor = 'rgba(255, 255, 255, 0)';
 
                 const areaSeries = chart.addAreaSeries({
                     topColor,
                     bottomColor,
                     lineColor: color,
-                    lineWidth: 2,
-                    lineType: LightweightCharts.LineType.Curved,
-                    priceScaleId: 'left',
+                    lineWidth: 1.5,
+                    priceLineVisible: false,
+                    crosshairMarkerVisible: false,
                 });
 
                 const chartData = sparklinePoints.map(point => {
                     const value = Number(point.close);
-                    if (!Number.isFinite(value)) {
-                        return null;
-                    }
+                    if (!Number.isFinite(value)) return null;
                     const dateStr = point.date || point.Date || point.Date_Str;
-                    const timeValue = convertToChartTime(dateStr, false);
-                    return timeValue
-                        ? { time: timeValue, value }
-                        : null;
+                    const timeValue = convertToChartTime(dateStr, false); 
+                    return timeValue ? { time: timeValue, value } : null;
                 }).filter(Boolean);
 
-                if (!chartData.length) {
-                    chart.remove();
-                    container.innerHTML = '<div class="sparkline-empty">No trend</div>';
-                    return;
+                if (chartData.length > 0) {
+                    areaSeries.setData(chartData);
+                    chart.timeScale().fitContent();
                 }
-
-                areaSeries.setData(chartData);
-                chart.timeScale().fitContent();
 
                 if (window.ResizeObserver) {
                     const observer = new ResizeObserver(() => {
-                        chart.applyOptions({ width: container.clientWidth });
-                        chart.timeScale().fitContent();
+                        if (container.clientWidth > 0 && container.clientHeight > 0) {
+                             chart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+                             chart.timeScale().fitContent();
+                        }
                     });
                     observer.observe(container);
                     topPickCharts.push({ chart, observer });
@@ -378,94 +362,120 @@
                 }
             }
 
-            function renderTopPicks(picks = [], calculationDate = null) {
-                if (!elements.topPicksList) {
+            function renderTopPicksList(containerId, picks, type) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                if (!picks.length) {
+                    container.innerHTML = '<div class="top-picks-empty" style="padding: 16px; font-size: 13px; color: #6b7280;">No data available.</div>';
                     return;
                 }
-                if (!picks.length) {
-                    elements.topPicksList.innerHTML = '<div class="top-picks-empty">No scores available yet.</div>';
-                } else {
-                    const chartQueue = [];
-                    elements.topPicksList.innerHTML = picks.map((pick, index) => {
-                        const metrics = calculateChangeMetrics(pick);
-                        const trendClass = metrics ? (metrics.trendUp ? 'is-positive' : 'is-negative') : '';
-                        const changeClass = metrics ? (metrics.trendUp ? 'is-positive' : 'is-negative') : 'is-neutral';
-                        const lastPriceValue = metrics ? metrics.last : Number(pick.last_close);
-                        const changeValue = metrics ? metrics.change : null;
-                        const changePct = metrics ? metrics.pct : null;
-                        const formattedChange = Number.isFinite(changeValue) ? `${changeValue > 0 ? '+' : ''}${changeValue.toFixed(2)}` : '--';
-                        const formattedPct = Number.isFinite(changePct) ? `${changePct > 0 ? '+' : ''}${changePct.toFixed(2)}%` : '--';
-                        const priceDisplay = Number.isFinite(lastPriceValue) ? lastPriceValue.toFixed(2) : '--';
-                        const chartId = `topPickSparkline-${index}`;
-                        chartQueue.push({ id: chartId, data: pick.sparkline || [], trendUp: metrics ? metrics.trendUp : (changeValue ?? 0) >= 0 });
-                        return `
-                            <article class="top-pick-row ${trendClass}" role="listitem" data-symbol="${escapeHtml(pick.symbol)}" data-name="${escapeHtml(pick.name || pick.symbol)}">
-                                <div class="top-pick-info">
-                                    <p class="top-pick-symbol">${escapeHtml(pick.symbol)}</p>
-                                    <p class="top-pick-name">${escapeHtml(pick.name || '')}</p>
-                                </div>
-                                <div class="top-pick-chart-col">
-                                    <div class="top-pick-sparkline" id="${chartId}"></div>
-                                </div>
-                                <div class="top-pick-price-col">
-                                    <span class="price-current">${priceDisplay}</span>
-                                    <span class="price-caption">${escapeHtml(pick.symbol)}</span>
-                                </div>
-                                <div class="top-pick-change-col">
-                                    <span class="change-pill ${changeClass}">${formattedChange} <span class="change-percent">(${formattedPct})</span></span>
-                                </div>
-                            </article>
-                        `;
-                    }).join('');
-                    requestAnimationFrame(() => {
-                        chartQueue.forEach(({ id, data, trendUp }) => renderTopPickChart(id, data, trendUp));
-                    });
-                }
-                if (elements.topPicksMeta) {
-                    elements.topPicksMeta.textContent = calculationDate
-                        ? `Updated ${formatScoreDate(calculationDate) || calculationDate}`
-                        : 'Awaiting latest calculation…';
-                }
+
+                const chartQueue = [];
+                container.innerHTML = picks.map((pick, index) => {
+                    const metrics = calculateChangeMetrics(pick);
+                    
+                    const changeValue = metrics ? metrics.change : 0;
+                    const changePct = metrics ? metrics.pct : 0;
+                    const isPositive = changeValue >= 0;
+                    const changeClass = isPositive ? 'positive' : 'negative';
+                    
+                    const formattedChange = Number.isFinite(changeValue) ? `${isPositive ? '+' : ''}${changeValue.toFixed(2)}` : '--';
+                    const formattedPct = Number.isFinite(changePct) ? `${isPositive ? '+' : ''}${changePct.toFixed(2)}%` : '--';
+                    
+                    const lastPrice = metrics ? metrics.last : Number(pick.last_close);
+                    const priceDisplay = Number.isFinite(lastPrice) ? lastPrice.toFixed(2) : '--';
+                    
+                    const chartId = `${type}Sparkline-${index}`;
+                    chartQueue.push({ id: chartId, data: pick.sparkline || [], trendUp: isPositive });
+
+                    return `
+                        <div class="yf-row" role="button" data-symbol="${escapeHtml(pick.symbol)}" data-name="${escapeHtml(pick.name || pick.symbol)}">
+                            <div class="yf-info">
+                                <span class="yf-symbol">${escapeHtml(pick.symbol)}</span>
+                                <span class="yf-name">${escapeHtml(pick.name || '')}</span>
+                            </div>
+                            <div class="yf-sparkline" id="${chartId}"></div>
+                            <div class="yf-price-block">
+                                <span class="yf-price">${priceDisplay}</span>
+                                <span class="yf-change ${changeClass}">
+                                    ${formattedChange} <span style="opacity: 0.7; font-weight: 400;">(${formattedPct})</span>
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                requestAnimationFrame(() => {
+                    chartQueue.forEach(({ id, data, trendUp }) => renderTopPickChart(id, data, trendUp));
+                });
             }
 
             async function loadTopPicks() {
-                if (!elements.topPicksList) {
-                    return;
-                }
-                elements.topPicksList.innerHTML = `
-                    <div class="top-picks-loading">
-                        <p>Fetching latest scores…</p>
-                        <div class="loading-progress-bar top-picks-progress">
-                            <div class="loading-progress-fill" id="topPicksProgressFill"></div>
-                        </div>
-                    </div>
-                `;
-                startTopPicksProgress();
-                const response = await stocksApi.getTopPicks(5);
-                if (!response || !response.success) {
-                    stopTopPicksProgress();
-                    elements.topPicksList.innerHTML = '<div class="top-picks-empty">Unable to load top picks.</div>';
-                    if (elements.topPicksMeta) {
-                        elements.topPicksMeta.textContent = response?.error || 'Connection issue';
+                const gainerContainer = document.getElementById('topGainersList');
+                const loserContainer = document.getElementById('topLosersList');
+                
+                try {
+                    const [gainersRes, losersRes] = await Promise.all([
+                        stocksApi.getTopPicks(5, 'buy'),
+                        stocksApi.getTopPicks(5, 'sell')
+                    ]);
+
+                    // 为每个 pick 获取实时历史数据（替换后端的 sparkline）
+                    if (gainersRes && gainersRes.success && gainersRes.picks) {
+                        const gainersWithData = await Promise.all(
+                            gainersRes.picks.map(async (pick) => {
+                                const histData = await stocksApi.getHistoricalData(pick.symbol, 90, '1d');
+                                if (histData && histData.success && histData.data_points) {
+                                    // 使用实时 data_points 替换 sparkline
+                                    pick.sparkline = histData.data_points.slice(-25).map(point => ({
+                                        date: point.date,
+                                        close: point.close
+                                    }));
+                                }
+                                return pick;
+                            })
+                        );
+                        renderTopPicksList('topGainersList', gainersWithData, 'gainers');
+                    } else {
+                         if (gainerContainer) gainerContainer.innerHTML = '<div class="top-picks-empty">Failed to load gainers.</div>';
                     }
-                    return;
+
+                    if (losersRes && losersRes.success && losersRes.picks) {
+                        const losersWithData = await Promise.all(
+                            losersRes.picks.map(async (pick) => {
+                                const histData = await stocksApi.getHistoricalData(pick.symbol, 90, '1d');
+                                if (histData && histData.success && histData.data_points) {
+                                    pick.sparkline = histData.data_points.slice(-25).map(point => ({
+                                        date: point.date,
+                                        close: point.close
+                                    }));
+                                }
+                                return pick;
+                            })
+                        );
+                        renderTopPicksList('topLosersList', losersWithData, 'losers');
+                    } else {
+                         if (loserContainer) loserContainer.innerHTML = '<div class="top-picks-empty">Failed to load losers.</div>';
+                    }
+
+                } catch (e) {
+                    console.error("Error loading top lists:", e);
                 }
-                completeTopPicksProgress();
-                renderTopPicks(response.picks || [], response.calculation_date || null);
             }
 
             function handleTopPickSelection(event) {
-                const card = event.target.closest('.top-pick-row');
-                if (!card) {
-                    return;
-                }
-                const symbol = card.dataset.symbol;
-                const name = card.dataset.name;
-                if (!symbol) {
-                    return;
-                }
+                const row = event.target.closest('.yf-row');
+                if (!row) return;
+                const symbol = row.dataset.symbol;
+                const name = row.dataset.name;
+                if (!symbol) return;
                 const stock = allStocks.find(entry => entry.symbol === symbol) || { symbol, name };
                 setCurrentStock(stock, { updateSearchField: true });
+                
+                if (window.innerWidth <= 1024) {
+                    document.querySelector('.fund-flow-main')?.scrollIntoView({ behavior: 'smooth' });
+                }
             }
 
             function showGenerationOverlay(message, logs = [], isError = false) {
@@ -1072,13 +1082,32 @@
                 `;
 
                 if (priceData && priceData.success) {
-                    const priceRaw = priceData.current_price ?? priceData.latest_close;
-                    const changeRaw = priceData.change ?? null;
-                    const changePctRaw = priceData.change_pct ?? null;
+                    let price = NaN;
+                    let change = NaN;
+                    let changePct = NaN;
+                    
+                    // 从 data_points 计算（与蜡烛图一致）
+                    if (priceData.data_points && priceData.data_points.length > 0) {
+                        const lastPoint = priceData.data_points[priceData.data_points.length - 1];
+                        const open = Number(lastPoint.open);
+                        const close = Number(lastPoint.close);
+                        
+                        if (Number.isFinite(close) && Number.isFinite(open) && open > 0) {
+                            price = close;
+                            change = close - open;
+                            changePct = (change / open) * 100;
+                        }
+                    } else {
+                        // Fallback to API fields
+                        const priceRaw = priceData.current_price ?? priceData.latest_close;
+                        const changeRaw = priceData.change ?? null;
+                        const changePctRaw = priceData.change_pct ?? null;
 
-                    const price = priceRaw !== undefined && priceRaw !== null ? Number(priceRaw) : NaN;
-                    const change = changeRaw !== undefined && changeRaw !== null ? Number(changeRaw) : NaN;
-                    const changePct = changePctRaw !== undefined && changePctRaw !== null ? Number(changePctRaw) : NaN;
+                        price = priceRaw !== undefined && priceRaw !== null ? Number(priceRaw) : NaN;
+                        change = changeRaw !== undefined && changeRaw !== null ? Number(changeRaw) : NaN;
+                        changePct = changePctRaw !== undefined && changePctRaw !== null ? Number(changePctRaw) : NaN;
+                    }
+
                     const hasPrice = Number.isFinite(price);
                     const hasChange = Number.isFinite(change);
                     const hasChangePct = Number.isFinite(changePct);
@@ -1335,11 +1364,33 @@
 
                 elements.metricsPanel.classList.remove('is-hidden');
                 
-                // Populate metrics using API response fields sourced from the database
-                const prevClose = data.previous_close || 0;
-                const open = data.open_price || 0;
-                const dayRange = data.day_range || '--';
-                const volume = data.volume || 0;
+                // 从 data_points 提取最新数据（与蜡烛图一致）
+                let prevClose = 0;
+                let open = 0;
+                let dayRange = '--';
+                let volume = 0;
+                
+                if (data.data_points && data.data_points.length > 0) {
+                    const lastPoint = data.data_points[data.data_points.length - 1];
+                    const prevPoint = data.data_points.length > 1 ? data.data_points[data.data_points.length - 2] : null;
+                    
+                    open = Number(lastPoint.open) || 0;
+                    volume = Number(lastPoint.volume) || 0;
+                    prevClose = prevPoint ? Number(prevPoint.close) : 0;
+                    
+                    const high = Number(lastPoint.high) || 0;
+                    const low = Number(lastPoint.low) || 0;
+                    if (high > 0 && low > 0) {
+                        dayRange = `${low.toFixed(2)} - ${high.toFixed(2)}`;
+                    }
+                } else {
+                    // Fallback to API fields
+                    prevClose = data.previous_close || 0;
+                    open = data.open_price || 0;
+                    dayRange = data.day_range || '--';
+                    volume = data.volume || 0;
+                }
+                
                 const high52w = data.price_52w_high || 0;
                 const low52w = data.price_52w_low || 0;
                 
@@ -1503,13 +1554,29 @@
                     return Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
                 };
 
-                // Use mountain (area) chart for intraday price trend
-                const areaSeries = chart.addAreaSeries({
-                    topColor: 'rgba(38, 166, 154, 0.35)',
-                    bottomColor: 'rgba(38, 166, 154, 0.01)',
-                    lineColor: '#26a69a',
+                // 获取昨日收盘价：优先从缓存的日线数据中提取
+                let previousClose = NaN;
+                if (cachedDailyData && cachedDailyData.data_points && cachedDailyData.data_points.length >= 2) {
+                    // 从日线数据的倒数第二个点获取昨日收盘价
+                    const prevDayPoint = cachedDailyData.data_points[cachedDailyData.data_points.length - 2];
+                    previousClose = Number(prevDayPoint.close);
+                } else {
+                    // Fallback: 使用 API 返回的字段（可能过期）
+                    previousClose = Number(data.previous_close);
+                    console.warn('⚠️ Using API previous_close (may be stale):', previousClose);
+                }
+
+                // 使用 Baseline 图表：高于基准线的部分为绿色，低于基准线的部分为红色
+                const baselineSeries = chart.addBaselineSeries({
+                    baseValue: { type: 'price', price: previousClose },
+                    topLineColor: '#26a69a',
+                    topFillColor1: 'rgba(38, 166, 154, 0.28)',
+                    topFillColor2: 'rgba(38, 166, 154, 0.05)',
+                    bottomLineColor: '#ef5350',
+                    bottomFillColor1: 'rgba(239, 83, 80, 0.05)',
+                    bottomFillColor2: 'rgba(239, 83, 80, 0.28)',
                     lineWidth: 2,
-                    lineType: LightweightCharts.LineType.Curved,
+                    lineType: LightweightCharts.LineType.Simple,  // 移除圆角
                     crosshairMarkerVisible: true,
                     crosshairMarkerRadius: 6,
                     lastValueVisible: true,
@@ -1517,49 +1584,16 @@
                     title: 'Price'
                 });
 
-                chartInstances.intradayAreaSeries = areaSeries;
-                chartInstances.intradayCandleSeries = areaSeries; // compatibility with legacy update paths
-                chartInstances.intradayBaselineSeries = null;
+                chartInstances.intradayAreaSeries = baselineSeries;
+                chartInstances.intradayCandleSeries = baselineSeries; // compatibility with legacy update paths
+                chartInstances.intradayBaselineSeries = null; // 不再需要单独的基准线
 
-                const areaData = dataPoints.map(d => ({
+                const baselineData = dataPoints.map(d => ({
                     time: toUtcSeconds(d.time),
                     value: d.close
                 }));
 
-                areaSeries.setData(areaData);
-
-                const previousClose = Number(data.previous_close);
-                const latestClose = dataPoints.length ? Number(dataPoints[dataPoints.length - 1].close) : Number(data.current_price ?? data.latest_close);
-                const isBelowPrevious = Number.isFinite(previousClose) && Number.isFinite(latestClose) && latestClose < previousClose;
-                const bullishColor = 'rgba(38, 166, 154, 0.65)';
-                const bearishColor = 'rgba(239, 83, 80, 0.65)';
-                const topColor = isBelowPrevious ? bearishColor : bullishColor;
-                const lineColor = isBelowPrevious ? '#ef5350' : '#26a69a';
-                const bottomColor = isBelowPrevious ? 'rgba(239, 83, 80, 0.05)' : 'rgba(38, 166, 154, 0.05)';
-
-                areaSeries.applyOptions({
-                    topColor,
-                    bottomColor,
-                    lineColor
-                });
-
-                if (Number.isFinite(previousClose) && areaData.length >= 1) {
-                    const baselineSeries = chart.addLineSeries({
-                        color: '#9E9E9E',
-                        lineWidth: 1,
-                        lineStyle: LightweightCharts.LineStyle.Dotted,
-                        lastValueVisible: false,
-                        priceLineVisible: false,
-                        crosshairMarkerVisible: false
-                    });
-                    const firstTime = areaData[0].time;
-                    const lastTime = areaData[areaData.length - 1].time;
-                    baselineSeries.setData([
-                        { time: firstTime, value: previousClose },
-                        { time: lastTime, value: previousClose }
-                    ]);
-                    chartInstances.intradayBaselineSeries = baselineSeries;
-                }
+                baselineSeries.setData(baselineData);
 
                 // Fit the viewport to display all data points
                 chart.timeScale().fitContent();
@@ -1591,7 +1625,7 @@
                         return;
                     }
                     
-                    const candlePrice = param.seriesData.get(areaSeries);
+                    const candlePrice = param.seriesData.get(baselineSeries);
                     const vwapValue = vwapSeries ? param.seriesData.get(vwapSeries) : null;
                     
                     if (!candlePrice) {
@@ -1643,7 +1677,7 @@
                     }
 
                     const hoveredIndex = typeof param.time === 'number'
-                        ? areaData.findIndex(point => point.time === param.time)
+                        ? baselineData.findIndex(point => point.time === param.time)
                         : -1;
                     const hoveredSourcePoint = hoveredIndex !== -1 ? dataPoints[hoveredIndex] : null;
 
@@ -1682,6 +1716,9 @@
                 window.addEventListener('resize', () => {
                     chart.applyOptions({ width: container.clientWidth });
                 });
+
+                // 更新 Stock Info Banner
+                updateStockInfo(data);
             }
 
             // Helpers to convert backend timestamps for chart consumption
@@ -2527,6 +2564,17 @@
                     // 根据 chartType 决定加载什么数据
                     if (rangeConfig.chartType === 'intraday') {
                         // 1D: 使用专用的日内分时API（1分钟间隔）
+                        // 先确保有日线数据（用于计算昨日收盘价基准线）
+                        if (!cachedDailyData) {
+                            cachedDailyData = await stocksApi.getHistoricalData(
+                                currentSymbol, 
+                                3650, 
+                                '1d', 
+                                'max'
+                            );
+                            console.log('✅ Daily data cached:', cachedDailyData?.data_points?.length, 'points');
+                        }
+                        
                         if (!cachedIntradayData) {
                             console.log('📈 Fetching intraday data (1-minute intervals)...');
                             cachedIntradayData = await stocksApi.getIntradayData(currentSymbol);
@@ -2611,7 +2659,24 @@
                                     return Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute, second) / 1000;
                                 };
 
-                                const areaData = dataPoints.map(d => ({
+                                // 获取昨日收盘价：从缓存的日线数据中提取
+                                let previousClose = NaN;
+                                if (cachedDailyData && cachedDailyData.data_points && cachedDailyData.data_points.length >= 2) {
+                                    const prevDayPoint = cachedDailyData.data_points[cachedDailyData.data_points.length - 2];
+                                    previousClose = Number(prevDayPoint.close);
+                                } else {
+                                    previousClose = Number(intradayData.previous_close);
+                                    console.warn('⚠️ Incremental update: using API previous_close (may be stale):', previousClose);
+                                }
+
+                                // 更新 baseline series 的基准值
+                                if (Number.isFinite(previousClose)) {
+                                    chartInstances.intradayCandleSeries.applyOptions({
+                                        baseValue: { type: 'price', price: previousClose }
+                                    });
+                                }
+
+                                const baselineData = dataPoints.map(d => ({
                                     time: toUtcSeconds(d.time),
                                     value: d.close
                                 }));
@@ -2621,44 +2686,10 @@
                                     value: d.vwap
                                 }));
 
-                                chartInstances.intradayCandleSeries.setData(areaData);
+                                chartInstances.intradayCandleSeries.setData(baselineData);
                                 chartInstances.intradayVwapSeries.setData(vwapData);
 
-                                const previousClose = Number(intradayData.previous_close);
-                                const latestClose = dataPoints.length ? Number(dataPoints[dataPoints.length - 1].close) : Number(intradayData.current_price ?? intradayData.latest_close);
-                                const isBelowPrevious = Number.isFinite(previousClose) && Number.isFinite(latestClose) && latestClose < previousClose;
-                                const bullishColor = 'rgba(38, 166, 154, 0.65)';
-                                const bearishColor = 'rgba(239, 83, 80, 0.65)';
-                                const topColor = isBelowPrevious ? bearishColor : bullishColor;
-                                const lineColor = isBelowPrevious ? '#ef5350' : '#26a69a';
-                                const bottomColor = isBelowPrevious ? 'rgba(239, 83, 80, 0.05)' : 'rgba(38, 166, 154, 0.05)';
-
-                                chartInstances.intradayCandleSeries.applyOptions({
-                                    topColor,
-                                    bottomColor,
-                                    lineColor
-                                });
-
-                                if (Number.isFinite(previousClose) && areaData.length >= 1) {
-                                    if (!chartInstances.intradayBaselineSeries) {
-                                        chartInstances.intradayBaselineSeries = chartInstances.intradayChart.addLineSeries({
-                                            color: '#9E9E9E',
-                                            lineWidth: 1,
-                                            lineStyle: LightweightCharts.LineStyle.Dotted,
-                                            lastValueVisible: false,
-                                            priceLineVisible: false,
-                                            crosshairMarkerVisible: false
-                                        });
-                                    }
-                                    const firstTime = areaData[0].time;
-                                    const lastTime = areaData[areaData.length - 1].time;
-                                    chartInstances.intradayBaselineSeries.setData([
-                                        { time: firstTime, value: previousClose },
-                                        { time: lastTime, value: previousClose }
-                                    ]);
-                                }
-
-                                console.log('✅ Intraday chart updated:', areaData.length, 'bars');
+                                console.log('✅ Intraday chart updated:', baselineData.length, 'bars');
                             } else {
                                 // 图表不存在，重新创建
                                 cachedIntradayData = null;
@@ -2815,14 +2846,14 @@
                 }
             });
 
-            if (elements.refreshTopPicks) {
-                elements.refreshTopPicks.addEventListener('click', () => {
-                    loadTopPicks();
-                });
+            const gainersList = document.getElementById('topGainersList');
+            if (gainersList) {
+                gainersList.addEventListener('click', handleTopPickSelection);
             }
 
-            if (elements.topPicksList) {
-                elements.topPicksList.addEventListener('click', handleTopPickSelection);
+            const losersList = document.getElementById('topLosersList');
+            if (losersList) {
+                losersList.addEventListener('click', handleTopPickSelection);
             }
 
             if (elements.generateButton) {

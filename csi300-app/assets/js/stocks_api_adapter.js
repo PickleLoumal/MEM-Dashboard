@@ -91,9 +91,9 @@ class StocksApiAdapter {
         }
     }
 
-    async getTopPicks(limit = 5) {
+    async getTopPicks(limit = 5, direction = 'buy') {
         try {
-            const response = await fetch(`${this.baseUrl}/api/stocks/top-picks/?limit=${limit}`);
+            const response = await fetch(`${this.baseUrl}/api/stocks/top-picks/?limit=${limit}&direction=${direction}`);
             return await response.json();
         } catch (error) {
             console.error('Error fetching top picks:', error);
