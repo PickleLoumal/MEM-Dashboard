@@ -19,7 +19,7 @@ const CSI300Config = {
     
     // Application settings
     APP_CONFIG: {
-        APP_NAME: 'CSI300 Dashboard',
+        APP_NAME: 'Chinese Stock Dashboard',
         VERSION: '1.0.0',
         PAGE_SIZE: 20,
         DEFAULT_CURRENCY: 'CNY'

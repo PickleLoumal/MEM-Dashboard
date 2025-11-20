@@ -71,7 +71,7 @@ class StocksApiAdapter {
      * @param {string} symbol - 股票代码
      * @param {number} days - 天数
      * @param {string} interval - 数据间隔 ('1m', '5m', '15m', '30m', '1h', '1d', '1wk', '1mo')
-     * @param {string} period - yfinance period ('1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y')
+     * @param {string} period - Legacy period string kept for compatibility (ignored by AkShare backend)
      */
     async getHistoricalData(symbol, days = 30, interval = '1d', period = null) {
         try {
@@ -87,6 +87,30 @@ class StocksApiAdapter {
             return data;
         } catch (error) {
             console.error('Error fetching historical data:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async getTopPicks(limit = 5, direction = 'buy') {
+        try {
+            const response = await fetch(`${this.baseUrl}/api/stocks/top-picks/?limit=${limit}&direction=${direction}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching top picks:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async generateStockScore(symbol) {
+        try {
+            const response = await fetch(`${this.baseUrl}/api/stocks/score/generate/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symbol })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error generating stock score:', error);
             return { success: false, error: error.message };
         }
     }
@@ -143,4 +167,3 @@ class StocksApiAdapter {
 
 // 创建全局实例
 window.stocksApiAdapter = new StocksApiAdapter();
-
