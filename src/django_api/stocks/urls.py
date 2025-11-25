@@ -13,7 +13,9 @@ urlpatterns = [
     # Historical data endpoint - 历史数据（日K线，带技术指标）
     path('historical/', views.historical_data, name='historical-data'),
     path('top-picks/', views.top_picks, name='top-picks'),
+    path('top-picks-fast/', views.top_picks_with_sparklines, name='top-picks-fast'),
     path('score/generate/', views.generate_stock_score, name='generate-score'),
+    path('score/generate-all/', views.generate_all_scores, name='generate-all-scores'),
     
     # Fund flow page - 资金流向页面
     path('fund-flow/', views.fund_flow_page, name='fund-flow-page'),

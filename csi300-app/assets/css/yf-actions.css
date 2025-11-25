@@ -1,0 +1,63 @@
+/* Market Actions Toolbar (Minimalist / Pro Trader Style) */
+.yf-sidebar-actions {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb; /* Subtle separator */
+    padding-bottom: 8px;
+}
+
+.yf-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    padding: 4px 0;
+    font-family: "Roboto Mono", "Menlo", monospace; /* Data/Code feel */
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b; /* Muted text */
+    cursor: pointer;
+    transition: color 0.15s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.yf-action-btn:hover {
+    color: #0f172a; /* Darker on hover */
+    text-decoration: none;
+}
+
+.yf-action-btn:active {
+    color: #000;
+    opacity: 0.7;
+}
+
+.yf-action-btn.is-loading {
+    cursor: wait;
+    color: #94a3b8;
+}
+
+/* Blink animation for loading state text */
+.yf-action-btn.is-loading .yf-btn-text {
+    animation: blink 1s infinite;
+}
+
+.yf-action-icon {
+    display: block;
+    color: inherit;
+    stroke-width: 2px;
+}
+
+/* Error state */
+.yf-action-btn.is-error {
+    color: #ef4444;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
+}
