@@ -101,6 +101,17 @@ class StocksApiAdapter {
         }
     }
 
+    async getTopPicksFast(limit = 5, direction = 'buy') {
+        try {
+            // Optimized endpoint with sparklines included
+            const response = await fetch(`${this.baseUrl}/api/stocks/top-picks-fast/?limit=${limit}&direction=${direction}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching top picks (fast):', error);
+            return { success: false, error: error.message };
+        }
+    }
+
     async generateStockScore(symbol) {
         try {
             const response = await fetch(`${this.baseUrl}/api/stocks/score/generate/`, {

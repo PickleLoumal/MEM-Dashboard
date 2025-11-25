@@ -293,6 +293,119 @@ def lightweight_chart(request):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
+def top_picks_with_sparklines(request):
+    """
+    Optimized endpoint: returns top picks WITH sparkline data in one request.
+    Reduces frontend API calls from 10+ to 1.
+    """
+    try:
+        limit = int(request.query_params.get('limit', 5))
+        direction = (request.query_params.get('direction') or 'buy').lower()
+        
+        # Get latest calculation date
+        latest_date = StockScore.objects.aggregate(
+            latest=Max('calculation_date')
+        )['latest']
+        
+        if not latest_date:
+            return Response({
+                'success': False,
+                'error': 'No score data available'
+            })
+        
+        # Get scores
+        scores_qs = StockScore.objects.filter(calculation_date=latest_date)
+        if direction == 'sell':
+            scores_qs = scores_qs.order_by('total_score')[:limit]
+        else:
+            scores_qs = scores_qs.order_by('-total_score')[:limit]
+        
+        picks = []
+        symbols = [score.ticker for score in scores_qs]
+        
+        # Batch fetch historical data for all symbols
+        sparklines = {}
+        for symbol in symbols:
+            try:
+                hist_data = VWAPCalculationService.get_historical_data(
+                    symbol=symbol,
+                    days=25,
+                    interval='1d',
+                    period=None
+                )
+
+                if hist_data is None or hist_data.empty:
+                    sparklines[symbol] = []
+                    continue
+
+                recent_rows = hist_data.tail(25)
+                sparkline_points = []
+
+                for _, row in recent_rows.iterrows():
+                    close_value = row.get('Close')
+                    if close_value is None or pd.isna(close_value):
+                        continue
+
+                    date_value = (
+                        row.get('Date_Str')
+                        or row.get('Timestamp')
+                        or row.get('Date')
+                        or row.get('date')
+                    )
+
+                    if isinstance(date_value, (int, float)):
+                        date_value = pd.to_datetime(date_value, errors='coerce')
+
+                    if hasattr(date_value, 'strftime'):
+                        date_str = date_value.strftime('%Y-%m-%d')
+                    elif isinstance(date_value, str):
+                        date_str = date_value.split(' ')[0]
+                    else:
+                        continue
+
+                    try:
+                        sparkline_points.append({
+                            'date': date_str,
+                            'close': float(close_value)
+                        })
+                    except (TypeError, ValueError):
+                        continue
+
+                sparklines[symbol] = sparkline_points if len(sparkline_points) >= 2 else []
+            except Exception as e:
+                logger.warning(f'Failed to get sparkline for {symbol}: {e}')
+                sparklines[symbol] = []
+        
+        # Build response
+        for score in scores_qs:
+            pick = {
+                'symbol': score.ticker,
+                'name': score.company_name,
+                'total_score': float(score.total_score),
+                'last_close': float(score.last_close) if score.last_close else None,
+                'sparkline': sparklines.get(score.ticker, []),
+                'last_trading_date': score.last_trading_date.isoformat() if score.last_trading_date else None,
+            }
+            picks.append(pick)
+        
+        return Response({
+            'success': True,
+            'picks': picks,
+            'calculation_date': latest_date.isoformat(),
+            'direction': direction,
+            'count': len(picks)
+        })
+        
+    except Exception as e:
+        logger.error(f'Error in top_picks_with_sparklines: {e}', exc_info=True)
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def top_picks(request):
     """Return today's top scoring stocks to power the dashboard cards."""
     try:
@@ -404,3 +517,72 @@ def generate_stock_score(request):
             'name': company.name,
         }
     })
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def generate_all_scores(request):
+    """Trigger scoring calculation for all stocks."""
+    try:
+        script_path = PROJECT_ROOT / 'scripts' / 'active' / 'daily_score_calculator_db.py'
+        if not script_path.exists():
+            return Response({
+                'success': False,
+                'error': f'Scoring script not found at {script_path}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Run the script with optimized parameters
+        cmd = [
+            sys.executable,
+            str(script_path),
+            '--batch-size', '50',
+            '--fetch-workers', '10',
+        ]
+        
+        logger.info(f'Starting score generation: {" ".join(cmd)}')
+        
+        # Run asynchronously in background (non-blocking)
+        import threading
+        
+        def run_script():
+            try:
+                result = subprocess.run(
+                    cmd, 
+                    cwd=PROJECT_ROOT, 
+                    capture_output=True, 
+                    text=True,
+                    timeout=600  # 10 分钟超时
+                )
+                
+                if result.returncode == 0:
+                    logger.info('✅ Score generation completed successfully')
+                    logger.info(f'Output: {result.stdout[-500:]}')  # 最后 500 字符
+                else:
+                    logger.error(f'❌ Score generation failed with code {result.returncode}')
+                    logger.error(f'Error: {result.stderr}')
+                    
+            except subprocess.TimeoutExpired:
+                logger.error('❌ Score generation timeout after 10 minutes')
+            except Exception as e:
+                logger.error(f'❌ Error running score generation: {e}')
+                import traceback
+                logger.error(traceback.format_exc())
+        
+        thread = threading.Thread(target=run_script, daemon=True)
+        thread.start()
+        
+        return Response({
+            'success': True,
+            'message': 'Score generation started in background. Check server logs for progress.',
+            'status': 'processing',
+            'estimated_time': '3-5 minutes for 250 stocks'
+        })
+        
+    except Exception as exc:
+        logger.error(f'Error triggering score generation: {exc}')
+        import traceback
+        logger.error(traceback.format_exc())
+        return Response({
+            'success': False,
+            'error': str(exc)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

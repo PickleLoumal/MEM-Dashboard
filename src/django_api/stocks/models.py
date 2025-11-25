@@ -44,6 +44,7 @@ class ScoreCalculationLog(models.Model):
     """Tracking metadata around each daily scoring run."""
 
     STATUS_CHOICES = [
+        ('pending', 'Pending'),
         ('running', 'Running'),
         ('completed', 'Completed'),
         ('failed', 'Failed'),
@@ -52,10 +53,12 @@ class ScoreCalculationLog(models.Model):
     calculation_date = models.DateField(unique=True, help_text="Date of the scoring batch")
     start_time = models.DateTimeField(help_text="Start timestamp of the batch")
     end_time = models.DateTimeField(blank=True, null=True, help_text="End timestamp of the batch")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='running', help_text="Status of the batch")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', help_text="Status of the batch")
     total_stocks = models.PositiveIntegerField(default=0, help_text="Number of stocks processed")
     successful_stocks = models.PositiveIntegerField(default=0, help_text="Number of successful stock updates")
     failed_stocks = models.PositiveIntegerField(default=0, help_text="Number of stocks that failed to process")
+    processed_stocks = models.PositiveIntegerField(default=0, help_text="Number of stocks processed so far")
+    current_stock = models.CharField(max_length=50, blank=True, help_text="Currently processing stock symbol")
     error_message = models.TextField(blank=True, help_text="Error message if the run failed")
 
     class Meta:

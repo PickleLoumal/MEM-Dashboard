@@ -24,6 +24,7 @@
     <!-- Application Configuration -->
     <link rel="stylesheet" href="assets/css/app-base.css">
     <link rel="stylesheet" href="assets/css/fund-flow.css">
+    <link rel="stylesheet" href="assets/css/yf-actions.css">
 
     <!-- Stocks API Adapter for Django Backend -->
     <script src="assets/js/stocks_api_adapter.js"></script>
@@ -117,6 +118,16 @@
     </main>
 
     <aside class="fund-flow-sidebar">
+        <!-- Market Actions Toolbar -->
+        <div class="yf-sidebar-actions">
+            <button id="generateScoreBtn" class="yf-action-btn" aria-label="Generate Data Analysis">
+                <svg class="yf-action-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+                <span class="yf-btn-text">GENERATE SIGNAL</span>
+            </button>
+        </div>
+
         <div class="yf-card">
             <div class="yf-card-header">
                 <h3 class="yf-card-title">Top Gainers</h3>
@@ -374,20 +385,29 @@
                 const chartQueue = [];
                 container.innerHTML = picks.map((pick, index) => {
                     const metrics = calculateChangeMetrics(pick);
+                    const hasMetrics = Boolean(metrics);
+                    const changeValue = hasMetrics ? metrics.change : null;
+                    const changePct = hasMetrics ? metrics.pct : null;
+                    const trendUp = hasMetrics ? Boolean(metrics.trendUp) : false;
+                    const changeClass = hasMetrics ? (trendUp ? 'positive' : 'negative') : 'neutral';
                     
-                    const changeValue = metrics ? metrics.change : 0;
-                    const changePct = metrics ? metrics.pct : 0;
-                    const isPositive = changeValue >= 0;
-                    const changeClass = isPositive ? 'positive' : 'negative';
+                    const formatSigned = (value, suffix = '') => {
+                        if (!Number.isFinite(value)) {
+                            return '--';
+                        }
+                        const sign = value > 0 ? '+' : value < 0 ? '' : '';
+                        return `${sign}${value.toFixed(2)}${suffix}`;
+                    };
                     
-                    const formattedChange = Number.isFinite(changeValue) ? `${isPositive ? '+' : ''}${changeValue.toFixed(2)}` : '--';
-                    const formattedPct = Number.isFinite(changePct) ? `${isPositive ? '+' : ''}${changePct.toFixed(2)}%` : '--';
+                    const formattedChange = formatSigned(changeValue);
+                    const formattedPct = formatSigned(changePct, '%');
                     
-                    const lastPrice = metrics ? metrics.last : Number(pick.last_close);
-                    const priceDisplay = Number.isFinite(lastPrice) ? lastPrice.toFixed(2) : '--';
+                    const lastPriceRaw = hasMetrics ? metrics.last : Number(pick.last_close);
+                    const priceDisplay = Number.isFinite(lastPriceRaw) ? lastPriceRaw.toFixed(2) : '--';
                     
                     const chartId = `${type}Sparkline-${index}`;
-                    chartQueue.push({ id: chartId, data: pick.sparkline || [], trendUp: isPositive });
+                    const sparklineData = Array.isArray(pick.sparkline) ? pick.sparkline : [];
+                    chartQueue.push({ id: chartId, data: sparklineData, trendUp });
 
                     return `
                         <div class="yf-row" role="button" data-symbol="${escapeHtml(pick.symbol)}" data-name="${escapeHtml(pick.name || pick.symbol)}">
@@ -416,45 +436,20 @@
                 const loserContainer = document.getElementById('topLosersList');
                 
                 try {
+                    // ⚡ 使用优化的批量 API（包含 sparkline 数据）
                     const [gainersRes, losersRes] = await Promise.all([
-                        stocksApi.getTopPicks(5, 'buy'),
-                        stocksApi.getTopPicks(5, 'sell')
+                        stocksApi.getTopPicksFast(5, 'buy'),
+                        stocksApi.getTopPicksFast(5, 'sell')
                     ]);
 
-                    // 为每个 pick 获取实时历史数据（替换后端的 sparkline）
                     if (gainersRes && gainersRes.success && gainersRes.picks) {
-                        const gainersWithData = await Promise.all(
-                            gainersRes.picks.map(async (pick) => {
-                                const histData = await stocksApi.getHistoricalData(pick.symbol, 90, '1d');
-                                if (histData && histData.success && histData.data_points) {
-                                    // 使用实时 data_points 替换 sparkline
-                                    pick.sparkline = histData.data_points.slice(-25).map(point => ({
-                                        date: point.date,
-                                        close: point.close
-                                    }));
-                                }
-                                return pick;
-                            })
-                        );
-                        renderTopPicksList('topGainersList', gainersWithData, 'gainers');
+                        renderTopPicksList('topGainersList', gainersRes.picks, 'gainers');
                     } else {
                          if (gainerContainer) gainerContainer.innerHTML = '<div class="top-picks-empty">Failed to load gainers.</div>';
                     }
 
                     if (losersRes && losersRes.success && losersRes.picks) {
-                        const losersWithData = await Promise.all(
-                            losersRes.picks.map(async (pick) => {
-                                const histData = await stocksApi.getHistoricalData(pick.symbol, 90, '1d');
-                                if (histData && histData.success && histData.data_points) {
-                                    pick.sparkline = histData.data_points.slice(-25).map(point => ({
-                                        date: point.date,
-                                        close: point.close
-                                    }));
-                                }
-                                return pick;
-                            })
-                        );
-                        renderTopPicksList('topLosersList', losersWithData, 'losers');
+                        renderTopPicksList('topLosersList', losersRes.picks, 'losers');
                     } else {
                          if (loserContainer) loserContainer.innerHTML = '<div class="top-picks-empty">Failed to load losers.</div>';
                     }
@@ -1133,13 +1128,7 @@
                             <h1 class="stock-name-large">${name}</h1>
                             <span class="stock-symbol-large">${symbol}</span>
                         </div>
-                        <button type="button" class="auto-refresh-toggle" id="autoRefreshToggle" aria-label="Toggle auto refresh" aria-pressed="${autoRefreshEnabled}">
-                            <svg class="auto-refresh-icon" viewBox="0 0 24 24" role="presentation">
-                                <path d="M16.24 7.76a6 6 0 0 0-9.9 2.3M7.76 16.24a6 6 0 0 0 9.9-2.3" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-                                <polyline points="3 4 3 10 9 10" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-                                <polyline points="21 20 21 14 15 14" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </button>
+                        <!-- Auto refresh removed -->
                     </div>
                     ${priceBlock}
                     <div class="stock-last-update">
@@ -2887,6 +2876,55 @@
             }
 
             // Initialize
+            // Generate Score Button Logic
+            const generateBtn = document.getElementById('generateScoreBtn');
+            if (generateBtn) {
+                generateBtn.addEventListener('click', async () => {
+                    if (generateBtn.classList.contains('is-loading')) return;
+
+                    const btnText = generateBtn.querySelector('.yf-btn-text');
+                    const originalText = btnText.textContent;
+                    
+                    try {
+                        generateBtn.classList.add('is-loading');
+                        btnText.textContent = 'PROCESSING...';
+
+                        // Call backend API to generate scores for all stocks
+                        const response = await fetch(`${stocksApi.baseUrl}/api/stocks/score/generate-all/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            btnText.textContent = 'DONE';
+                            // Refresh Top Picks to show new scores
+                            await loadTopPicks();
+                            
+                            setTimeout(() => {
+                                generateBtn.classList.remove('is-loading');
+                                btnText.textContent = originalText;
+                            }, 1500);
+                        } else {
+                            throw new Error(data.error || 'Generation failed');
+                        }
+                    } catch (error) {
+                        console.error('Error generating scores:', error);
+                        btnText.textContent = 'FAILED';
+                        generateBtn.classList.remove('is-loading');
+                        generateBtn.classList.add('is-error'); 
+                        
+                        setTimeout(() => {
+                            generateBtn.classList.remove('is-error');
+                            btnText.textContent = originalText;
+                        }, 2000);
+                    }
+                });
+            }
+
             async function init() {
                 const urlParams = getUrlParams();
                 
