@@ -718,8 +718,28 @@
                 // Financial Metrics
                 grid.appendChild(this.createFinancialMetricsSection());
 
-                // Ratio Analysis
+                // EPS & Growth
+                if (this.hasEPSData()) {
+                    grid.appendChild(this.createEPSSection());
+                }
+
+                // Cash Flow & EBITDA
+                if (this.hasCashFlowData()) {
+                    grid.appendChild(this.createCashFlowSection());
+                }
+
+                // Valuation & Profitability Ratios
                 grid.appendChild(this.createRatioAnalysisSection());
+
+                // Liquidity Ratios
+                if (this.hasLiquidityData()) {
+                    grid.appendChild(this.createLiquiditySection());
+                }
+
+                // Debt & Interest
+                if (this.hasDebtData()) {
+                    grid.appendChild(this.createDebtInterestSection());
+                }
 
                 // Dividend Information
                 if (this.hasDividendData()) {
@@ -753,9 +773,10 @@
                 const section = this.createDetailSection('Market Data');
                 const content = section.querySelector('.section-content');
                 
-                content.appendChild(this.createFieldRow('Current Price (Local Currency)', this.formatNumber(this.company.price_local_currency, 2)));
-                content.appendChild(this.createFieldRow('Market Cap (Local Currency)', this.formatNumber(this.company.market_cap_local, 0)));
-                content.appendChild(this.createFieldRow('Market Cap (USD Million)', this.formatNumber(this.company.market_cap_usd, 0)));
+                content.appendChild(this.createFieldRow('Current Price', this.formatNumber(this.company.price_local_currency, 2)));
+                content.appendChild(this.createFieldRow('Previous Close', this.formatNumber(this.company.previous_close, 2)));
+                content.appendChild(this.createFieldRow('Market Cap (Local)', this.formatNumber(this.company.market_cap_local, 0)));
+                content.appendChild(this.createFieldRow('Market Cap (USD)', this.formatNumber(this.company.market_cap_usd, 0)));
                 content.appendChild(this.createFieldRow('52-Week High', this.formatNumber(this.company.price_52w_high, 2)));
                 content.appendChild(this.createFieldRow('52-Week Low', this.formatNumber(this.company.price_52w_low, 2)));
                 
@@ -772,45 +793,124 @@
                 const section = this.createDetailSection('Financial Metrics');
                 const content = section.querySelector('.section-content');
                 
-                content.appendChild(this.createFieldRow('Total Revenue (Local Currency)', this.formatNumber(this.company.total_revenue_local, 0)));
-                content.appendChild(this.createFieldRow('LTM Revenue (Local Currency)', this.formatNumber(this.company.ltm_revenue_local, 0)));
+                content.appendChild(this.createFieldRow('Total Revenue', this.formatNumber(this.company.total_revenue_local, 0)));
+                content.appendChild(this.createFieldRow('LTM Revenue', this.formatNumber(this.company.ltm_revenue_local, 0)));
+                content.appendChild(this.createFieldRow('NTM Revenue', this.formatNumber(this.company.ntm_revenue_local, 0)));
                 content.appendChild(this.createFieldRow('Net Profits (FY0)', this.formatNumber(this.company.net_profits_fy0, 0)));
-                content.appendChild(this.createFieldRow('Total Assets (Local Currency)', this.formatNumber(this.company.total_assets_local, 0)));
-                content.appendChild(this.createFieldRow('Total Debt (Local Currency)', this.formatNumber(this.company.total_debt_local, 0)));
+                content.appendChild(this.createFieldRow('Total Assets', this.formatNumber(this.company.total_assets_local, 0)));
+                content.appendChild(this.createFieldRow('Net Assets', this.formatNumber(this.company.net_assets_local, 0)));
+                content.appendChild(this.createFieldRow('Total Debt', this.formatNumber(this.company.total_debt_local, 0)));
+                content.appendChild(this.createFieldRow('Asset Turnover (LTM)', this.formatNumber(this.company.asset_turnover_ltm, 2)));
+                
+                return section;
+            }
+
+            createEPSSection() {
+                const section = this.createDetailSection('Earnings Per Share');
+                const content = section.querySelector('.section-content');
+                
+                content.appendChild(this.createFieldRow('EPS (Trailing)', this.formatNumber(this.company.eps_trailing, 2)));
+                content.appendChild(this.createFieldRow('EPS Actual (FY0)', this.formatNumber(this.company.eps_actual_fy0, 2)));
+                content.appendChild(this.createFieldRow('EPS Forecast (FY1)', this.formatNumber(this.company.eps_forecast_fy1, 2)));
+                
+                // EPS Growth with color coding
+                const epsGrowth = this.company.eps_growth_percent;
+                const epsGrowthClass = epsGrowth > 0 ? 'positive' : epsGrowth < 0 ? 'negative' : '';
+                content.appendChild(this.createFieldRow('EPS Growth (%)', 
+                    epsGrowth ? `${this.formatNumber(epsGrowth * 100, 2)}%` : '-', epsGrowthClass));
+                
+                return section;
+            }
+
+            createCashFlowSection() {
+                const section = this.createDetailSection('Cash Flow & EBITDA');
+                const content = section.querySelector('.section-content');
+                
+                content.appendChild(this.createFieldRow('EBITDA (FY0)', this.formatNumber(this.company.ebitda_fy0, 0)));
+                content.appendChild(this.createFieldRow('EBITDA (FY-1)', this.formatNumber(this.company.ebitda_fy_minus_1, 0)));
+                content.appendChild(this.createFieldRow('Cash Flow Ops (FY0)', this.formatNumber(this.company.cash_flow_operations_fy0, 0)));
+                content.appendChild(this.createFieldRow('Cash Flow Ops (FY-1)', this.formatNumber(this.company.cash_flow_operations_fy_minus_1, 0)));
+                
+                return section;
+            }
+
+            createDebtInterestSection() {
+                const section = this.createDetailSection('Debt & Interest');
+                const content = section.querySelector('.section-content');
+                
+                content.appendChild(this.createFieldRow('Interest Expense (FY0)', this.formatNumber(this.company.interest_expense_fy0, 0)));
+                content.appendChild(this.createFieldRow('Effective Interest Rate', 
+                    this.company.effective_interest_rate ? `${this.formatNumber(this.company.effective_interest_rate * 100, 2)}%` : '-'));
+                
+                // Interest Coverage with color coding
+                const interestCoverage = this.company.interest_coverage_ratio;
+                const interestCoverageClass = interestCoverage > 5 ? 'positive' : interestCoverage < 2 ? 'negative' : '';
+                content.appendChild(this.createFieldRow('Interest Coverage Ratio', 
+                    this.formatNumber(interestCoverage, 2), interestCoverageClass));
+                
+                // Debt to Total Assets with color coding
+                const debtToAssets = this.company.debt_to_total_assets;
+                const debtToAssetsClass = debtToAssets > 60 ? 'negative' : debtToAssets < 30 ? 'positive' : '';
+                content.appendChild(this.createFieldRow('Debt to Total Assets', 
+                    debtToAssets ? `${this.formatNumber(debtToAssets * 100, 2)}%` : '-', debtToAssetsClass));
+                
+                // Debt to Equity with color coding
+                const debtToEquity = this.company.debt_to_equity;
+                const debtToEquityClass = debtToEquity > 100 ? 'negative' : debtToEquity < 50 ? 'positive' : '';
+                content.appendChild(this.createFieldRow('Debt to Equity', 
+                    debtToEquity ? `${this.formatNumber(debtToEquity * 100, 2)}%` : '-', debtToEquityClass));
                 
                 return section;
             }
 
             createRatioAnalysisSection() {
-                const section = this.createDetailSection('Ratio Analysis');
+                const section = this.createDetailSection('Valuation & Profitability Ratios');
                 const content = section.querySelector('.section-content');
                 
+                // Valuation Ratios
                 content.appendChild(this.createFieldRow('P/E Ratio (TTM)', this.formatNumber(this.company.pe_ratio_trailing, 2)));
+                content.appendChild(this.createFieldRow('P/E Ratio (Consensus)', this.formatNumber(this.company.pe_ratio_consensus, 2)));
                 content.appendChild(this.createFieldRow('PEG Ratio', this.formatNumber(this.company.peg_ratio, 2)));
                 
                 // ROE with color coding
                 const roe = this.company.roe_trailing;
                 const roeClass = roe > 15 ? 'positive' : roe < 5 ? 'negative' : '';
                 content.appendChild(this.createFieldRow('ROE (TTM)', 
-                    roe ? `${this.formatNumber(roe, 2)}%` : '-', roeClass));
+                    roe ? `${this.formatNumber(roe * 100, 2)}%` : '-', roeClass));
                 
                 // ROA with color coding
                 const roa = this.company.roa_trailing;
                 const roaClass = roa > 5 ? 'positive' : roa < 2 ? 'negative' : '';
                 content.appendChild(this.createFieldRow('ROA (TTM)', 
-                    roa ? `${this.formatNumber(roa, 2)}%` : '-', roaClass));
+                    roa ? `${this.formatNumber(roa * 100, 2)}%` : '-', roaClass));
                 
                 // Operating Margin with color coding
                 const opMargin = this.company.operating_margin_trailing;
                 const opMarginClass = opMargin > 10 ? 'positive' : opMargin < 5 ? 'negative' : '';
                 content.appendChild(this.createFieldRow('Operating Margin (TTM)', 
-                    opMargin ? `${this.formatNumber(opMargin, 2)}%` : '-', opMarginClass));
+                    opMargin ? `${this.formatNumber(opMargin * 100, 2)}%` : '-', opMarginClass));
+                
+                content.appendChild(this.createFieldRow('Operating Profits/Share', this.formatNumber(this.company.operating_profits_per_share, 2)));
+                content.appendChild(this.createFieldRow('Operating Leverage', this.formatNumber(this.company.operating_leverage, 2)));
+                
+                return section;
+            }
+
+            createLiquiditySection() {
+                const section = this.createDetailSection('Liquidity Ratios');
+                const content = section.querySelector('.section-content');
                 
                 // Current Ratio with color coding
                 const currentRatio = this.company.current_ratio;
                 const currentRatioClass = currentRatio > 1.5 ? 'positive' : currentRatio < 1 ? 'negative' : '';
-                content.appendChild(this.createFieldRow('Current Ratio (TTM)', 
+                content.appendChild(this.createFieldRow('Current Ratio', 
                     this.formatNumber(currentRatio, 2), currentRatioClass));
+                
+                // Quick Ratio with color coding
+                const quickRatio = this.company.quick_ratio;
+                const quickRatioClass = quickRatio > 1 ? 'positive' : quickRatio < 0.5 ? 'negative' : '';
+                content.appendChild(this.createFieldRow('Quick Ratio', 
+                    this.formatNumber(quickRatio, 2), quickRatioClass));
                 
                 return section;
             }
@@ -820,41 +920,37 @@
                 const content = section.querySelector('.section-content');
                 
                 content.appendChild(this.createFieldRow('Dividend Yield (FY0)', 
-                    this.company.dividend_yield_fy0 ? `${this.formatNumber(this.company.dividend_yield_fy0, 2)}%` : '-'));
+                    this.company.dividend_yield_fy0 ? `${this.formatNumber(this.company.dividend_yield_fy0 * 100, 2)}%` : '-'));
                 content.appendChild(this.createFieldRow('Dividend Payout Ratio', 
-                    this.company.dividend_payout_ratio ? `${this.formatNumber(this.company.dividend_payout_ratio, 2)}%` : '-'));
+                    this.company.dividend_payout_ratio ? `${this.formatNumber(this.company.dividend_payout_ratio * 100, 2)}%` : '-'));
                 content.appendChild(this.createFieldRow('Dividend (Local Currency)', this.formatNumber(this.company.dividend_local_currency, 2)));
+                
+                // Dividend CAGR
+                content.appendChild(this.createFieldRow('Dividend 3yr CAGR', 
+                    this.company.dividend_3yr_cagr ? `${this.formatNumber(this.company.dividend_3yr_cagr * 100, 2)}%` : '-'));
+                content.appendChild(this.createFieldRow('Dividend 5yr CAGR', 
+                    this.company.dividend_5yr_cagr ? `${this.formatNumber(this.company.dividend_5yr_cagr * 100, 2)}%` : '-'));
+                content.appendChild(this.createFieldRow('Dividend 10yr CAGR', 
+                    this.company.dividend_10yr_cagr ? `${this.formatNumber(this.company.dividend_10yr_cagr * 100, 2)}%` : '-'));
                 
                 return section;
             }
 
             createRiskAssessmentSection() {
-                const section = this.createDetailSection('Risk Assessment');
+                const section = this.createDetailSection('Risk Assessment (Altman Z-Score)');
                 const content = section.querySelector('.section-content');
                 
                 // Altman Z Score Manufacturing with color coding
                 const altmanMfg = this.company.altman_z_score_manufacturing;
                 const altmanMfgClass = altmanMfg > 2.99 ? 'positive' : altmanMfg < 1.81 ? 'negative' : '';
-                content.appendChild(this.createFieldRow('Altman Z Score (Manufacturing)', 
+                content.appendChild(this.createFieldRow('Z-Score (Manufacturing)', 
                     this.formatNumber(altmanMfg, 2), altmanMfgClass));
                 
                 // Altman Z Score Non-Manufacturing with color coding
                 const altmanNonMfg = this.company.altman_z_score_non_manufacturing;
                 const altmanNonMfgClass = altmanNonMfg > 2.6 ? 'positive' : altmanNonMfg < 1.1 ? 'negative' : '';
-                content.appendChild(this.createFieldRow('Altman Z Score (Non-Manufacturing)', 
+                content.appendChild(this.createFieldRow('Z-Score (Non-Manufacturing)', 
                     this.formatNumber(altmanNonMfg, 2), altmanNonMfgClass));
-                
-                // Debt to Total Assets with color coding
-                const debtToAssets = this.company.debt_to_total_assets;
-                const debtToAssetsClass = debtToAssets > 60 ? 'negative' : debtToAssets < 30 ? 'positive' : '';
-                content.appendChild(this.createFieldRow('Debt to Total Assets (FY0)', 
-                    debtToAssets ? `${this.formatNumber(debtToAssets, 2)}%` : '-', debtToAssetsClass));
-                
-                // Interest Coverage Ratio with color coding
-                const interestCoverage = this.company.interest_coverage_ratio;
-                const interestCoverageClass = interestCoverage > 5 ? 'positive' : interestCoverage < 2 ? 'negative' : '';
-                content.appendChild(this.createFieldRow('Interest Coverage Ratio (FY0)', 
-                    this.formatNumber(interestCoverage, 2), interestCoverageClass));
                 
                 return section;
             }
@@ -889,15 +985,43 @@
 
             hasRiskData() {
                 return this.company.altman_z_score_manufacturing || 
-                       this.company.altman_z_score_non_manufacturing ||
-                       this.company.debt_to_total_assets ||
-                       this.company.interest_coverage_ratio;
+                       this.company.altman_z_score_non_manufacturing;
             }
 
             hasDividendData() {
                 return this.company.dividend_yield_fy0 || 
                        this.company.dividend_payout_ratio ||
-                       this.company.dividend_local_currency;
+                       this.company.dividend_local_currency ||
+                       this.company.dividend_3yr_cagr ||
+                       this.company.dividend_5yr_cagr ||
+                       this.company.dividend_10yr_cagr;
+            }
+
+            hasEPSData() {
+                return this.company.eps_trailing || 
+                       this.company.eps_actual_fy0 ||
+                       this.company.eps_forecast_fy1 ||
+                       this.company.eps_growth_percent;
+            }
+
+            hasCashFlowData() {
+                return this.company.ebitda_fy0 || 
+                       this.company.ebitda_fy_minus_1 ||
+                       this.company.cash_flow_operations_fy0 ||
+                       this.company.cash_flow_operations_fy_minus_1;
+            }
+
+            hasLiquidityData() {
+                return this.company.current_ratio || 
+                       this.company.quick_ratio;
+            }
+
+            hasDebtData() {
+                return this.company.interest_expense_fy0 || 
+                       this.company.effective_interest_rate ||
+                       this.company.interest_coverage_ratio ||
+                       this.company.debt_to_total_assets ||
+                       this.company.debt_to_equity;
             }
 
             formatNumber(value, decimals = 0) {
