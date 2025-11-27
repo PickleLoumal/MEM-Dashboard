@@ -1,0 +1,486 @@
+/* 一比一复刻旧版 browser.html 样式 */
+
+/* ===== 基础样式 ===== */
+body {
+  margin: 0;
+  background-color: var(--app-body-bg);
+  color: var(--app-text);
+}
+
+/* ===== 容器布局 - 与旧版完全一致 ===== */
+.container {
+  max-width: 1536px;
+  margin: 0 auto;
+  padding: 80px 24px 48px;
+}
+
+/* app-shell 类 - 来自 app-base.css，但根据 browser.html 的内联样式进行调整以匹配原版间距 */
+.container.app-shell {
+  max-width: 1536px;
+  margin: 0 auto;
+  padding: 80px 24px 48px;
+}
+
+/* ===== 页面头部 ===== */
+.page-header {
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.page-title {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--app-heading);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.page-subtitle {
+  font-size: 15px;
+  color: var(--app-text-muted);
+  margin-top: 8px;
+}
+
+/* ===== 筛选区域 ===== */
+.filter-section {
+  padding: 24px 28px;
+  margin-bottom: 28px;
+  box-shadow: var(--app-shadow-subtle);
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-label {
+  color: var(--app-text);
+}
+
+.filter-input,
+.filter-select {
+  width: 100%;
+  transition:
+    border-color var(--app-transition-speed) ease,
+    box-shadow var(--app-transition-speed) ease,
+    background-color var(--app-transition-speed) ease;
+}
+
+.filter-help {
+  margin: 0;
+  font-size: 12px;
+  color: var(--app-text-muted);
+}
+
+/* ===== 筛选操作按钮 ===== */
+.filter-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.btn {
+  min-width: 140px;
+  transition:
+    background-color var(--app-transition-speed) ease,
+    color var(--app-transition-speed) ease,
+    box-shadow var(--app-transition-speed) ease;
+}
+
+.btn-primary {
+  background: #1f2937;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #111827;
+}
+
+.btn-secondary {
+  background: var(--app-surface-muted);
+  color: var(--app-heading);
+  border: 1px solid var(--app-border);
+}
+
+.btn-secondary:hover {
+  background: #e6e9ee;
+}
+
+/* ===== 结果区域 ===== */
+.results-section {
+  margin-top: 24px;
+  overflow: hidden;
+  box-shadow: none;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.results-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--app-heading);
+  margin: 0;
+}
+
+.results-count {
+  color: var(--app-text-muted);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.results-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ===== Region 徽章 ===== */
+.region-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: rgba(37, 99, 235, 0.12);
+  color: #1f2937;
+  text-transform: uppercase;
+}
+
+.region-badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #2563eb;
+}
+
+.region-badge[data-region='hong-kong'] {
+  background: rgba(220, 38, 38, 0.12);
+  color: #991b1b;
+}
+
+.region-badge[data-region='hong-kong']::before {
+  background: #dc2626;
+}
+
+.region-badge[data-region='mainland-china'] {
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+}
+
+.region-badge[data-region='mainland-china']::before {
+  background: #0f766e;
+}
+
+.region-badge[data-region='all'] {
+  background: rgba(107, 114, 128, 0.12);
+  color: #374151;
+}
+
+.region-badge[data-region='all']::before {
+  background: #6b7280;
+}
+
+.region-badge[data-region='unknown'] {
+  background: rgba(107, 114, 128, 0.12);
+  color: #4b5563;
+}
+
+.region-badge[data-region='unknown']::before {
+  background: #9ca3af;
+}
+
+/* ===== 数据表格 - 完全复刻旧版样式 ===== */
+.company-table {
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  border-collapse: collapse;
+  background: var(--app-surface);
+}
+
+.company-table thead {
+  background: var(--app-surface-muted);
+}
+
+.company-table th {
+  font-weight: 600;
+  color: var(--app-text);
+  font-size: 13px;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.company-table td {
+  font-size: 14px;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.company-table tr {
+  transition: background-color var(--app-transition-speed) ease;
+}
+
+.company-table tbody tr:hover td {
+  background: #f5f7fb;
+}
+
+.company-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+/* ===== 表格单元格特殊样式 ===== */
+.company-name {
+  font-weight: 500;
+  color: var(--app-heading);
+}
+
+.company-ticker {
+  font-family: monospace;
+  color: var(--app-text-muted);
+  font-size: 13px;
+}
+
+.region-cell {
+  min-width: 140px;
+}
+
+.market-cap {
+  text-align: right;
+  font-weight: 500;
+}
+
+.price {
+  text-align: right;
+  color: var(--app-success);
+}
+
+.pe-ratio {
+  text-align: right;
+}
+
+/* ===== 文本对齐辅助类 ===== */
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* ===== 无结果/加载状态 ===== */
+.no-results {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--app-text-muted);
+}
+
+.loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--app-text-muted);
+}
+
+.error {
+  margin-bottom: 16px;
+}
+
+/* ===== 移动端公司列表 ===== */
+.mobile-company-list {
+  display: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mobile-company-card {
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+  padding: 16px;
+  cursor: pointer;
+  transition: background-color var(--app-transition-speed) ease;
+}
+
+.mobile-company-card:hover {
+  background: var(--app-surface-muted);
+}
+
+.mobile-company-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.mobile-company-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--app-heading);
+  line-height: 1.3;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.mobile-company-ticker {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--app-heading);
+  background: var(--app-surface-muted);
+  padding: 4px 8px;
+  border-radius: var(--app-radius-md);
+  white-space: nowrap;
+}
+
+.mobile-company-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.mobile-company-detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-company-detail-label {
+  font-size: 12px;
+  color: var(--app-text-muted);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.mobile-company-detail-value {
+  font-size: 14px;
+  color: var(--app-text);
+}
+
+/* ===== 分页 ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 16px;
+}
+
+.pagination button {
+  padding: 8px 12px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  border-radius: var(--app-radius-md);
+  cursor: pointer;
+  transition:
+    background-color var(--app-transition-speed) ease,
+    border-color var(--app-transition-speed) ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: var(--app-surface-muted);
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination .current-page {
+  background: #1d1e1f;
+  color: white;
+  border-color: #1d1e1f;
+}
+
+.mobile-hide {
+  display: table-cell;
+}
+
+/* ===== 响应式布局 - 900px ===== */
+@media (max-width: 900px) {
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-actions {
+    justify-content: flex-start;
+  }
+}
+
+/* ===== 响应式布局 - 768px ===== */
+@media (max-width: 768px) {
+  .container {
+    padding: 72px 16px 32px;
+  }
+
+  .page-title {
+    font-size: 26px;
+  }
+
+  .filter-section {
+    padding: 20px;
+  }
+
+  .filter-actions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .results-section {
+    overflow-x: auto;
+  }
+
+  .results-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .mobile-company-list {
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  .mobile-hide {
+    display: none !important;
+  }
+
+  .company-table {
+    display: none;
+  }
+}

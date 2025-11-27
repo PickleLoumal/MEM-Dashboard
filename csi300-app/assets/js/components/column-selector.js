@@ -229,13 +229,24 @@ class CSI300ColumnSelector {
                 .concat(this.selectedColumns.filter(id => !this.columnOrder.includes(id)))
             : this.selectedColumns;
         
-        container.innerHTML = orderedColumns.map(columnId => {
-            const column = this.manifest.columns.find(c => c.id === columnId);
-            const isPinned = this.pinnedColumns.includes(columnId);
-            
-            return `
+        const normalizedColumns = orderedColumns
+            .map(columnId => {
+                const column = this.manifest.columns.find(c => c.id === columnId);
+                if (!column) {
+                    // Drop stale ids from saved state to avoid runtime errors
+                    this.selectedColumns = this.selectedColumns.filter(id => id !== columnId);
+                    this.columnOrder = this.columnOrder.filter(id => id !== columnId);
+                    this.pinnedColumns = this.pinnedColumns.filter(id => id !== columnId);
+                    return null;
+                }
+                const isPinned = this.pinnedColumns.includes(columnId);
+                return { column, isPinned };
+            })
+            .filter(Boolean);
+
+        container.innerHTML = normalizedColumns.map(({ column, isPinned }) => `
                 <div class="selected-column-item ${isPinned ? 'pinned' : ''}" 
-                     data-column-id="${columnId}"
+                     data-column-id="${column.id}"
                      draggable="true">
                     <svg class="drag-handle" width="12" height="12" viewBox="0 0 12 12" fill="none">
                         <circle cx="4" cy="3" r="1" fill="currentColor"/>
@@ -248,8 +259,7 @@ class CSI300ColumnSelector {
                     <span class="column-name" title="${column.displayName}">${column.displayName}</span>
                     ${isPinned ? '<span class="pin-indicator">PINNED</span>' : ''}
                 </div>
-            `;
-        }).join('');
+            `).join('');
         
         this.updateColumnCount();
     }
@@ -630,9 +640,11 @@ class CSI300ColumnSelector {
         
         if (savedState) {
             const state = JSON.parse(savedState);
-            this.selectedColumns = state.selectedColumns || [];
-            this.pinnedColumns = state.pinnedColumns || [];
-            this.columnOrder = state.columnOrder || [];
+            // Only keep columns that still exist in the manifest to prevent stale IDs
+            const validIds = new Set(this.manifest.columns.map(c => c.id));
+            this.selectedColumns = (state.selectedColumns || []).filter(id => validIds.has(id));
+            this.pinnedColumns = (state.pinnedColumns || []).filter(id => validIds.has(id));
+            this.columnOrder = (state.columnOrder || []).filter(id => validIds.has(id));
             this.activeView = state.activeView || 'default';
         } else {
             const defaultView = this.manifest.presetViews.find(v => v.id === 'default');

@@ -2,6 +2,14 @@
 
 CSI300 Standalone Application is a separated frontend application for browsing and analyzing CSI300 index companies. This application was extracted from the main Django backend to become a standalone frontend that communicates with the Django API.
 
+## Current layout (legacy + React scaffold)
+
+- **Legacy static pages** (still in use): `browser.html`, `index.html`, `detail.html`, `landing.html`, etc. These load assets from `assets/` and config from `config/` (e.g. `config/column-manifest.js`).
+- **React/Vite scaffold** (new, optional): lives in `src/`. Multi-page entries are under `src/pages/landing` and `src/pages/browser`; shared pieces are under `src/components` and `src/styles`. Build output goes to `dist/react/` to stay isolated from the legacy static files.
+- **Shared configuration**: environment variables via `.env.*` (`VITE_API_BASE`, `VITE_APP_NAME`), TypeScript configs (`tsconfig*.json`), lint/format configs (`eslint.config.js`, `prettier.config.cjs`), and styling (`tailwind.config.cjs`, `postcss.config.cjs`).
+
+When using the legacy pages, load them directly from the repository root (for example `browser.html`) so they can resolve `config/column-manifest.js` correctly. The React scaffold is isolated and does not replace the legacy flow until you choose to migrate.
+
 ## Features
 
 - **Company Filtering**: Filter companies by IM sector and market capitalization

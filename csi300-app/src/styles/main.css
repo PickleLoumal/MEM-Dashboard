@@ -1,0 +1,331 @@
+/* CSI300 React App – 主样式文件
+   一比一复刻 app-base.css 的所有样式 */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
+
+/* Import legacy styles */
+@import url('/assets/css/global-nav.css');
+@import url('/assets/css/column-selector.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== CSS 变量 - 与 app-base.css 完全一致 ===== */
+:root {
+  --app-font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --app-body-bg: #f7f8fc;
+  --app-surface: #fff;
+  --app-surface-muted: #f2f3f5;
+  --app-border: #d5d9e0;
+  --app-border-strong: #c0c6d0;
+  --app-text: #1f2933;
+  --app-text-muted: #6b7380;
+  --app-text-subtle: #8a93a2;
+  --app-heading: #0f172a;
+  --app-accent: #2563eb;
+  --app-accent-muted: #3b82f6;
+  --app-success: #059669;
+  --app-radius-md: 10px;
+  --app-radius-lg: 16px;
+  --app-radius-pill: 999px;
+  --app-shadow-soft: 0 8px 20px rgba(15, 23, 42, 0.08);
+  --app-shadow-subtle: 0 2px 8px rgba(15, 23, 42, 0.05);
+  --app-shadow-hover: 0 10px 24px rgba(15, 23, 42, 0.1);
+  --app-transition-speed: 0.18s;
+}
+
+/* ===== 基础重置 ===== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--app-body-bg);
+  font-family: var(--app-font-family);
+  color: var(--app-text);
+  line-height: 1.5;
+}
+
+/* ===== 排版 ===== */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--app-font-family);
+  color: var(--app-heading);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+p {
+  margin: 0 0 12px;
+  color: var(--app-text-muted);
+  font-size: 15px;
+}
+
+a {
+  color: var(--app-accent);
+  text-decoration: none;
+  transition: color var(--app-transition-speed) ease;
+}
+
+a:hover {
+  color: var(--app-accent-muted);
+}
+
+/* ===== 表单元素 ===== */
+button,
+input,
+select,
+textarea {
+  font-family: var(--app-font-family);
+  font-size: 14px;
+  color: var(--app-text);
+}
+
+/* ===== 布局容器 - app-shell ===== */
+.app-shell {
+  max-width: 1200px;
+  margin: 80px auto 48px;
+  padding: 0 24px;
+}
+
+/* ===== 卡片组件 ===== */
+.app-card {
+  background: var(--app-surface);
+  border-radius: var(--app-radius-lg);
+  border: 1px solid rgba(210, 216, 226, 0.6);
+  box-shadow: var(--app-shadow-soft);
+}
+
+.app-card--flat {
+  border-radius: var(--app-radius-md);
+  box-shadow: none;
+  border: 1px solid var(--app-border);
+}
+
+/* ===== 区块标题 ===== */
+.app-section-header {
+  margin-bottom: 24px;
+}
+
+.app-section-title {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--app-heading);
+  margin-bottom: 6px;
+}
+
+.app-section-subtitle {
+  font-size: 15px;
+  color: var(--app-text-muted);
+  font-weight: 400;
+}
+
+.app-meta-info {
+  font-size: 13px;
+  color: var(--app-success);
+  font-weight: 500;
+}
+
+/* ===== 表单网格 ===== */
+.app-form-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.app-form-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.app-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* ===== 表单标签 ===== */
+.app-label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--app-text);
+}
+
+/* ===== 输入框和选择框 ===== */
+.app-input,
+.app-select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--app-radius-md);
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  transition:
+    border-color var(--app-transition-speed) ease,
+    box-shadow var(--app-transition-speed) ease,
+    background-color var(--app-transition-speed) ease;
+}
+
+.app-input:focus,
+.app-select:focus {
+  outline: none;
+  border-color: var(--app-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+  background: #fff;
+}
+
+.app-input::placeholder {
+  color: var(--app-text-subtle);
+}
+
+/* ===== 操作按钮区 ===== */
+.app-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: flex-start;
+}
+
+.app-actions--center {
+  justify-content: center;
+}
+
+/* ===== 按钮 ===== */
+.app-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border-radius: var(--app-radius-pill);
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--app-transition-speed) ease,
+    border-color var(--app-transition-speed) ease,
+    color var(--app-transition-speed) ease,
+    box-shadow var(--app-transition-speed) ease;
+  min-height: 44px;
+}
+
+.app-button--primary {
+  background: #1f2937;
+  color: #fff;
+}
+
+.app-button--primary:hover {
+  background: #111827;
+  box-shadow: var(--app-shadow-subtle);
+}
+
+.app-button--secondary {
+  background: var(--app-surface-muted);
+  color: var(--app-heading);
+  border-color: var(--app-border);
+}
+
+.app-button--secondary:hover {
+  background: #e6e9ee;
+}
+
+/* ===== 标签 ===== */
+.app-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--app-radius-pill);
+  color: var(--app-heading);
+  background: var(--app-surface-muted);
+  border: 1px solid var(--app-border);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ===== 表格 ===== */
+.app-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  overflow: hidden;
+}
+
+.app-table thead {
+  background: var(--app-surface-muted);
+}
+
+.app-table th,
+.app-table td {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 14px;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.app-table tbody tr:hover {
+  background: #f5f7fb;
+}
+
+.app-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===== 通知提示 ===== */
+.app-notice {
+  padding: 12px 16px;
+  border-radius: var(--app-radius-md);
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.app-notice--muted {
+  border-color: #d1d5db;
+  background: #f9fafb;
+  color: var(--app-text-muted);
+}
+
+/* ===== 元信息 ===== */
+.app-meta {
+  font-size: 13px;
+  color: var(--app-text-subtle);
+}
+
+/* ===== 响应式布局 ===== */
+@media (max-width: 1024px) {
+  .app-shell {
+    margin-top: 72px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 0 16px;
+    margin: 70px auto 32px;
+  }
+
+  .app-form-grid--two {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .app-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .app-button {
+    width: 100%;
+  }
+}
