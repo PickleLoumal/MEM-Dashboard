@@ -89,8 +89,8 @@ class CompanyModalManager {
                     <span class="modal-value">${this.companyData.name || 'Unknown Company'}</span>
                 </div>
                 <div class="modal-row">
-                    <span class="modal-label">IM Sector</span>
-                    <span class="modal-value">${this.getCompanyImSector()}</span>
+                <span class="modal-label">Industry Matrix Sector</span>
+                <span class="modal-value">${this.getCompanyImSector()}</span>
                 </div>
             </div>
             <div id="peersComparisonData" style="margin-top: 20px;">
@@ -136,11 +136,11 @@ class CompanyModalManager {
                         <span class="modal-value">${this.companyData.name || 'Unknown Company'}</span>
                     </div>
                     <div class="modal-row">
-                        <span class="modal-label">IM Sector</span>
+                        <span class="modal-label">Industry Matrix Sector</span>
                         <span class="modal-value">${imSector}</span>
                     </div>
                     
-                    <!-- IM Sector Ranking Indicator - Bar Chart Style -->
+                    <!-- Industry Matrix Sector Ranking Indicator - Bar Chart Style -->
                     <div style="margin-top: 20px; padding: 15px 0;">
                         <!-- Professional Ranking Display -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -151,7 +151,7 @@ class CompanyModalManager {
                                 </div>
                                 <!-- Market Position -->
                                 <div>
-                                    <span style="font-weight: 600; color: #2c3e50; font-size: 14px;">IM Sector Ranking</span>
+                                    <span style="font-weight: 600; color: #2c3e50; font-size: 14px;">Industry Matrix Sector Ranking</span>
                                     <span style="font-size: 12px; color: #6c757d; margin-left: 8px;">${this.getMarketPosition(percentileBeat)} Position</span>
                                 </div>
                             </div>
@@ -298,7 +298,7 @@ class CompanyModalManager {
             // Create comparison table HTML
             let html = `
                 <div style="margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 4px;">
-                    <strong>IM Sector:</strong> ${imSector}<br>
+                    <strong>Industry Matrix Sector:</strong> ${imSector}<br>
                     <small style="color: #666;">Comparing with top ${data.total_peers_found} companies by market capitalization</small>
                 </div>
                 
@@ -400,7 +400,7 @@ class CompanyModalManager {
      * Specific Value Chain content for Kweichow Moutai
      */
     getMoutaiValueChainContent(companyName, imSector, marketCap, peRatio) {
-        const sectorDisplay = imSector || 'Unknown IM Sector';
+        const sectorDisplay = imSector || 'Unknown Industry Matrix Sector';
         return `
             <div class="modal-section">
                 <div class="modal-row">
@@ -408,7 +408,7 @@ class CompanyModalManager {
                     <span class="modal-value">${companyName}</span>
                 </div>
                 <div class="modal-row">
-                    <span class="modal-label">IM Sector</span>
+                    <span class="modal-label">Industry Matrix Sector</span>
                     <span class="modal-value">${sectorDisplay}</span>
                 </div>
                 <div class="modal-row">
@@ -493,7 +493,7 @@ class CompanyModalManager {
      * Specific Peers Comparison content for Kweichow Moutai
      */
     getMoutaiPeersContent(companyName, industry, imCode) {
-        const sectorDisplay = industry || imCode || 'Unknown IM Sector';
+        const sectorDisplay = industry || imCode || 'Unknown Industry Matrix Sector';
         return `
             <div class="modal-section">
                 <div class="modal-row">
@@ -501,13 +501,13 @@ class CompanyModalManager {
                     <span class="modal-value">${companyName}</span>
                 </div>
                 <div class="modal-row">
-                    <span class="modal-label">IM Sector</span>
+                    <span class="modal-label">Industry Matrix Sector</span>
                     <span class="modal-value">${sectorDisplay}</span>
                 </div>
             </div>
 
             <div class="modal-breakdown">
-                <h4 style="color: #1f2937; margin: 0 0 12px 0; font-size: 16px;">Key IM Sector Peers</h4>
+                <h4 style="color: #1f2937; margin: 0 0 12px 0; font-size: 16px;">Key Industry Matrix Sector Peers</h4>
                 
                 <div class="modal-sub-item">
                     <span class="modal-sub-label">Wuliangye Yibin Co Ltd</span>
@@ -566,7 +566,7 @@ class CompanyModalManager {
      * Generic Value Chain content for other companies
      */
     getGenericValueChainContent(companyName, industry, marketCap, peRatio) {
-        const sectorDisplay = industry || 'Unknown IM Sector';
+        const sectorDisplay = industry || 'Unknown Industry Matrix Sector';
         return `
             <div class="modal-section">
                 <div class="modal-row">
@@ -574,7 +574,7 @@ class CompanyModalManager {
                     <span class="modal-value">${companyName}</span>
                 </div>
                 <div class="modal-row">
-                    <span class="modal-label">IM Sector</span>
+                    <span class="modal-label">Industry Matrix Sector</span>
                     <span class="modal-value">${sectorDisplay}</span>
                 </div>
                 <div class="modal-row">
@@ -634,7 +634,7 @@ class CompanyModalManager {
      * Generic Peers Comparison content for other companies
      */
     getGenericPeersContent(companyName, industry, imCode) {
-        const sectorDisplay = industry || imCode || 'Unknown IM Sector';
+        const sectorDisplay = industry || imCode || 'Unknown Industry Matrix Sector';
         return `
             <div class="modal-section">
                 <div class="modal-row">
@@ -642,7 +642,7 @@ class CompanyModalManager {
                     <span class="modal-value">${companyName}</span>
                 </div>
                 <div class="modal-row">
-                    <span class="modal-label">IM Sector</span>
+                    <span class="modal-label">Industry Matrix Sector</span>
                     <span class="modal-value">${sectorDisplay}</span>
                 </div>
             </div>
@@ -715,8 +715,8 @@ class CompanyModalManager {
      */
     getCompanyImSector(company = null) {
         const source = company || this.companyData;
-        if (!source) return 'Unknown IM Sector';
-        return source.im_sector || source.industry || source.im_code || 'Unknown IM Sector';
+        if (!source) return 'Unknown Industry Matrix Sector';
+        return source.im_sector || source.industry || source.im_code || 'Unknown Industry Matrix Sector';
     }
 }
 

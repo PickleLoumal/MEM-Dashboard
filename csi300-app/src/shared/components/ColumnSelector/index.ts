@@ -6,8 +6,8 @@
  * 
  * @example
  * ```tsx
- * import { ColumnSelector } from '@/components/ColumnSelector';
- * import { columnManifest } from '@/lib/column-manifest';
+ * import { ColumnSelector } from '@shared/components/ColumnSelector';
+ * import { columnManifest } from '@shared/lib/column-manifest';
  * 
  * function MyTable() {
  *   const handleColumnChange = (data) => {
@@ -27,7 +27,7 @@
 export { ColumnSelector, default } from './ColumnSelector';
 export { useColumnSelector } from './useColumnSelector';
 // Re-export from centralized location for convenience
-export { columnManifest, Formatters, FieldMap, getCellClass } from '@/lib/column-manifest';
+export { columnManifest, Formatters, FieldMap, getCellClass } from '@shared/lib/column-manifest';
 export type {
   ColumnAlign,
   ColumnChangeData,

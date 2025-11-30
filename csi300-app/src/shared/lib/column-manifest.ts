@@ -3,7 +3,7 @@
  * Defines all available columns for the Master Database table
  */
 
-import type { ColumnDefinition, ColumnGroup, PresetView } from '@/components/ColumnSelector/types';
+import type { ColumnDefinition, ColumnGroup, PresetView } from '@shared/components/ColumnSelector/types';
 
 export interface ColumnManifest {
   version: string;
@@ -227,8 +227,8 @@ export const columnManifest: ColumnManifest = {
     },
     {
       id: 'im_sector',
-      name: 'IM Sector',
-      displayName: 'IM Sector',
+      name: 'Industry Matrix Sector',
+      displayName: 'Industry Matrix Sector',
       group: 'basics',
       dataType: 'string',
       width: 180,
@@ -1125,4 +1125,3 @@ export const columnManifest: ColumnManifest = {
 };
 
 export default columnManifest;
-

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { GlobalNav } from '@/components/GlobalNav';
-import '@/styles/main.css';
+import { GlobalNav } from '@shared/components/GlobalNav';
+import '@shared/styles/main.css';
 import './styles.css';
 
 type FilterOptionsResponse = {
@@ -179,14 +179,14 @@ function FilterPage() {
           <form className="filter-form" onSubmit={handleSubmit}>
             <div className="filter-grid app-form-grid app-form-grid--two">
               <div className="filter-group app-form-field">
-                <label className="filter-label app-label">IM Sector</label>
+                <label className="filter-label app-label">Industry Matrix Sector</label>
                 <select
                   name="im_sector"
                   value={filters.im_sector}
                   onChange={handleSectorChange}
                   className="filter-select app-select"
                 >
-                  <option value="">All IM Sectors</option>
+                  <option value="">All Industry Matrix Sectors</option>
                   {sectorOptions.map((sector) => (
                     <option value={sector} key={sector}>
                       {sector}
