@@ -89,8 +89,8 @@ const CSI300ColumnManifest = {
         },
         {
             id: 'im_sector',
-            name: 'IM Sector',
-            displayName: 'IM Sector',
+            name: 'Industry Matrix Sector',
+            displayName: 'Industry Matrix Sector',
             group: 'basics',
             dataType: 'string',
             width: 180,

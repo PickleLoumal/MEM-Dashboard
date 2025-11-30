@@ -510,7 +510,7 @@
                 <div class="filter-group app-form-field">
                     <label class="filter-label app-label">Comparison Type</label>
                     <select name="comparison_type" id="comparisonTypeSelect" class="filter-select app-select">
-                        <option value="im_sector">Same IM Sector</option>
+                        <option value="im_sector">Same Industry Matrix Sector</option>
                         <option value="industry">Same Industry</option>
                     </select>
                 </div>
@@ -542,7 +542,7 @@
                         <tr>
                             <th>Company Name</th>
                             <th>Ticker</th>
-                            <th>IM Sector</th>
+                            <th>Industry Matrix Sector</th>
                             <th>Industry</th>
                             <th class="mobile-hide">Market Cap (USD Million)</th>
                             <th class="mobile-hide">Price (Local Currency)</th>
@@ -795,7 +795,7 @@
                                 <span class="quick-meta-value quick-meta-industry">${storedCompany.industry || '—'}</span>
                             </div>
                             <div class="quick-meta-row">
-                                <span class="quick-meta-label">IM Sector</span>
+                                <span class="quick-meta-label">Industry Matrix Sector</span>
                                 <span class="quick-meta-value quick-meta-sector">${storedCompany.im_sector || '—'}</span>
                             </div>
                         </div>
@@ -1088,7 +1088,7 @@
                     return [
                         { id: 'name', displayName: 'Company Name', format: 'text-bold', align: 'left', defaultVisible: true },
                         { id: 'ticker', displayName: 'Ticker', format: 'monospace', align: 'left', defaultVisible: true },
-                        { id: 'im_sector', displayName: 'IM Sector', format: 'text', align: 'left', defaultVisible: true },
+                        { id: 'im_sector', displayName: 'Industry Matrix Sector', format: 'text', align: 'left', defaultVisible: true },
                         { id: 'industry', displayName: 'Industry', format: 'text', align: 'left', defaultVisible: true },
                         { id: 'market_cap_usd', displayName: 'Market Cap (USD M)', format: 'currency-millions', align: 'right', defaultVisible: true },
                         { id: 'price_local_currency', displayName: 'Price (Local)', format: 'currency', align: 'right', defaultVisible: true },
@@ -1301,7 +1301,7 @@
                         ${currentLabel}
                         <div class="mobile-company-details">
                             <div class="mobile-company-detail">
-                                <div class="mobile-company-detail-label">IM Sector</div>
+                                <div class="mobile-company-detail-label">Industry Matrix Sector</div>
                                 <div class="mobile-company-detail-value">${company.im_sector || '-'}</div>
                             </div>
                             <div class="mobile-company-detail">

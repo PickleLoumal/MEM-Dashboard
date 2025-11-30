@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { GlobalNav } from '@/components/GlobalNav';
-import { Formatters, FieldMap, getCellClass } from '@/lib/column-manifest';
-import '@/styles/main.css';
+import { GlobalNav } from '@shared/components/GlobalNav';
+import { ColumnSelector } from '@shared/components/ColumnSelector/ColumnSelector';
+import { columnManifest, Formatters, FieldMap, getCellClass } from '@shared/lib/column-manifest';
+import type { ColumnChangeData, ColumnDefinition } from '@shared/components/ColumnSelector/types';
+import '@shared/styles/main.css';
 import './styles.css';
 
 type FilterOptionsResponse = {
@@ -39,36 +41,9 @@ type Company = {
   [key: string]: unknown;
 };
 
-type Column = {
-  id: string;
-  displayName: string;
-  format?: string;
-  align?: 'left' | 'right' | 'center';
-  decimals?: number;
-  colorize?: boolean;
-  maxDisplay?: number;
-  tooltip?: string;
-};
-
-const DEFAULT_COLUMNS: Column[] = [
-  { id: 'name', displayName: 'Company Name', format: 'text-bold', align: 'left' },
-  { id: 'ticker', displayName: 'Ticker', format: 'monospace', align: 'left' },
-  { id: 'region', displayName: 'Region', format: 'text', align: 'left' },
-  { id: 'im_sector', displayName: 'IM Sector', format: 'text', align: 'left' },
-  { id: 'market_cap_usd', displayName: 'Market Cap (USD M)', align: 'right', format: 'currency-millions' },
-  { id: 'price_local_currency', displayName: 'Price (Local)', align: 'right', format: 'currency' },
-  { id: 'pe_ratio_trailing', displayName: 'P/E Ratio', align: 'right', format: 'number', decimals: 1 }
-];
-
-declare global {
-  interface Window {
-    CSI300ColumnManifest?: { columns: Column[]; presetViews?: { id: string; columns: string[]; pinnedColumns?: string[] }[] };
-    CSI300ColumnSelector?: new (
-      manifest: any,
-      options: { container: string; onColumnChange: (data: { columns: Column[]; pinnedColumns: string[] }) => void }
-    ) => { getSelectedColumns: () => Column[]; getPinnedColumns: () => Column[] };
-  }
-}
+// Column type now imported from types.ts
+// Default columns derived from columnManifest
+const DEFAULT_COLUMNS = columnManifest.columns.filter(col => col.defaultVisible);
 
 const API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8001').replace(/\/$/, '');
 const FILTER_ENDPOINT = '/api/csi300/api/companies/filter_options/';
@@ -148,7 +123,7 @@ function deriveIndustries(data: FilterOptionsResponse | null) {
 }
 
 
-function renderCellValue(column: Column, company: Company): React.ReactNode {
+function renderCellValue(column: ColumnDefinition, company: Company): React.ReactNode {
   const field = FieldMap[column.id] || column.id;
   let rawValue = company[field];
   
@@ -206,23 +181,7 @@ function getRegionBadge(region?: string) {
   return { label: region, attr: 'unknown' };
 }
 
-function loadScript(src: string, attrs: Record<string, string> = {}) {
-  return new Promise<void>((resolve, reject) => {
-    if (document.querySelector(`script[src="${src}"]`)) {
-      resolve();
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = src;
-    script.defer = true;
-    Object.entries(attrs).forEach(([k, v]) => script.setAttribute(k, v));
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Failed to load ${src}`));
-    document.body.appendChild(script);
-  });
-}
-
-// GlobalNav 现在是 React 组件，不再需要动态加载脚本
+// GlobalNav and ColumnSelector are now React components
 
 // 分页组件 - 与旧版一致
 function Pagination({ page, pages, onPageChange }: { page: number; pages: number; onPageChange: (p: number) => void }) {
@@ -261,32 +220,6 @@ function Pagination({ page, pages, onPageChange }: { page: number; pages: number
   );
 }
 
-function useColumnSelector(setColumns: (cols: Column[]) => void, setPinned: (ids: string[]) => void) {
-  const initialized = useRef(false);
-  useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-    (async () => {
-      try {
-        await loadScript('/config/column-manifest.js');
-        await loadScript('/assets/js/components/column-selector.js');
-        if (window.CSI300ColumnManifest && window.CSI300ColumnSelector) {
-          const selector = new window.CSI300ColumnSelector(window.CSI300ColumnManifest, {
-            container: '#columnSelectorContainer',
-            onColumnChange: (data) => {
-              setColumns(data.columns);
-              setPinned(data.pinnedColumns);
-            }
-          });
-          setColumns(selector.getSelectedColumns());
-          setPinned(selector.getPinnedColumns().map((c) => c.id));
-        }
-      } catch (err) {
-        console.error('Column selector load failed', err);
-      }
-    })();
-  }, [setColumns, setPinned]);
-}
 
 function BrowserPage() {
 
@@ -313,9 +246,16 @@ function BrowserPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [columns, setColumns] = useState<Column[]>([]);
-  const [pinnedColumns, setPinnedColumns] = useState<string[]>([]);
-  useColumnSelector(setColumns, setPinnedColumns);
+  const [columns, setColumns] = useState<ColumnDefinition[]>(DEFAULT_COLUMNS);
+  const [pinnedColumns, setPinnedColumns] = useState<string[]>(() => 
+    columnManifest.columns.filter(c => c.defaultPinned).map(c => c.id)
+  );
+
+  // Handle column changes from ColumnSelector
+  const handleColumnChange = useCallback((data: ColumnChangeData) => {
+    setColumns(data.columns);
+    setPinnedColumns(data.pinnedColumns);
+  }, []);
 
   // 初始解析 URL
   useEffect(() => {
@@ -441,7 +381,7 @@ function BrowserPage() {
     if (!pinnedColumns.length) return baseColumns;
     const pinned = pinnedColumns
       .map((id) => baseColumns.find((c) => c.id === id))
-      .filter(Boolean) as Column[];
+      .filter(Boolean) as ColumnDefinition[];
     const rest = baseColumns.filter((c) => !pinnedColumns.includes(c.id));
     return [...pinned, ...rest];
   }, [columns, pinnedColumns]);
@@ -481,14 +421,14 @@ function BrowserPage() {
       <form className="filter-section app-card" onSubmit={handleSubmit}>
         <div className="filter-grid app-form-grid app-form-grid--two">
           <div className="filter-group app-form-field">
-            <label className="filter-label app-label">IM Sector</label>
+            <label className="filter-label app-label">Industry Matrix Sector</label>
             <select
               name="im_sector"
               value={filters.im_sector}
               onChange={handleSectorChange}
               className="filter-select app-select"
             >
-              <option value="">All IM Sectors</option>
+              <option value="">All Industry Matrix Sectors</option>
               {sectorOptions.map((sector) => (
                 <option key={sector} value={sector}>
                   {sector}
@@ -585,7 +525,11 @@ function BrowserPage() {
                 </span>
               );
             })()}
-            <div id="columnSelectorContainer"></div>
+            <ColumnSelector 
+              manifest={columnManifest} 
+              onColumnChange={handleColumnChange}
+              maxPinnedColumns={3}
+            />
           </div>
         </div>
 
@@ -651,8 +595,8 @@ function BrowserPage() {
                       <span className="mobile-company-detail-value">{c.region || '-'}</span>
                     </div>
                     <div className="mobile-company-detail">
-                      <span className="mobile-company-detail-label">IM Sector</span>
-                      <span className="mobile-company-detail-value">{c.im_sector || '-'}</span>
+              <span className="mobile-company-detail-label">Industry Matrix Sector</span>
+              <span className="mobile-company-detail-value">{c.im_sector || '-'}</span>
                     </div>
                     <div className="mobile-company-detail">
                       <span className="mobile-company-detail-label">Industry</span>

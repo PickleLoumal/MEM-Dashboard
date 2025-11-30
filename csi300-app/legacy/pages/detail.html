@@ -484,7 +484,7 @@
             <div class="company-actions-section app-actions">
                 <a class="button button-primary app-button app-button--primary" id="valueChainBtn">Value Chain Analysis</a>
                 <a class="button button-primary app-button app-button--primary" id="investmentSummaryBtn">Investment Summary</a>
-                <a class="button button-primary app-button app-button--primary" id="peersComparisonBtn">IM Sector Peers Comparison</a>
+                <a class="button button-primary app-button app-button--primary" id="peersComparisonBtn">Industry Matrix Sector Peers Comparison</a>
             </div>
             
             <div class="details-grid" id="detailsGrid">
@@ -505,11 +505,11 @@
         </div>
     </div>
 
-    <!-- IM Sector Peers Comparison Modal -->
+    <!-- Industry Matrix Sector Peers Comparison Modal -->
     <div id="peersComparisonModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">IM Sector Peers Comparison</h2>
+                <h2 class="modal-title">Industry Matrix Sector Peers Comparison</h2>
             </div>
             <div class="modal-body" id="peersComparisonContent">
                 <!-- Content will be populated here -->
@@ -651,7 +651,7 @@
             }
 
             getImSectorDisplay() {
-                return this.getImSectorValue() || 'Unknown IM Sector';
+                return this.getImSectorValue() || 'Unknown Industry Matrix Sector';
             }
 
             setupButtonListeners() {
@@ -757,7 +757,7 @@
                 const section = this.createDetailSection('Basic Information');
                 const content = section.querySelector('.section-content');
                 
-                content.appendChild(this.createFieldRow('IM Sector', this.getImSectorDisplay()));
+                content.appendChild(this.createFieldRow('Industry Matrix Sector', this.getImSectorDisplay()));
                 content.appendChild(this.createFieldRow('Industry', this.company.industry));
                 if (this.company.sub_industry) {
                     content.appendChild(this.createFieldRow('Secondary Industry', this.company.sub_industry));

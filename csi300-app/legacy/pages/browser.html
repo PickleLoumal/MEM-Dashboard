@@ -497,9 +497,9 @@
         <form id="filterForm" class="filter-section app-card">
             <div class="filter-grid app-form-grid app-form-grid--two">
                 <div class="filter-group app-form-field">
-                    <label class="filter-label app-label">IM Sector</label>
+                            <label class="filter-label app-label">Industry Matrix Sector</label>
                     <select name="im_sector" id="imSectorSelect" class="filter-select app-select">
-                        <option value="">All IM Sectors</option>
+                                <option value="">All Industry Matrix Sectors</option>
                     </select>
                 </div>
 
@@ -561,7 +561,7 @@
                             <th>Company Name</th>
                             <th>Ticker</th>
                             <th class="mobile-hide">Region</th>
-                            <th>IM Sector</th>
+                            <th>Industry Matrix Sector</th>
                             <th class="mobile-hide">Market Cap (USD Million)</th>
                             <th class="mobile-hide">Price (Local Currency)</th>
                             <th class="mobile-hide">P/E Ratio</th>
@@ -797,7 +797,7 @@
                     ? selectedValue
                     : (imSectorSelect.value || '');
 
-                imSectorSelect.innerHTML = '<option value="">All IM Sectors</option>';
+                imSectorSelect.innerHTML = '<option value="">All Industry Matrix Sectors</option>';
 
                 values.forEach((sector) => {
                     const option = document.createElement('option');
@@ -1058,7 +1058,7 @@
                         { id: 'name', displayName: 'Company Name', format: 'text-bold', align: 'left', defaultVisible: true },
                         { id: 'ticker', displayName: 'Ticker', format: 'monospace', align: 'left', defaultVisible: true },
                         { id: 'region', displayName: 'Region', format: 'text', align: 'left', defaultVisible: true },
-                        { id: 'im_sector', displayName: 'IM Sector', format: 'text', align: 'left', defaultVisible: true },
+                        { id: 'im_sector', displayName: 'Industry Matrix Sector', format: 'text', align: 'left', defaultVisible: true },
                         { id: 'market_cap_usd', displayName: 'Market Cap (USD M)', format: 'currency-millions', align: 'right', defaultVisible: true },
                         { id: 'price_local_currency', displayName: 'Price (Local)', format: 'currency', align: 'right', defaultVisible: true },
                         { id: 'pe_ratio_trailing', displayName: 'P/E Ratio', format: 'number', align: 'right', defaultVisible: true, decimals: 1 }
@@ -1313,7 +1313,7 @@
                             </div>` : ''}
                             ${imSector ? `
                             <div class="mobile-company-detail">
-                                <div class="mobile-company-detail-label">IM Sector</div>
+                                <div class="mobile-company-detail-label">Industry Matrix Sector</div>
                                 <div class="mobile-company-detail-value">${imSector}</div>
                             </div>` : ''}
                             ${industry ? `

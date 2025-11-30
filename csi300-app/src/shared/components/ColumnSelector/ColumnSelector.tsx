@@ -7,6 +7,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { ColumnDefinition, ColumnManifest, ColumnSelectorProps } from './types';
 import { useColumnSelector } from './useColumnSelector';
+import './ColumnSelector.css';
 
 // Icons as inline SVG components
 const ColumnsIcon = () => (
