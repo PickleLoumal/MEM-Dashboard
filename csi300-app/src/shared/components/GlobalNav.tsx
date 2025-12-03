@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { resolveLink } from '@shared/lib/navigation';
 
 type MenuItem = {
   text: string;
@@ -54,30 +55,42 @@ const SUBMENU_DATA: Record<string, SubmenuData> = {
   }
 };
 
-// Map of pages that have been migrated to React
-const REACT_PAGES: Record<string, string> = {
-  'index.html': '/src/pages/index/index.html',
-  'browser.html': '/src/pages/browser/index.html'
-};
+function SubmenuContent({ menuType, companyContext, onClose }: { menuType: string; companyContext?: GlobalNavProps['companyContext']; onClose: () => void }) {
+  let data = SUBMENU_DATA[menuType];
 
-function resolveLink(path: string): string {
-  if (!path) return '#';
-  if (path.startsWith('#') || path.startsWith('mailto:') || /^(?:[a-z]+:)?\/\//i.test(path)) {
-    return path;
+  // Dynamically generate company menu data
+  if (menuType === 'company' && companyContext) {
+      data = {
+          groups: [
+              {
+                  title: companyContext.name || 'Company Insights',
+                  items: [
+                      { 
+                          text: 'Investment Summary', 
+                          href: `investment-summary-detail.html?company=${encodeURIComponent(companyContext.name)}&id=${companyContext.id}`
+                      },
+                      { 
+                          text: 'Fund Flow', 
+                          href: `fund-flow.html?symbol=&id=${companyContext.id}` // Fund flow usually needs symbol, but ID fallback might work
+                      },
+                      { text: 'Events Alert', href: 'events-alert.html', comingSoon: true },
+                      { 
+                        text: 'Value Chain Analysis',
+                        href: `value-chain.html?id=${companyContext.id}`, // Simplified link
+                        comingSoon: true // Marking as coming soon for now as per legacy logic complexity
+                      }
+                  ]
+              },
+              {
+                  title: '',
+                  items: [
+                      { text: '↩ Back to List', href: 'browser.html' }
+                  ]
+              }
+          ]
+      };
   }
 
-  // In dev mode, check if this page has been migrated to React
-  const isDev = import.meta.env.DEV;
-  if (isDev && REACT_PAGES[path]) {
-    return REACT_PAGES[path];
-  }
-
-  // For production or non-migrated pages, use the original path
-  return `/${path}`;
-}
-
-function SubmenuContent({ menuType, onClose }: { menuType: string; onClose: () => void }) {
-  const data = SUBMENU_DATA[menuType];
   if (!data) return null;
 
   return (
@@ -114,7 +127,7 @@ function SubmenuContent({ menuType, onClose }: { menuType: string; onClose: () =
   );
 }
 
-function MobileMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function MobileMenu({ isOpen, onClose, companyContext }: { isOpen: boolean; onClose: () => void; companyContext?: GlobalNavProps['companyContext'] }) {
   return (
     <>
       <div
@@ -122,6 +135,23 @@ function MobileMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
         onClick={onClose}
       />
       <div className={`globalnav-mobile-menu ${isOpen ? 'show' : ''}`}>
+        {companyContext && (
+             <div className="globalnav-submenu-group">
+             <h3 className="globalnav-submenu-header">{companyContext.name || 'Company Insights'}</h3>
+             <ul className="globalnav-submenu-list">
+               <li className="globalnav-submenu-list-item">
+                 <a href={resolveLink(`investment-summary-detail.html?company=${encodeURIComponent(companyContext.name)}&id=${companyContext.id}`)} className="globalnav-submenu-link" onClick={onClose}>Investment Summary</a>
+               </li>
+               <li className="globalnav-submenu-list-item">
+                 <a href={resolveLink(`fund-flow.html?id=${companyContext.id}`)} className="globalnav-submenu-link" onClick={onClose}>Fund Flow</a>
+               </li>
+                <li className="globalnav-submenu-list-item">
+                 <a href={resolveLink('browser.html')} className="globalnav-submenu-link" onClick={onClose}>Back to List</a>
+               </li>
+             </ul>
+           </div>
+        )}
+
         <div className="globalnav-submenu-group">
           <h3 className="globalnav-submenu-header">Industry</h3>
           <ul className="globalnav-submenu-list">
@@ -170,7 +200,15 @@ function MobileMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
   );
 }
 
-export function GlobalNav() {
+export interface GlobalNavProps {
+    companyContext?: {
+        id: string;
+        name: string;
+        imSector?: string;
+    };
+}
+
+export function GlobalNav({ companyContext }: GlobalNavProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownHeight, setDropdownHeight] = useState(0);
@@ -306,6 +344,17 @@ export function GlobalNav() {
               <span className="globalnav-link-text">Hot Themes</span>
             </a>
           </li>
+           {companyContext && (
+               <li
+                   className={`globalnav-item ${activeMenu === 'company' ? 'is-active' : ''}`}
+                   onMouseEnter={() => handleMouseEnter('company')}
+                   onMouseLeave={handleMouseLeave}
+               >
+                   <a href={resolveLink(`detail.html?id=${companyContext.id}`)} className="globalnav-link">
+                       <span className="globalnav-link-text">{companyContext.name}</span>
+                   </a>
+               </li>
+           )}
         </ul>
 
         <div className="globalnav-menutrigger">
@@ -349,6 +398,7 @@ export function GlobalNav() {
             <div className="globalnav-submenu globalnav-submenu--attached">
               <SubmenuContent
                 menuType={activeMenu}
+                companyContext={companyContext}
                 onClose={() => {
                   setActiveMenu(null);
                   setDropdownHeight(0);
@@ -360,8 +410,7 @@ export function GlobalNav() {
       </div>
 
       {/* Mobile menu */}
-      <MobileMenu isOpen={mobileMenuOpen} onClose={closeMobileMenu} />
+      <MobileMenu isOpen={mobileMenuOpen} onClose={closeMobileMenu} companyContext={companyContext} />
     </nav>
   );
 }
-
