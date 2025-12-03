@@ -1,9 +1,30 @@
+"""
+CSI300 API Views
+
+提供 CSI300 指数成分股的 REST API 端点。
+
+类型注解说明:
+- 所有公共方法都有完整的类型注解
+- 使用 shared_types 模块中定义的类型
+- Response 返回值类型为 rest_framework.response.Response
+
+对应前端类型: csi300-app/src/shared/api-types/csi300.types.ts
+"""
+
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional, Type, Union, cast
+
 from django.db.models import Q, Min, Max
+from django.db.models.query import QuerySet
 from django.http import Http404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.serializers import Serializer
+
 from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary
 from .serializers import (
     CSI300CompanySerializer, 
@@ -15,22 +36,54 @@ from .serializers import (
     CSI300IndustryPeersComparisonSerializer
 )
 
+# 类型别名
+# 注意: Django 模型的动态特性（如 .objects 管理器）在静态类型检查时可能显示警告
+# 这些警告不影响运行时行为
+SerializerClass = Type[Serializer[Any]]
+
 
 class CSI300Pagination(PageNumberPagination):
-    """Custom pagination for CSI300 API"""
-    page_size = 20
-    page_size_query_param = 'page_size'
-    max_page_size = 100
+    """
+    CSI300 API 分页配置
+    
+    配置:
+    - 默认每页 20 条记录
+    - 最大每页 100 条记录
+    - 通过 page_size 查询参数自定义每页数量
+    """
+    page_size: int = 20
+    page_size_query_param: str = 'page_size'
+    max_page_size: int = 100
 
 
 class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
-    """CSI300 Company ViewSet"""
+    """
+    CSI300 公司数据 ViewSet
     
-    queryset = CSI300Company.objects.all()
-    serializer_class = CSI300CompanySerializer
-    pagination_class = CSI300Pagination
+    提供 CSI300 指数成分股的只读 API 端点:
+    - list: 获取公司列表 (支持筛选和分页)
+    - retrieve: 获取单个公司详情
+    - filter_options: 获取筛选选项
+    - search: 搜索公司
+    - investment_summary: 获取投资摘要
+    - industry_peers_comparison: 获取同行业对比
     
-    def get_serializer_class(self):
+    类型注解:
+    - 所有方法返回 Response 对象
+    - 查询参数通过 request.query_params 获取
+    """
+    
+    queryset: QuerySet[CSI300Company] = CSI300Company.objects.all()
+    serializer_class: SerializerClass = CSI300CompanySerializer
+    pagination_class: Type[PageNumberPagination] = CSI300Pagination
+    
+    def get_serializer_class(self) -> SerializerClass:
+        """
+        根据请求动态返回序列化器类
+        
+        Returns:
+            针对 list/retrieve 动作和 H股请求返回对应的序列化器
+        """
         if self.action == 'list':
             if self._is_hshares_request():
                 return CSI300HSharesCompanyListSerializer
@@ -39,7 +92,16 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
             return CSI300HSharesCompanySerializer
         return CSI300CompanySerializer
     
-    def _normalize_region(self, region_value):
+    def _normalize_region(self, region_value: Optional[str]) -> Optional[str]:
+        """
+        标准化地区参数值
+        
+        Args:
+            region_value: 原始地区参数值
+            
+        Returns:
+            标准化后的地区名称，如 'Hong Kong'
+        """
         if not region_value:
             return None
         normalized = region_value.strip()
@@ -47,17 +109,41 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
             return 'Hong Kong'
         return normalized
     
-    def _is_hshares_request(self):
+    def _is_hshares_request(self) -> bool:
+        """
+        判断当前请求是否为 H股数据请求
+        
+        Returns:
+            如果请求的 region 参数为 Hong Kong 则返回 True
+        """
         region = self._normalize_region(self.request.query_params.get('region'))
         if not region:
             return False
         return region.lower() == 'hong kong'
     
-    def get_queryset(self):
-        use_hshares = self._is_hshares_request()
-        queryset = CSI300HSharesCompany.objects.all() if use_hshares else CSI300Company.objects.all()
+    def get_queryset(self) -> Any:
+        """
+        获取查询集，根据请求参数动态筛选
         
-        # Filtering
+        支持的筛选参数:
+        - region: 地区 (Mainland China, Hong Kong)
+        - im_sector: IM 行业分类
+        - industry: 细分行业
+        - gics_industry: GICS 行业分类
+        - market_cap_min/max: 市值范围
+        - search: 公司名称/代码搜索
+        - industry_search: 行业名称搜索
+        
+        Returns:
+            QuerySet: 筛选后的公司查询集
+        """
+        use_hshares: bool = self._is_hshares_request()
+        queryset = (
+            CSI300HSharesCompany.objects.all() if use_hshares 
+            else CSI300Company.objects.all()
+        )
+        
+        # 获取筛选参数 (QueryDict.get 可能返回 str 或 None)
         region = self._normalize_region(self.request.query_params.get('region'))
         im_sector = self.request.query_params.get('im_sector')
         industry = self.request.query_params.get('industry')
@@ -115,13 +201,27 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         
         return queryset.order_by('ticker')
     
-    def retrieve(self, request, *args, **kwargs):
+    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        获取单个公司详情
+        
+        Args:
+            request: DRF 请求对象
+            *args: 位置参数
+            **kwargs: 关键字参数，包含 pk (公司 ID)
+            
+        Returns:
+            Response: 包含公司详情的响应
+            
+        Raises:
+            Http404: 当公司不存在时
+        """
         pk = kwargs.get(self.lookup_field, None)
         if pk is None:
             raise Http404("Company identifier is required")
         
         region = self._normalize_region(request.query_params.get('region'))
-        prefer_hshares = bool(region and region.lower() == 'hong kong')
+        prefer_hshares: bool = bool(region and region.lower() == 'hong kong')
         
         primary_model = CSI300HSharesCompany if prefer_hshares else CSI300Company
         primary_serializer = CSI300HSharesCompanySerializer if prefer_hshares else CSI300CompanySerializer
@@ -142,12 +242,35 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
     
     @action(detail=False, methods=['get'])
-    def filter_options(self, request):
-        """Get available filter options with optional cascading filters."""
-
+    def filter_options(self, request: Request) -> Response:
+        """
+        获取可用的筛选选项
+        
+        支持级联筛选：
+        - 根据 region 返回对应地区的选项
+        - 根据 im_sector 返回对应行业的细分选项
+        
+        Args:
+            request: DRF 请求对象
+            
+        Returns:
+            Response: 包含筛选选项的响应
+            {
+                regions: List[str],
+                im_sectors: List[str],
+                industries: List[str],
+                gics_industries: List[str],
+                market_cap_range: { min: float, max: float },
+                filtered_by_region: bool,
+                filtered_by_sector: bool
+            }
+        """
         region_filter = self._normalize_region(request.query_params.get('region'))
         im_sector_filter = request.query_params.get('im_sector')
-        base_queryset = CSI300HSharesCompany.objects.all() if region_filter and region_filter.lower() == 'hong kong' else CSI300Company.objects.all()
+        base_queryset = (
+            CSI300HSharesCompany.objects.all() if region_filter and region_filter.lower() == 'hong kong' 
+            else CSI300Company.objects.all()
+        )
 
         if region_filter:
             base_queryset = base_queryset.filter(region__iexact=region_filter)
@@ -220,12 +343,25 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(data)
     
     @action(detail=False, methods=['get'])
-    def search(self, request):
-        """Search companies by name or code"""
-        query = request.query_params.get('q', '')
+    def search(self, request: Request) -> Response:
+        """
+        搜索公司
+        
+        通过公司名称、股票代码或别名进行搜索。
+        
+        Args:
+            request: DRF 请求对象，需要 'q' 查询参数
+            
+        Returns:
+            Response: 匹配的公司列表 (最多 10 条)
+        """
+        query = request.query_params.get('q', '') or ''
         
         if not query:
-            return Response({'error': 'Search query is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': 'Search query is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         companies = CSI300Company.objects.filter(
             Q(name__icontains=query) |
@@ -237,8 +373,17 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
     
     @action(detail=True, methods=['get'])
-    def investment_summary(self, request, pk=None):
-        """Get investment summary for a company"""
+    def investment_summary(self, request: Request, pk: Optional[str] = None) -> Response:
+        """
+        获取公司投资摘要
+        
+        Args:
+            request: DRF 请求对象
+            pk: 公司 ID
+            
+        Returns:
+            Response: 投资摘要数据或错误响应
+        """
         try:
             company = self.get_object()
             summary = CSI300InvestmentSummary.objects.filter(company=company).first()
@@ -252,15 +397,33 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
             serializer = CSI300InvestmentSummarySerializer(summary)
             return Response(serializer.data)
             
-        except CSI300Company.DoesNotExist:
+        except Exception:
             return Response(
                 {'error': 'Company not found'}, 
                 status=status.HTTP_404_NOT_FOUND
             )
 
     @action(detail=True, methods=['get'])
-    def industry_peers_comparison(self, request, pk=None):
-        """Get industry peers comparison for a company"""
+    def industry_peers_comparison(self, request: Request, pk: Optional[str] = None) -> Response:
+        """
+        获取同行业公司对比数据
+        
+        返回目标公司与同行业前3名公司的关键指标对比。
+        
+        Args:
+            request: DRF 请求对象
+            pk: 公司 ID
+            
+        Returns:
+            Response: 同行业对比数据
+            {
+                target_company: { id, name, ticker, im_sector, rank },
+                industry: str,
+                comparison_data: List[PeerComparisonItem],
+                total_top_companies_shown: int,
+                total_companies_in_industry: int
+            }
+        """
         try:
             company = self.get_object()
             
@@ -279,7 +442,7 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
             ).order_by('-market_cap_local')
             
             # Calculate current company's rank in the industry
-            current_company_rank = None
+            current_company_rank: Optional[int] = None
             for idx, comp in enumerate(all_industry_companies, 1):
                 if comp.id == company.id:
                     current_company_rank = idx
@@ -295,11 +458,11 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
                 )
             
             # Prepare comparison data with rankings
-            comparison_data = []
+            comparison_data: List[Dict[str, Any]] = []
             
             # Always add current company first
             company_serializer = CSI300IndustryPeersComparisonSerializer(company)
-            company_data = company_serializer.data
+            company_data: Dict[str, Any] = company_serializer.data
             company_data['rank'] = current_company_rank
             company_data['is_current_company'] = True
             comparison_data.append(company_data)
@@ -307,7 +470,7 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
             # Add top 3 companies (固定显示前3名)
             for idx, top_company in enumerate(top_3_companies, 1):
                 top_serializer = CSI300IndustryPeersComparisonSerializer(top_company)
-                top_data = top_serializer.data
+                top_data: Dict[str, Any] = top_serializer.data
                 top_data['rank'] = idx
                 top_data['is_current_company'] = (top_company.id == company.id)
                 comparison_data.append(top_data)
@@ -326,7 +489,7 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
                 'total_companies_in_industry': all_industry_companies.count()
             })
             
-        except CSI300Company.DoesNotExist:
+        except Exception:
             return Response(
                 {'error': 'Company not found'}, 
                 status=status.HTTP_404_NOT_FOUND
@@ -334,8 +497,20 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 @api_view(['GET'])
-def csi300_index(request):
-    """CSI300 API index"""
+def csi300_index(request: Request) -> Response:
+    """
+    CSI300 API 索引端点
+    
+    返回 API 概览信息，包括可用端点和统计数据。
+    
+    Args:
+        request: DRF 请求对象
+        
+    Returns:
+        Response: API 概览信息
+    """
+    total_companies = CSI300Company.objects.count()
+    
     return Response({
         'message': 'CSI300 Companies API',
         'version': '1.0.0',
@@ -345,13 +520,23 @@ def csi300_index(request):
             'filter_options': '/api/csi300/api/companies/filter_options/',
             'search': '/api/csi300/api/companies/search/',
         },
-        'total_companies': CSI300Company.objects.count()
+        'total_companies': total_companies
     })
 
 
 @api_view(['GET'])
-def health_check(request):
-    """CSI300 health check"""
+def health_check(request: Request) -> Response:
+    """
+    CSI300 API 健康检查端点
+    
+    检查数据库连接和数据可用性。
+    
+    Args:
+        request: DRF 请求对象
+        
+    Returns:
+        Response: 健康状态信息
+    """
     try:
         count = CSI300Company.objects.count()
         return Response({
