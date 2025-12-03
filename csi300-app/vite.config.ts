@@ -5,7 +5,34 @@ import react from '@vitejs/plugin-react';
 const page = (name: string) => resolve(__dirname, `src/pages/${name}/index.html`);
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'dev-server-rewrite',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url) {
+            // Rewrite production URLs to development paths
+            const url = req.url.split('?')[0];
+            if (url === '/browser.html') {
+              req.url = '/src/pages/browser/index.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
+            } else if (url === '/detail.html') {
+              req.url = '/src/pages/detail/index.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
+            } else if (url === '/investment-summary-detail.html') {
+              req.url = '/src/pages/investment-summary-detail/index.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
+            } else if (url === '/index.html' || url === '/') {
+              req.url = '/src/pages/index/index.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
+            } 
+            // Map /assets requests to legacy assets folder
+            else if (req.url.startsWith('/assets/')) {
+              req.url = req.url.replace(/^\/assets\//, '/legacy/assets/');
+            }
+          }
+          next();
+        });
+      }
+    }
+  ],
   envPrefix: 'VITE_',
   resolve: {
     alias: {
@@ -38,7 +65,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         browser: page('browser'),
-        index: page('index')
+        index: page('index'),
+        detail: page('detail'),
+        'investment-summary-detail': page('investment-summary-detail')
       }
     }
   }

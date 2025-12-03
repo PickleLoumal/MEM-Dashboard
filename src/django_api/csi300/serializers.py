@@ -97,6 +97,8 @@ class CSI300InvestmentSummarySerializer(serializers.ModelSerializer):
     
     company_name = serializers.CharField(source='company.name', read_only=True)
     company_ticker = serializers.CharField(source='company.ticker', read_only=True)
+    im_sector = serializers.CharField(source='company.im_sector', read_only=True)
+    industry = serializers.CharField(source='company.industry', read_only=True)
     
     class Meta:
         model = CSI300InvestmentSummary
