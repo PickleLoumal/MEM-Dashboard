@@ -1,16 +1,30 @@
-from typing import Optional
-
 """
 Django REST Framework Views for US FRED API
 美国FRED经济指标API视图 - 分离架构实现
+
+类型注解说明:
+- 所有公共方法都有完整的类型注解
+- 使用 shared_types 模块中定义的类型
+- Response 返回值类型为 rest_framework.response.Response
+
+对应前端类型: csi300-app/src/shared/api-types/fred.types.ts
 """
+
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional, Type, Union
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 from django.db.models import Q, Max
+from django.db.models.query import QuerySet
 from django.db import connection
 from datetime import datetime, timedelta
+import logging
+
 from .models import FredUsIndicator, FredUsSeriesInfo
 from .data_fetcher import UsFredDataFetcher
 from .serializers import (
@@ -22,27 +36,57 @@ from .serializers import (
     FredUsHealthCheckSerializer,
     FredUsErrorResponseSerializer
 )
-import logging
 
 logger = logging.getLogger(__name__)
 
+# 类型别名
+SerializerClass = Type[Serializer[Any]]
+
 
 class FredUsIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
-    """美国FRED指标视图集 - 分离架构实现"""
-    queryset = FredUsIndicator.objects.all()
-    serializer_class = FredUsIndicatorResponseSerializer
+    """
+    美国 FRED 指标数据 ViewSet
+    
+    提供美国 FRED 经济指标的 API 端点:
+    - list: API 概览信息
+    - indicator: 获取指定指标数据
+    - status: 服务状态
+    - all_indicators: 所有指标摘要
+    - health: 健康检查
+    - 各种特定指标端点 (debt-to-gdp, cpi, unemployment, etc.)
+    
+    类型注解:
+    - 所有方法返回 Response 对象
+    - 查询参数通过 request.query_params 获取
+    """
+    
+    queryset: QuerySet[FredUsIndicator] = FredUsIndicator.objects.all()
+    serializer_class: SerializerClass = FredUsIndicatorResponseSerializer
+    data_fetcher: Optional[UsFredDataFetcher]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.data_fetcher = None
 
-    def list(self, request):
-        """根端点 - 返回API概览信息 - GET /api/fred-us/"""
-        try:
-            total_indicators = FredUsIndicator.objects.values('series_id').distinct().count()
-            last_updated = FredUsIndicator.objects.aggregate(Max('updated_at'))['updated_at__max']
+    def list(self, request: Request) -> Response:
+        """
+        API 根端点 - 返回 API 概览信息
+        
+        GET /api/fred-us/
+        
+        Args:
+            request: DRF 请求对象
             
-            api_info = {
+        Returns:
+            Response: API 概览信息
+        """
+        try:
+            total_indicators: int = FredUsIndicator.objects.values('series_id').distinct().count()
+            last_updated: Optional[datetime] = FredUsIndicator.objects.aggregate(
+                Max('updated_at')
+            )['updated_at__max']
+            
+            api_info: Dict[str, Any] = {
                 'api_name': 'US FRED Economic Indicators API',
                 'country': 'US',
                 'version': '1.0',
@@ -64,8 +108,13 @@ class FredUsIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
             logger.error(f"获取美国FRED API概览失败: {e}")
             return self._error_response(f"API概览获取失败: {str(e)}")
 
-    def get_data_fetcher(self):
-        """获取数据获取器实例"""
+    def get_data_fetcher(self) -> Optional[UsFredDataFetcher]:
+        """
+        获取数据获取器实例 (延迟初始化)
+        
+        Returns:
+            UsFredDataFetcher 实例或 None (初始化失败时)
+        """
         if not self.data_fetcher:
             try:
                 self.data_fetcher = UsFredDataFetcher()
@@ -75,10 +124,22 @@ class FredUsIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
         return self.data_fetcher
 
     @action(detail=False, methods=['get'])
-    def indicator(self, request):
-        """获取指定美国FRED指标数据 - GET /api/fred-us/indicator/"""
-        indicator_name = request.query_params.get('name', '').lower()
-        limit = int(request.query_params.get('limit', 100))
+    def indicator(self, request: Request) -> Response:
+        """
+        获取指定美国 FRED 指标数据
+        
+        GET /api/fred-us/indicator/?name=UNRATE&limit=100
+        
+        Args:
+            request: DRF 请求对象
+                - name: 指标名称 (必需)
+                - limit: 返回记录数 (默认 100)
+                
+        Returns:
+            Response: 指标数据或错误响应
+        """
+        indicator_name: str = request.query_params.get('name', '').lower()
+        limit: int = int(request.query_params.get('limit', 100))
         
         try:
             # 验证指标名称
@@ -516,13 +577,32 @@ class FredUsIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
         """平均时薪增长 - GET /api/fred-us/average-hourly-earnings/"""
         return self._get_specific_indicator('AHETPI', request)
 
-    def _get_specific_indicator(self, series_id: str, request):
-        """获取特定指标数据的通用方法 - 返回前端期望的简单格式"""
+    def _get_specific_indicator(self, series_id: str, request: Request) -> Response:
+        """
+        获取特定指标数据的通用方法
+        
+        返回前端期望的简单格式，包含最新值、历史观测数据和元信息。
+        
+        Args:
+            series_id: FRED 系列 ID (如 'UNRATE', 'CPIAUCSL')
+            request: DRF 请求对象
+            
+        Returns:
+            Response: 指标数据响应
+            {
+                success: true,
+                data: { value, date, formatted_date, yoy_change, ... },
+                observations: [...],
+                series_id: str,
+                count: int,
+                country: 'US'
+            }
+        """
         try:
-            limit = int(request.query_params.get('limit', 100))
+            limit: int = int(request.query_params.get('limit', 100))
             
             # 从数据库获取数据 - 不先切片
-            base_queryset = FredUsIndicator.objects.filter(
+            base_queryset: QuerySet[FredUsIndicator] = FredUsIndicator.objects.filter(
                 series_id=series_id
             ).order_by('-date')
             
@@ -610,9 +690,22 @@ class FredUsIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
             logger.error(f"获取指标 {series_id} 失败: {e}")
             return self._error_response(f"Failed to get indicator {series_id}: {str(e)}")
 
-    def _error_response(self, message: str, details: Optional[dict] = None):
-        """生成错误响应"""
-        error_data = {
+    def _error_response(
+        self, 
+        message: str, 
+        details: Optional[Dict[str, Any]] = None
+    ) -> Response:
+        """
+        生成标准化的错误响应
+        
+        Args:
+            message: 错误消息
+            details: 额外的错误详情
+            
+        Returns:
+            Response: 错误响应 (HTTP 400)
+        """
+        error_data: Dict[str, Any] = {
             'success': False,
             'error': message,
             'country': 'US',
