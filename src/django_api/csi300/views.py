@@ -24,6 +24,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.serializers import Serializer
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 
 from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary
 from .serializers import (
@@ -241,6 +242,13 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = serializer_class(instance, context=self.get_serializer_context())
         return Response(serializer.data)
     
+    @extend_schema(
+        responses={200: CSI300FilterOptionsSerializer},
+        parameters=[
+            OpenApiParameter(name='region', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY),
+            OpenApiParameter(name='im_sector', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY),
+        ]
+    )
     @action(detail=False, methods=['get'])
     def filter_options(self, request: Request) -> Response:
         """
@@ -342,6 +350,12 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response(data)
     
+    @extend_schema(
+        responses={200: CSI300CompanyListSerializer(many=True)},
+        parameters=[
+            OpenApiParameter(name='q', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=True),
+        ]
+    )
     @action(detail=False, methods=['get'])
     def search(self, request: Request) -> Response:
         """
@@ -372,6 +386,9 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = CSI300CompanyListSerializer(companies, many=True)
         return Response(serializer.data)
     
+    @extend_schema(
+        responses={200: CSI300InvestmentSummarySerializer},
+    )
     @action(detail=True, methods=['get'])
     def investment_summary(self, request: Request, pk: Optional[str] = None) -> Response:
         """
@@ -403,6 +420,9 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+    @extend_schema(
+        responses={200: CSI300IndustryPeersComparisonSerializer},
+    )
     @action(detail=True, methods=['get'])
     def industry_peers_comparison(self, request: Request, pk: Optional[str] = None) -> Response:
         """

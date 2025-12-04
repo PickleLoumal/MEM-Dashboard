@@ -1,0 +1,5644 @@
+openapi: 3.0.3
+info:
+  title: MEM Dashboard API
+  version: 1.0.0
+  description: API for MEM Dashboard, including CSI300, FRED (US/JP), and BEA data.
+paths:
+  /:
+    get:
+      operationId: root_retrieve
+      description: 根路径 - API欢迎信息
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/:
+    get:
+      operationId: api_retrieve
+      description: API概览 - 所有可用端点
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/:
+    get:
+      operationId: api_bea_retrieve
+      description: BEA API首页 - 动态端点列表
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/all_indicators/:
+    get:
+      operationId: api_bea_all_indicators_retrieve
+      description: 获取所有指标数据 - 动态处理
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/api/configs/:
+    get:
+      operationId: api_bea_api_configs_list
+      description: BEA指标配置ViewSet - 动态配置管理
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BeaIndicatorConfig'
+          description: ''
+    post:
+      operationId: api_bea_api_configs_create
+      description: BEA指标配置ViewSet - 动态配置管理
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeaConfigCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BeaConfigCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BeaConfigCreate'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaConfigCreate'
+          description: ''
+  /api/bea/api/configs/{id}/:
+    get:
+      operationId: api_bea_api_configs_retrieve
+      description: BEA指标配置ViewSet - 动态配置管理
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bea indicator config.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaIndicatorConfig'
+          description: ''
+    put:
+      operationId: api_bea_api_configs_update
+      description: BEA指标配置ViewSet - 动态配置管理
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bea indicator config.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeaConfigUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BeaConfigUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BeaConfigUpdate'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaConfigUpdate'
+          description: ''
+    patch:
+      operationId: api_bea_api_configs_partial_update
+      description: BEA指标配置ViewSet - 动态配置管理
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bea indicator config.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaConfigUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaConfigUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaConfigUpdate'
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaConfigUpdate'
+          description: ''
+    delete:
+      operationId: api_bea_api_configs_destroy
+      description: BEA指标配置ViewSet - 动态配置管理
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bea indicator config.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/bea/api/configs/{id}/activate/:
+    post:
+      operationId: api_bea_api_configs_activate_create
+      description: 激活指标配置
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bea indicator config.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeaIndicatorConfig'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BeaIndicatorConfig'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BeaIndicatorConfig'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaIndicatorConfig'
+          description: ''
+  /api/bea/api/configs/{id}/deactivate/:
+    post:
+      operationId: api_bea_api_configs_deactivate_create
+      description: 停用指标配置
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bea indicator config.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeaIndicatorConfig'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BeaIndicatorConfig'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BeaIndicatorConfig'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaIndicatorConfig'
+          description: ''
+  /api/bea/api/configs/active/:
+    get:
+      operationId: api_bea_api_configs_active_retrieve
+      description: 获取所有激活的配置
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaIndicatorConfig'
+          description: ''
+  /api/bea/api/configs/categories/:
+    get:
+      operationId: api_bea_api_configs_categories_retrieve
+      description: 获取所有指标分类
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaIndicatorConfig'
+          description: ''
+  /api/bea/api/data/:
+    get:
+      operationId: api_bea_api_data_list
+      description: BEA指标数据ViewSet - 支持CRUD操作
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BeaIndicator'
+          description: ''
+    post:
+      operationId: api_bea_api_data_create
+      description: BEA指标数据ViewSet - 支持CRUD操作
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeaIndicator'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BeaIndicator'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BeaIndicator'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaIndicator'
+          description: ''
+  /api/bea/api/data/{id}/:
+    get:
+      operationId: api_bea_api_data_retrieve
+      description: BEA指标数据ViewSet - 支持CRUD操作
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bea indicator.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaIndicator'
+          description: ''
+    put:
+      operationId: api_bea_api_data_update
+      description: BEA指标数据ViewSet - 支持CRUD操作
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bea indicator.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeaIndicator'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BeaIndicator'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BeaIndicator'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaIndicator'
+          description: ''
+    patch:
+      operationId: api_bea_api_data_partial_update
+      description: BEA指标数据ViewSet - 支持CRUD操作
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bea indicator.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaIndicator'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaIndicator'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBeaIndicator'
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaIndicator'
+          description: ''
+    delete:
+      operationId: api_bea_api_data_destroy
+      description: BEA指标数据ViewSet - 支持CRUD操作
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this bea indicator.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/bea/category/{category}/:
+    get:
+      operationId: api_bea_category_retrieve
+      description: 按分类获取指标数据
+      parameters:
+      - in: path
+        name: category
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/govt-investment-total/:
+    get:
+      operationId: api_bea_govt_investment_total_retrieve
+      description: Gross Government Investment - GET /bea/govt-investment-total/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/indicator/{series_id}/:
+    get:
+      operationId: api_bea_indicator_retrieve
+      description: 动态指标端点 - 根据series_id获取数据
+      parameters:
+      - in: path
+        name: series_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/investment-equipment/:
+    get:
+      operationId: api_bea_investment_equipment_retrieve
+      description: Equipment Investment - GET /bea/investment-equipment/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/investment-fixed/:
+    get:
+      operationId: api_bea_investment_fixed_retrieve
+      description: Fixed Investment - GET /bea/investment-fixed/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/investment-inventories/:
+    get:
+      operationId: api_bea_investment_inventories_retrieve
+      description: Change in Private Inventories - GET /bea/investment-inventories/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/investment-ip/:
+    get:
+      operationId: api_bea_investment_ip_retrieve
+      description: Intellectual Property Products Investment - GET /bea/investment-ip/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/investment-net/:
+    get:
+      operationId: api_bea_investment_net_retrieve
+      description: Net Private Domestic Investment - GET /bea/investment-net/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/investment-nonresidential/:
+    get:
+      operationId: api_bea_investment_nonresidential_retrieve
+      description: Nonresidential Investment - GET /bea/investment-nonresidential/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/investment-residential/:
+    get:
+      operationId: api_bea_investment_residential_retrieve
+      description: Residential Investment - GET /bea/investment-residential/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/investment-structures/:
+    get:
+      operationId: api_bea_investment_structures_retrieve
+      description: Structures Investment - GET /bea/investment-structures/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/investment-total/:
+    get:
+      operationId: api_bea_investment_total_retrieve
+      description: Gross Private Domestic Investment - GET /bea/investment-total/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/bea/stats/:
+    get:
+      operationId: api_bea_stats_retrieve
+      description: BEA系统统计信息
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/content/categories/:
+    get:
+      operationId: api_content_categories_list
+      description: Content category API
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContentCategory'
+          description: ''
+  /api/content/categories/{id}/:
+    get:
+      operationId: api_content_categories_retrieve
+      description: Content category API
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Content Category.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentCategory'
+          description: ''
+  /api/content/modals/:
+    get:
+      operationId: api_content_modals_list
+      description: Modal content API
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ModalContent'
+          description: ''
+  /api/content/modals/{id}/:
+    get:
+      operationId: api_content_modals_retrieve
+      description: Modal content API
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Modal Content.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModalContent'
+          description: ''
+  /api/content/modals/all_content/:
+    get:
+      operationId: api_content_modals_all_content_retrieve
+      description: Get all content simplified version
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModalContent'
+          description: ''
+  /api/content/modals/by_modal_id/:
+    get:
+      operationId: api_content_modals_by_modal_id_retrieve
+      description: Get content by modal_id
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModalContent'
+          description: ''
+  /api/csi300/:
+    get:
+      operationId: api_csi300_retrieve
+      description: |-
+        CSI300 API 索引端点
+
+        返回 API 概览信息，包括可用端点和统计数据。
+
+        Args:
+            request: DRF 请求对象
+
+        Returns:
+            Response: API 概览信息
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/csi300/api/companies/:
+    get:
+      operationId: api_csi300_api_companies_list
+      description: |-
+        CSI300 公司数据 ViewSet
+
+        提供 CSI300 指数成分股的只读 API 端点:
+        - list: 获取公司列表 (支持筛选和分页)
+        - retrieve: 获取单个公司详情
+        - filter_options: 获取筛选选项
+        - search: 搜索公司
+        - investment_summary: 获取投资摘要
+        - industry_peers_comparison: 获取同行业对比
+
+        类型注解:
+        - 所有方法返回 Response 对象
+        - 查询参数通过 request.query_params 获取
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCSI300CompanyListList'
+          description: ''
+  /api/csi300/api/companies/{id}/:
+    get:
+      operationId: api_csi300_api_companies_retrieve
+      description: |-
+        获取单个公司详情
+
+        Args:
+            request: DRF 请求对象
+            *args: 位置参数
+            **kwargs: 关键字参数，包含 pk (公司 ID)
+
+        Returns:
+            Response: 包含公司详情的响应
+
+        Raises:
+            Http404: 当公司不存在时
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this CSI300 Company.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300Company'
+          description: ''
+  /api/csi300/api/companies/{id}/industry_peers_comparison/:
+    get:
+      operationId: api_csi300_api_companies_industry_peers_comparison_retrieve
+      description: |-
+        获取同行业公司对比数据
+
+        返回目标公司与同行业前3名公司的关键指标对比。
+
+        Args:
+            request: DRF 请求对象
+            pk: 公司 ID
+
+        Returns:
+            Response: 同行业对比数据
+            {
+                target_company: { id, name, ticker, im_sector, rank },
+                industry: str,
+                comparison_data: List[PeerComparisonItem],
+                total_top_companies_shown: int,
+                total_companies_in_industry: int
+            }
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this CSI300 Company.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300IndustryPeersComparison'
+          description: ''
+  /api/csi300/api/companies/{id}/investment_summary/:
+    get:
+      operationId: api_csi300_api_companies_investment_summary_retrieve
+      description: |-
+        获取公司投资摘要
+
+        Args:
+            request: DRF 请求对象
+            pk: 公司 ID
+
+        Returns:
+            Response: 投资摘要数据或错误响应
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this CSI300 Company.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300InvestmentSummary'
+          description: ''
+  /api/csi300/api/companies/filter_options/:
+    get:
+      operationId: api_csi300_api_companies_filter_options_retrieve
+      description: |-
+        获取可用的筛选选项
+
+        支持级联筛选：
+        - 根据 region 返回对应地区的选项
+        - 根据 im_sector 返回对应行业的细分选项
+
+        Args:
+            request: DRF 请求对象
+
+        Returns:
+            Response: 包含筛选选项的响应
+            {
+                regions: List[str],
+                im_sectors: List[str],
+                industries: List[str],
+                gics_industries: List[str],
+                market_cap_range: { min: float, max: float },
+                filtered_by_region: bool,
+                filtered_by_sector: bool
+            }
+      parameters:
+      - in: query
+        name: im_sector
+        schema:
+          type: string
+      - in: query
+        name: region
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300FilterOptions'
+          description: ''
+  /api/csi300/api/companies/search/:
+    get:
+      operationId: api_csi300_api_companies_search_list
+      description: |-
+        搜索公司
+
+        通过公司名称、股票代码或别名进行搜索。
+
+        Args:
+            request: DRF 请求对象，需要 'q' 查询参数
+
+        Returns:
+            Response: 匹配的公司列表 (最多 10 条)
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCSI300CompanyListList'
+          description: ''
+  /api/csi300/health/:
+    get:
+      operationId: api_csi300_health_retrieve
+      description: |-
+        CSI300 API 健康检查端点
+
+        检查数据库连接和数据可用性。
+
+        Args:
+            request: DRF 请求对象
+
+        Returns:
+            Response: 健康状态信息
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/fred/:
+    get:
+      operationId: api_fred_list
+      description: |-
+        API 根端点 - 返回 API 概览信息
+
+        GET /api/fred-us/
+
+        Args:
+            request: DRF 请求对象
+
+        Returns:
+            Response: API 概览信息
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-jp/health/:
+    get:
+      operationId: api_fred_jp_health_retrieve
+      description: 日本FRED健康检查端点
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/fred-jp/indicators/:
+    get:
+      operationId: api_fred_jp_indicators_list
+      description: 日本FRED指标视图集 - 对应Flask API功能
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FredJpLatestValue'
+          description: ''
+  /api/fred-jp/indicators/{indicator_name}/:
+    get:
+      operationId: api_fred_jp_indicators_retrieve_2
+      description: 获取特定日本指标数据
+      parameters:
+      - in: path
+        name: indicator_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredJpLatestValue'
+          description: ''
+  /api/fred-jp/indicators/{id}/:
+    get:
+      operationId: api_fred_jp_indicators_retrieve
+      description: 日本FRED指标视图集 - 对应Flask API功能
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Japan FRED Indicator.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredJpLatestValue'
+          description: ''
+  /api/fred-jp/indicators/status/:
+    get:
+      operationId: api_fred_jp_indicators_status_retrieve
+      description: 日本FRED系统状态
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredJpLatestValue'
+          description: ''
+  /api/fred-jp/status/:
+    get:
+      operationId: api_fred_jp_status_retrieve
+      description: 日本FRED系统状态
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredJpLatestValue'
+          description: ''
+  /api/fred-us/:
+    get:
+      operationId: api_fred_us_list
+      description: |-
+        API 根端点 - 返回 API 概览信息
+
+        GET /api/fred-us/
+
+        Args:
+            request: DRF 请求对象
+
+        Returns:
+            Response: API 概览信息
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/{id}/:
+    get:
+      operationId: api_fred_us_retrieve
+      description: |-
+        美国 FRED 指标数据 ViewSet
+
+        提供美国 FRED 经济指标的 API 端点:
+        - list: API 概览信息
+        - indicator: 获取指定指标数据
+        - status: 服务状态
+        - all_indicators: 所有指标摘要
+        - health: 健康检查
+        - 各种特定指标端点 (debt-to-gdp, cpi, unemployment, etc.)
+
+        类型注解:
+        - 所有方法返回 Response 对象
+        - 查询参数通过 request.query_params 获取
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this US FRED Indicator.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/aaa-corporate-bond-yield/:
+    get:
+      operationId: api_fred_us_aaa_corporate_bond_yield_retrieve
+      description: 穆迪季节性Aaa级企业债券收益率 - GET /api/fred-us/aaa-corporate-bond-yield/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/all_indicators/:
+    get:
+      operationId: api_fred_us_all_indicators_retrieve
+      description: 获取所有美国FRED指标概览 - GET /api/fred-us/all-indicators/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/average-hourly-earnings/:
+    get:
+      operationId: api_fred_us_average_hourly_earnings_retrieve
+      description: 平均时薪增长 - GET /api/fred-us/average-hourly-earnings/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/baa-corporate-bond-yield/:
+    get:
+      operationId: api_fred_us_baa_corporate_bond_yield_retrieve
+      description: 穆迪季节性Baa级企业债券收益率 - GET /api/fred-us/baa-corporate-bond-yield/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/bank-lending-standards/:
+    get:
+      operationId: api_fred_us_bank_lending_standards_retrieve
+      description: 银行贷款标准 - GET /api/fred-us/bank-lending-standards/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/banking-commercial-loans/:
+    get:
+      operationId: api_fred_us_banking_commercial_loans_retrieve
+      description: 商业银行贷款和租赁 - GET /api/fred-us/banking-commercial-loans/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/banking-fed-balance-sheet/:
+    get:
+      operationId: api_fred_us_banking_fed_balance_sheet_retrieve
+      description: 美联储资产负债表总资产 - GET /api/fred-us/banking-fed-balance-sheet/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/banking-federal-funds-rate/:
+    get:
+      operationId: api_fred_us_banking_federal_funds_rate_retrieve
+      description: 联邦基金利率 (Banking Sector) - GET /api/fred-us/banking-federal-funds-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/banking-pce-inflation/:
+    get:
+      operationId: api_fred_us_banking_pce_inflation_retrieve
+      description: PCE价格指数 (通胀) - GET /api/fred-us/banking-pce-inflation/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/banking-prime-rate/:
+    get:
+      operationId: api_fred_us_banking_prime_rate_retrieve
+      description: 银行基准贷款利率 - GET /api/fred-us/banking-prime-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/banking-reserve-balances-interest/:
+    get:
+      operationId: api_fred_us_banking_reserve_balances_interest_retrieve
+      description: 准备金余额利率 - GET /api/fred-us/banking-reserve-balances-interest/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/banking-total-reserves/:
+    get:
+      operationId: api_fred_us_banking_total_reserves_retrieve
+      description: 总准备金余额 - GET /api/fred-us/banking-total-reserves/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/banking-unemployment-rate/:
+    get:
+      operationId: api_fred_us_banking_unemployment_rate_retrieve
+      description: 失业率 - GET /api/fred-us/banking-unemployment-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/commercial-bank-loans/:
+    get:
+      operationId: api_fred_us_commercial_bank_loans_retrieve
+      description: 商业银行贷款和租赁总额 - GET /api/fred-us/commercial-bank-loans/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/consumer-credit/:
+    get:
+      operationId: api_fred_us_consumer_credit_retrieve
+      description: 总消费者信贷 - GET /api/fred-us/consumer-credit/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/consumer-price-inflation/:
+    get:
+      operationId: api_fred_us_consumer_price_inflation_retrieve
+      description: 美国消费者价格通胀率 - GET /api/fred-us/consumer-price-inflation/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/corporate-debt-equity-ratio/:
+    get:
+      operationId: api_fred_us_corporate_debt_equity_ratio_retrieve
+      description: 非金融企业债务占股权市值比例 - GET /api/fred-us/corporate-debt-equity-ratio/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/corporate-debt-securities/:
+    get:
+      operationId: api_fred_us_corporate_debt_securities_retrieve
+      description: 非金融企业：债券和贷款负债水平 - GET /api/fred-us/corporate-debt-securities/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/cpi/:
+    get:
+      operationId: api_fred_us_cpi_retrieve
+      description: 消费者价格指数 - GET /api/fred-us/cpi/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/credit-card-debt/:
+    get:
+      operationId: api_fred_us_credit_card_debt_retrieve
+      description: 信用卡债务余额 - GET /api/fred-us/credit-card-debt/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/current-account-balance/:
+    get:
+      operationId: api_fred_us_current_account_balance_retrieve
+      description: 经常账户余额 - GET /api/fred-us/current-account-balance/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/customs-duties/:
+    get:
+      operationId: api_fred_us_customs_duties_retrieve
+      description: 联邦政府关税收入 - GET /api/fred-us/customs-duties/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/debt-service-ratio/:
+    get:
+      operationId: api_fred_us_debt_service_ratio_retrieve
+      description: 家庭债务偿还比率 - GET /api/fred-us/debt-service-ratio/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/debt-to-gdp/:
+    get:
+      operationId: api_fred_us_debt_to_gdp_retrieve
+      description: 债务与GDP比率 - GET /api/fred-us/debt-to-gdp/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/employment-cost-index/:
+    get:
+      operationId: api_fred_us_employment_cost_index_retrieve
+      description: 就业成本指数 - GET /api/fred-us/employment-cost-index/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/excess-reserves/:
+    get:
+      operationId: api_fred_us_excess_reserves_retrieve
+      description: 存款机构超额准备金 - GET /api/fred-us/excess-reserves/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/fed-balance-sheet/:
+    get:
+      operationId: api_fred_us_fed_balance_sheet_retrieve
+      description: 美联储资产负债表总资产 - GET /api/fred-us/fed-balance-sheet/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/fed-funds/:
+    get:
+      operationId: api_fred_us_fed_funds_retrieve
+      description: 联邦基金利率 - GET /api/fred-us/fed-funds/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-current-expenditures/:
+    get:
+      operationId: api_fred_us_federal_current_expenditures_retrieve
+      description: 联邦政府当期支出 - GET /api/fred-us/federal-current-expenditures/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-current-receipts/:
+    get:
+      operationId: api_fred_us_federal_current_receipts_retrieve
+      description: 联邦政府当期收入 - GET /api/fred-us/federal-current-receipts/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-debt-gdp-ratio/:
+    get:
+      operationId: api_fred_us_federal_debt_gdp_ratio_retrieve
+      description: 联邦债务占GDP比例 - GET /api/fred-us/federal-debt-gdp-ratio/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-debt-gdp-ratio-gdf/:
+    get:
+      operationId: api_fred_us_federal_debt_gdp_ratio_gdf_retrieve
+      description: 联邦债务占GDP比例 (Government Deficit Financing) - GET /api/fred-us/federal-debt-gdp-ratio-gdf/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-debt-public-gdp/:
+    get:
+      operationId: api_fred_us_federal_debt_public_gdp_retrieve
+      description: 联邦公共债务占GDP比例 - GET /api/fred-us/federal-debt-public-gdp/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-debt-total/:
+    get:
+      operationId: api_fred_us_federal_debt_total_retrieve
+      description: 联邦债务总额 - GET /api/fred-us/federal-debt-total/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-debt-total-gdf/:
+    get:
+      operationId: api_fred_us_federal_debt_total_gdf_retrieve
+      description: 联邦债务总额 (Government Deficit Financing) - GET /api/fred-us/federal-debt-total-gdf/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-funds-rate/:
+    get:
+      operationId: api_fred_us_federal_funds_rate_retrieve
+      description: 联邦基金利率 - GET /api/fred-us/federal-funds-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-interest-gdp/:
+    get:
+      operationId: api_fred_us_federal_interest_gdp_retrieve
+      description: 联邦利息支出占GDP比例 - GET /api/fred-us/federal-interest-gdp/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-net-outlays/:
+    get:
+      operationId: api_fred_us_federal_net_outlays_retrieve
+      description: 联邦净支出 - GET /api/fred-us/federal-net-outlays/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-surplus-deficit/:
+    get:
+      operationId: api_fred_us_federal_surplus_deficit_retrieve
+      description: 联邦盈余或赤字 - GET /api/fred-us/federal-surplus-deficit/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-surplus-deficit-gdf/:
+    get:
+      operationId: api_fred_us_federal_surplus_deficit_gdf_retrieve
+      description: 联邦盈余或赤字 (Government Deficit Financing) - GET /api/fred-us/federal-surplus-deficit-gdf/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-surplus-deficit-mts/:
+    get:
+      operationId: api_fred_us_federal_surplus_deficit_mts_retrieve
+      description: 联邦财政盈余/赤字（月度财政报表）- GET /api/fred-us/federal-surplus-deficit-mts/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/federal-tax-receipts/:
+    get:
+      operationId: api_fred_us_federal_tax_receipts_retrieve
+      description: 联邦政府当期税收 - GET /api/fred-us/federal-tax-receipts/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/fetch_data/:
+    post:
+      operationId: api_fred_us_fetch_data_create
+      description: 手动获取美国FRED数据 - POST /api/fred-us/fetch-data/
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FredUsIndicatorResponse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FredUsIndicatorResponse'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FredUsIndicatorResponse'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/foreign-treasury-holdings/:
+    get:
+      operationId: api_fred_us_foreign_treasury_holdings_retrieve
+      description: 外国官方机构持有的美国国债 - GET /api/fred-us/foreign-treasury-holdings/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/government-consumer-credit/:
+    get:
+      operationId: api_fred_us_government_consumer_credit_retrieve
+      description: 政府消费者信贷 - GET /api/fred-us/government-consumer-credit/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/gross-federal-debt/:
+    get:
+      operationId: api_fred_us_gross_federal_debt_retrieve
+      description: 联邦总债务 - GET /api/fred-us/gross-federal-debt/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/health/:
+    get:
+      operationId: api_fred_us_health_retrieve
+      description: 健康检查端点 - GET /api/fred-us/health/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/high-yield-bond-spread/:
+    get:
+      operationId: api_fred_us_high_yield_bond_spread_retrieve
+      description: ICE BofA美国高收益指数期权调整利差 - GET /api/fred-us/high-yield-bond-spread/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/household-debt-gdp/:
+    get:
+      operationId: api_fred_us_household_debt_gdp_retrieve
+      description: 家庭债务占GDP比重 - GET /api/fred-us/household-debt-gdp/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/housing/:
+    get:
+      operationId: api_fred_us_housing_retrieve
+      description: 房屋开工数 - GET /api/fred-us/housing/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/indicator/:
+    get:
+      operationId: api_fred_us_indicator_retrieve
+      description: |-
+        获取指定美国 FRED 指标数据
+
+        GET /api/fred-us/indicator/?name=UNRATE&limit=100
+
+        Args:
+            request: DRF 请求对象
+                - name: 指标名称 (必需)
+                - limit: 返回记录数 (默认 100)
+
+        Returns:
+            Response: 指标数据或错误响应
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/inflation-breakeven-rate/:
+    get:
+      operationId: api_fred_us_inflation_breakeven_rate_retrieve
+      description: 10年盈亏平衡通胀率 - GET /api/fred-us/inflation-breakeven-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/inflation-consumer-price-index/:
+    get:
+      operationId: api_fred_us_inflation_consumer_price_index_retrieve
+      description: 消费者价格指数 (CPI) - GET /api/fred-us/inflation-consumer-price-index/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/inflation-core-pce-price-index/:
+    get:
+      operationId: api_fred_us_inflation_core_pce_price_index_retrieve
+      description: 核心PCE价格指数 - GET /api/fred-us/inflation-core-pce-price-index/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/inflation-federal-funds-rate/:
+    get:
+      operationId: api_fred_us_inflation_federal_funds_rate_retrieve
+      description: 联邦基金利率 (Inflation) - GET /api/fred-us/inflation-federal-funds-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/inflation-oil-prices/:
+    get:
+      operationId: api_fred_us_inflation_oil_prices_retrieve
+      description: 原油价格 (WTI) - GET /api/fred-us/inflation-oil-prices/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/inflation-producer-price-index/:
+    get:
+      operationId: api_fred_us_inflation_producer_price_index_retrieve
+      description: 生产者价格指数 - GET /api/fred-us/inflation-producer-price-index/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/inflation-retail-sales/:
+    get:
+      operationId: api_fred_us_inflation_retail_sales_retrieve
+      description: 零售销售 - GET /api/fred-us/inflation-retail-sales/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/inflation-unemployment-rate/:
+    get:
+      operationId: api_fred_us_inflation_unemployment_rate_retrieve
+      description: 失业率 (Inflation) - GET /api/fred-us/inflation-unemployment-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/initial-jobless-claims/:
+    get:
+      operationId: api_fred_us_initial_jobless_claims_retrieve
+      description: 首次申请失业救济人数 - GET /api/fred-us/initial-jobless-claims/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/interest-rate-reserve-balances/:
+    get:
+      operationId: api_fred_us_interest_rate_reserve_balances_retrieve
+      description: 准备金余额利率 - GET /api/fred-us/interest-rate-reserve-balances/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/job-openings/:
+    get:
+      operationId: api_fred_us_job_openings_retrieve
+      description: 职位空缺总数 - GET /api/fred-us/job-openings/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/labor-force-participation/:
+    get:
+      operationId: api_fred_us_labor_force_participation_retrieve
+      description: 劳动力参与率 - GET /api/fred-us/labor-force-participation/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/m1-money-supply/:
+    get:
+      operationId: api_fred_us_m1_money_supply_retrieve
+      description: M1货币供应量 - GET /api/fred-us/m1-money-supply/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/m2-money-supply/:
+    get:
+      operationId: api_fred_us_m2_money_supply_retrieve
+      description: M2货币供应量 - GET /api/fred-us/m2-money-supply/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/m2v/:
+    get:
+      operationId: api_fred_us_m2v_retrieve
+      description: M2货币流通速度 - GET /api/fred-us/m2v/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/monetary-base/:
+    get:
+      operationId: api_fred_us_monetary_base_retrieve
+      description: 货币基础 - GET /api/fred-us/monetary-base/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/mortgage-30y/:
+    get:
+      operationId: api_fred_us_mortgage_30y_retrieve
+      description: 30年固定抵押贷款利率 - GET /api/fred-us/mortgage-30y/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/mortgage-debt/:
+    get:
+      operationId: api_fred_us_mortgage_debt_retrieve
+      description: 抵押贷款债务未偿余额 - GET /api/fred-us/mortgage-debt/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/nber-recession-indicator/:
+    get:
+      operationId: api_fred_us_nber_recession_indicator_retrieve
+      description: NBER经济衰退指标 - GET /api/fred-us/nber-recession-indicator/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/net-exports/:
+    get:
+      operationId: api_fred_us_net_exports_retrieve
+      description: 商品和服务净出口 - GET /api/fred-us/net-exports/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/nonfarm-payroll/:
+    get:
+      operationId: api_fred_us_nonfarm_payroll_retrieve
+      description: 非农就业人数 - GET /api/fred-us/nonfarm-payroll/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/overnight-reverse-repo/:
+    get:
+      operationId: api_fred_us_overnight_reverse_repo_retrieve
+      description: 隔夜逆回购协议 - GET /api/fred-us/overnight-reverse-repo/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/pce-price-index/:
+    get:
+      operationId: api_fred_us_pce_price_index_retrieve
+      description: PCE价格指数 - GET /api/fred-us/pce-price-index/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/population-55-over/:
+    get:
+      operationId: api_fred_us_population_55_over_retrieve
+      description: 55岁及以上人口 - GET /api/fred-us/population-55-over/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/primary-credit-loans/:
+    get:
+      operationId: api_fred_us_primary_credit_loans_retrieve
+      description: 资产流动性和信贷便利：主要信贷贷款 - GET /api/fred-us/primary-credit-loans/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/quits-rate/:
+    get:
+      operationId: api_fred_us_quits_rate_retrieve
+      description: 辞职率 - GET /api/fred-us/quits-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/real-exports/:
+    get:
+      operationId: api_fred_us_real_exports_retrieve
+      description: 实际商品和服务出口 - GET /api/fred-us/real-exports/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/real-imports/:
+    get:
+      operationId: api_fred_us_real_imports_retrieve
+      description: 实际商品和服务进口 - GET /api/fred-us/real-imports/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/status/:
+    get:
+      operationId: api_fred_us_status_retrieve
+      description: 获取美国FRED服务状态 - GET /api/fred-us/status/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/student-loans/:
+    get:
+      operationId: api_fred_us_student_loans_retrieve
+      description: 学生贷款 - GET /api/fred-us/student-loans/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/total-debt/:
+    get:
+      operationId: api_fred_us_total_debt_retrieve
+      description: 家庭总债务 - GET /api/fred-us/total-debt/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/trade-balance-goods-services/:
+    get:
+      operationId: api_fred_us_trade_balance_goods_services_retrieve
+      description: 贸易平衡：商品和服务（国际收支基础）- GET /api/fred-us/trade-balance-goods-services/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/treasury-10y/:
+    get:
+      operationId: api_fred_us_treasury_10y_retrieve
+      description: 10年期国债利率 - GET /api/fred-us/treasury-10y/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/treasury-2y/:
+    get:
+      operationId: api_fred_us_treasury_2y_retrieve
+      description: 2年期国债利率 - GET /api/fred-us/treasury-2y/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/treasury-3m/:
+    get:
+      operationId: api_fred_us_treasury_3m_retrieve
+      description: 3个月国债利率 - GET /api/fred-us/treasury-3m/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/unemployment/:
+    get:
+      operationId: api_fred_us_unemployment_retrieve
+      description: 失业率 - GET /api/fred-us/unemployment/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/unemployment-rate/:
+    get:
+      operationId: api_fred_us_unemployment_rate_retrieve
+      description: 失业率 - GET /api/fred-us/unemployment-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/{id}/:
+    get:
+      operationId: api_fred_retrieve
+      description: |-
+        美国 FRED 指标数据 ViewSet
+
+        提供美国 FRED 经济指标的 API 端点:
+        - list: API 概览信息
+        - indicator: 获取指定指标数据
+        - status: 服务状态
+        - all_indicators: 所有指标摘要
+        - health: 健康检查
+        - 各种特定指标端点 (debt-to-gdp, cpi, unemployment, etc.)
+
+        类型注解:
+        - 所有方法返回 Response 对象
+        - 查询参数通过 request.query_params 获取
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this US FRED Indicator.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/aaa-corporate-bond-yield/:
+    get:
+      operationId: api_fred_aaa_corporate_bond_yield_retrieve
+      description: 穆迪季节性Aaa级企业债券收益率 - GET /api/fred-us/aaa-corporate-bond-yield/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/all_indicators/:
+    get:
+      operationId: api_fred_all_indicators_retrieve
+      description: 获取所有美国FRED指标概览 - GET /api/fred-us/all-indicators/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/average-hourly-earnings/:
+    get:
+      operationId: api_fred_average_hourly_earnings_retrieve
+      description: 平均时薪增长 - GET /api/fred-us/average-hourly-earnings/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/baa-corporate-bond-yield/:
+    get:
+      operationId: api_fred_baa_corporate_bond_yield_retrieve
+      description: 穆迪季节性Baa级企业债券收益率 - GET /api/fred-us/baa-corporate-bond-yield/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/bank-lending-standards/:
+    get:
+      operationId: api_fred_bank_lending_standards_retrieve
+      description: 银行贷款标准 - GET /api/fred-us/bank-lending-standards/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/banking-commercial-loans/:
+    get:
+      operationId: api_fred_banking_commercial_loans_retrieve
+      description: 商业银行贷款和租赁 - GET /api/fred-us/banking-commercial-loans/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/banking-fed-balance-sheet/:
+    get:
+      operationId: api_fred_banking_fed_balance_sheet_retrieve
+      description: 美联储资产负债表总资产 - GET /api/fred-us/banking-fed-balance-sheet/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/banking-federal-funds-rate/:
+    get:
+      operationId: api_fred_banking_federal_funds_rate_retrieve
+      description: 联邦基金利率 (Banking Sector) - GET /api/fred-us/banking-federal-funds-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/banking-pce-inflation/:
+    get:
+      operationId: api_fred_banking_pce_inflation_retrieve
+      description: PCE价格指数 (通胀) - GET /api/fred-us/banking-pce-inflation/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/banking-prime-rate/:
+    get:
+      operationId: api_fred_banking_prime_rate_retrieve
+      description: 银行基准贷款利率 - GET /api/fred-us/banking-prime-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/banking-reserve-balances-interest/:
+    get:
+      operationId: api_fred_banking_reserve_balances_interest_retrieve
+      description: 准备金余额利率 - GET /api/fred-us/banking-reserve-balances-interest/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/banking-total-reserves/:
+    get:
+      operationId: api_fred_banking_total_reserves_retrieve
+      description: 总准备金余额 - GET /api/fred-us/banking-total-reserves/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/banking-unemployment-rate/:
+    get:
+      operationId: api_fred_banking_unemployment_rate_retrieve
+      description: 失业率 - GET /api/fred-us/banking-unemployment-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/commercial-bank-loans/:
+    get:
+      operationId: api_fred_commercial_bank_loans_retrieve
+      description: 商业银行贷款和租赁总额 - GET /api/fred-us/commercial-bank-loans/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/consumer-credit/:
+    get:
+      operationId: api_fred_consumer_credit_retrieve
+      description: 总消费者信贷 - GET /api/fred-us/consumer-credit/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/consumer-price-inflation/:
+    get:
+      operationId: api_fred_consumer_price_inflation_retrieve
+      description: 美国消费者价格通胀率 - GET /api/fred-us/consumer-price-inflation/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/corporate-debt-equity-ratio/:
+    get:
+      operationId: api_fred_corporate_debt_equity_ratio_retrieve
+      description: 非金融企业债务占股权市值比例 - GET /api/fred-us/corporate-debt-equity-ratio/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/corporate-debt-securities/:
+    get:
+      operationId: api_fred_corporate_debt_securities_retrieve
+      description: 非金融企业：债券和贷款负债水平 - GET /api/fred-us/corporate-debt-securities/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/cpi/:
+    get:
+      operationId: api_fred_cpi_retrieve
+      description: 消费者价格指数 - GET /api/fred-us/cpi/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/credit-card-debt/:
+    get:
+      operationId: api_fred_credit_card_debt_retrieve
+      description: 信用卡债务余额 - GET /api/fred-us/credit-card-debt/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/current-account-balance/:
+    get:
+      operationId: api_fred_current_account_balance_retrieve
+      description: 经常账户余额 - GET /api/fred-us/current-account-balance/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/customs-duties/:
+    get:
+      operationId: api_fred_customs_duties_retrieve
+      description: 联邦政府关税收入 - GET /api/fred-us/customs-duties/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/debt-service-ratio/:
+    get:
+      operationId: api_fred_debt_service_ratio_retrieve
+      description: 家庭债务偿还比率 - GET /api/fred-us/debt-service-ratio/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/debt-to-gdp/:
+    get:
+      operationId: api_fred_debt_to_gdp_retrieve
+      description: 债务与GDP比率 - GET /api/fred-us/debt-to-gdp/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/employment-cost-index/:
+    get:
+      operationId: api_fred_employment_cost_index_retrieve
+      description: 就业成本指数 - GET /api/fred-us/employment-cost-index/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/excess-reserves/:
+    get:
+      operationId: api_fred_excess_reserves_retrieve
+      description: 存款机构超额准备金 - GET /api/fred-us/excess-reserves/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/fed-balance-sheet/:
+    get:
+      operationId: api_fred_fed_balance_sheet_retrieve
+      description: 美联储资产负债表总资产 - GET /api/fred-us/fed-balance-sheet/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/fed-funds/:
+    get:
+      operationId: api_fred_fed_funds_retrieve
+      description: 联邦基金利率 - GET /api/fred-us/fed-funds/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-current-expenditures/:
+    get:
+      operationId: api_fred_federal_current_expenditures_retrieve
+      description: 联邦政府当期支出 - GET /api/fred-us/federal-current-expenditures/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-current-receipts/:
+    get:
+      operationId: api_fred_federal_current_receipts_retrieve
+      description: 联邦政府当期收入 - GET /api/fred-us/federal-current-receipts/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-debt-gdp-ratio/:
+    get:
+      operationId: api_fred_federal_debt_gdp_ratio_retrieve
+      description: 联邦债务占GDP比例 - GET /api/fred-us/federal-debt-gdp-ratio/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-debt-gdp-ratio-gdf/:
+    get:
+      operationId: api_fred_federal_debt_gdp_ratio_gdf_retrieve
+      description: 联邦债务占GDP比例 (Government Deficit Financing) - GET /api/fred-us/federal-debt-gdp-ratio-gdf/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-debt-public-gdp/:
+    get:
+      operationId: api_fred_federal_debt_public_gdp_retrieve
+      description: 联邦公共债务占GDP比例 - GET /api/fred-us/federal-debt-public-gdp/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-debt-total/:
+    get:
+      operationId: api_fred_federal_debt_total_retrieve
+      description: 联邦债务总额 - GET /api/fred-us/federal-debt-total/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-debt-total-gdf/:
+    get:
+      operationId: api_fred_federal_debt_total_gdf_retrieve
+      description: 联邦债务总额 (Government Deficit Financing) - GET /api/fred-us/federal-debt-total-gdf/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-funds-rate/:
+    get:
+      operationId: api_fred_federal_funds_rate_retrieve
+      description: 联邦基金利率 - GET /api/fred-us/federal-funds-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-interest-gdp/:
+    get:
+      operationId: api_fred_federal_interest_gdp_retrieve
+      description: 联邦利息支出占GDP比例 - GET /api/fred-us/federal-interest-gdp/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-net-outlays/:
+    get:
+      operationId: api_fred_federal_net_outlays_retrieve
+      description: 联邦净支出 - GET /api/fred-us/federal-net-outlays/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-surplus-deficit/:
+    get:
+      operationId: api_fred_federal_surplus_deficit_retrieve
+      description: 联邦盈余或赤字 - GET /api/fred-us/federal-surplus-deficit/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-surplus-deficit-gdf/:
+    get:
+      operationId: api_fred_federal_surplus_deficit_gdf_retrieve
+      description: 联邦盈余或赤字 (Government Deficit Financing) - GET /api/fred-us/federal-surplus-deficit-gdf/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-surplus-deficit-mts/:
+    get:
+      operationId: api_fred_federal_surplus_deficit_mts_retrieve
+      description: 联邦财政盈余/赤字（月度财政报表）- GET /api/fred-us/federal-surplus-deficit-mts/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/federal-tax-receipts/:
+    get:
+      operationId: api_fred_federal_tax_receipts_retrieve
+      description: 联邦政府当期税收 - GET /api/fred-us/federal-tax-receipts/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/fetch_data/:
+    post:
+      operationId: api_fred_fetch_data_create
+      description: 手动获取美国FRED数据 - POST /api/fred-us/fetch-data/
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FredUsIndicatorResponse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FredUsIndicatorResponse'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FredUsIndicatorResponse'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/foreign-treasury-holdings/:
+    get:
+      operationId: api_fred_foreign_treasury_holdings_retrieve
+      description: 外国官方机构持有的美国国债 - GET /api/fred-us/foreign-treasury-holdings/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/government-consumer-credit/:
+    get:
+      operationId: api_fred_government_consumer_credit_retrieve
+      description: 政府消费者信贷 - GET /api/fred-us/government-consumer-credit/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/gross-federal-debt/:
+    get:
+      operationId: api_fred_gross_federal_debt_retrieve
+      description: 联邦总债务 - GET /api/fred-us/gross-federal-debt/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/health/:
+    get:
+      operationId: api_fred_health_retrieve
+      description: 健康检查端点 - GET /api/fred-us/health/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/high-yield-bond-spread/:
+    get:
+      operationId: api_fred_high_yield_bond_spread_retrieve
+      description: ICE BofA美国高收益指数期权调整利差 - GET /api/fred-us/high-yield-bond-spread/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/household-debt-gdp/:
+    get:
+      operationId: api_fred_household_debt_gdp_retrieve
+      description: 家庭债务占GDP比重 - GET /api/fred-us/household-debt-gdp/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/housing/:
+    get:
+      operationId: api_fred_housing_retrieve
+      description: 房屋开工数 - GET /api/fred-us/housing/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/indicator/:
+    get:
+      operationId: api_fred_indicator_retrieve
+      description: |-
+        获取指定美国 FRED 指标数据
+
+        GET /api/fred-us/indicator/?name=UNRATE&limit=100
+
+        Args:
+            request: DRF 请求对象
+                - name: 指标名称 (必需)
+                - limit: 返回记录数 (默认 100)
+
+        Returns:
+            Response: 指标数据或错误响应
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/inflation-breakeven-rate/:
+    get:
+      operationId: api_fred_inflation_breakeven_rate_retrieve
+      description: 10年盈亏平衡通胀率 - GET /api/fred-us/inflation-breakeven-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/inflation-consumer-price-index/:
+    get:
+      operationId: api_fred_inflation_consumer_price_index_retrieve
+      description: 消费者价格指数 (CPI) - GET /api/fred-us/inflation-consumer-price-index/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/inflation-core-pce-price-index/:
+    get:
+      operationId: api_fred_inflation_core_pce_price_index_retrieve
+      description: 核心PCE价格指数 - GET /api/fred-us/inflation-core-pce-price-index/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/inflation-federal-funds-rate/:
+    get:
+      operationId: api_fred_inflation_federal_funds_rate_retrieve
+      description: 联邦基金利率 (Inflation) - GET /api/fred-us/inflation-federal-funds-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/inflation-oil-prices/:
+    get:
+      operationId: api_fred_inflation_oil_prices_retrieve
+      description: 原油价格 (WTI) - GET /api/fred-us/inflation-oil-prices/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/inflation-producer-price-index/:
+    get:
+      operationId: api_fred_inflation_producer_price_index_retrieve
+      description: 生产者价格指数 - GET /api/fred-us/inflation-producer-price-index/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/inflation-retail-sales/:
+    get:
+      operationId: api_fred_inflation_retail_sales_retrieve
+      description: 零售销售 - GET /api/fred-us/inflation-retail-sales/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/inflation-unemployment-rate/:
+    get:
+      operationId: api_fred_inflation_unemployment_rate_retrieve
+      description: 失业率 (Inflation) - GET /api/fred-us/inflation-unemployment-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/initial-jobless-claims/:
+    get:
+      operationId: api_fred_initial_jobless_claims_retrieve
+      description: 首次申请失业救济人数 - GET /api/fred-us/initial-jobless-claims/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/interest-rate-reserve-balances/:
+    get:
+      operationId: api_fred_interest_rate_reserve_balances_retrieve
+      description: 准备金余额利率 - GET /api/fred-us/interest-rate-reserve-balances/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/job-openings/:
+    get:
+      operationId: api_fred_job_openings_retrieve
+      description: 职位空缺总数 - GET /api/fred-us/job-openings/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/labor-force-participation/:
+    get:
+      operationId: api_fred_labor_force_participation_retrieve
+      description: 劳动力参与率 - GET /api/fred-us/labor-force-participation/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/m1-money-supply/:
+    get:
+      operationId: api_fred_m1_money_supply_retrieve
+      description: M1货币供应量 - GET /api/fred-us/m1-money-supply/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/m2-money-supply/:
+    get:
+      operationId: api_fred_m2_money_supply_retrieve
+      description: M2货币供应量 - GET /api/fred-us/m2-money-supply/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/m2v/:
+    get:
+      operationId: api_fred_m2v_retrieve
+      description: M2货币流通速度 - GET /api/fred-us/m2v/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/monetary-base/:
+    get:
+      operationId: api_fred_monetary_base_retrieve
+      description: 货币基础 - GET /api/fred-us/monetary-base/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/mortgage-30y/:
+    get:
+      operationId: api_fred_mortgage_30y_retrieve
+      description: 30年固定抵押贷款利率 - GET /api/fred-us/mortgage-30y/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/mortgage-debt/:
+    get:
+      operationId: api_fred_mortgage_debt_retrieve
+      description: 抵押贷款债务未偿余额 - GET /api/fred-us/mortgage-debt/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/nber-recession-indicator/:
+    get:
+      operationId: api_fred_nber_recession_indicator_retrieve
+      description: NBER经济衰退指标 - GET /api/fred-us/nber-recession-indicator/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/net-exports/:
+    get:
+      operationId: api_fred_net_exports_retrieve
+      description: 商品和服务净出口 - GET /api/fred-us/net-exports/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/nonfarm-payroll/:
+    get:
+      operationId: api_fred_nonfarm_payroll_retrieve
+      description: 非农就业人数 - GET /api/fred-us/nonfarm-payroll/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/overnight-reverse-repo/:
+    get:
+      operationId: api_fred_overnight_reverse_repo_retrieve
+      description: 隔夜逆回购协议 - GET /api/fred-us/overnight-reverse-repo/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/pce-price-index/:
+    get:
+      operationId: api_fred_pce_price_index_retrieve
+      description: PCE价格指数 - GET /api/fred-us/pce-price-index/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/population-55-over/:
+    get:
+      operationId: api_fred_population_55_over_retrieve
+      description: 55岁及以上人口 - GET /api/fred-us/population-55-over/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/primary-credit-loans/:
+    get:
+      operationId: api_fred_primary_credit_loans_retrieve
+      description: 资产流动性和信贷便利：主要信贷贷款 - GET /api/fred-us/primary-credit-loans/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/quits-rate/:
+    get:
+      operationId: api_fred_quits_rate_retrieve
+      description: 辞职率 - GET /api/fred-us/quits-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/real-exports/:
+    get:
+      operationId: api_fred_real_exports_retrieve
+      description: 实际商品和服务出口 - GET /api/fred-us/real-exports/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/real-imports/:
+    get:
+      operationId: api_fred_real_imports_retrieve
+      description: 实际商品和服务进口 - GET /api/fred-us/real-imports/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/status/:
+    get:
+      operationId: api_fred_status_retrieve
+      description: 获取美国FRED服务状态 - GET /api/fred-us/status/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/student-loans/:
+    get:
+      operationId: api_fred_student_loans_retrieve
+      description: 学生贷款 - GET /api/fred-us/student-loans/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/total-debt/:
+    get:
+      operationId: api_fred_total_debt_retrieve
+      description: 家庭总债务 - GET /api/fred-us/total-debt/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/trade-balance-goods-services/:
+    get:
+      operationId: api_fred_trade_balance_goods_services_retrieve
+      description: 贸易平衡：商品和服务（国际收支基础）- GET /api/fred-us/trade-balance-goods-services/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/treasury-10y/:
+    get:
+      operationId: api_fred_treasury_10y_retrieve
+      description: 10年期国债利率 - GET /api/fred-us/treasury-10y/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/treasury-2y/:
+    get:
+      operationId: api_fred_treasury_2y_retrieve
+      description: 2年期国债利率 - GET /api/fred-us/treasury-2y/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/treasury-3m/:
+    get:
+      operationId: api_fred_treasury_3m_retrieve
+      description: 3个月国债利率 - GET /api/fred-us/treasury-3m/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/unemployment/:
+    get:
+      operationId: api_fred_unemployment_retrieve
+      description: 失业率 - GET /api/fred-us/unemployment/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/unemployment-rate/:
+    get:
+      operationId: api_fred_unemployment_rate_retrieve
+      description: 失业率 - GET /api/fred-us/unemployment-rate/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/health/:
+    get:
+      operationId: api_health_retrieve
+      description: 全局健康检查端点 - 前端和Docker健康检查使用
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/policy/updates/:
+    get:
+      operationId: api_policy_updates_retrieve
+      description: Serve curated policy updates sourced from the Federal Register
+        API.
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/stocks/chart/lightweight/:
+    get:
+      operationId: api_stocks_chart_lightweight_retrieve
+      description: |-
+        生成TradingView Lightweight Charts图表
+        使用lightweight-charts-python库（仿照Databento示例）
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/stocks/fund-flow/:
+    get:
+      operationId: api_stocks_fund_flow_retrieve
+      description: Fund Flow页面 - 重定向到现有的HTML页面
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/stocks/historical/:
+    get:
+      operationId: api_stocks_historical_retrieve
+      description: 获取历史数据（支持不同时间间隔的K线数据）
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/stocks/intraday/:
+    get:
+      operationId: api_stocks_intraday_retrieve
+      description: 获取分时数据（1分钟K线）
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/stocks/list/:
+    get:
+      operationId: api_stocks_list_retrieve
+      description: 获取股票列表 - 从CSI300 Company表读取
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/stocks/score/generate/:
+    post:
+      operationId: api_stocks_score_generate_create
+      description: Trigger a lightweight scoring run for a single ticker.
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/stocks/score/generate-all/:
+    post:
+      operationId: api_stocks_score_generate_all_create
+      description: Trigger scoring calculation for all stocks.
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/stocks/top-picks/:
+    get:
+      operationId: api_stocks_top_picks_retrieve
+      description: Return today's top scoring stocks to power the dashboard cards.
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/stocks/top-picks-fast/:
+    get:
+      operationId: api_stocks_top_picks_fast_retrieve
+      description: |-
+        Optimized endpoint: returns top picks WITH sparkline data in one request.
+        Reduces frontend API calls from 10+ to 1.
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /csi300/:
+    get:
+      operationId: csi300_retrieve
+      description: |-
+        CSI300 API 索引端点
+
+        返回 API 概览信息，包括可用端点和统计数据。
+
+        Args:
+            request: DRF 请求对象
+
+        Returns:
+            Response: API 概览信息
+      tags:
+      - csi300
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /csi300/api/companies/:
+    get:
+      operationId: csi300_api_companies_list
+      description: |-
+        CSI300 公司数据 ViewSet
+
+        提供 CSI300 指数成分股的只读 API 端点:
+        - list: 获取公司列表 (支持筛选和分页)
+        - retrieve: 获取单个公司详情
+        - filter_options: 获取筛选选项
+        - search: 搜索公司
+        - investment_summary: 获取投资摘要
+        - industry_peers_comparison: 获取同行业对比
+
+        类型注解:
+        - 所有方法返回 Response 对象
+        - 查询参数通过 request.query_params 获取
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - csi300
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCSI300CompanyListList'
+          description: ''
+  /csi300/api/companies/{id}/:
+    get:
+      operationId: csi300_api_companies_retrieve
+      description: |-
+        获取单个公司详情
+
+        Args:
+            request: DRF 请求对象
+            *args: 位置参数
+            **kwargs: 关键字参数，包含 pk (公司 ID)
+
+        Returns:
+            Response: 包含公司详情的响应
+
+        Raises:
+            Http404: 当公司不存在时
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this CSI300 Company.
+        required: true
+      tags:
+      - csi300
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300Company'
+          description: ''
+  /csi300/api/companies/{id}/industry_peers_comparison/:
+    get:
+      operationId: csi300_api_companies_industry_peers_comparison_retrieve
+      description: |-
+        获取同行业公司对比数据
+
+        返回目标公司与同行业前3名公司的关键指标对比。
+
+        Args:
+            request: DRF 请求对象
+            pk: 公司 ID
+
+        Returns:
+            Response: 同行业对比数据
+            {
+                target_company: { id, name, ticker, im_sector, rank },
+                industry: str,
+                comparison_data: List[PeerComparisonItem],
+                total_top_companies_shown: int,
+                total_companies_in_industry: int
+            }
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this CSI300 Company.
+        required: true
+      tags:
+      - csi300
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300IndustryPeersComparison'
+          description: ''
+  /csi300/api/companies/{id}/investment_summary/:
+    get:
+      operationId: csi300_api_companies_investment_summary_retrieve
+      description: |-
+        获取公司投资摘要
+
+        Args:
+            request: DRF 请求对象
+            pk: 公司 ID
+
+        Returns:
+            Response: 投资摘要数据或错误响应
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this CSI300 Company.
+        required: true
+      tags:
+      - csi300
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300InvestmentSummary'
+          description: ''
+  /csi300/api/companies/filter_options/:
+    get:
+      operationId: csi300_api_companies_filter_options_retrieve
+      description: |-
+        获取可用的筛选选项
+
+        支持级联筛选：
+        - 根据 region 返回对应地区的选项
+        - 根据 im_sector 返回对应行业的细分选项
+
+        Args:
+            request: DRF 请求对象
+
+        Returns:
+            Response: 包含筛选选项的响应
+            {
+                regions: List[str],
+                im_sectors: List[str],
+                industries: List[str],
+                gics_industries: List[str],
+                market_cap_range: { min: float, max: float },
+                filtered_by_region: bool,
+                filtered_by_sector: bool
+            }
+      parameters:
+      - in: query
+        name: im_sector
+        schema:
+          type: string
+      - in: query
+        name: region
+        schema:
+          type: string
+      tags:
+      - csi300
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300FilterOptions'
+          description: ''
+  /csi300/api/companies/search/:
+    get:
+      operationId: csi300_api_companies_search_list
+      description: |-
+        搜索公司
+
+        通过公司名称、股票代码或别名进行搜索。
+
+        Args:
+            request: DRF 请求对象，需要 'q' 查询参数
+
+        Returns:
+            Response: 匹配的公司列表 (最多 10 条)
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+        required: true
+      tags:
+      - csi300
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCSI300CompanyListList'
+          description: ''
+  /csi300/health/:
+    get:
+      operationId: csi300_health_retrieve
+      description: |-
+        CSI300 API 健康检查端点
+
+        检查数据库连接和数据可用性。
+
+        Args:
+            request: DRF 请求对象
+
+        Returns:
+            Response: 健康状态信息
+      tags:
+      - csi300
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    BeaConfigCreate:
+      type: object
+      description: 创建BEA配置的序列化器
+      properties:
+        series_id:
+          type: string
+          maxLength: 50
+        name:
+          type: string
+          maxLength: 200
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        api_endpoint:
+          type: string
+          maxLength: 100
+        table_name:
+          type: string
+          maxLength: 50
+        line_description:
+          type: string
+          maxLength: 500
+        units:
+          type: string
+          maxLength: 100
+        auto_fetch:
+          type: boolean
+        is_active:
+          type: boolean
+        priority:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        fallback_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,4})?$
+          nullable: true
+        additional_config: {}
+      required:
+      - api_endpoint
+      - line_description
+      - name
+      - series_id
+      - table_name
+    BeaConfigUpdate:
+      type: object
+      description: 更新BEA配置的序列化器
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        api_endpoint:
+          type: string
+          maxLength: 100
+        table_name:
+          type: string
+          maxLength: 50
+        line_description:
+          type: string
+          maxLength: 500
+        units:
+          type: string
+          maxLength: 100
+        auto_fetch:
+          type: boolean
+        is_active:
+          type: boolean
+        priority:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        fallback_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,4})?$
+          nullable: true
+        additional_config: {}
+      required:
+      - api_endpoint
+      - line_description
+      - name
+      - table_name
+    BeaIndicator:
+      type: object
+      description: BEA指标数据序列化器
+      properties:
+        series_id:
+          type: string
+          maxLength: 50
+        time_period:
+          type: string
+          maxLength: 10
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,4})?$
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        yoy_change:
+          type: string
+          readOnly: true
+        formatted_date:
+          type: string
+          readOnly: true
+        value_billions:
+          type: string
+          readOnly: true
+      required:
+      - created_at
+      - formatted_date
+      - series_id
+      - time_period
+      - value
+      - value_billions
+      - yoy_change
+    BeaIndicatorConfig:
+      type: object
+      description: BEA指标配置序列化器
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        series_id:
+          type: string
+          maxLength: 50
+        name:
+          type: string
+          maxLength: 200
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        api_endpoint:
+          type: string
+          maxLength: 100
+        table_name:
+          type: string
+          maxLength: 50
+        line_description:
+          type: string
+          maxLength: 500
+        units:
+          type: string
+          maxLength: 100
+        auto_fetch:
+          type: boolean
+        is_active:
+          type: boolean
+        priority:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        fallback_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,4})?$
+          nullable: true
+        additional_config: {}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        last_updated:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - api_endpoint
+      - created_at
+      - id
+      - last_updated
+      - line_description
+      - name
+      - series_id
+      - table_name
+      - updated_at
+    CSI300Company:
+      type: object
+      description: CSI300 Company serializer for API responses
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: Company name
+          maxLength: 200
+        ticker:
+          type: string
+          nullable: true
+          description: Stock ticker
+          maxLength: 20
+        region:
+          type: string
+          nullable: true
+          description: Region (e.g., Mainland China, Hong Kong)
+          maxLength: 50
+        im_sector:
+          type: string
+          nullable: true
+          description: IM Sector (combined from im_code and industry)
+          maxLength: 150
+        industry:
+          type: string
+          nullable: true
+          description: Industry
+          maxLength: 500
+        gics_industry:
+          type: string
+          nullable: true
+          description: GICS Industry
+          maxLength: 100
+        gics_sub_industry:
+          type: string
+          nullable: true
+          description: GICS Sub-industry
+          maxLength: 100
+        naming:
+          type: string
+          nullable: true
+          description: Company naming
+          maxLength: 200
+        business_description:
+          type: string
+          nullable: true
+          description: Business description
+        company_info:
+          type: string
+          nullable: true
+          description: Company info
+        directors:
+          type: string
+          nullable: true
+          description: Directors
+          maxLength: 500
+        price_local_currency:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,6})?$
+          nullable: true
+          description: Price in local currency (Open)
+        previous_close:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,6})?$
+          nullable: true
+          description: Previous close price
+        currency:
+          type: string
+          nullable: true
+          description: Currency
+          maxLength: 20
+        total_return_2018_to_2025:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,9}(?:\.\d{0,6})?$
+          nullable: true
+          description: Total return 2018-2025
+        last_trade_date:
+          type: string
+          format: date
+          nullable: true
+          description: Last trade date
+        price_52w_high:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,6})?$
+          nullable: true
+          description: 52-week high
+        price_52w_low:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,6})?$
+          nullable: true
+          description: 52-week low
+        market_cap_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Market cap (local)
+        market_cap_usd:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Market cap (USD)
+        total_revenue_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Total revenue (local)
+        ltm_revenue_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: LTM revenue (local)
+        ntm_revenue_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: NTM revenue (local)
+        total_assets_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Total assets (local)
+        net_assets_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Net assets (local)
+        total_debt_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Total debt (local)
+        net_profits_fy0:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Net profits FY0
+        operating_margin_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Operating margin (trailing)
+        operating_profits_per_share:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Operating profits per share
+        eps_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: EPS trailing
+        eps_actual_fy0:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: EPS actual FY0
+        eps_forecast_fy1:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: EPS forecast FY1
+        eps_growth_percent:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: EPS growth %
+        asset_turnover_ltm:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Asset turnover LTM
+        roa_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: ROA trailing
+        roe_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: ROE trailing
+        operating_leverage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Operating leverage
+        altman_z_score_manufacturing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Altman Z-score (manufacturing)
+        altman_z_score_non_manufacturing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Altman Z-score (non-manufacturing)
+        ebitda_fy0:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: EBITDA FY0
+        ebitda_fy_minus_1:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: EBITDA FY-1
+        cash_flow_operations_fy0:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Cash flow operations FY0
+        cash_flow_operations_fy_minus_1:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Cash flow operations FY-1
+        interest_expense_fy0:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Interest expense FY0
+        effective_interest_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Effective interest rate
+        interest_coverage_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,9}(?:\.\d{0,6})?$
+          nullable: true
+          description: Interest coverage ratio
+        debt_to_total_assets:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Debt to total assets
+        debt_to_equity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Debt to equity
+        current_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Current ratio
+        quick_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Quick ratio
+        pe_ratio_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: P/E ratio trailing
+        pe_ratio_consensus:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: P/E ratio consensus
+        peg_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: PEG ratio
+        dividend_yield_fy0:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Dividend yield FY0
+        dividend_payout_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Dividend payout ratio
+        dividend_local_currency:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Dividend (local currency)
+        dividend_3yr_cagr:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Dividend 3yr CAGR
+        dividend_5yr_cagr:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Dividend 5yr CAGR
+        dividend_10yr_cagr:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Dividend 10yr CAGR
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    CSI300CompanyList:
+      type: object
+      description: Serializer for company list view - includes all fields that exist
+        in the database model
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        ticker:
+          type: string
+          nullable: true
+          description: Stock ticker
+          maxLength: 20
+        name:
+          type: string
+          description: Company name
+          maxLength: 200
+        region:
+          type: string
+          nullable: true
+          description: Region (e.g., Mainland China, Hong Kong)
+          maxLength: 50
+        im_sector:
+          type: string
+          nullable: true
+          description: IM Sector (combined from im_code and industry)
+          maxLength: 150
+        industry:
+          type: string
+          nullable: true
+          description: Industry
+          maxLength: 500
+        gics_industry:
+          type: string
+          nullable: true
+          description: GICS Industry
+          maxLength: 100
+        gics_sub_industry:
+          type: string
+          nullable: true
+          description: GICS Sub-industry
+          maxLength: 100
+        naming:
+          type: string
+          nullable: true
+          description: Company naming
+          maxLength: 200
+        business_description:
+          type: string
+          nullable: true
+          description: Business description
+        company_info:
+          type: string
+          nullable: true
+          description: Company info
+        directors:
+          type: string
+          nullable: true
+          description: Directors
+          maxLength: 500
+        currency:
+          type: string
+          nullable: true
+          description: Currency
+          maxLength: 20
+        last_trade_date:
+          type: string
+          format: date
+          nullable: true
+          description: Last trade date
+        price_local_currency:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,6})?$
+          nullable: true
+          description: Price in local currency (Open)
+        market_cap_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Market cap (local)
+        market_cap_usd:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Market cap (USD)
+        price_52w_high:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,6})?$
+          nullable: true
+          description: 52-week high
+        price_52w_low:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,6})?$
+          nullable: true
+          description: 52-week low
+        total_return_2018_to_2025:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,9}(?:\.\d{0,6})?$
+          nullable: true
+          description: Total return 2018-2025
+        total_revenue_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Total revenue (local)
+        ltm_revenue_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: LTM revenue (local)
+        ntm_revenue_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: NTM revenue (local)
+        total_assets_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Total assets (local)
+        net_assets_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Net assets (local)
+        total_debt_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Total debt (local)
+        net_profits_fy0:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Net profits FY0
+        operating_margin_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Operating margin (trailing)
+        operating_profits_per_share:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Operating profits per share
+        roe_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: ROE trailing
+        roa_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: ROA trailing
+        eps_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: EPS trailing
+        eps_actual_fy0:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: EPS actual FY0
+        eps_forecast_fy1:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: EPS forecast FY1
+        eps_growth_percent:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: EPS growth %
+        asset_turnover_ltm:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Asset turnover LTM
+        operating_leverage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Operating leverage
+        altman_z_score_manufacturing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Altman Z-score (manufacturing)
+        altman_z_score_non_manufacturing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Altman Z-score (non-manufacturing)
+        ebitda_fy0:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: EBITDA FY0
+        ebitda_fy_minus_1:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: EBITDA FY-1
+        cash_flow_operations_fy0:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Cash flow operations FY0
+        cash_flow_operations_fy_minus_1:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Cash flow operations FY-1
+        interest_expense_fy0:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Interest expense FY0
+        effective_interest_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Effective interest rate
+        interest_coverage_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,9}(?:\.\d{0,6})?$
+          nullable: true
+          description: Interest coverage ratio
+        debt_to_total_assets:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Debt to total assets
+        debt_to_equity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Debt to equity
+        current_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Current ratio
+        quick_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Quick ratio
+        pe_ratio_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: P/E ratio trailing
+        pe_ratio_consensus:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: P/E ratio consensus
+        peg_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: PEG ratio
+        dividend_yield_fy0:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Dividend yield FY0
+        dividend_payout_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Dividend payout ratio
+        dividend_local_currency:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Dividend (local currency)
+        dividend_3yr_cagr:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Dividend 3yr CAGR
+        dividend_5yr_cagr:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Dividend 5yr CAGR
+        dividend_10yr_cagr:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Dividend 10yr CAGR
+      required:
+      - id
+      - name
+    CSI300FilterOptions:
+      type: object
+      description: Serializer for filter options
+      properties:
+        im_sectors:
+          type: array
+          items:
+            type: string
+        industries:
+          type: array
+          items:
+            type: string
+        gics_industries:
+          type: array
+          items:
+            type: string
+        market_cap_range:
+          type: object
+          additionalProperties: {}
+      required:
+      - gics_industries
+      - im_sectors
+      - industries
+      - market_cap_range
+    CSI300IndustryPeersComparison:
+      type: object
+      description: Serializer for industry peers comparison data
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        ticker:
+          type: string
+          nullable: true
+          description: Stock ticker
+          maxLength: 20
+        name:
+          type: string
+          description: Company name
+          maxLength: 200
+        im_sector:
+          type: string
+          nullable: true
+          description: IM Sector (combined from im_code and industry)
+          maxLength: 150
+        market_cap_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Market cap (local)
+        market_cap_usd:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Market cap (USD)
+        market_cap_display:
+          type: string
+          readOnly: true
+        pe_ratio_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: P/E ratio trailing
+        pe_ratio_display:
+          type: string
+          readOnly: true
+        pb_ratio_display:
+          type: string
+          readOnly: true
+        roe_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: ROE trailing
+        roe_display:
+          type: string
+          readOnly: true
+        revenue_growth_display:
+          type: string
+          readOnly: true
+        operating_margin_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Operating margin (trailing)
+        operating_margin_display:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - market_cap_display
+      - name
+      - operating_margin_display
+      - pb_ratio_display
+      - pe_ratio_display
+      - revenue_growth_display
+      - roe_display
+    CSI300InvestmentSummary:
+      type: object
+      description: CSI300 Investment Summary serializer
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        company_name:
+          type: string
+          readOnly: true
+        company_ticker:
+          type: string
+          readOnly: true
+        im_sector:
+          type: string
+          readOnly: true
+        industry:
+          type: string
+          readOnly: true
+        report_date:
+          type: string
+          format: date
+          description: Report date
+        stock_price_previous_close:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          description: Previous close price
+        market_cap_display:
+          type: string
+          description: Market cap display format
+          maxLength: 200
+        recommended_action:
+          type: string
+          description: Investment recommendation
+          maxLength: 50
+        recommended_action_detail:
+          type: string
+          description: Detailed recommendation
+        business_overview:
+          type: string
+          description: Business overview
+        business_performance:
+          type: string
+          description: Business performance analysis
+        industry_context:
+          type: string
+          description: Industry context
+        financial_stability:
+          type: string
+          description: Financial stability analysis
+        key_financials_valuation:
+          type: string
+          description: Key financials and valuation
+        big_trends_events:
+          type: string
+          description: Big trends and events
+        customer_segments:
+          type: string
+          description: Customer segments analysis
+        competitive_landscape:
+          type: string
+          description: Competitive landscape
+        risks_anomalies:
+          type: string
+          description: Risks and anomalies
+        forecast_outlook:
+          type: string
+          description: Forecast and outlook
+        investment_firms_views:
+          type: string
+          description: Investment firms views
+        industry_ratio_analysis:
+          type: string
+          description: Industry ratio analysis
+        tariffs_supply_chain_risks:
+          type: string
+          description: Tariffs and supply chain risks
+        key_takeaways:
+          type: string
+          description: Key takeaways
+        sources:
+          type: string
+          description: Data sources
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        company:
+          type: integer
+      required:
+      - company
+      - company_name
+      - company_ticker
+      - created_at
+      - id
+      - im_sector
+      - industry
+      - report_date
+      - updated_at
+    ContentCategory:
+      type: object
+      description: Content category serializer
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Category Name
+          maxLength: 100
+        slug:
+          type: string
+          title: URL Slug
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        is_active:
+          type: boolean
+      required:
+      - id
+      - name
+      - slug
+    ContentTypeEnum:
+      enum:
+      - consumer-spending
+      - motor-vehicles
+      - services-exports
+      - goods-exports
+      - economic-indicators
+      - investment-components
+      - market-analysis
+      type: string
+      description: |-
+        * `consumer-spending` - Consumer Spending
+        * `motor-vehicles` - Motor Vehicles
+        * `services-exports` - Services Exports
+        * `goods-exports` - Goods Exports
+        * `economic-indicators` - Economic Indicators
+        * `investment-components` - Investment Components
+        * `market-analysis` - Market Analysis
+    FredJpLatestValue:
+      type: object
+      description: 日本FRED指标最新值序列化器 - 对应Flask API的data字段格式
+      properties:
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,4})?$
+        date:
+          type: string
+          format: date
+        formatted_date:
+          type: string
+        yoy_change:
+          type: number
+          format: double
+          nullable: true
+        unit:
+          type: string
+        indicator_name:
+          type: string
+        series_id:
+          type: string
+        source:
+          type: string
+          default: PostgreSQL Database (Django DRF)
+        last_updated:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - date
+      - formatted_date
+      - indicator_name
+      - last_updated
+      - series_id
+      - unit
+      - value
+      - yoy_change
+    FredUsIndicatorResponse:
+      type: object
+      description: 美国FRED指标响应序列化器 - 与前端API格式兼容
+      properties:
+        success:
+          type: boolean
+          default: true
+        data:
+          type: object
+          additionalProperties: {}
+        observations:
+          type: array
+          items: {}
+        metadata:
+          type: object
+          additionalProperties: {}
+      required:
+      - data
+      - metadata
+      - observations
+    ModalContent:
+      type: object
+      description: Modal content serializer
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        modal_id:
+          type: string
+          description: 'Modal ID used by frontend, e.g.: motor-vehicles'
+          maxLength: 100
+        title:
+          type: string
+          description: Title displayed in the modal
+          maxLength: 200
+        description:
+          type: string
+          description: Detailed description displayed in the modal
+        importance:
+          type: string
+          description: Explanation of why this indicator/content is important
+        source:
+          type: string
+          title: Data Source
+          description: Source of the data
+          maxLength: 500
+        category:
+          type: integer
+          nullable: true
+          description: Category this content belongs to
+        category_name:
+          type: string
+          readOnly: true
+        content_type:
+          allOf:
+          - $ref: '#/components/schemas/ContentTypeEnum'
+          description: |-
+            Specific type of content
+
+            * `consumer-spending` - Consumer Spending
+            * `motor-vehicles` - Motor Vehicles
+            * `services-exports` - Services Exports
+            * `goods-exports` - Goods Exports
+            * `economic-indicators` - Economic Indicators
+            * `investment-components` - Investment Components
+            * `market-analysis` - Market Analysis
+        breakdown:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+          description: Whether to display in frontend
+        priority:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Lower number = higher priority
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - breakdown
+      - category_name
+      - content_type
+      - created_at
+      - description
+      - id
+      - importance
+      - modal_id
+      - source
+      - title
+      - updated_at
+    PaginatedCSI300CompanyListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CSI300CompanyList'
+    PatchedBeaConfigUpdate:
+      type: object
+      description: 更新BEA配置的序列化器
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        api_endpoint:
+          type: string
+          maxLength: 100
+        table_name:
+          type: string
+          maxLength: 50
+        line_description:
+          type: string
+          maxLength: 500
+        units:
+          type: string
+          maxLength: 100
+        auto_fetch:
+          type: boolean
+        is_active:
+          type: boolean
+        priority:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        fallback_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,4})?$
+          nullable: true
+        additional_config: {}
+    PatchedBeaIndicator:
+      type: object
+      description: BEA指标数据序列化器
+      properties:
+        series_id:
+          type: string
+          maxLength: 50
+        time_period:
+          type: string
+          maxLength: 10
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,11}(?:\.\d{0,4})?$
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        yoy_change:
+          type: string
+          readOnly: true
+        formatted_date:
+          type: string
+          readOnly: true
+        value_billions:
+          type: string
+          readOnly: true

@@ -1,19 +1,7 @@
-"""
-Django + DRF URL Configuration for MEM Dashboard 
-映射Flask API端点，保持完全兼容性，支持FRED和BEA APIs
-分离架构实现 - 支持fred_us和fred_jp独立应用
-"""
-
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-# Django API主要URL配置
-# 映射Flask API端点，保持完全兼容性，支持FRED和BEA APIs
-# 分离架构实现 - 支持fred_us和fred_jp独立应用
-
-from django.contrib import admin
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from . import views
 
 # 创建DRF路由器
@@ -29,6 +17,11 @@ urlpatterns = [
     
     # Django管理
     path('admin/', admin.site.urls),
+    
+    # OpenAPI Schema
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     
     # API路由 - 对应Flask的/api前缀
     path('api/', include(router.urls)),

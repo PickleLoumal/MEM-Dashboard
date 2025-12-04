@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     # DRF
     'rest_framework',
     'corsheaders',
+    'drf_spectacular',
     # MEM Dashboard apps
     # 注意：fred_common是工具模块，不是Django应用，不应在此列表中
     'fred_us',    # US FRED indicators (分离架构)
@@ -175,6 +176,15 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [],  # 禁用认证，保持与Flask API一致
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
     'DEFAULT_METADATA_CLASS': 'rest_framework.metadata.SimpleMetadata',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'MEM Dashboard API',
+    'DESCRIPTION': 'API for MEM Dashboard, including CSI300, FRED (US/JP), and BEA data.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
 }
 
 # CORS配置 - 允许前端访问
