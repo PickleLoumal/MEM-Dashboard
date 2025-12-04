@@ -161,6 +161,8 @@ class FredUsIndicatorConfig(models.Model):
         """更新抓取状态"""
         self.fetch_status = status
         self.last_fetch_time = timezone.now()
-        if error_message and self.additional_config:
+        if error_message:
+            if self.additional_config is None:
+                self.additional_config = {}
             self.additional_config['last_error'] = error_message
         self.save()
