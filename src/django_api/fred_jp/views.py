@@ -3,12 +3,13 @@ Django REST Framework Views for Japan FRED API
 实现与美国FRED API完全相同的端点和响应格式，但针对日本经济指标
 """
 
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, serializers as drf_serializers
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from django.db.models import Q
 from django.db import connection
 from datetime import datetime
+from drf_spectacular.utils import extend_schema, inline_serializer
 from .models import FredJpIndicator, FredJpSeriesInfo
 from .serializers import (
     FredJpLatestValueSerializer,
@@ -237,6 +238,19 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
+@extend_schema(
+    responses={200: inline_serializer(
+        name='FredJpHealthCheckResponse',
+        fields={
+            'status': drf_serializers.CharField(),
+            'timestamp': drf_serializers.CharField(),
+            'service': drf_serializers.CharField(),
+            'database_available': drf_serializers.BooleanField(),
+            'version': drf_serializers.CharField(),
+            'country': drf_serializers.CharField(),
+        }
+    )}
+)
 @api_view(['GET'])
 def health_check_jp(request):
     """日本FRED健康检查端点"""

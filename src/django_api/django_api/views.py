@@ -5,9 +5,24 @@ Django API Root Views for MEM Dashboard
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import serializers
 from datetime import datetime
+from drf_spectacular.utils import extend_schema, inline_serializer
 
 
+@extend_schema(
+    responses={200: inline_serializer(
+        name='ApiRootResponse',
+        fields={
+            'message': serializers.CharField(),
+            'version': serializers.CharField(),
+            'timestamp': serializers.CharField(),
+            'documentation': serializers.CharField(),
+            'health_check': serializers.CharField(),
+            'status': serializers.CharField(),
+        }
+    )}
+)
 @api_view(['GET'])
 def api_root(request):
     """根路径 - API欢迎信息"""
@@ -21,6 +36,19 @@ def api_root(request):
     })
 
 
+@extend_schema(
+    responses={200: inline_serializer(
+        name='ApiOverviewResponse',
+        fields={
+            'api_name': serializers.CharField(),
+            'version': serializers.CharField(),
+            'timestamp': serializers.CharField(),
+            'endpoints': serializers.DictField(),
+            'documentation': serializers.CharField(),
+            'migration_status': serializers.CharField(),
+        }
+    )}
+)
 @api_view(['GET'])
 def api_overview(request):
     """API概览 - 所有可用端点"""
@@ -51,6 +79,21 @@ def api_overview(request):
     })
 
 
+@extend_schema(
+    responses={200: inline_serializer(
+        name='GlobalHealthCheckResponse',
+        fields={
+            'status': serializers.CharField(),
+            'timestamp': serializers.CharField(),
+            'service': serializers.CharField(),
+            'environment': serializers.CharField(),
+            'database_available': serializers.BooleanField(),
+            'version': serializers.CharField(),
+            'components': serializers.DictField(),
+            'csi300_companies_count': serializers.IntegerField(),
+        }
+    )}
+)
 @api_view(['GET'])
 def global_health_check(request):
     """全局健康检查端点 - 前端和Docker健康检查使用"""

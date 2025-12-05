@@ -10,8 +10,11 @@ export type PatchedBeaIndicator = {
     time_period?: string;
     value?: string;
     readonly created_at?: string;
-    readonly yoy_change?: string;
+    readonly yoy_change?: number | null;
+    /**
+     * 格式化日期显示
+     */
     readonly formatted_date?: string;
-    readonly value_billions?: string;
+    readonly value_billions?: number | null;
 };
 

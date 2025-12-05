@@ -2,31 +2,55 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ApiOverviewResponse } from '../models/ApiOverviewResponse';
+import type { BeaAllIndicatorsResponse } from '../models/BeaAllIndicatorsResponse';
+import type { BeaCategoryIndicatorsResponse } from '../models/BeaCategoryIndicatorsResponse';
 import type { BeaConfigCreate } from '../models/BeaConfigCreate';
 import type { BeaConfigUpdate } from '../models/BeaConfigUpdate';
+import type { BeaDynamicIndicatorResponse } from '../models/BeaDynamicIndicatorResponse';
+import type { BeaIndexResponse } from '../models/BeaIndexResponse';
 import type { BeaIndicator } from '../models/BeaIndicator';
 import type { BeaIndicatorConfig } from '../models/BeaIndicatorConfig';
+import type { BeaInvestmentResponse } from '../models/BeaInvestmentResponse';
+import type { BeaStatsResponse } from '../models/BeaStatsResponse';
 import type { ContentCategory } from '../models/ContentCategory';
 import type { CSI300Company } from '../models/CSI300Company';
 import type { CSI300FilterOptions } from '../models/CSI300FilterOptions';
-import type { CSI300IndustryPeersComparison } from '../models/CSI300IndustryPeersComparison';
+import type { CSI300HealthCheckResponse } from '../models/CSI300HealthCheckResponse';
+import type { CSI300IndexResponse } from '../models/CSI300IndexResponse';
 import type { CSI300InvestmentSummary } from '../models/CSI300InvestmentSummary';
+import type { CSI300PeerComparisonResponse } from '../models/CSI300PeerComparisonResponse';
+import type { FredJpHealthCheckResponse } from '../models/FredJpHealthCheckResponse';
 import type { FredJpLatestValue } from '../models/FredJpLatestValue';
 import type { FredUsIndicatorResponse } from '../models/FredUsIndicatorResponse';
+import type { FundFlowPageResponse } from '../models/FundFlowPageResponse';
+import type { GenerateAllScoresResponse } from '../models/GenerateAllScoresResponse';
+import type { GenerateInvestmentSummaryRequest } from '../models/GenerateInvestmentSummaryRequest';
+import type { GenerateInvestmentSummaryResponse } from '../models/GenerateInvestmentSummaryResponse';
+import type { GenerateStockScoreRequest } from '../models/GenerateStockScoreRequest';
+import type { GenerateStockScoreResponse } from '../models/GenerateStockScoreResponse';
+import type { GlobalHealthCheckResponse } from '../models/GlobalHealthCheckResponse';
+import type { HistoricalDataResponse } from '../models/HistoricalDataResponse';
+import type { IntradayDataResponse } from '../models/IntradayDataResponse';
+import type { LightweightChartResponse } from '../models/LightweightChartResponse';
 import type { ModalContent } from '../models/ModalContent';
 import type { PaginatedCSI300CompanyListList } from '../models/PaginatedCSI300CompanyListList';
 import type { PatchedBeaConfigUpdate } from '../models/PatchedBeaConfigUpdate';
 import type { PatchedBeaIndicator } from '../models/PatchedBeaIndicator';
+import type { PolicyUpdatesResponse } from '../models/PolicyUpdatesResponse';
+import type { StockListResponse } from '../models/StockListResponse';
+import type { TopPicksResponse } from '../models/TopPicksResponse';
+import type { TopPicksWithSparklinesResponse } from '../models/TopPicksWithSparklinesResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class ApiService {
     /**
      * API概览 - 所有可用端点
-     * @returns any No response body
+     * @returns ApiOverviewResponse
      * @throws ApiError
      */
-    public static apiRetrieve(): CancelablePromise<any> {
+    public static apiRetrieve(): CancelablePromise<ApiOverviewResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/',
@@ -34,10 +58,10 @@ export class ApiService {
     }
     /**
      * BEA API首页 - 动态端点列表
-     * @returns any No response body
+     * @returns BeaIndexResponse
      * @throws ApiError
      */
-    public static apiBeaRetrieve(): CancelablePromise<any> {
+    public static apiBeaRetrieve(): CancelablePromise<BeaIndexResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/',
@@ -45,10 +69,10 @@ export class ApiService {
     }
     /**
      * 获取所有指标数据 - 动态处理
-     * @returns any No response body
+     * @returns BeaAllIndicatorsResponse
      * @throws ApiError
      */
-    public static apiBeaAllIndicatorsRetrieve(): CancelablePromise<any> {
+    public static apiBeaAllIndicatorsRetrieve(): CancelablePromise<BeaAllIndicatorsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/all_indicators/',
@@ -326,13 +350,13 @@ export class ApiService {
     }
     /**
      * 按分类获取指标数据
-     * @param category
-     * @returns any No response body
+     * @param category Category name
+     * @returns BeaCategoryIndicatorsResponse
      * @throws ApiError
      */
     public static apiBeaCategoryRetrieve(
         category: string,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<BeaCategoryIndicatorsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/category/{category}/',
@@ -343,10 +367,10 @@ export class ApiService {
     }
     /**
      * Gross Government Investment - GET /bea/govt-investment-total/
-     * @returns any No response body
+     * @returns BeaInvestmentResponse
      * @throws ApiError
      */
-    public static apiBeaGovtInvestmentTotalRetrieve(): CancelablePromise<any> {
+    public static apiBeaGovtInvestmentTotalRetrieve(): CancelablePromise<BeaInvestmentResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/govt-investment-total/',
@@ -354,27 +378,32 @@ export class ApiService {
     }
     /**
      * 动态指标端点 - 根据series_id获取数据
-     * @param seriesId
-     * @returns any No response body
+     * @param seriesId Series ID
+     * @param quarterly Include quarterly data
+     * @returns BeaDynamicIndicatorResponse
      * @throws ApiError
      */
     public static apiBeaIndicatorRetrieve(
         seriesId: string,
-    ): CancelablePromise<any> {
+        quarterly?: boolean,
+    ): CancelablePromise<BeaDynamicIndicatorResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/indicator/{series_id}/',
             path: {
                 'series_id': seriesId,
             },
+            query: {
+                'quarterly': quarterly,
+            },
         });
     }
     /**
      * Equipment Investment - GET /bea/investment-equipment/
-     * @returns any No response body
+     * @returns BeaInvestmentResponse
      * @throws ApiError
      */
-    public static apiBeaInvestmentEquipmentRetrieve(): CancelablePromise<any> {
+    public static apiBeaInvestmentEquipmentRetrieve(): CancelablePromise<BeaInvestmentResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/investment-equipment/',
@@ -382,10 +411,10 @@ export class ApiService {
     }
     /**
      * Fixed Investment - GET /bea/investment-fixed/
-     * @returns any No response body
+     * @returns BeaInvestmentResponse
      * @throws ApiError
      */
-    public static apiBeaInvestmentFixedRetrieve(): CancelablePromise<any> {
+    public static apiBeaInvestmentFixedRetrieve(): CancelablePromise<BeaInvestmentResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/investment-fixed/',
@@ -393,10 +422,10 @@ export class ApiService {
     }
     /**
      * Change in Private Inventories - GET /bea/investment-inventories/
-     * @returns any No response body
+     * @returns BeaInvestmentResponse
      * @throws ApiError
      */
-    public static apiBeaInvestmentInventoriesRetrieve(): CancelablePromise<any> {
+    public static apiBeaInvestmentInventoriesRetrieve(): CancelablePromise<BeaInvestmentResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/investment-inventories/',
@@ -404,10 +433,10 @@ export class ApiService {
     }
     /**
      * Intellectual Property Products Investment - GET /bea/investment-ip/
-     * @returns any No response body
+     * @returns BeaInvestmentResponse
      * @throws ApiError
      */
-    public static apiBeaInvestmentIpRetrieve(): CancelablePromise<any> {
+    public static apiBeaInvestmentIpRetrieve(): CancelablePromise<BeaInvestmentResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/investment-ip/',
@@ -415,10 +444,10 @@ export class ApiService {
     }
     /**
      * Net Private Domestic Investment - GET /bea/investment-net/
-     * @returns any No response body
+     * @returns BeaInvestmentResponse
      * @throws ApiError
      */
-    public static apiBeaInvestmentNetRetrieve(): CancelablePromise<any> {
+    public static apiBeaInvestmentNetRetrieve(): CancelablePromise<BeaInvestmentResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/investment-net/',
@@ -426,10 +455,10 @@ export class ApiService {
     }
     /**
      * Nonresidential Investment - GET /bea/investment-nonresidential/
-     * @returns any No response body
+     * @returns BeaInvestmentResponse
      * @throws ApiError
      */
-    public static apiBeaInvestmentNonresidentialRetrieve(): CancelablePromise<any> {
+    public static apiBeaInvestmentNonresidentialRetrieve(): CancelablePromise<BeaInvestmentResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/investment-nonresidential/',
@@ -437,10 +466,10 @@ export class ApiService {
     }
     /**
      * Residential Investment - GET /bea/investment-residential/
-     * @returns any No response body
+     * @returns BeaInvestmentResponse
      * @throws ApiError
      */
-    public static apiBeaInvestmentResidentialRetrieve(): CancelablePromise<any> {
+    public static apiBeaInvestmentResidentialRetrieve(): CancelablePromise<BeaInvestmentResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/investment-residential/',
@@ -448,10 +477,10 @@ export class ApiService {
     }
     /**
      * Structures Investment - GET /bea/investment-structures/
-     * @returns any No response body
+     * @returns BeaInvestmentResponse
      * @throws ApiError
      */
-    public static apiBeaInvestmentStructuresRetrieve(): CancelablePromise<any> {
+    public static apiBeaInvestmentStructuresRetrieve(): CancelablePromise<BeaInvestmentResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/investment-structures/',
@@ -459,10 +488,10 @@ export class ApiService {
     }
     /**
      * Gross Private Domestic Investment - GET /bea/investment-total/
-     * @returns any No response body
+     * @returns BeaInvestmentResponse
      * @throws ApiError
      */
-    public static apiBeaInvestmentTotalRetrieve(): CancelablePromise<any> {
+    public static apiBeaInvestmentTotalRetrieve(): CancelablePromise<BeaInvestmentResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/investment-total/',
@@ -470,10 +499,10 @@ export class ApiService {
     }
     /**
      * BEA系统统计信息
-     * @returns any No response body
+     * @returns BeaStatsResponse
      * @throws ApiError
      */
-    public static apiBeaStatsRetrieve(): CancelablePromise<any> {
+    public static apiBeaStatsRetrieve(): CancelablePromise<BeaStatsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/bea/stats/',
@@ -567,10 +596,10 @@ export class ApiService {
      *
      * Returns:
      * Response: API 概览信息
-     * @returns any No response body
+     * @returns CSI300IndexResponse
      * @throws ApiError
      */
-    public static apiCsi300Retrieve(): CancelablePromise<any> {
+    public static apiCsi300Retrieve(): CancelablePromise<CSI300IndexResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/csi300/',
@@ -655,12 +684,12 @@ export class ApiService {
          * total_companies_in_industry: int
          * }
          * @param id A unique integer value identifying this CSI300 Company.
-         * @returns CSI300IndustryPeersComparison
+         * @returns CSI300PeerComparisonResponse
          * @throws ApiError
          */
         public static apiCsi300ApiCompaniesIndustryPeersComparisonRetrieve(
             id: number,
-        ): CancelablePromise<CSI300IndustryPeersComparison> {
+        ): CancelablePromise<CSI300PeerComparisonResponse> {
             return __request(OpenAPI, {
                 method: 'GET',
                 url: '/api/csi300/api/companies/{id}/industry_peers_comparison/',
@@ -764,6 +793,30 @@ export class ApiService {
                 });
             }
             /**
+             * 生成指定公司的 Investment Summary
+             *
+             * 使用 AI 模型生成公司投资摘要并保存到数据库。
+             *
+             * Args:
+             * request: DRF 请求对象，body 中包含 company_id
+             *
+             * Returns:
+             * Response: 生成结果
+             * @param requestBody
+             * @returns GenerateInvestmentSummaryResponse
+             * @throws ApiError
+             */
+            public static apiCsi300ApiGenerateSummaryCreate(
+                requestBody: GenerateInvestmentSummaryRequest,
+            ): CancelablePromise<GenerateInvestmentSummaryResponse> {
+                return __request(OpenAPI, {
+                    method: 'POST',
+                    url: '/api/csi300/api/generate-summary/',
+                    body: requestBody,
+                    mediaType: 'application/json',
+                });
+            }
+            /**
              * CSI300 API 健康检查端点
              *
              * 检查数据库连接和数据可用性。
@@ -773,10 +826,10 @@ export class ApiService {
              *
              * Returns:
              * Response: 健康状态信息
-             * @returns any No response body
+             * @returns CSI300HealthCheckResponse
              * @throws ApiError
              */
-            public static apiCsi300HealthRetrieve(): CancelablePromise<any> {
+            public static apiCsi300HealthRetrieve(): CancelablePromise<CSI300HealthCheckResponse> {
                 return __request(OpenAPI, {
                     method: 'GET',
                     url: '/api/csi300/health/',
@@ -803,10 +856,10 @@ export class ApiService {
             }
             /**
              * 日本FRED健康检查端点
-             * @returns any No response body
+             * @returns FredJpHealthCheckResponse
              * @throws ApiError
              */
-            public static apiFredJpHealthRetrieve(): CancelablePromise<any> {
+            public static apiFredJpHealthRetrieve(): CancelablePromise<FredJpHealthCheckResponse> {
                 return __request(OpenAPI, {
                     method: 'GET',
                     url: '/api/fred-jp/health/',
@@ -2924,10 +2977,10 @@ export class ApiService {
             }
             /**
              * 全局健康检查端点 - 前端和Docker健康检查使用
-             * @returns any No response body
+             * @returns GlobalHealthCheckResponse
              * @throws ApiError
              */
-            public static apiHealthRetrieve(): CancelablePromise<any> {
+            public static apiHealthRetrieve(): CancelablePromise<GlobalHealthCheckResponse> {
                 return __request(OpenAPI, {
                     method: 'GET',
                     url: '/api/health/',
@@ -2935,33 +2988,57 @@ export class ApiService {
             }
             /**
              * Serve curated policy updates sourced from the Federal Register API.
-             * @returns any No response body
+             * @param country Country code
+             * @param limit Number of results
+             * @param q Search term
+             * @param topicsArray Topic filters
+             * @returns PolicyUpdatesResponse
              * @throws ApiError
              */
-            public static apiPolicyUpdatesRetrieve(): CancelablePromise<any> {
+            public static apiPolicyUpdatesRetrieve(
+                country?: string,
+                limit?: number,
+                q?: string,
+                topicsArray?: string,
+            ): CancelablePromise<PolicyUpdatesResponse> {
                 return __request(OpenAPI, {
                     method: 'GET',
                     url: '/api/policy/updates/',
+                    query: {
+                        'country': country,
+                        'limit': limit,
+                        'q': q,
+                        'topics[]': topicsArray,
+                    },
                 });
             }
             /**
              * 生成TradingView Lightweight Charts图表
              * 使用lightweight-charts-python库（仿照Databento示例）
-             * @returns any No response body
+             * @param symbol Stock ticker symbol
+             * @param type Chart type: intraday, cmf, obv
+             * @returns LightweightChartResponse
              * @throws ApiError
              */
-            public static apiStocksChartLightweightRetrieve(): CancelablePromise<any> {
+            public static apiStocksChartLightweightRetrieve(
+                symbol: string,
+                type?: string,
+            ): CancelablePromise<LightweightChartResponse> {
                 return __request(OpenAPI, {
                     method: 'GET',
                     url: '/api/stocks/chart/lightweight/',
+                    query: {
+                        'symbol': symbol,
+                        'type': type,
+                    },
                 });
             }
             /**
              * Fund Flow页面 - 重定向到现有的HTML页面
-             * @returns any No response body
+             * @returns FundFlowPageResponse
              * @throws ApiError
              */
-            public static apiStocksFundFlowRetrieve(): CancelablePromise<any> {
+            public static apiStocksFundFlowRetrieve(): CancelablePromise<FundFlowPageResponse> {
                 return __request(OpenAPI, {
                     method: 'GET',
                     url: '/api/stocks/fund-flow/',
@@ -2969,32 +3046,53 @@ export class ApiService {
             }
             /**
              * 获取历史数据（支持不同时间间隔的K线数据）
-             * @returns any No response body
+             * @param symbol Stock ticker symbol
+             * @param days Number of days
+             * @param interval Data interval
+             * @param period YFinance period
+             * @returns HistoricalDataResponse
              * @throws ApiError
              */
-            public static apiStocksHistoricalRetrieve(): CancelablePromise<any> {
+            public static apiStocksHistoricalRetrieve(
+                symbol: string,
+                days?: number,
+                interval?: string,
+                period?: string,
+            ): CancelablePromise<HistoricalDataResponse> {
                 return __request(OpenAPI, {
                     method: 'GET',
                     url: '/api/stocks/historical/',
+                    query: {
+                        'days': days,
+                        'interval': interval,
+                        'period': period,
+                        'symbol': symbol,
+                    },
                 });
             }
             /**
              * 获取分时数据（1分钟K线）
-             * @returns any No response body
+             * @param symbol Stock ticker symbol
+             * @returns IntradayDataResponse
              * @throws ApiError
              */
-            public static apiStocksIntradayRetrieve(): CancelablePromise<any> {
+            public static apiStocksIntradayRetrieve(
+                symbol: string,
+            ): CancelablePromise<IntradayDataResponse> {
                 return __request(OpenAPI, {
                     method: 'GET',
                     url: '/api/stocks/intraday/',
+                    query: {
+                        'symbol': symbol,
+                    },
                 });
             }
             /**
              * 获取股票列表 - 从CSI300 Company表读取
-             * @returns any No response body
+             * @returns StockListResponse
              * @throws ApiError
              */
-            public static apiStocksListRetrieve(): CancelablePromise<any> {
+            public static apiStocksListRetrieve(): CancelablePromise<StockListResponse> {
                 return __request(OpenAPI, {
                     method: 'GET',
                     url: '/api/stocks/list/',
@@ -3002,21 +3100,26 @@ export class ApiService {
             }
             /**
              * Trigger a lightweight scoring run for a single ticker.
-             * @returns any No response body
+             * @param requestBody
+             * @returns GenerateStockScoreResponse
              * @throws ApiError
              */
-            public static apiStocksScoreGenerateCreate(): CancelablePromise<any> {
+            public static apiStocksScoreGenerateCreate(
+                requestBody: GenerateStockScoreRequest,
+            ): CancelablePromise<GenerateStockScoreResponse> {
                 return __request(OpenAPI, {
                     method: 'POST',
                     url: '/api/stocks/score/generate/',
+                    body: requestBody,
+                    mediaType: 'application/json',
                 });
             }
             /**
              * Trigger scoring calculation for all stocks.
-             * @returns any No response body
+             * @returns GenerateAllScoresResponse
              * @throws ApiError
              */
-            public static apiStocksScoreGenerateAllCreate(): CancelablePromise<any> {
+            public static apiStocksScoreGenerateAllCreate(): CancelablePromise<GenerateAllScoresResponse> {
                 return __request(OpenAPI, {
                     method: 'POST',
                     url: '/api/stocks/score/generate-all/',
@@ -3024,25 +3127,43 @@ export class ApiService {
             }
             /**
              * Return today's top scoring stocks to power the dashboard cards.
-             * @returns any No response body
+             * @param direction buy or sell
+             * @param limit Number of results
+             * @returns TopPicksResponse
              * @throws ApiError
              */
-            public static apiStocksTopPicksRetrieve(): CancelablePromise<any> {
+            public static apiStocksTopPicksRetrieve(
+                direction?: string,
+                limit?: number,
+            ): CancelablePromise<TopPicksResponse> {
                 return __request(OpenAPI, {
                     method: 'GET',
                     url: '/api/stocks/top-picks/',
+                    query: {
+                        'direction': direction,
+                        'limit': limit,
+                    },
                 });
             }
             /**
              * Optimized endpoint: returns top picks WITH sparkline data in one request.
              * Reduces frontend API calls from 10+ to 1.
-             * @returns any No response body
+             * @param direction buy or sell
+             * @param limit Number of results
+             * @returns TopPicksWithSparklinesResponse
              * @throws ApiError
              */
-            public static apiStocksTopPicksFastRetrieve(): CancelablePromise<any> {
+            public static apiStocksTopPicksFastRetrieve(
+                direction?: string,
+                limit?: number,
+            ): CancelablePromise<TopPicksWithSparklinesResponse> {
                 return __request(OpenAPI, {
                     method: 'GET',
                     url: '/api/stocks/top-picks-fast/',
+                    query: {
+                        'direction': direction,
+                        'limit': limit,
+                    },
                 });
             }
         }

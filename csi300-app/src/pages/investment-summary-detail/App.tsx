@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { GlobalNav } from '@shared/components/GlobalNav';
-import { fetchInvestmentSummary } from './api';
+import { fetchInvestmentSummary, generateInvestmentSummary } from './api';
 import { InvestmentSummary } from './types';
 import { SummarySection } from './components/SummarySection';
 import { SourcesSection } from './components/SourcesSection';
 import { BusinessOverviewSection } from './components/BusinessOverviewSection';
+import { logger } from '@shared/lib/logger';
 import '@shared/styles/main.css';
 import './styles.css';
 
@@ -14,13 +15,18 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [companyNameParam, setCompanyNameParam] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
 
   useEffect(() => {
+    const log = logger.startTrace();
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     setCompanyId(id);
     
     if (!id) {
+      const msg = 'Company ID not provided in URL';
+      log.warn(msg);
       setError('Company ID not provided');
       setLoading(false);
       return;
@@ -29,16 +35,23 @@ export default function App() {
     const nameParam = params.get('company');
     setCompanyNameParam(nameParam);
 
+    log.info('App mounted', { id, nameParam });
+
     if (nameParam) {
         document.title = `${nameParam} - Investment Summary - Chinese Stock Dashboard`;
     }
 
     fetchInvestmentSummary(id)
       .then(summary => {
+        log.info('Summary loaded', { 
+          company: summary.company_name, 
+          hasBusinessOverview: !!summary.business_overview 
+        });
         setData(summary);
         document.title = `${summary.company_name || nameParam || 'Company'} - Investment Summary - Chinese Stock Dashboard`;
       })
       .catch(err => {
+        log.error('Failed to load summary', { error: err });
         setError(err instanceof Error ? err.message : 'Failed to load investment summary');
       })
       .finally(() => {
@@ -54,6 +67,36 @@ export default function App() {
       window.location.href = '/browser.html';
     }
   };
+
+  const handleRegenerate = useCallback(async () => {
+    if (!companyId) return;
+    
+    const log = logger.startTrace().withContext({ companyId, action: 'regenerate' });
+    log.info('User clicked regenerate');
+    
+    setGenerating(true);
+    setGenerateError(null);
+    
+    try {
+      const result = await generateInvestmentSummary(companyId);
+      
+      if (result.status === 'success') {
+        log.info('Generation success, refreshing data');
+        // 重新获取更新后的数据
+        const updatedSummary = await fetchInvestmentSummary(companyId);
+        setData(updatedSummary);
+        setGenerateError(null);
+      } else {
+        log.error('Generation returned failure status', { result });
+        setGenerateError(result.message || '生成失败');
+      }
+    } catch (err) {
+      log.error('Regenerate exception', { error: err });
+      setGenerateError(err instanceof Error ? err.message : '生成失败，请重试');
+    } finally {
+      setGenerating(false);
+    }
+  }, [companyId]);
 
   const getActionClass = (action: string) => {
       if (!action || action === '-') return 'neutral';
@@ -111,7 +154,34 @@ export default function App() {
         }} />
         <div className="container app-shell">
             <div className="investment-summary-header">
+                <div className="header-title-row">
                 <h1>Investment Summary</h1>
+                    <button 
+                        className={`regenerate-btn ${generating ? 'generating' : ''}`}
+                        onClick={handleRegenerate}
+                        disabled={generating}
+                        title="Regenerate investment summary using AI"
+                    >
+                        {generating ? (
+                            <>
+                                <span className="regenerate-spinner"></span>
+                                Regenerating...
+                            </>
+                        ) : (
+                            <>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                                </svg>
+                                Regenerate
+                            </>
+                        )}
+                    </button>
+                </div>
+                {generateError && (
+                    <div className="generate-error">
+                        ⚠️ {generateError}
+                    </div>
+                )}
                 <div className="company-name-link">
                     <button className="company-name-clickable" onClick={handleBackToDetail}>
                         {data.company_name}
@@ -143,7 +213,7 @@ export default function App() {
                     </div>
                     <div className="basic-info-item">
                         <span className="basic-info-label">Industry</span>
-                        <span className="basic-info-value">{data.im_sector || data.industry || '-'}</span>
+                        <span className="basic-info-value">{data.industry || data.im_sector || '-'}</span>
                     </div>
                 </div>
             </div>

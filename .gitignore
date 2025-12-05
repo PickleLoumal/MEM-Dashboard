@@ -12,6 +12,7 @@ venv/
 env/
 .venv/
 .env/
+.uvcache/
 
 # Node.js
 node_modules/

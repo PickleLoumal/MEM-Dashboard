@@ -45,7 +45,7 @@ export type ModalContent = {
      * * `market-analysis` - Market Analysis
      */
     content_type: ContentTypeEnum;
-    readonly breakdown: string;
+    readonly breakdown: Array<Record<string, any>>;
     /**
      * Whether to display in frontend
      */

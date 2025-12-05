@@ -12,7 +12,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiRootResponse'
+          description: ''
   /api/:
     get:
       operationId: api_retrieve
@@ -23,7 +27,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiOverviewResponse'
+          description: ''
   /api/bea/:
     get:
       operationId: api_bea_retrieve
@@ -34,7 +42,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaIndexResponse'
+          description: ''
   /api/bea/all_indicators/:
     get:
       operationId: api_bea_all_indicators_retrieve
@@ -45,7 +57,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaAllIndicatorsResponse'
+          description: ''
   /api/bea/api/configs/:
     get:
       operationId: api_bea_api_configs_list
@@ -447,6 +463,7 @@ paths:
         name: category
         schema:
           type: string
+        description: Category name
         required: true
       tags:
       - api
@@ -454,7 +471,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaCategoryIndicatorsResponse'
+          description: ''
   /api/bea/govt-investment-total/:
     get:
       operationId: api_bea_govt_investment_total_retrieve
@@ -465,16 +486,26 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaInvestmentResponse'
+          description: ''
   /api/bea/indicator/{series_id}/:
     get:
       operationId: api_bea_indicator_retrieve
       description: 动态指标端点 - 根据series_id获取数据
       parameters:
+      - in: query
+        name: quarterly
+        schema:
+          type: boolean
+        description: Include quarterly data
       - in: path
         name: series_id
         schema:
           type: string
+        description: Series ID
         required: true
       tags:
       - api
@@ -482,7 +513,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaDynamicIndicatorResponse'
+          description: ''
   /api/bea/investment-equipment/:
     get:
       operationId: api_bea_investment_equipment_retrieve
@@ -493,7 +528,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaInvestmentResponse'
+          description: ''
   /api/bea/investment-fixed/:
     get:
       operationId: api_bea_investment_fixed_retrieve
@@ -504,7 +543,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaInvestmentResponse'
+          description: ''
   /api/bea/investment-inventories/:
     get:
       operationId: api_bea_investment_inventories_retrieve
@@ -515,7 +558,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaInvestmentResponse'
+          description: ''
   /api/bea/investment-ip/:
     get:
       operationId: api_bea_investment_ip_retrieve
@@ -526,7 +573,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaInvestmentResponse'
+          description: ''
   /api/bea/investment-net/:
     get:
       operationId: api_bea_investment_net_retrieve
@@ -537,7 +588,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaInvestmentResponse'
+          description: ''
   /api/bea/investment-nonresidential/:
     get:
       operationId: api_bea_investment_nonresidential_retrieve
@@ -548,7 +603,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaInvestmentResponse'
+          description: ''
   /api/bea/investment-residential/:
     get:
       operationId: api_bea_investment_residential_retrieve
@@ -559,7 +618,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaInvestmentResponse'
+          description: ''
   /api/bea/investment-structures/:
     get:
       operationId: api_bea_investment_structures_retrieve
@@ -570,7 +633,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaInvestmentResponse'
+          description: ''
   /api/bea/investment-total/:
     get:
       operationId: api_bea_investment_total_retrieve
@@ -581,7 +648,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaInvestmentResponse'
+          description: ''
   /api/bea/stats/:
     get:
       operationId: api_bea_stats_retrieve
@@ -592,7 +663,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaStatsResponse'
+          description: ''
   /api/content/categories/:
     get:
       operationId: api_content_categories_list
@@ -720,7 +795,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300IndexResponse'
+          description: ''
   /api/csi300/api/companies/:
     get:
       operationId: api_csi300_api_companies_list
@@ -833,7 +912,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CSI300IndustryPeersComparison'
+                $ref: '#/components/schemas/CSI300PeerComparisonResponse'
           description: ''
   /api/csi300/api/companies/{id}/investment_summary/:
     get:
@@ -951,6 +1030,48 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCSI300CompanyListList'
           description: ''
+  /api/csi300/api/generate-summary/:
+    post:
+      operationId: api_csi300_api_generate_summary_create
+      description: |-
+        生成指定公司的 Investment Summary
+
+        使用 AI 模型生成公司投资摘要并保存到数据库。
+
+        Args:
+            request: DRF 请求对象，body 中包含 company_id
+
+        Returns:
+            Response: 生成结果
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateInvestmentSummaryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GenerateInvestmentSummaryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GenerateInvestmentSummaryRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateInvestmentSummaryResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateInvestmentSummaryError'
+          description: ''
   /api/csi300/health/:
     get:
       operationId: api_csi300_health_retrieve
@@ -970,7 +1091,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300HealthCheckResponse'
+          description: ''
   /api/fred/:
     get:
       operationId: api_fred_list
@@ -1007,7 +1132,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredJpHealthCheckResponse'
+          description: ''
   /api/fred-jp/indicators/:
     get:
       operationId: api_fred_jp_indicators_list
@@ -3890,32 +4019,77 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalHealthCheckResponse'
+          description: ''
   /api/policy/updates/:
     get:
       operationId: api_policy_updates_retrieve
       description: Serve curated policy updates sourced from the Federal Register
         API.
+      parameters:
+      - in: query
+        name: country
+        schema:
+          type: string
+        description: Country code
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Number of results
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Search term
+      - in: query
+        name: topics[]
+        schema:
+          type: string
+        description: Topic filters
       tags:
       - api
       security:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyUpdatesResponse'
+          description: ''
   /api/stocks/chart/lightweight/:
     get:
       operationId: api_stocks_chart_lightweight_retrieve
       description: |-
         生成TradingView Lightweight Charts图表
         使用lightweight-charts-python库（仿照Databento示例）
+      parameters:
+      - in: query
+        name: symbol
+        schema:
+          type: string
+        description: Stock ticker symbol
+        required: true
+      - in: query
+        name: type
+        schema:
+          type: string
+        description: 'Chart type: intraday, cmf, obv'
       tags:
       - api
       security:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LightweightChartResponse'
+          description: ''
   /api/stocks/fund-flow/:
     get:
       operationId: api_stocks_fund_flow_retrieve
@@ -3926,29 +4100,70 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FundFlowPageResponse'
+          description: ''
   /api/stocks/historical/:
     get:
       operationId: api_stocks_historical_retrieve
       description: 获取历史数据（支持不同时间间隔的K线数据）
+      parameters:
+      - in: query
+        name: days
+        schema:
+          type: integer
+        description: Number of days
+      - in: query
+        name: interval
+        schema:
+          type: string
+        description: Data interval
+      - in: query
+        name: period
+        schema:
+          type: string
+        description: YFinance period
+      - in: query
+        name: symbol
+        schema:
+          type: string
+        description: Stock ticker symbol
+        required: true
       tags:
       - api
       security:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalDataResponse'
+          description: ''
   /api/stocks/intraday/:
     get:
       operationId: api_stocks_intraday_retrieve
       description: 获取分时数据（1分钟K线）
+      parameters:
+      - in: query
+        name: symbol
+        schema:
+          type: string
+        description: Stock ticker symbol
+        required: true
       tags:
       - api
       security:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntradayDataResponse'
+          description: ''
   /api/stocks/list/:
     get:
       operationId: api_stocks_list_retrieve
@@ -3959,18 +4174,38 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockListResponse'
+          description: ''
   /api/stocks/score/generate/:
     post:
       operationId: api_stocks_score_generate_create
       description: Trigger a lightweight scoring run for a single ticker.
       tags:
       - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateStockScoreRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GenerateStockScoreRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GenerateStockScoreRequest'
+        required: true
       security:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateStockScoreResponse'
+          description: ''
   /api/stocks/score/generate-all/:
     post:
       operationId: api_stocks_score_generate_all_create
@@ -3981,31 +4216,65 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateAllScoresResponse'
+          description: ''
   /api/stocks/top-picks/:
     get:
       operationId: api_stocks_top_picks_retrieve
       description: Return today's top scoring stocks to power the dashboard cards.
+      parameters:
+      - in: query
+        name: direction
+        schema:
+          type: string
+        description: buy or sell
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Number of results
       tags:
       - api
       security:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopPicksResponse'
+          description: ''
   /api/stocks/top-picks-fast/:
     get:
       operationId: api_stocks_top_picks_fast_retrieve
       description: |-
         Optimized endpoint: returns top picks WITH sparkline data in one request.
         Reduces frontend API calls from 10+ to 1.
+      parameters:
+      - in: query
+        name: direction
+        schema:
+          type: string
+        description: buy or sell
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Number of results
       tags:
       - api
       security:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopPicksWithSparklinesResponse'
+          description: ''
   /csi300/:
     get:
       operationId: csi300_retrieve
@@ -4025,7 +4294,11 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300IndexResponse'
+          description: ''
   /csi300/api/companies/:
     get:
       operationId: csi300_api_companies_list
@@ -4138,7 +4411,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CSI300IndustryPeersComparison'
+                $ref: '#/components/schemas/CSI300PeerComparisonResponse'
           description: ''
   /csi300/api/companies/{id}/investment_summary/:
     get:
@@ -4256,6 +4529,48 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedCSI300CompanyListList'
           description: ''
+  /csi300/api/generate-summary/:
+    post:
+      operationId: csi300_api_generate_summary_create
+      description: |-
+        生成指定公司的 Investment Summary
+
+        使用 AI 模型生成公司投资摘要并保存到数据库。
+
+        Args:
+            request: DRF 请求对象，body 中包含 company_id
+
+        Returns:
+            Response: 生成结果
+      tags:
+      - csi300
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateInvestmentSummaryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GenerateInvestmentSummaryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GenerateInvestmentSummaryRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateInvestmentSummaryResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateInvestmentSummaryError'
+          description: ''
   /csi300/health/:
     get:
       operationId: csi300_health_retrieve
@@ -4275,9 +4590,84 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300HealthCheckResponse'
+          description: ''
 components:
   schemas:
+    ApiOverviewResponse:
+      type: object
+      properties:
+        api_name:
+          type: string
+        version:
+          type: string
+        timestamp:
+          type: string
+        endpoints:
+          type: object
+          additionalProperties: {}
+        documentation:
+          type: string
+        migration_status:
+          type: string
+      required:
+      - api_name
+      - documentation
+      - endpoints
+      - migration_status
+      - timestamp
+      - version
+    ApiRootResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        version:
+          type: string
+        timestamp:
+          type: string
+        documentation:
+          type: string
+        health_check:
+          type: string
+        status:
+          type: string
+      required:
+      - documentation
+      - health_check
+      - message
+      - status
+      - timestamp
+      - version
+    BeaAllIndicatorsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          additionalProperties: {}
+        error:
+          type: string
+      required:
+      - data
+      - success
+    BeaCategoryIndicatorsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          additionalProperties: {}
+        error:
+          type: string
+      required:
+      - data
+      - success
     BeaConfigCreate:
       type: object
       description: 创建BEA配置的序列化器
@@ -4368,6 +4758,49 @@ components:
       - line_description
       - name
       - table_name
+    BeaDynamicIndicatorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        series_id:
+          type: string
+        data:
+          type: object
+          additionalProperties: {}
+        error:
+          type: string
+      required:
+      - series_id
+      - success
+    BeaIndexResponse:
+      type: object
+      properties:
+        service:
+          type: string
+        status:
+          type: string
+        timestamp:
+          type: string
+        dynamic_endpoints:
+          type: array
+          items:
+            type: string
+        management_endpoints:
+          type: array
+          items:
+            type: string
+        legacy_endpoints:
+          type: array
+          items:
+            type: string
+      required:
+      - dynamic_endpoints
+      - legacy_endpoints
+      - management_endpoints
+      - service
+      - status
+      - timestamp
     BeaIndicator:
       type: object
       description: BEA指标数据序列化器
@@ -4387,13 +4820,18 @@ components:
           format: date-time
           readOnly: true
         yoy_change:
-          type: string
+          type: number
+          format: double
+          nullable: true
           readOnly: true
         formatted_date:
           type: string
+          description: 格式化日期显示
           readOnly: true
         value_billions:
-          type: string
+          type: number
+          format: double
+          nullable: true
           readOnly: true
       required:
       - created_at
@@ -4469,6 +4907,37 @@ components:
       - series_id
       - table_name
       - updated_at
+    BeaInvestmentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        series_id:
+          type: string
+        data:
+          type: object
+          additionalProperties: {}
+        error:
+          type: string
+      required:
+      - series_id
+      - success
+    BeaStatsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          additionalProperties: {}
+        timestamp:
+          type: string
+        error:
+          type: string
+      required:
+      - data
+      - success
+      - timestamp
     CSI300Company:
       type: object
       description: CSI300 Company serializer for API responses
@@ -5174,6 +5643,10 @@ components:
       type: object
       description: Serializer for filter options
       properties:
+        regions:
+          type: array
+          items:
+            type: string
         im_sectors:
           type: array
           items:
@@ -5189,89 +5662,54 @@ components:
         market_cap_range:
           type: object
           additionalProperties: {}
+        filtered_by_region:
+          type: boolean
+        filtered_by_sector:
+          type: boolean
+        region_filter:
+          type: string
+          nullable: true
+        sector_filter:
+          type: string
+          nullable: true
       required:
       - gics_industries
       - im_sectors
       - industries
       - market_cap_range
-    CSI300IndustryPeersComparison:
+    CSI300HealthCheckResponse:
       type: object
-      description: Serializer for industry peers comparison data
       properties:
-        id:
+        status:
+          type: string
+        service:
+          type: string
+        total_companies:
           type: integer
-          readOnly: true
-        ticker:
-          type: string
-          nullable: true
-          description: Stock ticker
-          maxLength: 20
-        name:
-          type: string
-          description: Company name
-          maxLength: 200
-        im_sector:
-          type: string
-          nullable: true
-          description: IM Sector (combined from im_code and industry)
-          maxLength: 150
-        market_cap_local:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
-          nullable: true
-          description: Market cap (local)
-        market_cap_usd:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
-          nullable: true
-          description: Market cap (USD)
-        market_cap_display:
-          type: string
-          readOnly: true
-        pe_ratio_trailing:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
-          nullable: true
-          description: P/E ratio trailing
-        pe_ratio_display:
-          type: string
-          readOnly: true
-        pb_ratio_display:
-          type: string
-          readOnly: true
-        roe_trailing:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
-          nullable: true
-          description: ROE trailing
-        roe_display:
-          type: string
-          readOnly: true
-        revenue_growth_display:
-          type: string
-          readOnly: true
-        operating_margin_trailing:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
-          nullable: true
-          description: Operating margin (trailing)
-        operating_margin_display:
-          type: string
-          readOnly: true
+        database_available:
+          type: boolean
       required:
-      - id
-      - market_cap_display
-      - name
-      - operating_margin_display
-      - pb_ratio_display
-      - pe_ratio_display
-      - revenue_growth_display
-      - roe_display
+      - database_available
+      - service
+      - status
+      - total_companies
+    CSI300IndexResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        version:
+          type: string
+        endpoints:
+          type: object
+          additionalProperties: {}
+        total_companies:
+          type: integer
+      required:
+      - endpoints
+      - message
+      - total_companies
+      - version
     CSI300InvestmentSummary:
       type: object
       description: CSI300 Investment Summary serializer
@@ -5376,6 +5814,120 @@ components:
       - industry
       - report_date
       - updated_at
+    CSI300PeerComparisonItem:
+      type: object
+      description: Serializer for a single peer comparison item with extra fields
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        ticker:
+          type: string
+          nullable: true
+          description: Stock ticker
+          maxLength: 20
+        name:
+          type: string
+          description: Company name
+          maxLength: 200
+        im_sector:
+          type: string
+          nullable: true
+          description: IM Sector (combined from im_code and industry)
+          maxLength: 150
+        market_cap_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Market cap (local)
+        market_cap_usd:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Market cap (USD)
+        market_cap_display:
+          type: string
+          description: Format market cap for display
+          readOnly: true
+        pe_ratio_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: P/E ratio trailing
+        pe_ratio_display:
+          type: string
+          description: Format P/E ratio for display
+          readOnly: true
+        pb_ratio_display:
+          type: string
+          description: Calculate and format P/B ratio for display
+          readOnly: true
+        roe_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: ROE trailing
+        roe_display:
+          type: string
+          description: Format ROE for display
+          readOnly: true
+        revenue_growth_display:
+          type: string
+          description: Calculate revenue growth for display
+          readOnly: true
+        operating_margin_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Operating margin (trailing)
+        operating_margin_display:
+          type: string
+          description: Format Operating Margin for display
+          readOnly: true
+        rank:
+          type: integer
+          readOnly: true
+        is_current_company:
+          type: boolean
+          readOnly: true
+      required:
+      - id
+      - is_current_company
+      - market_cap_display
+      - name
+      - operating_margin_display
+      - pb_ratio_display
+      - pe_ratio_display
+      - rank
+      - revenue_growth_display
+      - roe_display
+    CSI300PeerComparisonResponse:
+      type: object
+      description: Serializer for the full peer comparison response
+      properties:
+        target_company:
+          $ref: '#/components/schemas/CSI300PeerComparisonItem'
+        industry:
+          type: string
+        comparison_data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CSI300PeerComparisonItem'
+        total_top_companies_shown:
+          type: integer
+        total_companies_in_industry:
+          type: integer
+      required:
+      - comparison_data
+      - industry
+      - target_company
+      - total_companies_in_industry
+      - total_top_companies_shown
     ContentCategory:
       type: object
       description: Content category serializer
@@ -5418,6 +5970,28 @@ components:
         * `economic-indicators` - Economic Indicators
         * `investment-components` - Investment Components
         * `market-analysis` - Market Analysis
+    FredJpHealthCheckResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        timestamp:
+          type: string
+        service:
+          type: string
+        database_available:
+          type: boolean
+        version:
+          type: string
+        country:
+          type: string
+      required:
+      - country
+      - database_available
+      - service
+      - status
+      - timestamp
+      - version
     FredJpLatestValue:
       type: object
       description: 日本FRED指标最新值序列化器 - 对应Flask API的data字段格式
@@ -5477,6 +6051,172 @@ components:
       - data
       - metadata
       - observations
+    FundFlowPageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    GenerateAllScoresResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        status:
+          type: string
+        estimated_time:
+          type: string
+        error:
+          type: string
+      required:
+      - success
+    GenerateInvestmentSummaryError:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+      required:
+      - message
+      - status
+    GenerateInvestmentSummaryRequest:
+      type: object
+      properties:
+        company_id:
+          type: integer
+          description: 公司数据库 ID
+      required:
+      - company_id
+    GenerateInvestmentSummaryResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+        data:
+          type: object
+          additionalProperties: {}
+      required:
+      - data
+      - message
+      - status
+    GenerateStockScoreRequest:
+      type: object
+      properties:
+        symbol:
+          type: string
+      required:
+      - symbol
+    GenerateStockScoreResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        summary:
+          type: object
+          additionalProperties: {}
+        logs:
+          type: array
+          items:
+            type: string
+        score:
+          type: object
+          additionalProperties: {}
+        company:
+          type: object
+          additionalProperties: {}
+        error:
+          type: string
+      required:
+      - success
+    GlobalHealthCheckResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        timestamp:
+          type: string
+        service:
+          type: string
+        environment:
+          type: string
+        database_available:
+          type: boolean
+        version:
+          type: string
+        components:
+          type: object
+          additionalProperties: {}
+        csi300_companies_count:
+          type: integer
+      required:
+      - components
+      - csi300_companies_count
+      - database_available
+      - environment
+      - service
+      - status
+      - timestamp
+      - version
+    HistoricalDataResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        symbol:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        error:
+          type: string
+      required:
+      - success
+    IntradayDataResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        symbol:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        error:
+          type: string
+      required:
+      - success
+    LightweightChartResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        symbol:
+          type: string
+        company_name:
+          type: string
+        chart_type:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        message:
+          type: string
+        error:
+          type: string
+      required:
+      - success
     ModalContent:
       type: object
       description: Modal content serializer
@@ -5524,7 +6264,10 @@ components:
             * `investment-components` - Investment Components
             * `market-analysis` - Market Analysis
         breakdown:
-          type: string
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
           readOnly: true
         is_active:
           type: boolean
@@ -5634,11 +6377,97 @@ components:
           format: date-time
           readOnly: true
         yoy_change:
-          type: string
+          type: number
+          format: double
+          nullable: true
           readOnly: true
         formatted_date:
           type: string
+          description: 格式化日期显示
           readOnly: true
         value_billions:
-          type: string
+          type: number
+          format: double
+          nullable: true
           readOnly: true
+    PolicyUpdatesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        source:
+          type: string
+        country:
+          type: string
+        last_updated:
+          type: string
+        count:
+          type: integer
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        message:
+          type: string
+      required:
+      - count
+      - country
+      - data
+      - last_updated
+      - source
+      - success
+    StockListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        count:
+          type: integer
+        stocks:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        error:
+          type: string
+      required:
+      - count
+      - stocks
+      - success
+    TopPicksResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        calculation_date:
+          type: string
+          nullable: true
+        picks:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - picks
+      - success
+    TopPicksWithSparklinesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        picks:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        calculation_date:
+          type: string
+        direction:
+          type: string
+        count:
+          type: integer
+        error:
+          type: string
+      required:
+      - success

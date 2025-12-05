@@ -1,8 +1,13 @@
+from typing import ClassVar, Type
 from django.db import models
 
 
 class CSI300Company(models.Model):
     """CSI300 Company model matching existing database structure"""
+    
+    # Type hints for Django dynamic attributes (fixes Pylance/Pyright warnings)
+    objects: ClassVar[models.Manager]  # type: ignore[type-arg]
+    DoesNotExist: ClassVar[Type[Exception]]
     
     # Basic Company Information
     name = models.CharField(max_length=200, help_text="Company name")
@@ -215,6 +220,10 @@ class CSI300HSharesCompany(models.Model):
 
 class CSI300InvestmentSummary(models.Model):
     """CSI300 Investment Summary model"""
+    
+    # Type hints for Django dynamic attributes (fixes Pylance/Pyright warnings)
+    objects: ClassVar[models.Manager]  # type: ignore[type-arg]
+    DoesNotExist: ClassVar[Type[Exception]]
     
     company = models.OneToOneField(CSI300Company, on_delete=models.CASCADE, related_name='investment_summary')
     report_date = models.DateField(help_text="Report date")

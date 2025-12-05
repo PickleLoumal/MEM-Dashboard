@@ -24,7 +24,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.serializers import Serializer
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
+from rest_framework import serializers as drf_serializers
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, inline_serializer
 
 from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary
 from .serializers import (
@@ -34,7 +35,8 @@ from .serializers import (
     CSI300HSharesCompanyListSerializer,
     CSI300FilterOptionsSerializer,
     CSI300InvestmentSummarySerializer,
-    CSI300IndustryPeersComparisonSerializer
+    CSI300IndustryPeersComparisonSerializer,
+    CSI300PeerComparisonResponseSerializer
 )
 
 # 类型别名
@@ -421,7 +423,7 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
     @extend_schema(
-        responses={200: CSI300IndustryPeersComparisonSerializer},
+        responses={200: CSI300PeerComparisonResponseSerializer},
     )
     @action(detail=True, methods=['get'])
     def industry_peers_comparison(self, request: Request, pk: Optional[str] = None) -> Response:
@@ -516,6 +518,17 @@ class CSI300CompanyViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
 
+@extend_schema(
+    responses={200: inline_serializer(
+        name='CSI300IndexResponse',
+        fields={
+            'message': drf_serializers.CharField(),
+            'version': drf_serializers.CharField(),
+            'endpoints': drf_serializers.DictField(),
+            'total_companies': drf_serializers.IntegerField(),
+        }
+    )}
+)
 @api_view(['GET'])
 def csi300_index(request: Request) -> Response:
     """
@@ -544,6 +557,17 @@ def csi300_index(request: Request) -> Response:
     })
 
 
+@extend_schema(
+    responses={200: inline_serializer(
+        name='CSI300HealthCheckResponse',
+        fields={
+            'status': drf_serializers.CharField(),
+            'service': drf_serializers.CharField(),
+            'total_companies': drf_serializers.IntegerField(),
+            'database_available': drf_serializers.BooleanField(),
+        }
+    )}
+)
 @api_view(['GET'])
 def health_check(request: Request) -> Response:
     """
@@ -571,4 +595,93 @@ def health_check(request: Request) -> Response:
             'service': 'CSI300 API',
             'error': str(e),
             'database_available': False
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ==========================================
+# Investment Summary 生成 API
+# ==========================================
+
+@extend_schema(
+    request=inline_serializer(
+        name='GenerateInvestmentSummaryRequest',
+        fields={
+            'company_id': drf_serializers.IntegerField(help_text='公司数据库 ID'),
+        }
+    ),
+    responses={
+        200: inline_serializer(
+            name='GenerateInvestmentSummaryResponse',
+            fields={
+                'status': drf_serializers.CharField(),
+                'message': drf_serializers.CharField(),
+                'data': drf_serializers.DictField(),
+            }
+        ),
+        400: inline_serializer(
+            name='GenerateInvestmentSummaryError',
+            fields={
+                'status': drf_serializers.CharField(),
+                'message': drf_serializers.CharField(),
+            }
+        )
+    }
+)
+@api_view(['POST'])
+def generate_investment_summary(request: Request) -> Response:
+    """
+    生成指定公司的 Investment Summary
+    
+    使用 AI 模型生成公司投资摘要并保存到数据库。
+    
+    Args:
+        request: DRF 请求对象，body 中包含 company_id
+        
+    Returns:
+        Response: 生成结果
+    """
+    company_id = request.data.get('company_id')
+    
+    if not company_id:
+        return Response({
+            'status': 'error',
+            'message': '缺少必需参数: company_id'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        company_id = int(company_id)
+    except (ValueError, TypeError):
+        return Response({
+            'status': 'error',
+            'message': 'company_id 必须是整数'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # 验证公司存在
+    try:
+        company = CSI300Company.objects.get(id=company_id)
+    except CSI300Company.DoesNotExist:
+        return Response({
+            'status': 'error',
+            'message': f'公司 ID {company_id} 不存在'
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    # 导入并调用生成服务
+    try:
+        from .services.investment_summary_generator import generate_company_summary
+        result = generate_company_summary(company_id)
+        
+        if result['status'] == 'success':
+            return Response(result, status=status.HTTP_200_OK)
+        else:
+            return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    except ImportError as e:
+        return Response({
+            'status': 'error',
+            'message': f'服务模块导入失败: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': f'生成失败: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

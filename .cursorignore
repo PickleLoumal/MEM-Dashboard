@@ -1,0 +1,4 @@
+# Allow Cursor to access .env files (override global gitignore)
+!.env
+!.env.*
+

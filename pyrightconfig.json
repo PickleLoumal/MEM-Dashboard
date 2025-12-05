@@ -31,5 +31,6 @@
     ],
     "reportMissingImports": "warning",
     "reportMissingTypeStubs": false,
-    "typeCheckingMode": "basic"
+    "typeCheckingMode": "basic",
+    "reportAttributeAccessIssue": "warning"
 }

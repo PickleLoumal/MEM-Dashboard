@@ -188,6 +188,8 @@ SPECTACULAR_SETTINGS = {
 }
 
 # CORS配置 - 允许前端访问
+from corsheaders.defaults import default_headers
+
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
@@ -197,6 +199,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "https://d3ex2kglhlhbyr.cloudfront.net",  # CloudFront前端
     "http://mem-dashboard-alb-1995066194.ap-east-1.elb.amazonaws.com",  # ALB直接访问
+    "http://localhost:4173",  # Vite Preview
+]
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-trace-id",
+    "x-requested-with",
 ]
 
 # 日志配置
@@ -220,12 +228,6 @@ LOGGING = {
     },
     'root': {
         'handlers': ['file', 'console'],
-        'level': 'INFO',
+        'level': 'INFO'
     },
 }
-
-# FRED API Configuration
-FRED_API_KEY = os.getenv('FRED_API_KEY', '')
-
-# BEA API Configuration  
-BEA_API_KEY = os.getenv('BEA_API_KEY', '')

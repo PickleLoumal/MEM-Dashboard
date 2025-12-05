@@ -6,6 +6,8 @@ BEA API Django REST Framework Serializers
 from rest_framework import serializers
 from .models import BeaIndicator, BeaSeriesInfo, BeaIndicatorConfig
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema_field
+from typing import Optional
 
 
 class BeaIndicatorSerializer(serializers.ModelSerializer):
@@ -23,15 +25,18 @@ class BeaIndicatorSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['created_at']
     
-    def get_yoy_change(self, obj):
+    @extend_schema_field(serializers.FloatField(allow_null=True))
+    def get_yoy_change(self, obj) -> Optional[float]:
         """计算同比变化"""
         return obj.get_yoy_change()
     
-    def get_formatted_date(self, obj):
+    @extend_schema_field(str)
+    def get_formatted_date(self, obj) -> str:
         """格式化日期显示"""
         return obj.get_formatted_date()
     
-    def get_value_billions(self, obj):
+    @extend_schema_field(serializers.FloatField(allow_null=True))
+    def get_value_billions(self, obj) -> Optional[float]:
         """转换为十亿美元单位"""
         try:
             return round(float(obj.value) / 1000000, 3)

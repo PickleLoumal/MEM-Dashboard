@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import ContentCategory, ModalContent
+from drf_spectacular.utils import extend_schema_field
+from typing import List
 
 
 class ContentCategorySerializer(serializers.ModelSerializer):
@@ -23,6 +25,7 @@ class ModalContentSerializer(serializers.ModelSerializer):
             'is_active', 'priority', 'created_at', 'updated_at'
         ]
     
-    def get_breakdown(self, obj):
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
+    def get_breakdown(self, obj) -> List:
         """Get breakdown items"""
         return obj.get_breakdown_items()

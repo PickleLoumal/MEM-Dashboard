@@ -3,7 +3,7 @@
  * @module pages/detail/api
  * @description 提供 CSI300 指数成分股公司详情数据的获取接口，
  *              包括公司基本信息、财务指标和同行业对比数据。
- * @version 1.0.0
+ * @version 1.1.0
  * @author MEM Dashboard Team
  * 
  * @example
@@ -18,25 +18,10 @@
  */
 
 import { CompanyDetail, PeerComparisonData } from './types';
+import { Csi300Service, OpenAPI } from '../../shared/api/generated';
 
-/**
- * API 基础地址
- * @constant {string}
- * @description 从环境变量 VITE_API_BASE 获取，默认为 'http://localhost:8001'
- */
-const API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8001').replace(/\/$/, '');
-
-/**
- * 公司详情端点模板
- * @constant {string}
- */
-const COMPANY_DETAIL_ENDPOINT = '/api/csi300/api/companies/{id}/';
-
-/**
- * 同行业对比端点模板
- * @constant {string}
- */
-const PEERS_COMPARISON_ENDPOINT = '/api/csi300/api/companies/{id}/industry_peers_comparison/';
+// 配置 API 基础地址
+OpenAPI.BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8001').replace(/\/$/, '');
 
 /**
  * 获取 CSI300 公司详细信息
@@ -53,40 +38,14 @@ const PEERS_COMPARISON_ENDPOINT = '/api/csi300/api/companies/{id}/industry_peers
  * @function fetchCompanyDetail
  * @param {string} id - 公司唯一标识符（数据库 ID 或股票代码）
  * @returns {Promise<CompanyDetail>} 公司详情数据对象
- * @throws {Error} 当 HTTP 请求失败时抛出错误，包含状态码和状态文本
- * 
- * @example
- * // 使用数据库 ID 获取公司详情
- * try {
- *   const detail = await fetchCompanyDetail('1');
- *   console.log(detail.name);           // "贵州茅台"
- *   console.log(detail.ticker);         // "600519"
- *   console.log(detail.market_cap_usd); // 250000000000
- *   console.log(detail.pe_ratio_trailing); // 35.5
- * } catch (error) {
- *   console.error('获取公司详情失败:', error.message);
- * }
- * 
- * @example
- * // 在 React 组件中使用
- * const [company, setCompany] = useState<CompanyDetail | null>(null);
- * 
- * useEffect(() => {
- *   fetchCompanyDetail(companyId)
- *     .then(setCompany)
- *     .catch(console.error);
- * }, [companyId]);
- * 
- * @see {@link CompanyDetail} 返回数据结构定义
- * @see {@link https://api.example.com/docs/csi300} API 文档
+ * @throws {Error} 当 HTTP 请求失败时抛出错误
  */
 export async function fetchCompanyDetail(id: string): Promise<CompanyDetail> {
-  const url = `${API_BASE}${COMPANY_DETAIL_ENDPOINT.replace('{id}', id)}`;
-  const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-  return res.json();
+  // Generated client expects number ID
+  // Note: The generated client handles errors and returns the parsed JSON
+  // We cast the result to CompanyDetail to maintain compatibility with existing components
+  // (The generated type CSI300Company is structure-compatible with CompanyDetail)
+  return await Csi300Service.csi300ApiCompaniesRetrieve(Number(id)) as unknown as CompanyDetail;
 }
 
 /**
@@ -107,54 +66,10 @@ export async function fetchCompanyDetail(id: string): Promise<CompanyDetail> {
  * @param {string} id - 目标公司唯一标识符（数据库 ID）
  * @returns {Promise<PeerComparisonData>} 同行业对比数据对象
  * @throws {Error} 当 HTTP 请求失败或公司不存在时抛出错误
- * 
- * @example
- * // 获取茅台的同行业对比数据
- * try {
- *   const peers = await fetchPeersComparison('1');
- *   
- *   // 查看目标公司排名
- *   console.log(`行业排名: ${peers.target_company.rank}`);
- *   console.log(`行业公司总数: ${peers.total_companies_in_industry}`);
- *   
- *   // 遍历对比数据
- *   peers.comparison_data.forEach(company => {
- *     console.log(`${company.name}: PE=${company.pe_ratio_display}, ROE=${company.roe_display}`);
- *     if (company.is_current_company) {
- *       console.log('  ↑ 当前查看的公司');
- *     }
- *   });
- * } catch (error) {
- *   console.error('获取对比数据失败:', error.message);
- * }
- * 
- * @example
- * // 响应数据结构示例
- * {
- *   target_company: { rank: 1 },
- *   industry: "Consumer Staples",
- *   total_companies_in_industry: 25,
- *   comparison_data: [
- *     {
- *       name: "贵州茅台",
- *       ticker: "600519",
- *       rank: 1,
- *       is_current_company: true,
- *       market_cap_display: "2.50T",
- *       pe_ratio_display: "35.50",
- *       roe_display: "32.50%"
- *     },
- *     // ... 其他公司
- *   ]
- * }
- * 
- * @see {@link PeerComparisonData} 返回数据结构定义
  */
 export async function fetchPeersComparison(id: string): Promise<PeerComparisonData> {
-  const url = `${API_BASE}${PEERS_COMPARISON_ENDPOINT.replace('{id}', id)}`;
-  const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-  return res.json();
+  // Generated client expects number ID
+  // We cast the result to PeerComparisonData to maintain compatibility
+  // (The generated type CSI300PeerComparisonResponse is structure-compatible with PeerComparisonData)
+  return await Csi300Service.csi300ApiCompaniesIndustryPeersComparisonRetrieve(Number(id)) as unknown as PeerComparisonData;
 }

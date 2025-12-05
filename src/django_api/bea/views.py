@@ -7,10 +7,11 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, serializers as drf_serializers
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
 
 import json
 from datetime import datetime
@@ -113,6 +114,19 @@ class BeaConfigViewSet(viewsets.ModelViewSet):
         })
 
 
+@extend_schema(
+    responses={200: inline_serializer(
+        name='BeaIndexResponse',
+        fields={
+            'service': drf_serializers.CharField(),
+            'status': drf_serializers.CharField(),
+            'timestamp': drf_serializers.CharField(),
+            'dynamic_endpoints': drf_serializers.ListField(child=drf_serializers.CharField()),
+            'management_endpoints': drf_serializers.ListField(child=drf_serializers.CharField()),
+            'legacy_endpoints': drf_serializers.ListField(child=drf_serializers.CharField()),
+        }
+    )}
+)
 @api_view(['GET'])
 def index(request):
     """BEA API首页 - 动态端点列表"""
@@ -148,6 +162,16 @@ def index(request):
         }, status=500)
 
 
+@extend_schema(
+    responses={200: inline_serializer(
+        name='BeaAllIndicatorsResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'data': drf_serializers.DictField(),
+            'error': drf_serializers.CharField(required=False),
+        }
+    )}
+)
 @api_view(['GET'])
 def all_indicators(request):
     """获取所有指标数据 - 动态处理"""
@@ -163,6 +187,19 @@ def all_indicators(request):
         }, status=500)
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='category', type=str, location=OpenApiParameter.PATH, description='Category name')
+    ],
+    responses={200: inline_serializer(
+        name='BeaCategoryIndicatorsResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'data': drf_serializers.DictField(),
+            'error': drf_serializers.CharField(required=False),
+        }
+    )}
+)
 @api_view(['GET'])
 def category_indicators(request, category):
     """按分类获取指标数据"""
@@ -178,6 +215,21 @@ def category_indicators(request, category):
         }, status=500)
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='series_id', type=str, location=OpenApiParameter.PATH, description='Series ID'),
+        OpenApiParameter(name='quarterly', type=bool, location=OpenApiParameter.QUERY, description='Include quarterly data', required=False)
+    ],
+    responses={200: inline_serializer(
+        name='BeaDynamicIndicatorResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'series_id': drf_serializers.CharField(),
+            'data': drf_serializers.DictField(required=False),
+            'error': drf_serializers.CharField(required=False),
+        }
+    )}
+)
 @api_view(['GET'])
 def dynamic_indicator(request, series_id):
     """动态指标端点 - 根据series_id获取数据"""
@@ -194,6 +246,17 @@ def dynamic_indicator(request, series_id):
         }, status=500)
 
 
+@extend_schema(
+    responses={200: inline_serializer(
+        name='BeaStatsResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'data': drf_serializers.DictField(),
+            'timestamp': drf_serializers.CharField(),
+            'error': drf_serializers.CharField(required=False),
+        }
+    )}
+)
 @api_view(['GET'])
 def stats(request):
     """BEA系统统计信息"""
@@ -298,7 +361,21 @@ def health_check(request):
             'error': str(e)
         }, status=500)
 
+
 # Gross Domestic Investment indicators - 投资指标 (10个指标)
+# 共享的响应结构
+_investment_response_schema = inline_serializer(
+    name='BeaInvestmentResponse',
+    fields={
+        'success': drf_serializers.BooleanField(),
+        'series_id': drf_serializers.CharField(),
+        'data': drf_serializers.DictField(required=False),
+        'error': drf_serializers.CharField(required=False),
+    }
+)
+
+
+@extend_schema(responses={200: _investment_response_schema})
 @api_view(['GET'])
 def investment_total(request):
     """Gross Private Domestic Investment - GET /bea/investment-total/"""
@@ -313,6 +390,8 @@ def investment_total(request):
             'series_id': 'INVESTMENT_TOTAL'
         }, status=500)
 
+
+@extend_schema(responses={200: _investment_response_schema})
 @api_view(['GET'])
 def investment_fixed(request):
     """Fixed Investment - GET /bea/investment-fixed/"""
@@ -327,6 +406,8 @@ def investment_fixed(request):
             'series_id': 'INVESTMENT_FIXED'
         }, status=500)
 
+
+@extend_schema(responses={200: _investment_response_schema})
 @api_view(['GET'])
 def investment_nonresidential(request):
     """Nonresidential Investment - GET /bea/investment-nonresidential/"""
@@ -341,6 +422,8 @@ def investment_nonresidential(request):
             'series_id': 'INVESTMENT_NONRESIDENTIAL'
         }, status=500)
 
+
+@extend_schema(responses={200: _investment_response_schema})
 @api_view(['GET'])
 def investment_structures(request):
     """Structures Investment - GET /bea/investment-structures/"""
@@ -355,6 +438,8 @@ def investment_structures(request):
             'series_id': 'INVESTMENT_STRUCTURES'
         }, status=500)
 
+
+@extend_schema(responses={200: _investment_response_schema})
 @api_view(['GET'])
 def investment_equipment(request):
     """Equipment Investment - GET /bea/investment-equipment/"""
@@ -369,6 +454,8 @@ def investment_equipment(request):
             'series_id': 'INVESTMENT_EQUIPMENT'
         }, status=500)
 
+
+@extend_schema(responses={200: _investment_response_schema})
 @api_view(['GET'])
 def investment_ip(request):
     """Intellectual Property Products Investment - GET /bea/investment-ip/"""
@@ -383,6 +470,8 @@ def investment_ip(request):
             'series_id': 'INVESTMENT_IP'
         }, status=500)
 
+
+@extend_schema(responses={200: _investment_response_schema})
 @api_view(['GET'])
 def investment_residential(request):
     """Residential Investment - GET /bea/investment-residential/"""
@@ -397,6 +486,8 @@ def investment_residential(request):
             'series_id': 'INVESTMENT_RESIDENTIAL'
         }, status=500)
 
+
+@extend_schema(responses={200: _investment_response_schema})
 @api_view(['GET'])
 def investment_inventories(request):
     """Change in Private Inventories - GET /bea/investment-inventories/"""
@@ -411,6 +502,8 @@ def investment_inventories(request):
             'series_id': 'INVESTMENT_INVENTORIES'
         }, status=500)
 
+
+@extend_schema(responses={200: _investment_response_schema})
 @api_view(['GET'])
 def investment_net(request):
     """Net Private Domestic Investment - GET /bea/investment-net/"""
@@ -425,6 +518,8 @@ def investment_net(request):
             'series_id': 'INVESTMENT_NET'
         }, status=500)
 
+
+@extend_schema(responses={200: _investment_response_schema})
 @api_view(['GET'])
 def govt_investment_total(request):
     """Gross Government Investment - GET /bea/govt-investment-total/"""

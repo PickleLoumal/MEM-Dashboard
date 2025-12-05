@@ -30,6 +30,8 @@ venv/
 env/
 .venv/
 .env/
+.uv-cache/
+.uv/
 
 # Node modules
 node_modules/
@@ -81,6 +83,11 @@ tests/
 coverage/
 .cache/
 .nyc_output/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.dmypy.json
+dmypy.json
 
 # Build artifacts
 *.zip

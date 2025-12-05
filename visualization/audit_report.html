@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Due Diligence Report | MEM Family Office</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- DataTables -->
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #0f2b46; /* Navy Blue */
+            --secondary: #334155;
+            --accent: #c5a059; /* Muted Gold */
+            --bg-body: #f8f9fa;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 4rem;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', sans-serif;
+            color: var(--primary);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        
+        /* Report Container (A4-like) */
+        .report-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            padding: 4rem;
+            margin-top: 2rem;
+            border-top: 6px solid var(--primary);
+        }
+        
+        /* Header */
+        .report-header {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 2rem;
+            margin-bottom: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .report-title {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            font-weight: 800;
+        }
+        .report-subtitle {
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .report-meta {
+            text-align: right;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        /* Section Headers */
+        .section-header {
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .section-header h2 {
+            font-size: 1.5rem;
+            margin: 0;
+            font-weight: 700;
+        }
+        .section-number {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+        
+        /* Executive Summary Cards */
+        .exec-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        .metric-card {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-left: 4px solid var(--accent);
+            border-radius: 6px;
+        }
+        .metric-value {
+            font-family: 'Inter', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+        }
+        .metric-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+        
+        /* Charts */
+        .chart-wrapper { 
+            position: relative; 
+            height: 300px; 
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        /* Tables */
+        .table {
+            width: 100%;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .table th {
+            background-color: #f1f5f9;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--border-color);
+        }
+        .table td {
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        
+        /* Risk Badges */
+        .risk-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 2px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .risk-low { background: #dcfce7; color: #14532d; }
+        .risk-med { background: #fef9c3; color: #713f12; }
+        .risk-high { background: #fee2e2; color: #7f1d1d; }
+        .risk-critical { background: #450a0a; color: #fff; }
+        
+        /* Utility */
+        .text-accent { color: var(--accent); }
+        .text-primary-dark { color: var(--primary); }
+        
+        @media print {
+            .no-print { display: none; }
+            .report-container { box-shadow: none; margin: 0; padding: 0; border: none; }
+            body { background: #fff; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="report-container">
+        <!-- Header -->
+        <header class="report-header">
+            <div>
+                <div class="report-subtitle">CONFIDENTIAL • INTERNAL USE ONLY</div>
+                <h1 class="report-title">Technical Audit Report</h1>
+                <div class="text-muted">Target Asset: ALFIE Python Backend</div>
+            </div>
+            <div class="report-meta">
+                <div><strong>Date:</strong> December 05, 2025</div>
+                <div><strong>Auditor:</strong> Automated System (Radon)</div>
+                <div><strong>Ref:</strong> ALFIE-AUDIT-20251205</div>
+            </div>
+        </header>
+
+        <div class="no-print mb-4 text-end">
+            <button class="btn btn-outline-dark btn-sm" onclick="window.print()">
+                <i class="fas fa-print me-2"></i>Print / Save PDF
+            </button>
+        </div>
+
+        <!-- Executive Summary -->
+        <section>
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2>Executive Summary</h2>
+            </div>
+            
+            <div class="exec-summary">
+                <div class="metric-card">
+                    <div class="metric-value">22,185</div>
+                    <div class="metric-label">Total Code Volume (LOC)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">3.28</div>
+                    <div class="metric-label">Avg. Complexity Risk</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">4</div>
+                    <div class="metric-label">Functional Modules</div>
+                </div>
+                <div class="metric-card" style="border-left-color: #dc2626">
+                    <div class="metric-value">9.2%</div>
+                    <div class="metric-label">Documentation Ratio</div>
+                </div>
+            </div>
+            
+            <p class="lead text-muted mb-4">
+                This report provides a quantitative assessment of the codebase's structural health, 
+                maintainability, and potential technical debt risks. The analysis focuses on Cyclomatic Complexity 
+                and Maintainability Index (MI) to evaluate long-term viability.
+            </p>
+        </section>
+
+        <!-- Structural Analysis -->
+        <section>
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2>Structural Analysis</h2>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-7">
+                    <h5 class="mb-3 text-primary-dark">Module Size vs. Risk Profile</h5>
+                    <p class="text-muted small mb-3">Analysis of code volume relative to complexity density per module.</p>
+                    <div class="chart-wrapper">
+                        <canvas id="moduleChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <h5 class="mb-3 text-primary-dark">Risk Distribution</h5>
+                    <p class="text-muted small mb-3">Proportion of functions by complexity grade (A=Low Risk, F=Critical).</p>
+                    <div class="chart-wrapper">
+                        <canvas id="complexityPie"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Risk Assessment -->
+        <section>
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2>High Risk Assets (Technical Debt)</h2>
+            </div>
+            <p class="text-muted mb-4">
+                The following components exhibit high Cyclomatic Complexity (CC), indicating complex logic 
+                that may be prone to bugs and difficult to maintain. Recommended for refactoring.
+            </p>
+            
+            <div class="table-responsive">
+                <table class="table table-hover" id="hotspotsTable">
+                    <thead>
+                        <tr>
+                            <th>Risk Grade</th>
+                            <th>Complexity (CC)</th>
+                            <th>Asset Name</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td><span class="risk-badge risk-high">E - HIGH</span></td>
+                            <td class="fw-bold">40</td>
+                            <td style="font-family:monospace; color:#0f2b46">generate_enterprise_report</td>
+                            <td class="text-muted small">visualization/analyze_complexity.py:90</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-high">E - HIGH</span></td>
+                            <td class="fw-bold">34</td>
+                            <td style="font-family:monospace; color:#0f2b46">handle</td>
+                            <td class="text-muted small">src/django_api/csi300/management/commands/import_investment_summary.py:69</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-high">E - HIGH</span></td>
+                            <td class="fw-bold">34</td>
+                            <td style="font-family:monospace; color:#0f2b46">process_company_ai</td>
+                            <td class="text-muted small">src/django_api/csi300/services/investment_summary_generator.py:375</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-high">E - HIGH</span></td>
+                            <td class="fw-bold">33</td>
+                            <td style="font-family:monospace; color:#0f2b46">handle</td>
+                            <td class="text-muted small">src/django_api/csi300/management/commands/update_stock_prices.py:60</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-high">D - HIGH</span></td>
+                            <td class="fw-bold">27</td>
+                            <td style="font-family:monospace; color:#0f2b46">_generate_hardware_fingerprint</td>
+                            <td class="text-muted small">src/backend/security/enhanced_environment_validator.py:53</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-high">D - HIGH</span></td>
+                            <td class="fw-bold">25</td>
+                            <td style="font-family:monospace; color:#0f2b46">main</td>
+                            <td class="text-muted small">src/django_api/csi300/services/investment_summary_generator.py:624</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-high">D - HIGH</span></td>
+                            <td class="fw-bold">24</td>
+                            <td style="font-family:monospace; color:#0f2b46">top_picks_with_sparklines</td>
+                            <td class="text-muted small">src/django_api/stocks/views.py:383</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-high">D - HIGH</span></td>
+                            <td class="fw-bold">23</td>
+                            <td style="font-family:monospace; color:#0f2b46">_get_specific_indicator</td>
+                            <td class="text-muted small">src/django_api/fred_us/views.py:580</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-high">D - HIGH</span></td>
+                            <td class="fw-bold">21</td>
+                            <td style="font-family:monospace; color:#0f2b46">update_market_cap_data</td>
+                            <td class="text-muted small">src/django_api/csi300/management/commands/update_market_cap.py:103</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-high">D - HIGH</span></td>
+                            <td class="fw-bold">21</td>
+                            <td style="font-family:monospace; color:#0f2b46">format_historical_response</td>
+                            <td class="text-muted small">src/django_api/stocks/services.py:496</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">20</td>
+                            <td style="font-family:monospace; color:#0f2b46">top_picks</td>
+                            <td class="text-muted small">src/django_api/stocks/views.py:510</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">18</td>
+                            <td style="font-family:monospace; color:#0f2b46">_generate_network_fingerprint</td>
+                            <td class="text-muted small">src/backend/security/enhanced_environment_validator.py:206</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">18</td>
+                            <td style="font-family:monospace; color:#0f2b46">_get_historical_async</td>
+                            <td class="text-muted small">src/django_api/stocks/services.py:347</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">16</td>
+                            <td style="font-family:monospace; color:#0f2b46">_detect_virtual_machine</td>
+                            <td class="text-muted small">src/backend/security/anti_reverse_engineering.py:221</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">15</td>
+                            <td style="font-family:monospace; color:#0f2b46">scan_file_for_watermarks</td>
+                            <td class="text-muted small">src/backend/security/master_verification.py:96</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">15</td>
+                            <td style="font-family:monospace; color:#0f2b46">_show_categorization_plan</td>
+                            <td class="text-muted small">src/django_api/fred_us/management/commands/categorize_by_primary_use.py:130</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">15</td>
+                            <td style="font-family:monospace; color:#0f2b46">_parse_with_regex</td>
+                            <td class="text-muted small">src/django_api/csi300/services/investment_summary_generator.py:217</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">14</td>
+                            <td style="font-family:monospace; color:#0f2b46">get_queryset</td>
+                            <td class="text-muted small">src/django_api/csi300/views.py:127</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">14</td>
+                            <td style="font-family:monospace; color:#0f2b46">get_daily_data</td>
+                            <td class="text-muted small">src/django_api/stocks/akshare_client.py:94</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">13</td>
+                            <td style="font-family:monospace; color:#0f2b46">Command</td>
+                            <td class="text-muted small">src/django_api/csi300/management/commands/update_stock_prices.py:16</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">13</td>
+                            <td style="font-family:monospace; color:#0f2b46">parse_business_overview_to_json</td>
+                            <td class="text-muted small">src/django_api/csi300/services/investment_summary_generator.py:147</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">13</td>
+                            <td style="font-family:monospace; color:#0f2b46">handle</td>
+                            <td class="text-muted small">src/django_api/stocks/management/commands/update_stocks.py:43</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">12</td>
+                            <td style="font-family:monospace; color:#0f2b46">generate_project_fingerprint</td>
+                            <td class="text-muted small">src/backend/security/copyright_verification.py:127</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">12</td>
+                            <td style="font-family:monospace; color:#0f2b46">_fetch_and_save_series_info</td>
+                            <td class="text-muted small">src/django_api/fred_us/management/commands/update_series_info.py:101</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">12</td>
+                            <td style="font-family:monospace; color:#0f2b46">Command</td>
+                            <td class="text-muted small">src/django_api/csi300/management/commands/import_investment_summary.py:17</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">12</td>
+                            <td style="font-family:monospace; color:#0f2b46">format_intraday_response</td>
+                            <td class="text-muted small">src/django_api/stocks/services.py:431</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">12</td>
+                            <td style="font-family:monospace; color:#0f2b46">lightweight_chart</td>
+                            <td class="text-muted small">src/django_api/stocks/views.py:274</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">12</td>
+                            <td style="font-family:monospace; color:#0f2b46">FredJpLatestValueSerializer</td>
+                            <td class="text-muted small">src/django_api/fred_jp/serializers.py:31</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">11</td>
+                            <td style="font-family:monospace; color:#0f2b46">verify_ownership</td>
+                            <td class="text-muted small">src/backend/security/master_verification.py:189</td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="risk-badge risk-med">C - MEDIUM</span></td>
+                            <td class="fw-bold">11</td>
+                            <td style="font-family:monospace; color:#0f2b46">verify_ownership</td>
+                            <td class="text-muted small">src/backend/security/copyright_verification.py:264</td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Maintainability Index -->
+        <section>
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2>Maintainability Index (MI)</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="table" id="miTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%">File Asset</th>
+                            <th>MI Score</th>
+                            <th>Status</th>
+                            <th>Volume (SLOC)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td style="font-family:monospace" title="visualization/draw_architecture.py">visualization/draw_architecture.py</td>
+                            <td class="fw-bold">77.5</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>36</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="visualization/analyze_complexity.py">visualization/analyze_complexity.py</td>
+                            <td class="fw-bold">34.3</td>
+                            <td style="color:#dc2626; font-weight:700">Critical</td>
+                            <td>559</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="config/db_config.py">config/db_config.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>21</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="config/fred_db_manager.py">config/fred_db_manager.py</td>
+                            <td class="fw-bold">42.9</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>281</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="config/fred_jp_db_manager.py">config/fred_jp_db_manager.py</td>
+                            <td class="fw-bold">44.1</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>245</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="api/health.py">api/health.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>22</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="api/indicators.py">api/indicators.py</td>
+                            <td class="fw-bold">77.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>58</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/backend/integration_example.py">src/backend/integration_example.py</td>
+                            <td class="fw-bold">59.1</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>304</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/backend/security/environment_validator.py">src/backend/security/environment_validator.py</td>
+                            <td class="fw-bold">59.9</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>169</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/backend/security/master_verification.py">src/backend/security/master_verification.py</td>
+                            <td class="fw-bold">49.7</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>228</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/backend/security/protection_system.py">src/backend/security/protection_system.py</td>
+                            <td class="fw-bold">64.9</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>96</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/backend/security/code_signing.py">src/backend/security/code_signing.py</td>
+                            <td class="fw-bold">53.0</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>305</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/backend/security/dynamic_key_manager.py">src/backend/security/dynamic_key_manager.py</td>
+                            <td class="fw-bold">39.0</td>
+                            <td style="color:#dc2626; font-weight:700">Critical</td>
+                            <td>334</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/backend/security/advanced_obfuscation.py">src/backend/security/advanced_obfuscation.py</td>
+                            <td class="fw-bold">52.6</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>225</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/backend/security/real_time_integrity_monitor.py">src/backend/security/real_time_integrity_monitor.py</td>
+                            <td class="fw-bold">34.1</td>
+                            <td style="color:#dc2626; font-weight:700">Critical</td>
+                            <td>390</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/backend/security/copyright_verification.py">src/backend/security/copyright_verification.py</td>
+                            <td class="fw-bold">47.1</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>396</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/backend/security/anti_reverse_engineering.py">src/backend/security/anti_reverse_engineering.py</td>
+                            <td class="fw-bold">34.7</td>
+                            <td style="color:#dc2626; font-weight:700">Critical</td>
+                            <td>418</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/backend/security/enhanced_environment_validator.py">src/backend/security/enhanced_environment_validator.py</td>
+                            <td class="fw-bold">31.0</td>
+                            <td style="color:#dc2626; font-weight:700">Critical</td>
+                            <td>401</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/backend/utils/test_generator.py">src/backend/utils/test_generator.py</td>
+                            <td class="fw-bold">41.0</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>201</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/bea_management.py">src/django_api/bea_management.py</td>
+                            <td class="fw-bold">50.9</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>216</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_common/base_models.py">src/django_api/fred_common/base_models.py</td>
+                            <td class="fw-bold">45.8</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>113</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_common/constants.py">src/django_api/fred_common/constants.py</td>
+                            <td class="fw-bold">82.9</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>93</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_common/base_fetcher.py">src/django_api/fred_common/base_fetcher.py</td>
+                            <td class="fw-bold">38.4</td>
+                            <td style="color:#dc2626; font-weight:700">Critical</td>
+                            <td>217</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_common/__init__.py">src/django_api/fred_common/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>33</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_common/apps.py">src/django_api/fred_common/apps.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_common/utils.py">src/django_api/fred_common/utils.py</td>
+                            <td class="fw-bold">36.1</td>
+                            <td style="color:#dc2626; font-weight:700">Critical</td>
+                            <td>218</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/models.py">src/django_api/fred_us/models.py</td>
+                            <td class="fw-bold">67.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>121</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/test_auto_fetch.py">src/django_api/fred_us/test_auto_fetch.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/serializers.py">src/django_api/fred_us/serializers.py</td>
+                            <td class="fw-bold">54.9</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>105</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/__init__.py">src/django_api/fred_us/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/migrate_to_auto_config.py">src/django_api/fred_us/migrate_to_auto_config.py</td>
+                            <td class="fw-bold">63.4</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>125</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/apps.py">src/django_api/fred_us/apps.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>7</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/auto_fetcher.py">src/django_api/fred_us/auto_fetcher.py</td>
+                            <td class="fw-bold">44.9</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>227</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/admin.py">src/django_api/fred_us/admin.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>90</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/dynamic_config.py">src/django_api/fred_us/dynamic_config.py</td>
+                            <td class="fw-bold">41.8</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>360</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/tests.py">src/django_api/fred_us/tests.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>1</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/data_fetcher.py">src/django_api/fred_us/data_fetcher.py</td>
+                            <td class="fw-bold">60.6</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>153</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/urls.py">src/django_api/fred_us/urls.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>10</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/views.py">src/django_api/fred_us/views.py</td>
+                            <td class="fw-bold">24.3</td>
+                            <td style="color:#dc2626; font-weight:700">Critical</td>
+                            <td>566</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/managers.py">src/django_api/fred_us/managers.py</td>
+                            <td class="fw-bold">72.3</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>70</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/management/__init__.py">src/django_api/fred_us/management/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/management/commands/categorize_series_info.py">src/django_api/fred_us/management/commands/categorize_series_info.py</td>
+                            <td class="fw-bold">57.0</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>293</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/management/commands/__init__.py">src/django_api/fred_us/management/commands/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/management/commands/update_series_info.py">src/django_api/fred_us/management/commands/update_series_info.py</td>
+                            <td class="fw-bold">51.0</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>169</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/management/commands/categorize_frontend_indicators.py">src/django_api/fred_us/management/commands/categorize_frontend_indicators.py</td>
+                            <td class="fw-bold">55.2</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>186</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_us/management/commands/categorize_by_primary_use.py">src/django_api/fred_us/management/commands/categorize_by_primary_use.py</td>
+                            <td class="fw-bold">56.7</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>230</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/policy_updates/services.py">src/django_api/policy_updates/services.py</td>
+                            <td class="fw-bold">54.9</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>118</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/policy_updates/__init__.py">src/django_api/policy_updates/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>1</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/policy_updates/apps.py">src/django_api/policy_updates/apps.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>5</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/policy_updates/urls.py">src/django_api/policy_updates/urls.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>6</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/policy_updates/views.py">src/django_api/policy_updates/views.py</td>
+                            <td class="fw-bold">66.5</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>68</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/models.py">src/django_api/csi300/models.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>175</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/serializers.py">src/django_api/csi300/serializers.py</td>
+                            <td class="fw-bold">61.5</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>133</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/__init__.py">src/django_api/csi300/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/apps.py">src/django_api/csi300/apps.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>5</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/admin.py">src/django_api/csi300/admin.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>195</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/tests.py">src/django_api/csi300/tests.py</td>
+                            <td class="fw-bold">0.0</td>
+                            <td style="color:#dc2626; font-weight:700">Critical</td>
+                            <td>96</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/urls.py">src/django_api/csi300/urls.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>15</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/views.py">src/django_api/csi300/views.py</td>
+                            <td class="fw-bold">48.4</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>412</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/management/commands/update_stock_prices.py">src/django_api/csi300/management/commands/update_stock_prices.py</td>
+                            <td class="fw-bold">49.2</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>139</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/management/commands/import_investment_summary.py">src/django_api/csi300/management/commands/import_investment_summary.py</td>
+                            <td class="fw-bold">47.2</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>171</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/management/commands/update_market_cap.py">src/django_api/csi300/management/commands/update_market_cap.py</td>
+                            <td class="fw-bold">51.1</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>146</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/services/__init__.py">src/django_api/csi300/services/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>2</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/services/investment_summary_generator.py">src/django_api/csi300/services/investment_summary_generator.py</td>
+                            <td class="fw-bold">29.4</td>
+                            <td style="color:#dc2626; font-weight:700">Critical</td>
+                            <td>548</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/csi300/services/prompt_template.py">src/django_api/csi300/services/prompt_template.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>338</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/indicators/models.py">src/django_api/indicators/models.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>1</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/indicators/__init__.py">src/django_api/indicators/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/indicators/apps.py">src/django_api/indicators/apps.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>4</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/indicators/admin.py">src/django_api/indicators/admin.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>1</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/indicators/tests.py">src/django_api/indicators/tests.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>1</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/indicators/urls.py">src/django_api/indicators/urls.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>9</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/indicators/views.py">src/django_api/indicators/views.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>45</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/content/models.py">src/django_api/content/models.py</td>
+                            <td class="fw-bold">67.7</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>95</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/content/serializers.py">src/django_api/content/serializers.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>21</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/content/__init__.py">src/django_api/content/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/content/apps.py">src/django_api/content/apps.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>5</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/content/admin.py">src/django_api/content/admin.py</td>
+                            <td class="fw-bold">58.0</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>89</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/content/urls.py">src/django_api/content/urls.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>9</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/content/views.py">src/django_api/content/views.py</td>
+                            <td class="fw-bold">74.6</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>64</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/content/management/__init__.py">src/django_api/content/management/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/shared_types/api_types.py">src/django_api/shared_types/api_types.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>246</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/shared_types/__init__.py">src/django_api/shared_types/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>85</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/shared_types/common.py">src/django_api/shared_types/common.py</td>
+                            <td class="fw-bold">62.3</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>92</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/shared_types/model_types.py">src/django_api/shared_types/model_types.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>181</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/stocks/services.py">src/django_api/stocks/services.py</td>
+                            <td class="fw-bold">19.8</td>
+                            <td style="color:#dc2626; font-weight:700">Critical</td>
+                            <td>452</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/stocks/models.py">src/django_api/stocks/models.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>58</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/stocks/serializers.py">src/django_api/stocks/serializers.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/stocks/__init__.py">src/django_api/stocks/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/stocks/apps.py">src/django_api/stocks/apps.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>7</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/stocks/admin.py">src/django_api/stocks/admin.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>16</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/stocks/akshare_client.py">src/django_api/stocks/akshare_client.py</td>
+                            <td class="fw-bold">49.3</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>126</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/stocks/urls.py">src/django_api/stocks/urls.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>19</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/stocks/views.py">src/django_api/stocks/views.py</td>
+                            <td class="fw-bold">26.6</td>
+                            <td style="color:#dc2626; font-weight:700">Critical</td>
+                            <td>597</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/stocks/management/__init__.py">src/django_api/stocks/management/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/stocks/management/commands/__init__.py">src/django_api/stocks/management/commands/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/stocks/management/commands/update_stocks.py">src/django_api/stocks/management/commands/update_stocks.py</td>
+                            <td class="fw-bold">63.6</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>113</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/django_api/asgi.py">src/django_api/django_api/asgi.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>4</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/django_api/__init__.py">src/django_api/django_api/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/django_api/settings.py">src/django_api/django_api/settings.py</td>
+                            <td class="fw-bold">81.5</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>156</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/django_api/urls.py">src/django_api/django_api/urls.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>39</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/django_api/views.py">src/django_api/django_api/views.py</td>
+                            <td class="fw-bold">72.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>117</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/bea/indicator_processor.py">src/django_api/bea/indicator_processor.py</td>
+                            <td class="fw-bold">57.4</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>230</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/bea/models.py">src/django_api/bea/models.py</td>
+                            <td class="fw-bold">55.0</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>126</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/bea/serializers.py">src/django_api/bea/serializers.py</td>
+                            <td class="fw-bold">51.6</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>122</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/bea/__init__.py">src/django_api/bea/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/bea/apps.py">src/django_api/bea/apps.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/bea/admin.py">src/django_api/bea/admin.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>73</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/bea/dynamic_config.py">src/django_api/bea/dynamic_config.py</td>
+                            <td class="fw-bold">47.1</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>260</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/bea/urls.py">src/django_api/bea/urls.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>35</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/bea/views.py">src/django_api/bea/views.py</td>
+                            <td class="fw-bold">40.8</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>429</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_jp/config_manager.py">src/django_api/fred_jp/config_manager.py</td>
+                            <td class="fw-bold">67.4</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>125</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_jp/models.py">src/django_api/fred_jp/models.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>49</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_jp/serializers.py">src/django_api/fred_jp/serializers.py</td>
+                            <td class="fw-bold">63.8</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>72</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_jp/__init__.py">src/django_api/fred_jp/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_jp/apps.py">src/django_api/fred_jp/apps.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>5</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_jp/admin.py">src/django_api/fred_jp/admin.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>46</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_jp/data_fetcher.py">src/django_api/fred_jp/data_fetcher.py</td>
+                            <td class="fw-bold">55.3</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>255</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_jp/urls.py">src/django_api/fred_jp/urls.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>13</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_jp/views.py">src/django_api/fred_jp/views.py</td>
+                            <td class="fw-bold">53.0</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>222</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_jp/management/__init__.py">src/django_api/fred_jp/management/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_jp/management/commands/fetch_japan_data.py">src/django_api/fred_jp/management/commands/fetch_japan_data.py</td>
+                            <td class="fw-bold">52.2</td>
+                            <td style="color:#ca8a04; font-weight:700">At Risk</td>
+                            <td>214</td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-family:monospace" title="src/django_api/fred_jp/management/commands/__init__.py">src/django_api/fred_jp/management/commands/__init__.py</td>
+                            <td class="fw-bold">100.0</td>
+                            <td style="color:#16a34a; font-weight:700">Healthy</td>
+                            <td>0</td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <footer style="margin-top: 4rem; border-top: 1px solid #eee; padding-top: 2rem; font-size: 0.8rem; color: #999; text-align: center;">
+            <p>ALFIE • Technology Division • Generated by Automated Audit Protocol</p>
+        </footer>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#hotspotsTable').DataTable({
+                pageLength: 15,
+                order: [[1, 'desc']],
+                dom: 't', // Simple table only
+                language: { emptyTable: "No high-risk assets found." }
+            });
+            $('#miTable').DataTable({
+                pageLength: 15,
+                order: [[1, 'asc']],
+                dom: 't'
+            });
+        });
+
+        // Module Chart
+        const ctxMod = document.getElementById('moduleChart').getContext('2d');
+        new Chart(ctxMod, {
+            type: 'bar',
+            data: {
+                labels: ["src", "config", "visualization", "api"],
+                datasets: [{
+                    label: 'Code Volume (LOC)',
+                    data: [19859, 678, 650, 92],
+                    backgroundColor: '#0f2b46',
+                    barPercentage: 0.6,
+                    yAxisID: 'y',
+                }, {
+                    label: 'Risk (Avg CC)',
+                    data: [3.209798994974874, 4.045454545454546, 11.0, 1.5],
+                    borderColor: '#c5a059',
+                    backgroundColor: '#c5a059',
+                    type: 'line',
+                    yAxisID: 'y1',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true } }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { position: 'left', grid: { color: '#f1f5f9' } },
+                    y1: { position: 'right', grid: { display: false } }
+                }
+            }
+        });
+
+        // Complexity Pie
+        const ctxPie = document.getElementById('complexityPie').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['Low Risk', 'Medium Risk', 'High Risk', 'Critical'],
+                datasets: [{
+                    data: [788, 28, 10, 0],
+                    backgroundColor: [
+                        '#0f2b46', // Navy (Safe)
+                        '#64748b', // Grey (Med)
+                        '#c5a059', // Gold (High)
+                        '#991b1b'  // Red (Critical)
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'right', labels: { usePointStyle: true, font: { size: 11 } } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

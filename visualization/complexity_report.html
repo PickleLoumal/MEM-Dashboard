@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEM Dashboard - 代码复杂度分析报告</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --text-primary: #eee;
+            --text-secondary: #aaa;
+            --accent: #4a90d9;
+            --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container { max-width: 1600px; margin: 0 auto; }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: var(--bg-card);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        h1 { 
+            font-size: 2.8rem; 
+            margin-bottom: 0.5rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle { color: var(--text-secondary); font-size: 1.1rem; }
+        .meta { 
+            display: flex; 
+            justify-content: center; 
+            gap: 2rem; 
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            background: rgba(74, 144, 217, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(74, 144, 217, 0.3);
+        }
+        
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+            gap: 1.5rem; 
+            margin-bottom: 2rem; 
+        }
+        .grid-wide {
+            grid-template-columns: 1fr;
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .card h2 { 
+            font-size: 1.2rem; 
+            margin-bottom: 1rem; 
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-label { color: var(--text-secondary); margin-top: 0.5rem; }
+        
+        .complexity-bar {
+            display: flex;
+            height: 40px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .complexity-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: bold;
+            min-width: 40px;
+            transition: all 0.3s;
+        }
+        .complexity-segment:hover {
+            transform: scaleY(1.1);
+        }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { 
+            background: rgba(74, 144, 217, 0.15); 
+            color: var(--accent); 
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        tr:hover { background: rgba(255,255,255,0.03); }
+        
+        .rank-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            min-width: 35px;
+            text-align: center;
+        }
+        
+        .legend { 
+            display: flex; 
+            gap: 1.5rem; 
+            flex-wrap: wrap; 
+            margin: 1.5rem 0;
+            justify-content: center;
+        }
+        .legend-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .legend-color { 
+            width: 16px; 
+            height: 16px; 
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .file-path { 
+            font-family: 'JetBrains Mono', 'Fira Code', monospace; 
+            font-size: 0.8rem; 
+            color: var(--text-secondary);
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .module-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .module-name { font-weight: 600; }
+        .module-stats { display: flex; gap: 1.5rem; font-size: 0.9rem; }
+        
+        .scrollable { max-height: 500px; overflow-y: auto; }
+        
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .meta { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 MEM Dashboard 代码复杂度分析报告</h1>
+            <p class="subtitle">Phase Report - Python Codebase Complexity Analysis</p>
+            <div class="meta">
+                <div class="meta-item">📅 生成时间: 2025-12-05 13:00:03</div>
+                <div class="meta-item">📁 分析文件: 118 个 Python 文件</div>
+                <div class="meta-item">🔧 工具: Radon v6.0</div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">688</div>
+                <div class="stat-label">函数/方法总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">12,767</div>
+                <div class="stat-label">源代码行数 (SLOC)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">3.3</div>
+                <div class="stat-label">平均圈复杂度</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color:#e74c3c">33</div>
+                <div class="stat-label">高复杂度函数 (CC&gt;10)</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>📈 复杂度等级分布</h2>
+                <div class="complexity-bar">
+<div class="complexity-segment" style="background:#2ecc71;width:84.01162790697676%" title="A: 578 个函数 (84.0%)">A:578</div>
+<div class="complexity-segment" style="background:#27ae60;width:11.19186046511628%" title="B: 77 个函数 (11.2%)">B:77</div>
+<div class="complexity-segment" style="background:#f39c12;width:3.343023255813953%" title="C: 23 个函数 (3.3%)">C:23</div>
+<div class="complexity-segment" style="background:#e67e22;width:0.872093023255814%" title="D: 6 个函数 (0.9%)">D:6</div>
+<div class="complexity-segment" style="background:#e74c3c;width:0.5813953488372093%" title="E: 4 个函数 (0.6%)">E:4</div>
+
+                </div>
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-color" style="background:#2ecc71"></div>A: 简单 (1-5)</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#27ae60"></div>B: 良好 (6-10)</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#f39c12"></div>C: 中等 (11-20)</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#e67e22"></div>D: 复杂 (21-30)</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#e74c3c"></div>E: 高复杂 (31-40)</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#c0392b"></div>F: 非常高 (41+)</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>📦 模块统计</h2>
+                <div class="scrollable">
+
+                    <div class="module-card">
+                        <span class="module-name">📁 src/</span>
+                        <div class="module-stats">
+                            <span>函数: 614</span>
+                            <span>平均CC: 3.2</span>
+                            <span style="color:#e74c3c">高复杂: 29</span>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <span class="module-name">📁 visualization/</span>
+                        <div class="module-stats">
+                            <span>函数: 8</span>
+                            <span>平均CC: 9.4</span>
+                            <span style="color:#e74c3c">高复杂: 2</span>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <span class="module-name">📁 tests/</span>
+                        <div class="module-stats">
+                            <span>函数: 42</span>
+                            <span>平均CC: 4.3</span>
+                            <span style="color:#e74c3c">高复杂: 2</span>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <span class="module-name">📁 config/</span>
+                        <div class="module-stats">
+                            <span>函数: 22</span>
+                            <span>平均CC: 4.0</span>
+                            <span style="color:#e74c3c">高复杂: 0</span>
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <span class="module-name">📁 api/</span>
+                        <div class="module-stats">
+                            <span>函数: 2</span>
+                            <span>平均CC: 1.5</span>
+                            <span style="color:#e74c3c">高复杂: 0</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>⚠️ 复杂度最高的函数 (Top 30) - 建议重构</h2>
+            <div class="scrollable">
+            <table>
+                <thead>
+                    <tr>
+                        <th>等级</th>
+                        <th>CC</th>
+                        <th>函数/方法</th>
+                        <th>类型</th>
+                        <th>行号</th>
+                        <th>文件路径</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#e74c3c">E</span></td>
+                        <td><strong>34</strong></td>
+                        <td><strong>handle</strong></td>
+                        <td>method</td>
+                        <td>69-213</td>
+                        <td class="file-path" title="src/django_api/csi300/management/commands/import_investment_summary.py">src/django_api/csi300/management/commands/import_investment_summary.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#e74c3c">E</span></td>
+                        <td><strong>34</strong></td>
+                        <td><strong>process_company_ai</strong></td>
+                        <td>function</td>
+                        <td>375-508</td>
+                        <td class="file-path" title="src/django_api/csi300/services/investment_summary_generator.py">src/django_api/csi300/services/investment_summary_generator.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#e74c3c">E</span></td>
+                        <td><strong>33</strong></td>
+                        <td><strong>generate_html_report</strong></td>
+                        <td>function</td>
+                        <td>133-562</td>
+                        <td class="file-path" title="visualization/analyze_complexity.py">visualization/analyze_complexity.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#e74c3c">E</span></td>
+                        <td><strong>33</strong></td>
+                        <td><strong>handle</strong></td>
+                        <td>method</td>
+                        <td>60-190</td>
+                        <td class="file-path" title="src/django_api/csi300/management/commands/update_stock_prices.py">src/django_api/csi300/management/commands/update_stock_prices.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#e67e22">D</span></td>
+                        <td><strong>25</strong></td>
+                        <td><strong>main</strong></td>
+                        <td>function</td>
+                        <td>624-737</td>
+                        <td class="file-path" title="src/django_api/csi300/services/investment_summary_generator.py">src/django_api/csi300/services/investment_summary_generator.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#e67e22">D</span></td>
+                        <td><strong>24</strong></td>
+                        <td><strong>top_picks_with_sparklines</strong></td>
+                        <td>function</td>
+                        <td>383-491</td>
+                        <td class="file-path" title="src/django_api/stocks/views.py">src/django_api/stocks/views.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#e67e22">D</span></td>
+                        <td><strong>23</strong></td>
+                        <td><strong>_get_specific_indicator</strong></td>
+                        <td>method</td>
+                        <td>580-691</td>
+                        <td class="file-path" title="src/django_api/fred_us/views.py">src/django_api/fred_us/views.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#e67e22">D</span></td>
+                        <td><strong>21</strong></td>
+                        <td><strong>test_industry_peers_comparison_endpoint</strong></td>
+                        <td>method</td>
+                        <td>61-61</td>
+                        <td class="file-path" title="tests/test_csi300_peers_migration.py">tests/test_csi300_peers_migration.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#e67e22">D</span></td>
+                        <td><strong>21</strong></td>
+                        <td><strong>update_market_cap_data</strong></td>
+                        <td>method</td>
+                        <td>103-199</td>
+                        <td class="file-path" title="src/django_api/csi300/management/commands/update_market_cap.py">src/django_api/csi300/management/commands/update_market_cap.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#e67e22">D</span></td>
+                        <td><strong>21</strong></td>
+                        <td><strong>format_historical_response</strong></td>
+                        <td>method</td>
+                        <td>496-569</td>
+                        <td class="file-path" title="src/django_api/stocks/services.py">src/django_api/stocks/services.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>20</strong></td>
+                        <td><strong>top_picks</strong></td>
+                        <td>function</td>
+                        <td>510-568</td>
+                        <td class="file-path" title="src/django_api/stocks/views.py">src/django_api/stocks/views.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>18</strong></td>
+                        <td><strong>_get_historical_async</strong></td>
+                        <td>method</td>
+                        <td>347-428</td>
+                        <td class="file-path" title="src/django_api/stocks/services.py">src/django_api/stocks/services.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>16</strong></td>
+                        <td><strong>TestCSI300PeersMigration</strong></td>
+                        <td>class</td>
+                        <td>60-104</td>
+                        <td class="file-path" title="tests/test_csi300_peers_migration.py">tests/test_csi300_peers_migration.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>15</strong></td>
+                        <td><strong>_show_categorization_plan</strong></td>
+                        <td>method</td>
+                        <td>130-177</td>
+                        <td class="file-path" title="src/django_api/fred_us/management/commands/categorize_by_primary_use.py">src/django_api/fred_us/management/commands/categorize_by_primary_use.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>15</strong></td>
+                        <td><strong>_parse_with_regex</strong></td>
+                        <td>function</td>
+                        <td>217-277</td>
+                        <td class="file-path" title="src/django_api/csi300/services/investment_summary_generator.py">src/django_api/csi300/services/investment_summary_generator.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>14</strong></td>
+                        <td><strong>get_queryset</strong></td>
+                        <td>method</td>
+                        <td>127-205</td>
+                        <td class="file-path" title="src/django_api/csi300/views.py">src/django_api/csi300/views.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>14</strong></td>
+                        <td><strong>get_daily_data</strong></td>
+                        <td>function</td>
+                        <td>94-162</td>
+                        <td class="file-path" title="src/django_api/stocks/akshare_client.py">src/django_api/stocks/akshare_client.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>13</strong></td>
+                        <td><strong>Command</strong></td>
+                        <td>class</td>
+                        <td>16-190</td>
+                        <td class="file-path" title="src/django_api/csi300/management/commands/update_stock_prices.py">src/django_api/csi300/management/commands/update_stock_prices.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>13</strong></td>
+                        <td><strong>parse_business_overview_to_json</strong></td>
+                        <td>function</td>
+                        <td>147-214</td>
+                        <td class="file-path" title="src/django_api/csi300/services/investment_summary_generator.py">src/django_api/csi300/services/investment_summary_generator.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>13</strong></td>
+                        <td><strong>handle</strong></td>
+                        <td>method</td>
+                        <td>43-148</td>
+                        <td class="file-path" title="src/django_api/stocks/management/commands/update_stocks.py">src/django_api/stocks/management/commands/update_stocks.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>12</strong></td>
+                        <td><strong>main</strong></td>
+                        <td>function</td>
+                        <td>565-647</td>
+                        <td class="file-path" title="visualization/analyze_complexity.py">visualization/analyze_complexity.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>12</strong></td>
+                        <td><strong>_fetch_and_save_series_info</strong></td>
+                        <td>method</td>
+                        <td>101-192</td>
+                        <td class="file-path" title="src/django_api/fred_us/management/commands/update_series_info.py">src/django_api/fred_us/management/commands/update_series_info.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>12</strong></td>
+                        <td><strong>Command</strong></td>
+                        <td>class</td>
+                        <td>17-213</td>
+                        <td class="file-path" title="src/django_api/csi300/management/commands/import_investment_summary.py">src/django_api/csi300/management/commands/import_investment_summary.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>12</strong></td>
+                        <td><strong>format_intraday_response</strong></td>
+                        <td>method</td>
+                        <td>431-492</td>
+                        <td class="file-path" title="src/django_api/stocks/services.py">src/django_api/stocks/services.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>12</strong></td>
+                        <td><strong>lightweight_chart</strong></td>
+                        <td>function</td>
+                        <td>274-361</td>
+                        <td class="file-path" title="src/django_api/stocks/views.py">src/django_api/stocks/views.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>12</strong></td>
+                        <td><strong>FredJpLatestValueSerializer</strong></td>
+                        <td>class</td>
+                        <td>31-61</td>
+                        <td class="file-path" title="src/django_api/fred_jp/serializers.py">src/django_api/fred_jp/serializers.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>11</strong></td>
+                        <td><strong>fetch_specific_indicators</strong></td>
+                        <td>method</td>
+                        <td>220-262</td>
+                        <td class="file-path" title="src/django_api/fred_us/auto_fetcher.py">src/django_api/fred_us/auto_fetcher.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>11</strong></td>
+                        <td><strong>_show_categorization_plan</strong></td>
+                        <td>method</td>
+                        <td>201-251</td>
+                        <td class="file-path" title="src/django_api/fred_us/management/commands/categorize_series_info.py">src/django_api/fred_us/management/commands/categorize_series_info.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>11</strong></td>
+                        <td><strong>_show_categorization_plan</strong></td>
+                        <td>method</td>
+                        <td>91-134</td>
+                        <td class="file-path" title="src/django_api/fred_us/management/commands/categorize_frontend_indicators.py">src/django_api/fred_us/management/commands/categorize_frontend_indicators.py</td>
+                    </tr>
+
+                    <tr>
+                        <td><span class="rank-badge" style="background:#f39c12">C</span></td>
+                        <td><strong>11</strong></td>
+                        <td><strong>get_latest_stock_score</strong></td>
+                        <td>method</td>
+                        <td>158-197</td>
+                        <td class="file-path" title="src/django_api/stocks/services.py">src/django_api/stocks/services.py</td>
+                    </tr>
+
+                </tbody>
+            </table>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-top: 1.5rem;">
+            <h2>📁 可维护性指数 (MI) - 按文件排序</h2>
+            <p style="color:var(--text-secondary);margin-bottom:1rem;font-size:0.9rem;">
+                MI 指数越低，代码越难维护。低于 40 的文件需要重点关注。
+            </p>
+            <div class="scrollable">
+            <table>
+                <thead>
+                    <tr>
+                        <th>文件</th>
+                        <th>MI 指数</th>
+                        <th>等级</th>
+                        <th>建议</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/stocks/services.py">src/django_api/stocks/services.py</td>
+                        <td><strong style="color:#e74c3c">19.8</strong></td>
+                        <td><span class="rank-badge" style="background:#e74c3c">A</span></td>
+                        <td>🔴 需要重构</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_us/views.py">src/django_api/fred_us/views.py</td>
+                        <td><strong style="color:#e74c3c">24.3</strong></td>
+                        <td><span class="rank-badge" style="background:#e74c3c">A</span></td>
+                        <td>🔴 需要重构</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/stocks/views.py">src/django_api/stocks/views.py</td>
+                        <td><strong style="color:#e74c3c">26.6</strong></td>
+                        <td><span class="rank-badge" style="background:#e74c3c">A</span></td>
+                        <td>🔴 需要重构</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/csi300/services/investment_summary_generator.py">src/django_api/csi300/services/investment_summary_generator.py</td>
+                        <td><strong style="color:#e74c3c">29.4</strong></td>
+                        <td><span class="rank-badge" style="background:#e74c3c">A</span></td>
+                        <td>🔴 需要重构</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="visualization/analyze_complexity.py">visualization/analyze_complexity.py</td>
+                        <td><strong style="color:#e74c3c">34.6</strong></td>
+                        <td><span class="rank-badge" style="background:#e74c3c">A</span></td>
+                        <td>🔴 需要重构</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_common/utils.py">src/django_api/fred_common/utils.py</td>
+                        <td><strong style="color:#e74c3c">36.1</strong></td>
+                        <td><span class="rank-badge" style="background:#e74c3c">A</span></td>
+                        <td>🔴 需要重构</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_common/base_fetcher.py">src/django_api/fred_common/base_fetcher.py</td>
+                        <td><strong style="color:#e74c3c">38.4</strong></td>
+                        <td><span class="rank-badge" style="background:#e74c3c">A</span></td>
+                        <td>🔴 需要重构</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/bea/views.py">src/django_api/bea/views.py</td>
+                        <td><strong style="color:#e67e22">40.8</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_us/dynamic_config.py">src/django_api/fred_us/dynamic_config.py</td>
+                        <td><strong style="color:#e67e22">41.8</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="config/fred_db_manager.py">config/fred_db_manager.py</td>
+                        <td><strong style="color:#e67e22">42.9</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="config/fred_jp_db_manager.py">config/fred_jp_db_manager.py</td>
+                        <td><strong style="color:#e67e22">44.1</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_us/auto_fetcher.py">src/django_api/fred_us/auto_fetcher.py</td>
+                        <td><strong style="color:#e67e22">44.9</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="tests/backend/test_investment_summary_generation.py">tests/backend/test_investment_summary_generation.py</td>
+                        <td><strong style="color:#e67e22">45.1</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_common/base_models.py">src/django_api/fred_common/base_models.py</td>
+                        <td><strong style="color:#e67e22">45.8</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/bea/dynamic_config.py">src/django_api/bea/dynamic_config.py</td>
+                        <td><strong style="color:#e67e22">47.1</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/csi300/management/commands/import_investment_summary.py">src/django_api/csi300/management/commands/import_investment_summary.py</td>
+                        <td><strong style="color:#e67e22">47.2</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/csi300/views.py">src/django_api/csi300/views.py</td>
+                        <td><strong style="color:#e67e22">48.4</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/csi300/management/commands/update_stock_prices.py">src/django_api/csi300/management/commands/update_stock_prices.py</td>
+                        <td><strong style="color:#e67e22">49.2</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/stocks/akshare_client.py">src/django_api/stocks/akshare_client.py</td>
+                        <td><strong style="color:#e67e22">49.3</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/bea_management.py">src/django_api/bea_management.py</td>
+                        <td><strong style="color:#e67e22">50.9</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_us/management/commands/update_series_info.py">src/django_api/fred_us/management/commands/update_series_info.py</td>
+                        <td><strong style="color:#e67e22">51.0</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/csi300/management/commands/update_market_cap.py">src/django_api/csi300/management/commands/update_market_cap.py</td>
+                        <td><strong style="color:#e67e22">51.1</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/bea/serializers.py">src/django_api/bea/serializers.py</td>
+                        <td><strong style="color:#e67e22">51.6</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_jp/management/commands/fetch_japan_data.py">src/django_api/fred_jp/management/commands/fetch_japan_data.py</td>
+                        <td><strong style="color:#e67e22">52.2</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_jp/views.py">src/django_api/fred_jp/views.py</td>
+                        <td><strong style="color:#e67e22">53.0</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_us/serializers.py">src/django_api/fred_us/serializers.py</td>
+                        <td><strong style="color:#e67e22">54.9</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/policy_updates/services.py">src/django_api/policy_updates/services.py</td>
+                        <td><strong style="color:#e67e22">54.9</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/bea/models.py">src/django_api/bea/models.py</td>
+                        <td><strong style="color:#e67e22">55.0</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_us/management/commands/categorize_frontend_indicators.py">src/django_api/fred_us/management/commands/categorize_frontend_indicators.py</td>
+                        <td><strong style="color:#e67e22">55.2</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_jp/data_fetcher.py">src/django_api/fred_jp/data_fetcher.py</td>
+                        <td><strong style="color:#e67e22">55.3</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_us/management/commands/categorize_by_primary_use.py">src/django_api/fred_us/management/commands/categorize_by_primary_use.py</td>
+                        <td><strong style="color:#e67e22">56.7</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_us/management/commands/categorize_series_info.py">src/django_api/fred_us/management/commands/categorize_series_info.py</td>
+                        <td><strong style="color:#e67e22">57.0</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/bea/indicator_processor.py">src/django_api/bea/indicator_processor.py</td>
+                        <td><strong style="color:#e67e22">57.4</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="tests/test_schema_generation.py">tests/test_schema_generation.py</td>
+                        <td><strong style="color:#e67e22">57.6</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/content/admin.py">src/django_api/content/admin.py</td>
+                        <td><strong style="color:#e67e22">58.0</strong></td>
+                        <td><span class="rank-badge" style="background:#e67e22">A</span></td>
+                        <td>🟡 建议优化</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_us/data_fetcher.py">src/django_api/fred_us/data_fetcher.py</td>
+                        <td><strong style="color:#f39c12">60.6</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/csi300/serializers.py">src/django_api/csi300/serializers.py</td>
+                        <td><strong style="color:#f39c12">61.5</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/shared_types/common.py">src/django_api/shared_types/common.py</td>
+                        <td><strong style="color:#f39c12">62.3</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_us/migrate_to_auto_config.py">src/django_api/fred_us/migrate_to_auto_config.py</td>
+                        <td><strong style="color:#f39c12">63.4</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/stocks/management/commands/update_stocks.py">src/django_api/stocks/management/commands/update_stocks.py</td>
+                        <td><strong style="color:#f39c12">63.6</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_jp/serializers.py">src/django_api/fred_jp/serializers.py</td>
+                        <td><strong style="color:#f39c12">63.8</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="tests/test_csi300_peers_migration.py">tests/test_csi300_peers_migration.py</td>
+                        <td><strong style="color:#f39c12">64.0</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/policy_updates/views.py">src/django_api/policy_updates/views.py</td>
+                        <td><strong style="color:#f39c12">66.5</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_us/models.py">src/django_api/fred_us/models.py</td>
+                        <td><strong style="color:#f39c12">67.0</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_jp/config_manager.py">src/django_api/fred_jp/config_manager.py</td>
+                        <td><strong style="color:#f39c12">67.4</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/content/models.py">src/django_api/content/models.py</td>
+                        <td><strong style="color:#f39c12">67.7</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="tests/test_csi300_api.py">tests/test_csi300_api.py</td>
+                        <td><strong style="color:#f39c12">70.1</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="tests/test_fred_us_auto_fetcher.py">tests/test_fred_us_auto_fetcher.py</td>
+                        <td><strong style="color:#f39c12">71.3</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/django_api/views.py">src/django_api/django_api/views.py</td>
+                        <td><strong style="color:#f39c12">72.0</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                    <tr>
+                        <td class="file-path" title="src/django_api/fred_us/managers.py">src/django_api/fred_us/managers.py</td>
+                        <td><strong style="color:#f39c12">72.3</strong></td>
+                        <td><span class="rank-badge" style="background:#f39c12">A</span></td>
+                        <td>🟢 良好</td>
+                    </tr>
+
+                </tbody>
+            </table>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-top: 1.5rem;">
+            <h2>📝 排除的模式 (基于 .gitignore)</h2>
+            <p style="color:var(--text-secondary);font-family:monospace;font-size:0.85rem;line-height:2;">
+                *.old, .env, .Spotlight-V100, *.backup, src/backend, *.pid.lock, *.pem, data/json, .coverage, *.key, .DS_Store?, *.py[cod], *.log, local.db, .nyc_output, *.so, .svn, yarn-debug.log*, npm-debug.log*, .Python...
+            </p>
+        </div>
+        
+        <div style="text-align:center;margin-top:2rem;color:var(--text-secondary);font-size:0.9rem;">
+            <p>Generated by Radon Complexity Analyzer | MEM Dashboard Project</p>
+        </div>
+    </div>
+</body>
+</html>

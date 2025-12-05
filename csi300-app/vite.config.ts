@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -33,6 +34,24 @@ export default defineConfig({
       }
     }
   ],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['../tests/frontend/setup.ts'],
+    include: ['../tests/frontend/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    alias: {
+      '@': resolve(__dirname, 'src'),
+      '@shared': resolve(__dirname, 'src/shared'),
+      // 显式指向 node_modules
+      '@testing-library/jest-dom': resolve(__dirname, 'node_modules/@testing-library/jest-dom'),
+      '@testing-library/react': resolve(__dirname, 'node_modules/@testing-library/react'),
+      'vitest': resolve(__dirname, 'node_modules/vitest'),
+      'react': resolve(__dirname, 'node_modules/react'),
+      'react-dom': resolve(__dirname, 'node_modules/react-dom'),
+      'react/jsx-dev-runtime': resolve(__dirname, 'node_modules/react/jsx-dev-runtime.js'),
+      'react/jsx-runtime': resolve(__dirname, 'node_modules/react/jsx-runtime.js'),
+    }
+  },
   envPrefix: 'VITE_',
   resolve: {
     alias: {

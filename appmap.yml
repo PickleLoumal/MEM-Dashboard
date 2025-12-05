@@ -1,0 +1,6 @@
+name: MEM Dashboard 2
+packages:
+  - path: csi300
+  - path: fred
+  - path: bea
+language: python

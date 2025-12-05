@@ -3,9 +3,10 @@ from typing import List
 
 from django.core.cache import cache
 from django.utils import timezone
-from rest_framework import status
+from rest_framework import status, serializers as drf_serializers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
 
 from .services import FederalRegisterService, FederalRegisterServiceError
 
@@ -14,6 +15,26 @@ logger = logging.getLogger(__name__)
 CACHE_TTL_SECONDS = 60 * 5  # five minutes
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='country', type=str, location=OpenApiParameter.QUERY, description='Country code', required=False),
+        OpenApiParameter(name='limit', type=int, location=OpenApiParameter.QUERY, description='Number of results', required=False),
+        OpenApiParameter(name='topics[]', type=str, location=OpenApiParameter.QUERY, description='Topic filters', required=False),
+        OpenApiParameter(name='q', type=str, location=OpenApiParameter.QUERY, description='Search term', required=False),
+    ],
+    responses={200: inline_serializer(
+        name='PolicyUpdatesResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'source': drf_serializers.CharField(),
+            'country': drf_serializers.CharField(),
+            'last_updated': drf_serializers.CharField(),
+            'count': drf_serializers.IntegerField(),
+            'data': drf_serializers.ListField(child=drf_serializers.DictField()),
+            'message': drf_serializers.CharField(required=False),
+        }
+    )}
+)
 @api_view(["GET"])
 def policy_updates(request):
     """
