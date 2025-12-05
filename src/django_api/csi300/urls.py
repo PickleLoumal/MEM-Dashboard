@@ -15,4 +15,7 @@ urlpatterns = [
     # Main endpoints
     path('', views.csi300_index, name='csi300_index'),
     path('health/', views.health_check, name='csi300_health_check'),
+    
+    # Investment Summary 生成
+    path('api/generate-summary/', views.generate_investment_summary, name='generate_investment_summary'),
 ]

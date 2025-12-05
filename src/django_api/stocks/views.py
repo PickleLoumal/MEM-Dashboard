@@ -11,10 +11,11 @@ from django.db.models import Max
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import status
+from rest_framework import status, serializers as drf_serializers
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
 
 from csi300.models import CSI300Company
 from .models import StockScore
@@ -59,6 +60,18 @@ def _run_scoring_subprocess(symbol: str):
     }
     return summary, logs
 
+
+@extend_schema(
+    responses={200: inline_serializer(
+        name='StockListResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'count': drf_serializers.IntegerField(),
+            'stocks': drf_serializers.ListField(child=drf_serializers.DictField()),
+            'error': drf_serializers.CharField(required=False),
+        }
+    )}
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def stock_list(request):
@@ -91,6 +104,20 @@ def stock_list(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='symbol', type=str, location=OpenApiParameter.QUERY, description='Stock ticker symbol', required=True)
+    ],
+    responses={200: inline_serializer(
+        name='IntradayDataResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'symbol': drf_serializers.CharField(required=False),
+            'data': drf_serializers.ListField(child=drf_serializers.DictField(), required=False),
+            'error': drf_serializers.CharField(required=False),
+        }
+    )}
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def intraday_data(request):
@@ -135,6 +162,23 @@ def intraday_data(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='symbol', type=str, location=OpenApiParameter.QUERY, description='Stock ticker symbol', required=True),
+        OpenApiParameter(name='days', type=int, location=OpenApiParameter.QUERY, description='Number of days', required=False),
+        OpenApiParameter(name='interval', type=str, location=OpenApiParameter.QUERY, description='Data interval', required=False),
+        OpenApiParameter(name='period', type=str, location=OpenApiParameter.QUERY, description='YFinance period', required=False),
+    ],
+    responses={200: inline_serializer(
+        name='HistoricalDataResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'symbol': drf_serializers.CharField(required=False),
+            'data': drf_serializers.ListField(child=drf_serializers.DictField(), required=False),
+            'error': drf_serializers.CharField(required=False),
+        }
+    )}
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def historical_data(request):
@@ -183,6 +227,14 @@ def historical_data(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@extend_schema(
+    responses={200: inline_serializer(
+        name='FundFlowPageResponse',
+        fields={
+            'message': drf_serializers.CharField(),
+        }
+    )}
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def fund_flow_page(request):
@@ -199,6 +251,24 @@ def fund_flow_page(request):
     return FileResponse(open(html_path, 'rb'), content_type='text/html')
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='symbol', type=str, location=OpenApiParameter.QUERY, description='Stock ticker symbol', required=True),
+        OpenApiParameter(name='type', type=str, location=OpenApiParameter.QUERY, description='Chart type: intraday, cmf, obv', required=False),
+    ],
+    responses={200: inline_serializer(
+        name='LightweightChartResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'symbol': drf_serializers.CharField(required=False),
+            'company_name': drf_serializers.CharField(required=False),
+            'chart_type': drf_serializers.CharField(required=False),
+            'data': drf_serializers.ListField(child=drf_serializers.DictField(), required=False),
+            'message': drf_serializers.CharField(required=False),
+            'error': drf_serializers.CharField(required=False),
+        }
+    )}
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def lightweight_chart(request):
@@ -291,6 +361,23 @@ def lightweight_chart(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='limit', type=int, location=OpenApiParameter.QUERY, description='Number of results', required=False),
+        OpenApiParameter(name='direction', type=str, location=OpenApiParameter.QUERY, description='buy or sell', required=False),
+    ],
+    responses={200: inline_serializer(
+        name='TopPicksWithSparklinesResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'picks': drf_serializers.ListField(child=drf_serializers.DictField(), required=False),
+            'calculation_date': drf_serializers.CharField(required=False),
+            'direction': drf_serializers.CharField(required=False),
+            'count': drf_serializers.IntegerField(required=False),
+            'error': drf_serializers.CharField(required=False),
+        }
+    )}
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def top_picks_with_sparklines(request):
@@ -404,6 +491,20 @@ def top_picks_with_sparklines(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='limit', type=int, location=OpenApiParameter.QUERY, description='Number of results', required=False),
+        OpenApiParameter(name='direction', type=str, location=OpenApiParameter.QUERY, description='buy or sell', required=False),
+    ],
+    responses={200: inline_serializer(
+        name='TopPicksResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'calculation_date': drf_serializers.CharField(required=False, allow_null=True),
+            'picks': drf_serializers.ListField(child=drf_serializers.DictField()),
+        }
+    )}
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def top_picks(request):
@@ -468,6 +569,25 @@ def top_picks(request):
     })
 
 
+@extend_schema(
+    request=inline_serializer(
+        name='GenerateStockScoreRequest',
+        fields={
+            'symbol': drf_serializers.CharField(required=True),
+        }
+    ),
+    responses={200: inline_serializer(
+        name='GenerateStockScoreResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'summary': drf_serializers.DictField(required=False),
+            'logs': drf_serializers.ListField(child=drf_serializers.CharField(), required=False),
+            'score': drf_serializers.DictField(required=False),
+            'company': drf_serializers.DictField(required=False),
+            'error': drf_serializers.CharField(required=False),
+        }
+    )}
+)
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -519,6 +639,19 @@ def generate_stock_score(request):
     })
 
 
+@extend_schema(
+    request=None,  # No request body required
+    responses={200: inline_serializer(
+        name='GenerateAllScoresResponse',
+        fields={
+            'success': drf_serializers.BooleanField(),
+            'message': drf_serializers.CharField(required=False),
+            'status': drf_serializers.CharField(required=False),
+            'estimated_time': drf_serializers.CharField(required=False),
+            'error': drf_serializers.CharField(required=False),
+        }
+    )}
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def generate_all_scores(request):

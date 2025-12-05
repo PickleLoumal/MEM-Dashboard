@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from '@shared/lib/logger';
 
 interface DivisionData {
   name: string;
@@ -17,11 +18,10 @@ interface ParsedBusinessOverview {
     operating_income?: string;
     net_income?: string;
     net_interest_margin?: string;
+    operating_margin?: string;
     [key: string]: string | undefined;
   };
   divisions: DivisionData[];
-  strengths: string[];
-  challenges: string[];
 }
 
 interface BusinessOverviewData {
@@ -42,8 +42,18 @@ function tryParseJSON(content: string): BusinessOverviewData | null {
     if (typeof data === 'object' && 'raw_text' in data) {
       return data as BusinessOverviewData;
     }
+    
+    logger.warn('JSON parsed but missing raw_text or not an object', { dataKeys: Object.keys(data || {}) });
+    
+    // 兼容性处理：如果缺失 raw_text 但有 key_metrics，我们构造一个
+    if (typeof data === 'object' && 'key_metrics' in data) {
+        return {
+            raw_text: '', // 缺失 raw_text
+            parsed: data as ParsedBusinessOverview
+        };
+    }
     return null;
-  } catch {
+  } catch (e) {
     return null;
   }
 }
@@ -51,21 +61,26 @@ function tryParseJSON(content: string): BusinessOverviewData | null {
 // 格式化指标名称
 function formatMetricName(key: string): string {
   const nameMap: Record<string, string> = {
-    total_revenue: 'Total Revenue',
+    total_revenue: 'Total Revenue / Sales',
     operating_income: 'Operating Income',
     net_income: 'Net Income',
     net_interest_margin: 'Net Interest Margin (NIM)',
+    operating_margin: 'Operating Margin',
   };
   return nameMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = ({ content }) => {
-  if (!content) return null;
+  if (!content) {
+      logger.warn('BusinessOverviewSection received empty content');
+      return null;
+  }
 
   const jsonData = tryParseJSON(content);
 
   // 如果不是 JSON 格式，使用原有的纯文本渲染
   if (!jsonData) {
+    logger.info('Rendering Business Overview as plain text', { length: content.length });
     return (
       <div className="investment-summary-section" id="businessOverview">
         <div className="section-header">Business Overview</div>
@@ -77,6 +92,7 @@ export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = (
   }
 
   const { raw_text, parsed } = jsonData;
+  logger.info('Rendering Business Overview from JSON', { hasParsed: !!parsed, fiscalYear: parsed?.fiscal_year });
 
   // 如果解析失败，显示原始文本
   if (!parsed) {
@@ -160,32 +176,6 @@ export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = (
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
-
-        {/* Strengths & Challenges */}
-        {(parsed.strengths.length > 0 || parsed.challenges.length > 0) && (
-          <div className="business-overview-swot">
-            {parsed.strengths.length > 0 && (
-              <div className="swot-section strengths">
-                <h4 className="swot-title">Strengths</h4>
-                <ul>
-                  {parsed.strengths.map((s, idx) => (
-                    <li key={idx}>{s}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {parsed.challenges.length > 0 && (
-              <div className="swot-section challenges">
-                <h4 className="swot-title">Challenges</h4>
-                <ul>
-                  {parsed.challenges.map((c, idx) => (
-                    <li key={idx}>{c}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
         )}
       </div>

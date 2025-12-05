@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary
 
 
@@ -86,10 +87,15 @@ class CSI300HSharesCompanyListSerializer(serializers.ModelSerializer):
 class CSI300FilterOptionsSerializer(serializers.Serializer):
     """Serializer for filter options"""
     
+    regions = serializers.ListField(child=serializers.CharField(), required=False)
     im_sectors = serializers.ListField(child=serializers.CharField())
     industries = serializers.ListField(child=serializers.CharField())
     gics_industries = serializers.ListField(child=serializers.CharField())
     market_cap_range = serializers.DictField()
+    filtered_by_region = serializers.BooleanField(required=False)
+    filtered_by_sector = serializers.BooleanField(required=False)
+    region_filter = serializers.CharField(required=False, allow_null=True)
+    sector_filter = serializers.CharField(required=False, allow_null=True)
 
 
 class CSI300InvestmentSummarySerializer(serializers.ModelSerializer):
@@ -106,7 +112,7 @@ class CSI300InvestmentSummarySerializer(serializers.ModelSerializer):
 
 
 class CSI300IndustryPeersComparisonSerializer(serializers.ModelSerializer):
-    """Serializer for industry peers comparison data"""
+    """Serializer for industry peers comparison data (single item)"""
     
     market_cap_display = serializers.SerializerMethodField()
     pe_ratio_display = serializers.SerializerMethodField()
@@ -126,6 +132,7 @@ class CSI300IndustryPeersComparisonSerializer(serializers.ModelSerializer):
             'revenue_growth_display', 'operating_margin_trailing', 'operating_margin_display'
         ]
     
+    @extend_schema_field(str)
     def get_market_cap_display(self, obj):
         """Format market cap for display"""
         if obj.market_cap_local:
@@ -139,32 +146,55 @@ class CSI300IndustryPeersComparisonSerializer(serializers.ModelSerializer):
                 return f"{obj.market_cap_local:.2f}"
         return "N/A"
     
+    @extend_schema_field(str)
     def get_pe_ratio_display(self, obj):
         """Format P/E ratio for display"""
         if obj.pe_ratio_trailing:
             return f"{obj.pe_ratio_trailing:.2f}"
         return "N/A"
     
+    @extend_schema_field(str)
     def get_pb_ratio_display(self, obj):
         """Calculate and format P/B ratio for display"""
         # Note: P/B ratio calculation would need book value per share
         # For now, return placeholder
         return "N/A"
     
+    @extend_schema_field(str)
     def get_roe_display(self, obj):
         """Format ROE for display"""
         if obj.roe_trailing:
             return f"{obj.roe_trailing:.2f}%"
         return "N/A"
     
+    @extend_schema_field(str)
     def get_revenue_growth_display(self, obj):
         """Calculate revenue growth for display"""
         # Revenue growth calculation would need historical data
         # For now, return placeholder
         return "N/A"
     
+    @extend_schema_field(str)
     def get_operating_margin_display(self, obj):
         """Format Operating Margin for display"""
         if obj.operating_margin_trailing:
             return f"{obj.operating_margin_trailing:.2f}%"
         return "N/A"
+
+
+class CSI300PeerComparisonItemSerializer(CSI300IndustryPeersComparisonSerializer):
+    """Serializer for a single peer comparison item with extra fields"""
+    rank = serializers.IntegerField(read_only=True)
+    is_current_company = serializers.BooleanField(read_only=True)
+    
+    class Meta(CSI300IndustryPeersComparisonSerializer.Meta):
+        fields = CSI300IndustryPeersComparisonSerializer.Meta.fields + ['rank', 'is_current_company']
+
+
+class CSI300PeerComparisonResponseSerializer(serializers.Serializer):
+    """Serializer for the full peer comparison response"""
+    target_company = CSI300PeerComparisonItemSerializer()
+    industry = serializers.CharField()
+    comparison_data = CSI300PeerComparisonItemSerializer(many=True)
+    total_top_companies_shown = serializers.IntegerField()
+    total_companies_in_industry = serializers.IntegerField()

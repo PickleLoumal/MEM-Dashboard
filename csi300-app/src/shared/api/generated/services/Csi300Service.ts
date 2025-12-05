@@ -4,8 +4,12 @@
 /* eslint-disable */
 import type { CSI300Company } from '../models/CSI300Company';
 import type { CSI300FilterOptions } from '../models/CSI300FilterOptions';
-import type { CSI300IndustryPeersComparison } from '../models/CSI300IndustryPeersComparison';
+import type { CSI300HealthCheckResponse } from '../models/CSI300HealthCheckResponse';
+import type { CSI300IndexResponse } from '../models/CSI300IndexResponse';
 import type { CSI300InvestmentSummary } from '../models/CSI300InvestmentSummary';
+import type { CSI300PeerComparisonResponse } from '../models/CSI300PeerComparisonResponse';
+import type { GenerateInvestmentSummaryRequest } from '../models/GenerateInvestmentSummaryRequest';
+import type { GenerateInvestmentSummaryResponse } from '../models/GenerateInvestmentSummaryResponse';
 import type { PaginatedCSI300CompanyListList } from '../models/PaginatedCSI300CompanyListList';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -21,10 +25,10 @@ export class Csi300Service {
      *
      * Returns:
      * Response: API 概览信息
-     * @returns any No response body
+     * @returns CSI300IndexResponse
      * @throws ApiError
      */
-    public static csi300Retrieve(): CancelablePromise<any> {
+    public static csi300Retrieve(): CancelablePromise<CSI300IndexResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/csi300/',
@@ -109,12 +113,12 @@ export class Csi300Service {
          * total_companies_in_industry: int
          * }
          * @param id A unique integer value identifying this CSI300 Company.
-         * @returns CSI300IndustryPeersComparison
+         * @returns CSI300PeerComparisonResponse
          * @throws ApiError
          */
         public static csi300ApiCompaniesIndustryPeersComparisonRetrieve(
             id: number,
-        ): CancelablePromise<CSI300IndustryPeersComparison> {
+        ): CancelablePromise<CSI300PeerComparisonResponse> {
             return __request(OpenAPI, {
                 method: 'GET',
                 url: '/csi300/api/companies/{id}/industry_peers_comparison/',
@@ -218,6 +222,30 @@ export class Csi300Service {
                 });
             }
             /**
+             * 生成指定公司的 Investment Summary
+             *
+             * 使用 AI 模型生成公司投资摘要并保存到数据库。
+             *
+             * Args:
+             * request: DRF 请求对象，body 中包含 company_id
+             *
+             * Returns:
+             * Response: 生成结果
+             * @param requestBody
+             * @returns GenerateInvestmentSummaryResponse
+             * @throws ApiError
+             */
+            public static csi300ApiGenerateSummaryCreate(
+                requestBody: GenerateInvestmentSummaryRequest,
+            ): CancelablePromise<GenerateInvestmentSummaryResponse> {
+                return __request(OpenAPI, {
+                    method: 'POST',
+                    url: '/csi300/api/generate-summary/',
+                    body: requestBody,
+                    mediaType: 'application/json',
+                });
+            }
+            /**
              * CSI300 API 健康检查端点
              *
              * 检查数据库连接和数据可用性。
@@ -227,10 +255,10 @@ export class Csi300Service {
              *
              * Returns:
              * Response: 健康状态信息
-             * @returns any No response body
+             * @returns CSI300HealthCheckResponse
              * @throws ApiError
              */
-            public static csi300HealthRetrieve(): CancelablePromise<any> {
+            public static csi300HealthRetrieve(): CancelablePromise<CSI300HealthCheckResponse> {
                 return __request(OpenAPI, {
                     method: 'GET',
                     url: '/csi300/health/',
