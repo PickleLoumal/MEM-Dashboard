@@ -63,6 +63,7 @@ src/backend/
 *.sh
 *.md
 !README.md
+!ABOUT.md
 verification_*/
 report_*.txt
 
