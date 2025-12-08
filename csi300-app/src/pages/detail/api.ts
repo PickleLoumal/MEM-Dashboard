@@ -21,7 +21,8 @@ import { CompanyDetail, PeerComparisonData } from './types';
 import { Csi300Service, OpenAPI } from '../../shared/api/generated';
 
 // 配置 API 基础地址
-OpenAPI.BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8001').replace(/\/$/, '');
+// 生产环境使用 /api（CloudFront 代理 /api/* -> ALB），开发环境默认 localhost:8001
+OpenAPI.BASE = (import.meta.env.VITE_API_BASE ?? (import.meta.env.MODE === 'development' ? 'http://localhost:8001' : '/api')).replace(/\/$/, '');
 
 /**
  * 获取 CSI300 公司详细信息

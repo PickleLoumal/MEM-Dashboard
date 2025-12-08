@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 # 尝试加载环境变量（如果dotenv可用）
@@ -29,8 +30,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 添加项目根目录到路径（与Flask API兼容）
 PROJECT_ROOT = BASE_DIR.parent.parent
-import sys
 sys.path.append(str(PROJECT_ROOT))
+
+# =============================================================================
+# OpenTelemetry Observability Configuration
+# =============================================================================
+# Initialize OpenTelemetry early in settings to ensure all subsequent
+# imports and operations are instrumented properly.
+
+OTEL_ENABLED = os.getenv('OTEL_ENABLED', 'true').lower() == 'true'
+
+if OTEL_ENABLED:
+    try:
+        from observability import setup_observability
+        setup_observability()
+    except ImportError as e:
+        import logging
+        logging.warning(f"OpenTelemetry not available: {e}. Continuing without observability.")
+    except Exception as e:
+        import logging
+        logging.warning(f"Failed to initialize OpenTelemetry: {e}. Continuing without observability.")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -70,6 +89,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # OpenTelemetry middleware (first for accurate timing)
+    'observability.middleware.OpenTelemetryMiddleware',
+    # CORS must be before CommonMiddleware
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -103,15 +125,16 @@ WSGI_APPLICATION = 'django_api.wsgi.application'
 
 # Database - 使用现有PostgreSQL数据库
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+# 优先从环境变量读取（AWS ECS），否则使用本地开发默认值
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mem_dashboard',
-        'USER': 'postgres',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.environ.get('DB_NAME', 'mem_dashboard'),
+        'USER': os.environ.get('DB_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'password'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
@@ -207,27 +230,101 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     "x-requested-with",
 ]
 
-# 日志配置
-# 确保日志目录存在
+# =============================================================================
+# Logging Configuration
+# =============================================================================
+# When OTEL_ENABLED=true, logging is configured by OpenTelemetry (observability module)
+# This Django LOGGING config serves as a fallback when OpenTelemetry is disabled
+
 LOG_DIR = os.path.join(PROJECT_ROOT, 'logs')
 os.makedirs(LOG_DIR, exist_ok=True)
 
+# Log level from environment
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
+
+if not OTEL_ENABLED:
+    # Fallback logging configuration when OpenTelemetry is disabled
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{asctime} | {levelname:8s} | {name} | {message}',
+                'style': '{',
+                'datefmt': '%Y-%m-%d %H:%M:%S',
+            },
+            'json': {
+                'format': '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s"}',
+                'datefmt': '%Y-%m-%dT%H:%M:%SZ',
+            },
+        },
     'handlers': {
+            'console': {
+                'level': LOG_LEVEL,
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose',
+            },
         'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(LOG_DIR, 'django_api.log'),
+                'level': LOG_LEVEL,
+                'class': 'logging.handlers.RotatingFileHandler',
+                'filename': os.path.join(LOG_DIR, 'mem-dashboard.log'),
+                'maxBytes': 10 * 1024 * 1024,  # 10MB
+                'backupCount': 5,
+                'formatter': 'verbose',
+            },
+            'error_file': {
+                'level': 'ERROR',
+                'class': 'logging.handlers.RotatingFileHandler',
+                'filename': os.path.join(LOG_DIR, 'mem-dashboard.error.log'),
+                'maxBytes': 10 * 1024 * 1024,  # 10MB
+                'backupCount': 5,
+                'formatter': 'verbose',
+            },
         },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
+        'root': {
+            'handlers': ['console', 'file', 'error_file'],
+            'level': LOG_LEVEL,
         },
-    },
+        'loggers': {
+            'django': {
+                'handlers': ['console', 'file'],
+                'level': LOG_LEVEL,
+                'propagate': False,
+            },
+            'django.request': {
+                'handlers': ['console', 'file', 'error_file'],
+            'level': 'INFO',
+                'propagate': False,
+            },
+            'django.db.backends': {
+                'handlers': ['console'],
+                'level': 'WARNING',
+                'propagate': False,
+            },
+            # Reduce noise from third-party libraries
+            'urllib3': {
+                'level': 'WARNING',
+            },
+            'requests': {
+                'level': 'WARNING',
+            },
+            'boto3': {
+                'level': 'WARNING',
+            },
+            'botocore': {
+                'level': 'WARNING',
+            },
+        },
+    }
+else:
+    # Minimal Django logging config when OpenTelemetry handles logging
+    # This prevents double logging
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': True,  # Let OpenTelemetry handle all logging
+        'handlers': {},
     'root': {
-        'handlers': ['file', 'console'],
-        'level': 'INFO'
+            'handlers': [],
+            'level': LOG_LEVEL,
     },
 }

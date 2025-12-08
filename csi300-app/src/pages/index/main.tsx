@@ -20,7 +20,8 @@ type Filters = {
   industry_search: string;
 };
 
-const API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8001').replace(/\/$/, '');
+// 生产环境使用 /api（CloudFront 代理 /api/* -> ALB），开发环境默认 localhost:8001
+const API_BASE = (import.meta.env.VITE_API_BASE ?? (import.meta.env.MODE === 'development' ? 'http://localhost:8001' : '/api')).replace(/\/$/, '');
 
 function buildFilterOptionsUrl(params?: Record<string, string>) {
   const query = new URLSearchParams();
@@ -30,7 +31,7 @@ function buildFilterOptionsUrl(params?: Record<string, string>) {
     });
   }
   const qs = query.toString();
-  return `${API_BASE}/api/csi300/api/companies/filter_options/${qs ? `?${qs}` : ''}`;
+  return `${API_BASE}/csi300/api/companies/filter_options/${qs ? `?${qs}` : ''}`;
 }
 
 async function fetchFilterOptions(params?: Record<string, string>): Promise<FilterOptionsResponse> {
@@ -124,7 +125,8 @@ function FilterPage() {
   // In Vite dev mode, pages are at /src/pages/xxx/index.html
   // In production build, they're at /xxx.html (or configured output)
   const getBrowserPath = () => {
-    const isDev = import.meta.env.DEV;
+    // Use MODE instead of DEV (more reliable in production builds)
+    const isDev = import.meta.env.MODE === 'development';
     return isDev ? '/src/pages/browser/index.html' : '/browser.html';
   };
 

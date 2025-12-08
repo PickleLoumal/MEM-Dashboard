@@ -1,34 +1,79 @@
+# =============================================================================
+# MEM Dashboard - Python Dependencies
+# =============================================================================
+# This is the single source of truth for all Python dependencies.
+# Do not create additional requirements files.
+# =============================================================================
+
+# Build tools
 setuptools>=70.0.0
 wheel>=0.42.0
+
+# Django & REST Framework
 Django==4.2.7
 djangorestframework==3.14.0
 django-cors-headers==4.3.1
-requests==2.31.0
+asgiref>=3.7.0
+
+# Database
 psycopg2-binary==2.9.9
+redis==5.0.4
+django-redis==5.3.0
+
+# Environment & Configuration
 python-dotenv==1.0.0
+requests==2.31.0
 schedule==1.2.0
 
-# AWS SDK for Python
+# AWS SDK
 boto3==1.34.131
 botocore==1.34.131
 
 # Production WSGI Server
 gunicorn==21.2.0
 
-# Monitoring (optional)
+# Monitoring & Observability
 sentry-sdk[django]==1.32.0
 
-# Data Analysis & Stock Market (for stocks app)
+# OpenTelemetry - Core
+opentelemetry-api>=1.27.0
+opentelemetry-sdk>=1.27.0
+opentelemetry-semantic-conventions>=0.48b0
+
+# OpenTelemetry - Instrumentation
+opentelemetry-instrumentation>=0.48b0
+opentelemetry-instrumentation-django>=0.48b0
+opentelemetry-instrumentation-psycopg2>=0.48b0
+opentelemetry-instrumentation-redis>=0.48b0
+opentelemetry-instrumentation-requests>=0.48b0
+opentelemetry-instrumentation-logging>=0.48b0
+
+# OpenTelemetry - Exporters
+opentelemetry-exporter-otlp>=1.27.0
+opentelemetry-exporter-otlp-proto-grpc>=1.27.0
+opentelemetry-exporter-otlp-proto-http>=1.27.0
+
+# AWS OpenTelemetry Integration
+opentelemetry-propagator-aws-xray>=1.0.1
+opentelemetry-sdk-extension-aws>=2.0.2
+
+# Data Analysis & Visualization
 pandas==2.1.4
 numpy==1.26.3
-akshare==1.17.83
-redis==5.0.4
 matplotlib>=3.10.0
 Pillow>=12.0.0
+
+# Stock Market Data
+akshare==1.17.83
+yfinance>=0.2.40
+lightweight-charts>=1.0.0
+
+# AI Services (for Investment Summary generation)
+xai-sdk
+
+# API Documentation & Schema
+drf-spectacular>=0.27.0
 
 # Testing
 pytest>=9.0.1
 pytest-django>=4.11.1
-
-# API Documentation & Schema
-drf-spectacular>=0.27.0

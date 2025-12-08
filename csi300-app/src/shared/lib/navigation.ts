@@ -1,4 +1,4 @@
-// Map of pages that have been migrated to React
+// Map of pages that have been migrated to React (for DEV mode only)
 export const REACT_PAGES: Record<string, string> = {
   'index.html': '/src/pages/index/index.html',
   'browser.html': '/src/pages/browser/index.html',
@@ -12,19 +12,20 @@ export function resolveLink(path: string): string {
     return path;
   }
 
-  // In dev mode, check if this page has been migrated to React
-  // @ts-ignore
-  const isDev = import.meta.env.DEV;
+  // Use MODE to determine environment (more reliable than DEV)
+  // @ts-ignore  
+  const mode = import.meta.env.MODE;
+  const isDevMode = mode === 'development';
   
   // Remove query params for matching
   const [basePath, query] = path.split('?');
   
-  if (isDev && REACT_PAGES[basePath]) {
+  // DEV mode: use Vite dev server paths for migrated React pages
+  if (isDevMode && REACT_PAGES[basePath]) {
     return `${REACT_PAGES[basePath]}${query ? '?' + query : ''}`;
   }
-
-  // For production or non-migrated pages, use the original path
-  // In production build, we flatten the structure so browser.html is at root
+  
+  // PRODUCTION mode: use flattened paths at root
   return `/${path}`;
 }
 
