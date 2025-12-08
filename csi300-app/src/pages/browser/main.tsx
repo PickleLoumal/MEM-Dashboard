@@ -45,9 +45,10 @@ type Company = {
 // Default columns derived from columnManifest
 const DEFAULT_COLUMNS = columnManifest.columns.filter(col => col.defaultVisible);
 
-const API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8001').replace(/\/$/, '');
-const FILTER_ENDPOINT = '/api/csi300/api/companies/filter_options/';
-const COMPANIES_ENDPOINT = '/api/csi300/api/companies/';
+// 生产环境使用 /api（CloudFront 代理 /api/* -> ALB），开发环境默认 localhost:8001
+const API_BASE = (import.meta.env.VITE_API_BASE ?? (import.meta.env.MODE === 'development' ? 'http://localhost:8001' : '/api')).replace(/\/$/, '');
+const FILTER_ENDPOINT = '/csi300/api/companies/filter_options/';
+const COMPANIES_ENDPOINT = '/csi300/api/companies/';
 const SEARCH_DEBOUNCE_MS = 300;
 
 function buildFilterOptionsUrl(params?: Record<string, string>) {

@@ -1,11 +1,12 @@
 import { InvestmentSummary } from './types';
 import { logger } from '@shared/lib/logger';
 
-const API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8001').replace(/\/$/, '');
+// 生产环境使用 /api（CloudFront 代理 /api/* -> ALB），开发环境默认 localhost:8001
+const API_BASE = (import.meta.env.VITE_API_BASE ?? (import.meta.env.MODE === 'development' ? 'http://localhost:8001' : '/api')).replace(/\/$/, '');
 
 export async function fetchInvestmentSummary(companyId: string): Promise<InvestmentSummary> {
   const log = logger.startTrace().withContext({ companyId, operation: 'fetchInvestmentSummary' });
-  const url = `${API_BASE}/api/csi300/api/companies/${companyId}/investment_summary/`;
+  const url = `${API_BASE}/csi300/api/companies/${companyId}/investment_summary/`;
   
   log.info(`Fetching summary`, { url });
 
@@ -54,7 +55,7 @@ export interface GenerateSummaryResponse {
 
 export async function generateInvestmentSummary(companyId: string): Promise<GenerateSummaryResponse> {
   const log = logger.startTrace().withContext({ companyId, operation: 'generateInvestmentSummary' });
-  const url = `${API_BASE}/api/csi300/api/generate-summary/`;
+  const url = `${API_BASE}/csi300/api/generate-summary/`;
   
   log.info(`Triggering generation`, { url });
 

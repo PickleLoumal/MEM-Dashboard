@@ -16,8 +16,6 @@ MEM Dashboard/
 │       └── deploy-ecs.yml                        # ECS automated deployment pipeline
 │
 └── aws-deployment/                               # AWS deployment core directory
-    ├── requirements-aws.txt                      # AWS-specific Python dependencies
-    │
     ├── config/                                   # Environment configuration
     │   └── environment.env                       # Environment variables configuration
     │
@@ -62,7 +60,6 @@ MEM Dashboard/
 
 ### Configuration Management Layer
 - **config/environment.env** - Unified environment variable management
-- **requirements-aws.txt** - AWS cloud-specific dependencies
 
 This architecture implements **Infrastructure as Code (IaC)** and **DevOps best practices**, supporting one-click deployment, auto-scaling, and zero-downtime updates.
 
