@@ -1,380 +1,141 @@
-# MEM Dashboard - Macroeconomic Indicator Platform
+# ALFIE Dashboards
 
-[![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://python.org)
-[![Django](https://img.shields.io/badge/Django-4.2.7-green.svg)](https://djangoproject.com)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-blue.svg)](https://postgresql.org)
+A unified codebase containing two data-rich dashboards backed by a common Django + PostgreSQL API:
 
+1. **MEM Dashboard** – macroeconomic intelligence with BEA and FRED coverage.
+2. **Chinese Stock Dashboard** – CSI300 company and stock-scoring experience delivered via a modern React frontend.
 
-> A comprehensive web-based dashboard for monitoring and analyzing macroeconomic indicators, featuring real-time data visualization, PostgreSQL database integration, and Django REST Framework.
-
-## Features
-
-- **Real-time Economic Data**: Live updates from FRED and BEA APIs
-- **Interactive Dashboard**: Dynamic visualization with responsive design  
-- **PostgreSQL Integration**: Persistent data storage and fast queries
-- **Django REST API**: Robust backend with comprehensive endpoints
-- **Multi-indicator Support**: GDP, CPI, Unemployment, Housing, Money Supply
-- **Cloud Deployment**: AWS ECS deployment with Docker
-
-## Database Architecture
-
-### **Database Configuration**
-- **Database**: PostgreSQL 12+
-- **Name**: `mem_dashboard`
-- **Connection**: Django ORM + psycopg2
-- **Host**: `localhost:5432` (configurable via environment variables)
-
-### **Database Schema Overview**
-
-```
-+------------------+    +------------------+    +------------------+
-|  FRED Tables     |    |  BEA Tables      |    |  Django Tables   |
-+------------------+    +------------------+    +------------------+
-| fred_indicators  |    | bea_indicators   |    | auth_user        |
-| fred_series_info |    | bea_series_info  |    | django_sessions  |
-|                  |    | bea_indicator_   |    | django_migrations|
-|                  |    | configs          |    | django_admin_log |
-+------------------+    +------------------+    +------------------+
-         |                        |                        |
-         |                        |                        |
-         +------------------------+------------------------+
-                                  |
-                         +------------------+
-                         | Legacy Tables    |
-                         +------------------+
-                         | debt_to_gdp      |
-                         | economic_        |
-                         | indicators       |
-                         +------------------+
-```
-
-### **Core Database Tables**
-
-#### **1. FRED Economic Indicators (`fred_indicators`)**
-```sql
-Table Structure:
-- id (SERIAL PRIMARY KEY)
-- series_id (VARCHAR(50)) - FRED Series ID (M2SL, UNRATE, etc.)
-- indicator_name (VARCHAR(200)) - Human readable name
-- indicator_type (VARCHAR(50)) - Category (monetary, employment, etc.)
-- date (DATE) - Data date
-- value (DECIMAL(15,4)) - Indicator value
-- source (VARCHAR(100)) - Data source (FRED)
-- unit (VARCHAR(50)) - Measurement unit
-- frequency (VARCHAR(20)) - Data frequency (monthly, quarterly)
-- metadata (JSONB) - Additional metadata
-- created_at, updated_at (TIMESTAMP)
-
-Indexes:
-- idx_fred_indicators_series_date (series_id, date DESC)
-- idx_fred_indicators_type_date (indicator_type, date DESC)
-- UNIQUE constraint on (series_id, date)
-```
-
-#### **2. BEA Economic Indicators (`bea_indicators`)**
-```sql
-Table Structure:
-- id (SERIAL PRIMARY KEY)
-- series_id (VARCHAR(50)) - BEA Series ID
-- indicator_name (VARCHAR(200)) - Human readable name
-- indicator_type (VARCHAR(50)) - Category type
-- table_name (VARCHAR(50)) - BEA table reference
-- line_number (VARCHAR(10)) - BEA line reference
-- date (DATE) - Data date
-- time_period (VARCHAR(10)) - BEA time format (2025Q1)
-- value (DECIMAL(15,4)) - Indicator value
-- source (VARCHAR(100)) - Data source (BEA)
-- unit (VARCHAR(50)) - Measurement unit
-- frequency (VARCHAR(20)) - Data frequency
-- dataset_name (VARCHAR(50)) - BEA dataset name
-- metadata (JSONB) - Additional metadata
-- created_at, updated_at (TIMESTAMP)
-
-Indexes:
-- idx_bea_indicators_series_date (series_id, date DESC)
-- idx_bea_indicators_table (table_name, line_number)
-- UNIQUE constraint on (series_id, time_period)
-```
-
-#### **3. BEA Dynamic Configuration (`bea_indicator_configs`)**
-```sql
-Table Structure:
-- series_id (VARCHAR(50) PRIMARY KEY) - Unique BEA series ID
-- name (VARCHAR(200)) - Configuration name
-- description (TEXT) - Detailed description
-- table_name (VARCHAR(50)) - BEA table reference
-- line_description (VARCHAR(500)) - BEA line description for matching
-- line_number (INTEGER) - BEA line number
-- units (VARCHAR(100)) - Measurement units
-- frequency (VARCHAR(20)) - Data frequency
-- years (VARCHAR(100)) - Year range configuration
-- category (VARCHAR(100)) - Indicator category
-- fallback_value (DECIMAL(15,4)) - Default fallback value
-- api_endpoint (VARCHAR(100) UNIQUE) - API endpoint path
-- priority (INTEGER) - Processing priority
-- is_active (BOOLEAN) - Enable/disable indicator
-- auto_fetch (BOOLEAN) - Automatic data fetching
-- dataset_name (VARCHAR(50)) - BEA dataset name
-- additional_config (JSONB) - Extended JSON configuration
-- created_at, updated_at (TIMESTAMP)
-- created_by, updated_by (VARCHAR(100)) - Audit fields
-```
-
-#### **4. Series Information Tables**
-```sql
-fred_series_info:
-- series_id (VARCHAR(50) PRIMARY KEY)
-- title (VARCHAR(200)) - Official FRED title
-- category (VARCHAR(100)) - FRED category
-- units (VARCHAR(50)) - Measurement units
-- frequency (VARCHAR(20)) - Data frequency
-- seasonal_adjustment (VARCHAR(50)) - Seasonal adjustment info
-- notes (TEXT) - Additional notes
-- last_updated (TIMESTAMP)
-
-bea_series_info:
-- series_id (VARCHAR(50) PRIMARY KEY)
-- title (VARCHAR(200)) - Official BEA title
-- category (VARCHAR(100)) - BEA category
-- table_name (VARCHAR(50)) - BEA table reference
-- line_number, line_description - BEA line info
-- units, frequency, dataset_name - Data specifications
-- notes (TEXT), last_updated (TIMESTAMP)
-```
-
-### **Data Sources & Coverage**
-
-#### **FRED API Integration**
-- **M2 Money Stock** (`M2SL`) - Monthly, Seasonally Adjusted
-- **M1 Money Stock** (`M1SL`) - Monthly, Seasonally Adjusted  
-- **M2 Velocity** (`M2V`) - Quarterly, Seasonally Adjusted
-- **Monetary Base** (`BOGMBASE`) - Monthly, Seasonally Adjusted
-- **Federal Debt to GDP** (`GFDEGDQ188S`) - Quarterly
-- **Consumer Price Index** (`CPIAUCSL`) - Monthly
-- **Unemployment Rate** (`UNRATE`) - Monthly
-- **Housing Starts** (`HOUST`) - Monthly
-- **Federal Funds Rate** (`FEDFUNDS`) - Monthly
-
-#### **BEA API Integration**
-- **GDP Components** - Quarterly National Accounts
-- **Consumer Spending** - Monthly Personal Consumption
-- **Business Investment** - Quarterly Fixed Assets
-- **Government Spending** - Quarterly Government Accounts
-- **Trade Balance** - Monthly International Trade
-
-### **Database Performance**
-- **Indexed Queries**: All major query patterns are indexed
-- **JSONB Metadata**: Flexible metadata storage with query support
-- **Unique Constraints**: Prevent duplicate data entries
-- **Timestamp Tracking**: Full audit trail for all data changes
-
-## Database Statistics
-
-### **Current Data Volume**
-- **Total Tables**: 12 (4 core economic, 8 Django system tables)
-- **FRED Indicators**: ~2,000+ data points across 9 major series
-- **BEA Indicators**: ~500+ data points across multiple datasets  
-- **Time Range**: Historical data from 1990s to present
-- **Update Frequency**: Real-time via API synchronization
-
-## System Architecture
-
-```
-+-----------------------------------------------------------------------+
-|                         MEM Dashboard System                          |
-|                  Macroeconomic Indicator Platform                     |
-+-----------------------------------------------------------------------+
-
-+----------------+    HTTP/REST API    +-----------------+    SQL    +----------------+
-|                | <-----------------> |                 | <-------> |                |
-| Frontend Layer |                     | Backend Layer   |           | Database Layer |
-|                |                     |                 |           |                |
-| HTML/CSS/JS    |                     | Django API      |           | PostgreSQL     |
-|                |                     |                 |           |                |
-| - Dashboard UI |                     | - REST Endpoints|           | - FRED Tables  |
-| - Data Viz     |                     | - Data Process  |           | - BEA Tables   |
-| - User Input   |                     | - Business Logic|           | - Indicators   |
-| - API Client   |                     | - Admin Panel   |           | - Metadata     |
-+----------------+                     +------------—----+           +----------------+
-         |                                      |
-         |                                      |
-         |               +----------------------------------+
-         |               |        External APIs             |
-         |               |                                  |
-         +---------------+ - FRED API (Federal Reserve)     |
-                         | - BEA API  (Bureau of Analysis)  |
-                         |                                  |
-                         | - Real-time Indicators           |
-                         | - Historical Data                |
-                         | - Data Synchronization           |
-                         +----------------------------------+
-
-+-----------------------------------------------------------------------+
-|                         Technology Stack                              |
-+----------------+----------------+----------------+--------------------+
-|  Frontend Tech |  Backend Tech  | Database Tech  | Deployment Tech    |
-+----------------+----------------+----------------+--------------------+
-| - HTML5/CSS3   | - Django 4.2.7 | - PostgreSQL   | - AWS ECS          |
-| - JavaScript   | - Django REST  | - psycopg2     | - Docker           |
-| - Tailwind CSS | - Python 3.13  | - Migrations   | - CloudFormation   |
-| - Responsive   | - CORS Support | - Indexing     | - Shell Scripts    |
-+----------------+----------------+----------------+--------------------+
-```
-
-## Project Structure
-
-```
-MEM Dashboard/
-├── Frontend Entry
-│   ├── index.html                          # Main dashboard page
-│   └── src/pages/index.html                # Page components
-│
-├── Project Configuration
-│   ├── .env.example                        # Environment variables template
-│   ├── .gitignore                          # Git ignore rules
-│   ├── requirements.txt                    # Python dependencies
-│   ├── runtime.txt                         # Python runtime version
-│   ├── pyrightconfig.json                  # Python type checking config
-│   └── README.md                           # Project documentation
-│
-├── API Configuration (config/)
-│   ├── api_config.js                       # Main API config (Django)
-│   ├── api_config_django_only.js           # Django-only configuration
-│   ├── db_config.py                        # Database configuration
-│   └── fred_db_manager.py                  # FRED database manager
-│
-├── Django API (src/django_api/)
-│   ├── manage.py                           # Django management script
-│   ├── bea_management.py                   # BEA management tool
-│   ├── django_requirements.txt             # Django dependencies
-│   │
-│   ├── django_api/                         # Django project config
-│   │   ├── __init__.py                     # Initialization file
-│   │   ├── settings.py                     # Settings file
-│   │   ├── urls.py                         # Main URL routing
-│   │   ├── views.py                        # API overview views
-│   │   ├── wsgi.py                         # WSGI configuration
-│   │   └── asgi.py                         # ASGI configuration
-│   │
-│   ├── fred/                               # FRED data module
-│   │   ├── __init__.py                     # Initialization file
-│   │   ├── models.py                       # FRED data models
-│   │   ├── views.py                        # FRED API views
-│   │   ├── urls.py                         # FRED routing
-│   │   ├── serializers.py                  # Data serialization
-│   │   ├── admin.py                        # Admin configuration
-│   │   ├── apps.py                         # App configuration
-│   │   ├── tests.py                        # Unit tests
-│   │   └── migrations/
-│   │       ├── __init__.py                 # Migration initialization
-│   │       └── 0001_initial.py             # Initial migration
-│   │
-│   ├── bea/                                # BEA data module
-│   │   ├── __init__.py                     # Initialization file
-│   │   ├── models.py                       # BEA data models
-│   │   ├── views.py                        # BEA API views
-│   │   ├── urls.py                         # BEA routing
-│   │   ├── serializers.py                  # Data serialization
-│   │   ├── admin.py                        # Admin configuration
-│   │   ├── apps.py                         # App configuration
-│   │   ├── dynamic_config.py               # Dynamic config management
-│   │   └── indicator_processor.py          # Indicator processor
-│   │
-│   └── indicators/                         # Indicator management module
-│       ├── __init__.py                     # Initialization file
-│       ├── models.py                       # Generic indicator models
-│       ├── views.py                        # Indicator API views
-│       ├── urls.py                         # Indicator routing
-│       ├── admin.py                        # Admin configuration
-│       ├── apps.py                         # App configuration
-│       ├── tests.py                        # Unit tests
-│       └── migrations/
-│           └── __init__.py                 # Migration initialization
-│
-├── Frontend Assets (src/assets/)
-│   ├── css/base/
-│   │   └── main.css                        # Main stylesheet
-│   │
-│   └── js/
-│       ├── core/                           # JavaScript core modules
-│       │   ├── main-dashboard.js           # Main dashboard logic
-│       │   ├── dashboard-init.js           # Initialization script
-│       │   └── navigation.js               # Navigation control
-│       │
-│       ├── utils/                          # Utility library
-│       │   ├── api_client.js               # API client
-│       │   └── money_supply_fix.js         # Money supply fix
-│       │
-│       └── components/                     # UI components
-│           ├── exchange-rate-manager.js    # Exchange rate manager
-│           ├── exchange-rate-display.js    # Exchange rate display component
-│           └── generic-pagination.js       # Generic pagination component
-│
-└── Serverless API (api/)
-    ├── health.py                           # Health check endpoint
-    └── indicators.py                       # Indicator data endpoint
-```
-
-## File Statistics
-
-### **Total Project Files**: 60
-
-- **Python Files**: 39 (Django apps, configurations, API endpoints)
-- **JavaScript Files**: 10 (core modules, utilities, UI components)  
-- **Frontend Files**: 3 (HTML pages, CSS stylesheets)
-- **Configuration Files**: 6 (project config, environment, documentation)
-- **Other Files**: 2 (README.md, .gitignore)
-
-## Quick Start
-
-### Prerequisites
-- Python 3.13+
-- PostgreSQL 12+
-- Modern web browser
-
-### Development Setup
-```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Configure database
-cp config/db_config.py.example config/db_config.py
-
-# Run Django migrations
-cd src/django_api
-python manage.py migrate
-
-# Start development server
-python manage.py runserver 8001
-```
-
-### Deployment
-```bash
-# Deploy to AWS ECS
-cd aws-deployment/scripts
-./deploy-to-ecs.sh
-```
-
-## API Endpoints
-
-### Core Endpoints
-- `/api/health` - System health check
-- `/api/fred/` - FRED economic indicators
-- `/api/bea/` - BEA economic data
-- `/api/indicators/` - Generic indicator management
-
-### Django Admin
-- `/admin/` - Django admin panel for data management
-
-## Tech Stack
-
-- **Backend**: Django 4.2.7, Django REST Framework, Python 3.13
-- **Database**: PostgreSQL with psycopg2
-- **Frontend**: HTML5, CSS3, JavaScript, Tailwind CSS
-- **Deployment**: AWS ECS with Docker
-- **APIs**: FRED API, BEA API integration
+The repository ships both frontends, the shared backend services, and the deployment artifacts required to run locally or in cloud environments.
 
 ---
 
-**License**: Educational Research License  
-**Last Updated**: June 2025
+## Architecture at a Glance
+
+- **Backend**: Django 4.2 REST API in `src/django_api` with apps for BEA, FRED (US/JP), CSI300 companies, stock scoring, policy updates, and shared content.
+- **Database**: PostgreSQL (`mem_dashboard`) storing macroeconomic series, BEA configs, CSI300 companies, stock scores, and Django system tables.
+- **Frontends**:
+  - **MEM Dashboard**: static HTML/CSS/JS pages under `src/pages` and `src/assets`, deployable to S3/CloudFront or any static host.
+  - **Chinese Stock Dashboard**: React + Vite app in `csi300-app` that consumes the Django API; legacy static CSI300 pages are preserved for backwards compatibility.
+- **Data ingest & scoring**: management commands and scripts under `src/django_api/*/management` plus `scripts/active` for daily stock scoring.
+
+Directory highlights:
+
+```
+src/
+  django_api/           # Django project (API, models, services, management commands)
+  assets/, pages/       # MEM Dashboard static assets and HTML entry points
+csi300-app/             # React/Vite Chinese Stock Dashboard (shared API client)
+config/                 # Frontend configuration (API endpoints, manifests)
+aws-deployment/         # Deployment scripts (e.g., S3/CloudFront sync)
+data/, tests/, api/     # Supporting datasets, pytest suites, and API schema
+```
+
+---
+
+## Backend (Django API)
+
+### Features
+- **Macroeconomic data**: BEA and FRED ingestion, indicator metadata, and REST endpoints for US and JP coverage.
+- **Chinese equity data**: CSI300 company fundamentals, intraday/historical pricing, VWAP utilities, and daily stock scoring (`stocks` app).
+- **Policy updates**: Federal Register integration (`policy_updates` app).
+- **API documentation**: DRF Spectacular schema with OpenAPI generation (consumed by the React app via `schema.yaml`).
+
+### Configuration
+- Python 3.13+ recommended.
+- Primary settings in `src/django_api/django_api/settings.py` with dotenv support for overrides (`.env.local`, `.env`). Key variables:
+  - `DJANGO_SECRET_KEY` – secret key for production.
+  - `DEBUG` – enable/disable debug mode (default `True`).
+  - `DATABASE_URL` equivalent vars: `NAME`, `USER`, `PASSWORD`, `HOST`, `PORT` under `DATABASES['default']` (defaults target `mem_dashboard` on localhost:5432).
+  - `CORS_*` – permissive defaults for local React/static origins.
+
+### Local Development
+1. **Install dependencies**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+2. **Run migrations (if needed)**
+   ```bash
+   cd src/django_api
+   python manage.py migrate
+   ```
+3. **Start the API**
+   ```bash
+   cd src/django_api
+   python manage.py runserver 0.0.0.0:8000
+   ```
+   Swagger/OpenAPI can be exposed through DRF Spectacular if routed (see `django_api/urls.py`).
+
+### Key Endpoints (selected)
+- **CSI300/Stocks** (`src/django_api/stocks`):
+  - `GET /api/stocks/list/` – CSI300 company tickers and metadata.
+  - `GET /api/stocks/intraday/?symbol=...` – 1m intraday data + VWAP context.
+  - `GET /api/stocks/history/?symbol=...` – historical OHLCV with interval/period options.
+  - `POST /api/stocks/score/` – trigger daily scoring for a symbol (imports `scripts/active/daily_score_calculator_db.py` or runs as a subprocess fallback).
+- **CSI300 Companies** (`src/django_api/csi300`): company details, filter/search endpoints consumed by both CSI300 frontends.
+- **FRED/BEA**: macro indicator retrieval and configuration management across US/JP namespaces.
+- **Policy Updates**: recent federal register entries and search utilities.
+
+> Tip: inspect each app’s `urls.py` and DRF `views.py` for the full list of available routes and serializer contracts.
+
+---
+
+## MEM Dashboard Frontend (Static)
+
+- Location: `src/pages` (entry pages) with shared assets in `src/assets` and API configs in `config/`.
+- Deployment: `aws-deployment/frontend/deploy-frontend.sh` syncs `src/` to S3/CloudFront; paths are relative so the bundle can also be served from any static host.
+- Usage: open `src/pages/US.html` (or `index.html`) for the US macro view; static JS pulls data from the Django API using the manifests under `config/`.
+
+---
+
+## Chinese Stock Dashboard Frontend (React)
+
+### Features
+- CSI300 company browser, detail views, filters, and mobile-responsive layouts.
+- REST integration via generated axios client (`npm run generate-api` uses `schema.yaml`).
+- Modern toolchain: React 19, Vite, TailwindCSS, ESLint/Prettier, Vitest + Testing Library.
+
+### Local Development
+```bash
+cd csi300-app
+npm install
+npm run dev        # Vite dev server (defaults to :5173)
+```
+Set environment in `.env.local` (or `.env`) with at least:
+```bash
+VITE_API_BASE=http://localhost:8000
+VITE_APP_NAME="Chinese Stock Dashboard"
+```
+
+### Production Build
+```bash
+cd csi300-app
+npm run build
+```
+Artifacts are emitted to `dist/` (React outputs into `dist/react/` alongside legacy static assets). Deploy the `csi300-app` directory to your static host or pair with the Django backend behind the same domain.
+
+### Legacy CSI300 Pages
+Legacy static pages (`browser.html`, `detail.html`, `landing.html`, etc.) remain under `csi300-app/legacy` and root-level HTML for compatibility; they load configuration from `config/` and talk to the same Django endpoints.
+
+---
+
+## Testing
+- **Backend**: `pytest` or `python manage.py test` from `src/django_api`.
+- **Frontend (React)**: `npm run lint`, `npm run typecheck`, and `npm run test`/`vitest` inside `csi300-app`.
+
+---
+
+## Deployment Notes
+- **Static Frontends**: suitable for S3/CloudFront, Netlify, or any static server; ensure `config/api_config.js` and `.env` values point to the live API.
+- **Django API**: run under Gunicorn or another WSGI host; containerization supported via `dockerfile.aw` and `runtime.txt`. Configure environment variables and database connectivity accordingly.
+- **Shared Database**: both dashboards rely on the same PostgreSQL schema; migrations live with each Django app under `src/django_api/*/migrations`.
+
+---
+
+## Support & Troubleshooting
+- Verify PostgreSQL connectivity and that migrations have run.
+- Ensure CORS settings cover your frontend origin.
+- For CSI300 scoring, confirm `scripts/active/daily_score_calculator_db.py` is available and that market data dependencies (e.g., AkShare) are installed.
+- Check browser dev tools network tab to validate API responses for both dashboards.
+
