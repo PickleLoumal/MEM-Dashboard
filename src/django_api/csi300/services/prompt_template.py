@@ -9,7 +9,7 @@ import os
 # AI 模型配置 (从环境变量读取，支持 .env 文件)
 # ==========================================
 AI_CONFIG = {
-    "model": os.environ.get("XAI_MODEL", "grok-3-mini"),
+    "model": os.environ.get("XAI_MODEL", "grok-4-1-fast-non-reasoning"),
     "system_prompt": os.environ.get("XAI_SYSTEM_PROMPT", "You are Grok, a highly intelligent, helpful AI assistant."),
     "timeout": int(os.environ.get("XAI_TIMEOUT", "120")),
     "max_retries": int(os.environ.get("XAI_MAX_RETRIES", "3")),
@@ -39,7 +39,22 @@ PROMPT_INSTRUCTIONS = {
             "Industry reports (McKinsey, Deloitte, EY)",
             "Analyst notes (Piper Sandler, Goldman Sachs)"
         ],
-        "rules": ["Provide source links", "Use most updated data"]
+        "rules": [
+            "Use ONLY real, accessible URLs (NO placeholders or guessed URLs)",
+            "Verify URL structure and domain validity",
+            "Versify the URL response is 200 OK",
+            "Versify the URL is not a 404 Not Found",
+            "Versify the URL is not a 403 Forbidden",
+            "Versify the URL is not a 401 Unauthorized",
+            "Versify the URL is not a 400 Bad Request",
+            "Versify the URL is not a 500 Internal Server Error",
+            "Versify the URL is not a 503 Service Unavailable",
+            "Versify the URL is not a 502 Bad Gateway",
+            "Use most updated data",
+            "Must be the exact same sources you have used in the analysis",
+            "Do not use any other sources that are not in the analysis",
+            "When Doing the analysis, must using the source that you have verified"
+        ]
     },
     
     "constraints": {
@@ -67,7 +82,7 @@ PROMPT_INSTRUCTIONS = {
                     "operating_margin": "X.X%"
                 },
                 "divisions": [
-                    {"name": "str", "description": "str", "sales_pct": "XX%", "gross_margin": "XX%"}
+                    {"name": "str", "description": "str", "sales_pct": "XX%", "gross_margin": "XX%", "profit_pct": "XX%"}
                 ]
             },
             "json_rules": ["Include ALL divisions", "Use null for unknowns", "REQUIRED"]
@@ -120,7 +135,7 @@ Include: Date, stock price (previous close), market cap, recommended action (Buy
 - Include 2-sentence explanation of each product's use to major customer segments
 - Highlight strengths (Technology, Brand, Efficiency) and challenges (Market Pressures, Risks)
 - Use FY data or YTD; specify fiscal year-end
-- For each division: include sales % of total and gross profit margin if available
+- For each division: include sales % of total, gross profit margin, and % of operating profit (profit_pct)
 
 **⚠️ CRITICAL - JSON BLOCK PLACEMENT RULES:**
 1. **This JSON block MUST ONLY appear IMMEDIATELY after the Business Overview narrative paragraph**
@@ -140,8 +155,8 @@ Include: Date, stock price (previous close), market cap, recommended action (Buy
     "operating_margin": "X.X%"
   }},
   "divisions": [
-    {{"name": "Division 1", "description": "products/services", "sales_pct": "XX%", "gross_margin": "XX%"}},
-    {{"name": "Division 2", "description": "products/services", "sales_pct": "XX%", "gross_margin": "XX%"}}
+    {{"name": "Division 1", "description": "products/services", "sales_pct": "XX%", "gross_margin": "XX%", "profit_pct": "XX%"}},
+    {{"name": "Division 2", "description": "products/services", "sales_pct": "XX%", "gross_margin": "XX%", "profit_pct": "XX%"}}
   ]
 }}
 ```
@@ -262,7 +277,37 @@ Important industry ratios: (a) company values, (b) vs industry avg, (c) trends
 
 ---
 
-**Output Format:** Markdown with bullet points for sections 3-12. Cite sources at end.
+## SECTION 16: Sources
+
+**⚠️ CRITICAL - FIXED FORMAT REQUIRED:**
+
+List all sources used in THIS EXACT FORMAT (one per line):
+```
+Source Title | https://example.com/full-url
+```
+
+**Example:**
+```
+Company Annual Report 2024 | https://company.com/investor-relations/annual-report-2024
+Goldman Sachs Analyst Note | https://goldmansachs.com/research/company-analysis
+McKinsey Industry Report | https://mckinsey.com/industries/report-2025
+SEC/CSRC Filings | https://sec.gov/cgi-bin/browse-edgar?company=TICKER
+Industry Association Data | https://industry-association.org/data/2025
+```
+
+**Rules:**
+- ONLY use existing, accessible URLs.
+- DO NOT use placeholders or guessed URLs.
+- Verify the URL structure (e.g., proper SEC filing links, official IR pages).
+- If a specific direct link is unavailable, use the company's main Investor Relations page.
+- Format: `Title | URL` (pipe separator)
+- One source per line
+- Include diverse source types: company filings, analyst reports, industry reports
+- Must be the exact same sources you have used in the analysis
+- Do not use any other sources that are not in the analysis
+---
+
+**Output Format:** Markdown with bullet points for sections 3-12. Sources in Section 16 with fixed format.
 """
 
 
@@ -308,7 +353,7 @@ Include: Date, stock price (previous close), market cap, recommended action (Buy
 - Include 2-sentence explanation of each product's use to major customer segments
 - Highlight strengths (Technology, Brand, Efficiency) and challenges (Market Pressures, Risks)
 - Use FY data or YTD; specify fiscal year-end
-- For each division: include sales % of total and gross profit margin if available
+- For each division: include sales % of total, gross profit margin, and % of operating profit (profit_pct)
 
 **⚠️ CRITICAL - JSON BLOCK PLACEMENT RULES:**
 1. **This JSON block MUST ONLY appear IMMEDIATELY after the Business Overview narrative paragraph**
@@ -328,8 +373,8 @@ Include: Date, stock price (previous close), market cap, recommended action (Buy
     "operating_margin": "X.X%"
   }},
   "divisions": [
-    {{"name": "Division 1", "description": "products/services", "sales_pct": "XX%", "gross_margin": "XX%"}},
-    {{"name": "Division 2", "description": "products/services", "sales_pct": "XX%", "gross_margin": "XX%"}}
+    {{"name": "Division 1", "description": "products/services", "sales_pct": "XX%", "gross_margin": "XX%", "profit_pct": "XX%"}},
+    {{"name": "Division 2", "description": "products/services", "sales_pct": "XX%", "gross_margin": "XX%", "profit_pct": "XX%"}}
   ]
 }}
 ```
@@ -450,6 +495,45 @@ Important industry ratios: (a) company values, (b) vs industry avg, (c) trends
 
 ---
 
-**Output Format:** Markdown with bullet points for sections 3-12. Cite sources at end.
+## SECTION 16: Sources
+
+**⚠️ CRITICAL - FIXED FORMAT REQUIRED:**
+
+List all sources used in THIS EXACT FORMAT (one per line):
+```
+Source Title | https://example.com/full-url
+```
+
+**Example:**
+```
+Company Annual Report 2024 | https://company.com/investor-relations/annual-report-2024
+Goldman Sachs Analyst Note | https://goldmansachs.com/research/company-analysis
+McKinsey Industry Report | https://mckinsey.com/industries/report-2025
+SEC/CSRC Filings | https://sec.gov/cgi-bin/browse-edgar?company=TICKER
+Industry Association Data | https://industry-association.org/data/2025
+```
+
+**Rules:**
+- ONLY use existing, accessible URLs.
+- DO NOT use placeholders or guessed URLs.
+- Verify the URL structure (e.g., proper SEC filing links, official IR pages)
+- Verify the URL response is 200 OK
+- Verify the URL is not a 404 Not Found
+- Verify the URL is not a 403 Forbidden
+- Verify the URL is not a 401 Unauthorized
+- Verify the URL is not a 400 Bad Request
+- Verify the URL is not a 500 Internal Server Error
+- Verify the URL is not a 503 Service Unavailable
+- Verify the URL is not a 502 Bad Gateway
+- Format: `Title | URL` (pipe separator)
+- One source per line
+- Include diverse source types: company filings, analyst reports, industry reports
+- Must be the exact same sources you have used in the analysis
+- Do not use any other sources that are not in the analysis
+- When Doing the analysis, must using the source that you have verified
+
+---
+
+**Output Format:** Markdown with bullet points for sections 3-12. Sources in Section 16 with fixed format.
 """
 

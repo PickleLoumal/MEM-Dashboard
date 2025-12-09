@@ -78,8 +78,10 @@ def get_span_exporter():
         except ImportError as e:
             logger.warning(f"AWS X-Ray exporter not available: {e}, falling back to OTLP")
     
-    # OTLP exporter (generic)
-    if OTEL_EXPORTER_ENDPOINT:
+    # OTLP exporter (only in production or when explicitly configured)
+    # Skip OTLP in development to avoid blocking on non-existent collector
+    use_otlp = os.getenv('OTEL_USE_OTLP', 'false').lower() == 'true'
+    if use_otlp and OTEL_EXPORTER_ENDPOINT:
         try:
             if OTEL_EXPORTER_PROTOCOL == 'http/protobuf':
                 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter

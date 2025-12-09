@@ -36,10 +36,20 @@ from xai_sdk.chat import user, system
 import yfinance as yf
 
 # 导入结构化 Prompt 模板和 AI 配置
-from .prompt_template import PROMPT_TEMPLATE, AI_MODEL, AI_SYSTEM_PROMPT, AI_TIMEOUT, AI_MAX_RETRIES
-
-# Django Models (延迟导入以避免循环依赖)
-from ..models import CSI300Company, CSI300InvestmentSummary
+try:
+    from .prompt_template import PROMPT_TEMPLATE, AI_MODEL, AI_SYSTEM_PROMPT, AI_TIMEOUT, AI_MAX_RETRIES
+    # Django Models (延迟导入以避免循环依赖)
+    from ..models import CSI300Company, CSI300InvestmentSummary
+except ImportError:
+    # Fallback for standalone script execution (when run directly)
+    try:
+        from prompt_template import PROMPT_TEMPLATE, AI_MODEL, AI_SYSTEM_PROMPT, AI_TIMEOUT, AI_MAX_RETRIES
+    except ImportError:
+        pass
+    
+    # Models will be initialized in __main__ after django.setup()
+    CSI300Company = None
+    CSI300InvestmentSummary = None
 
 # ==========================================
 # 优化 1: 预编译正则表达式 (模块级别，只编译一次)
@@ -64,9 +74,17 @@ SECTION_PATTERNS = {
     'forecast_outlook': re.compile(rf'(?:^|\n)#+?\s*{SECTION_PREFIX}Forecast and outlook.*?(?=\n#|\Z)', re.IGNORECASE | re.DOTALL),
     'investment_firms': re.compile(rf'(?:^|\n)#+?\s*{SECTION_PREFIX}Leading Investment Firms.*?(?=\n#|\Z)', re.IGNORECASE | re.DOTALL),
     'industry_ratio': re.compile(rf'(?:^|\n)#+?\s*{SECTION_PREFIX}Industry Ratio.*?(?=\n#|\Z)', re.IGNORECASE | re.DOTALL),
-    'key_takeaways': re.compile(rf'(?:^|\n)#+?\s*{SECTION_PREFIX}Key Takeaways.*?(?=\n#|\Z)', re.IGNORECASE | re.DOTALL),
+    'key_takeaways': re.compile(rf'(?:^|\n)#+?\s*{SECTION_PREFIX}Key Takeaways.*?(?=\n#+?\s*(?:SECTION\s*\d+\s*:\s*)?Sources|\Z)', re.IGNORECASE | re.DOTALL),
+    # Sources pattern - matches "## SECTION 16: Sources", "## Sources", "Sources:", "Sources Cited:"
+    'sources': re.compile(rf'(?:^|\n)#+?\s*(?:SECTION\s*\d+\s*:\s*)?Sources?\s*(?:Cited)?\s*:?\s*\n(.*?)(?:\n---|\Z)', re.IGNORECASE | re.DOTALL),
 }
 HEADER_CLEANUP_PATTERN = re.compile(r'^#+.*?\n')
+
+# Pattern to extract sources from key_takeaways content (when embedded)
+SOURCES_IN_CONTENT_PATTERN = re.compile(
+    r'(?:Sources?\s*Cited?\s*:?\s*\n)(.*?)(?:\n\n\((?:Word|Total word)\s+count|$)',
+    re.IGNORECASE | re.DOTALL
+)
 
 # Django 环境由 Django 框架自动管理
 # CSI300Company, CSI300InvestmentSummary 已在顶部导入
@@ -99,10 +117,36 @@ def extract_ai_content_sections(content):
                 text = HEADER_CLEANUP_PATTERN.sub('', text).strip()
                 if key == 'recommended_action':
                     text = match.group(1)
+                elif key == 'sources':
+                    # For sources, we want only the captured group (the actual sources list)
+                    text = match.group(1).strip() if match.lastindex and match.group(1) else text
                 sections[key] = text
         except Exception:
             sections[key] = ""
     return sections
+
+
+def extract_sources_from_key_takeaways(key_takeaways: str) -> tuple[str, str]:
+    """
+    从 key_takeaways 内容中提取 Sources 部分。
+    
+    Returns:
+        tuple: (cleaned_key_takeaways, extracted_sources)
+    """
+    if not key_takeaways:
+        return '', ''
+    
+    match = SOURCES_IN_CONTENT_PATTERN.search(key_takeaways)
+    if match:
+        sources = match.group(1).strip()
+        # Remove sources section and word count from key_takeaways
+        cleaned = key_takeaways[:match.start()].strip()
+        # Also clean up any trailing word count notes
+        cleaned = re.sub(r'\((?:Word|Total word)\s+count:.*?\)$', '', cleaned, flags=re.IGNORECASE).strip()
+        return cleaned, sources
+    
+    # No embedded sources found
+    return key_takeaways, ''
 
 
 # ==========================================
@@ -468,6 +512,19 @@ async def process_company_ai(
         raw_business_overview = ai_sections.get('business_overview', '') or ''
         structured_business_overview = parse_business_overview_to_json(raw_business_overview, company_name)
         
+        # Extract sources: first try dedicated sources section, then from key_takeaways
+        raw_key_takeaways = ai_sections.get('key_takeaways', '') or ''
+        raw_sources = ai_sections.get('sources', '') or ''
+        
+        if raw_sources:
+            # Sources found in dedicated section
+            cleaned_key_takeaways = raw_key_takeaways
+            final_sources = raw_sources
+        else:
+            # Try to extract sources from key_takeaways
+            cleaned_key_takeaways, extracted_sources = extract_sources_from_key_takeaways(raw_key_takeaways)
+            final_sources = extracted_sources
+        
         summary_data = {
             'report_date': today_date,
             'stock_price_previous_close': safe_decimal(stock_price_value),
@@ -487,8 +544,8 @@ async def process_company_ai(
             'investment_firms_views': ai_sections.get('investment_firms', '') or '',
             'industry_ratio_analysis': ai_sections.get('industry_ratio', '') or '',
             'tariffs_supply_chain_risks': '',
-            'key_takeaways': ai_sections.get('key_takeaways', '') or '',
-            'sources': ''
+            'key_takeaways': cleaned_key_takeaways,
+            'sources': final_sources
         }
 
         db_created = await save_summary_to_db_async(company_obj, summary_data)

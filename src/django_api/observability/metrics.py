@@ -38,8 +38,10 @@ def get_metric_exporter():
     """
     Get the appropriate metric exporter based on configuration.
     """
-    # OTLP exporter (works with AWS ADOT collector for CloudWatch)
-    if USE_CLOUDWATCH or OTEL_EXPORTER_ENDPOINT:
+    # OTLP exporter (only in production or when explicitly configured)
+    # Skip OTLP in development to avoid blocking on non-existent collector
+    use_otlp = os.getenv('OTEL_USE_OTLP', 'false').lower() == 'true'
+    if use_otlp and (USE_CLOUDWATCH or OTEL_EXPORTER_ENDPOINT):
         try:
             if OTEL_EXPORTER_PROTOCOL == 'http/protobuf':
                 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
