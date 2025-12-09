@@ -3,7 +3,7 @@ import { GlobalNav } from '@shared/components/GlobalNav';
 import { fetchInvestmentSummary, generateInvestmentSummary } from './api';
 import { InvestmentSummary } from './types';
 import { SummarySection } from './components/SummarySection';
-import { SourcesSection } from './components/SourcesSection';
+import { SourcesSection, SourcesBadge } from './components/SourcesSection';
 import { BusinessOverviewSection } from './components/BusinessOverviewSection';
 import { logger } from '@shared/lib/logger';
 import '@shared/styles/main.css';
@@ -17,6 +17,7 @@ export default function App() {
   const [companyNameParam, setCompanyNameParam] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [justGenerated, setJustGenerated] = useState(false);
 
   useEffect(() => {
     const log = logger.startTrace();
@@ -61,7 +62,6 @@ export default function App() {
 
   const handleBackToDetail = () => {
     if (companyId) {
-      // In dev mode, this works via vite rewrite. In prod, it works via simple link.
       window.location.href = `/detail.html?id=${companyId}`;
     } else {
       window.location.href = '/browser.html';
@@ -76,31 +76,34 @@ export default function App() {
     
     setGenerating(true);
     setGenerateError(null);
+    setJustGenerated(false);
     
     try {
       const result = await generateInvestmentSummary(companyId);
       
       if (result.status === 'success') {
         log.info('Generation success, refreshing data');
-        // 重新获取更新后的数据
         const updatedSummary = await fetchInvestmentSummary(companyId);
         setData(updatedSummary);
         setGenerateError(null);
+        setGenerating(false);
+        setJustGenerated(true);
+        // Clear the animation state after animation completes
+        setTimeout(() => setJustGenerated(false), 2000);
       } else {
         log.error('Generation returned failure status', { result });
         setGenerateError(result.message || '生成失败');
+        setGenerating(false);
       }
     } catch (err) {
       log.error('Regenerate exception', { error: err });
       setGenerateError(err instanceof Error ? err.message : '生成失败，请重试');
-    } finally {
       setGenerating(false);
     }
   }, [companyId]);
 
   const getActionClass = (action: string) => {
       if (!action || action === '-') return 'neutral';
-      // Match the CSS classes: strong_buy, strong_sell
       return action.toLowerCase().replace(/\s+/g, '_'); 
   };
 
@@ -112,7 +115,6 @@ export default function App() {
   };
 
   if (loading) {
-    // Use companyNameParam if available during loading
     const context = companyId ? {
         id: companyId,
         name: companyNameParam || 'Loading...',
@@ -145,6 +147,21 @@ export default function App() {
     );
   }
 
+  // Shimmer skeleton component for generating state
+  const ShimmerValue = () => (
+    <div className="shimmer-container">
+      <div className="shimmer-line"></div>
+    </div>
+  );
+
+  // Reveal value component for just-generated state
+  const RevealValue = ({ children }: { children: React.ReactNode }) => (
+    <div className={`reveal-container ${justGenerated ? 'animate' : ''}`}>
+      <span className="reveal-content">{children}</span>
+      {justGenerated && <div className="laser-scan"></div>}
+    </div>
+  );
+
   return (
       <>
         <GlobalNav companyContext={{
@@ -154,8 +171,8 @@ export default function App() {
         }} />
         <div className="container app-shell">
             <div className="investment-summary-header">
-                <div className="header-title-row">
-                <h1>Investment Summary</h1>
+                <div className="header-top-row">
+                    <div className="page-type-badge">Investment Summary</div>
                     <button 
                         className={`regenerate-btn ${generating ? 'generating' : ''}`}
                         onClick={handleRegenerate}
@@ -164,12 +181,12 @@ export default function App() {
                     >
                         {generating ? (
                             <>
-                                <span className="regenerate-spinner"></span>
-                                Regenerating...
+                                <span className="btn-spinner"></span>
+                                Generating...
                             </>
                         ) : (
                             <>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
                                 </svg>
                                 Regenerate
@@ -177,43 +194,81 @@ export default function App() {
                         )}
                     </button>
                 </div>
-                {generateError && (
-                    <div className="generate-error">
-                        ⚠️ {generateError}
+
+                {/* Progress Bar */}
+                {(generating || generateError) && (
+                    <div className="generation-status">
+                        {generating && <div className="progress-bar"><div className="progress-bar-fill"></div></div>}
+                        {generateError && (
+                            <div className="generation-error">
+                                <span>⚠️ {generateError}</span>
+                                <button onClick={() => setGenerateError(null)}>Dismiss</button>
+                            </div>
+                        )}
                     </div>
                 )}
-                <div className="company-name-link">
-                    <button className="company-name-clickable" onClick={handleBackToDetail}>
-                        {data.company_name}
-                    </button>
-                </div>
 
-                <div className="investment-summary-basic-info">
-                    <div className="basic-info-item">
-                        <span className="basic-info-label">Date</span>
-                        <span className="basic-info-value">{formatDate(data.report_date)}</span>
+                <div className="company-header-main">
+                    <div className="company-title-block">
+                        <div className="company-title-row">
+                            <h1 className="company-name-clickable" onClick={handleBackToDetail}>
+                                {data.company_name}
+                            </h1>
+                            <span className="company-ticker">{data.company_ticker || '-'}</span>
+                        </div>
+                        
+                        <div className="company-tag-row">
+                            {data.im_sector && <span className="company-tag">{data.im_sector}</span>}
+                            {data.industry && data.industry !== data.im_sector && (
+                                <span className="company-tag">{data.industry}</span>
+                            )}
+                            <SourcesBadge sources={data.sources} className="header-source-badge" />
+                        </div>
                     </div>
-                    <div className="basic-info-item">
-                        <span className="basic-info-label">Stock Price (Previous Close)</span>
-                        <span className="basic-info-value">
-                            {data.stock_price_previous_close ? `CNY ${data.stock_price_previous_close}` : '-'}
-                        </span>
-                    </div>
-                     <div className="basic-info-item">
-                        <span className="basic-info-label">Market Cap</span>
-                        <span className="basic-info-value">{data.market_cap_display || '-'}</span>
-                    </div>
-                    <div className="basic-info-item">
-                        <span className="basic-info-label">Recommended Action</span>
-                        <span className="basic-info-value">
-                             <span className={`recommended-action ${getActionClass(data.recommended_action)}`}>
-                                 {data.recommended_action || '-'}
-                             </span>
-                        </span>
-                    </div>
-                    <div className="basic-info-item">
-                        <span className="basic-info-label">Industry</span>
-                        <span className="basic-info-value">{data.industry || data.im_sector || '-'}</span>
+
+                    <div className="company-meta-grid">
+                        <div className="company-meta-item">
+                            <span className="company-meta-label">Report Date</span>
+                            {generating ? (
+                                <ShimmerValue />
+                            ) : (
+                                <RevealValue>
+                                    <span className="company-meta-value">{formatDate(data.report_date)}</span>
+                                </RevealValue>
+                            )}
+                        </div>
+                        <div className="company-meta-item">
+                            <span className="company-meta-label">Recommendation</span>
+                            {generating ? (
+                                <ShimmerValue />
+                            ) : (
+                                <RevealValue>
+                                    <span className={`recommended-action ${getActionClass(data.recommended_action)}`}>
+                                        {data.recommended_action || '-'}
+                                    </span>
+                                </RevealValue>
+                            )}
+                        </div>
+                        <div className="company-meta-item">
+                            <span className="company-meta-label">Current Price</span>
+                            {generating ? (
+                                <ShimmerValue />
+                            ) : (
+                                <RevealValue>
+                                    <span className="company-meta-value">{data.stock_price_previous_close || '-'}</span>
+                                </RevealValue>
+                            )}
+                        </div>
+                        <div className="company-meta-item">
+                            <span className="company-meta-label">Market Cap (USD M)</span>
+                            {generating ? (
+                                <ShimmerValue />
+                            ) : (
+                                <RevealValue>
+                                    <span className="company-meta-value">{data.market_cap_display || '-'}</span>
+                                </RevealValue>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

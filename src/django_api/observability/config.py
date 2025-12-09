@@ -120,48 +120,53 @@ def setup_observability(
 def _auto_instrument() -> None:
     """
     Auto-instrument common libraries used in the project.
+    These warnings are non-critical - the app will work without instrumentation.
     """
     logger = logging.getLogger(__name__)
     
     # Django instrumentation
     try:
         from opentelemetry.instrumentation.django import DjangoInstrumentor
-        DjangoInstrumentor().instrument()
-        logger.debug("Django instrumentation enabled")
-    except ImportError:
-        logger.warning("Django instrumentation not available")
+        if not DjangoInstrumentor().is_instrumented_by_opentelemetry:
+            DjangoInstrumentor().instrument()
+            logger.debug("Django instrumentation enabled")
+    except ImportError as e:
+        logger.debug(f"Django instrumentation not available: {e}")
     except Exception as e:
-        logger.warning(f"Failed to instrument Django: {e}")
+        logger.debug(f"Django instrumentation skipped: {e}")
     
     # psycopg2 (PostgreSQL) instrumentation
     try:
         from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
-        Psycopg2Instrumentor().instrument()
-        logger.debug("psycopg2 instrumentation enabled")
-    except ImportError:
-        logger.warning("psycopg2 instrumentation not available")
+        if not Psycopg2Instrumentor().is_instrumented_by_opentelemetry:
+            Psycopg2Instrumentor().instrument()
+            logger.debug("psycopg2 instrumentation enabled")
+    except ImportError as e:
+        logger.debug(f"psycopg2 instrumentation not available: {e}")
     except Exception as e:
-        logger.warning(f"Failed to instrument psycopg2: {e}")
+        logger.debug(f"psycopg2 instrumentation skipped: {e}")
     
     # Redis instrumentation
     try:
         from opentelemetry.instrumentation.redis import RedisInstrumentor
-        RedisInstrumentor().instrument()
-        logger.debug("Redis instrumentation enabled")
-    except ImportError:
-        logger.warning("Redis instrumentation not available")
+        if not RedisInstrumentor().is_instrumented_by_opentelemetry:
+            RedisInstrumentor().instrument()
+            logger.debug("Redis instrumentation enabled")
+    except ImportError as e:
+        logger.debug(f"Redis instrumentation not available: {e}")
     except Exception as e:
-        logger.warning(f"Failed to instrument Redis: {e}")
+        logger.debug(f"Redis instrumentation skipped: {e}")
     
     # Requests library instrumentation (for external API calls)
     try:
         from opentelemetry.instrumentation.requests import RequestsInstrumentor
-        RequestsInstrumentor().instrument()
-        logger.debug("Requests instrumentation enabled")
-    except ImportError:
-        logger.warning("Requests instrumentation not available")
+        if not RequestsInstrumentor().is_instrumented_by_opentelemetry:
+            RequestsInstrumentor().instrument()
+            logger.debug("Requests instrumentation enabled")
+    except ImportError as e:
+        logger.debug(f"Requests instrumentation not available: {e}")
     except Exception as e:
-        logger.warning(f"Failed to instrument Requests: {e}")
+        logger.debug(f"Requests instrumentation skipped: {e}")
 
 
 @lru_cache(maxsize=None)

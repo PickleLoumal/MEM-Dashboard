@@ -18,9 +18,17 @@ from pathlib import Path
 # 尝试加载环境变量（如果dotenv可用）
 try:
     from dotenv import load_dotenv
-    # 优先加载本地开发环境变量
-    load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env.local'))
-    load_dotenv()  # 作为fallback加载默认.env
+    # 项目根目录: MEM Dashboard 2/src/django_api/django_api/settings.py -> MEM Dashboard 2/
+    _project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    _env_local_path = os.path.join(_project_root, '.env.local')
+    _env_path = os.path.join(_project_root, '.env')
+    
+    # 检查是否在本地开发环境（ENVIRONMENT != production）
+    # .env.local 用 override=True 覆盖 shell 环境变量，方便本地开发
+    if os.path.exists(_env_local_path) and os.getenv('ENVIRONMENT') != 'production':
+        load_dotenv(dotenv_path=_env_local_path, override=True)
+    if os.path.exists(_env_path):
+        load_dotenv(dotenv_path=_env_path)  # 作为fallback加载默认.env
 except ImportError:
     # dotenv不可用时，使用环境变量
     pass
@@ -38,7 +46,7 @@ sys.path.append(str(PROJECT_ROOT))
 # Initialize OpenTelemetry early in settings to ensure all subsequent
 # imports and operations are instrumented properly.
 
-OTEL_ENABLED = os.getenv('OTEL_ENABLED', 'true').lower() == 'true'
+OTEL_ENABLED = os.getenv('OTEL_ENABLED', 'false').lower() == 'true'
 
 if OTEL_ENABLED:
     try:
@@ -244,7 +252,7 @@ LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
 
 if not OTEL_ENABLED:
     # Fallback logging configuration when OpenTelemetry is disabled
-LOGGING = {
+    LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
         'formatters': {

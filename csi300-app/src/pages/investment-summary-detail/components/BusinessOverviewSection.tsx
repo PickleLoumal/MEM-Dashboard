@@ -83,7 +83,9 @@ export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = (
     logger.info('Rendering Business Overview as plain text', { length: content.length });
     return (
       <div className="investment-summary-section" id="businessOverview">
-        <div className="section-header">Business Overview</div>
+        <div className="section-header">
+          <h2>Business Overview</h2>
+        </div>
         <div className="section-content">
           <p>{content}</p>
         </div>
@@ -98,7 +100,9 @@ export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = (
   if (!parsed) {
     return (
       <div className="investment-summary-section" id="businessOverview">
-        <div className="section-header">Business Overview</div>
+        <div className="section-header">
+          <h2>Business Overview</h2>
+        </div>
         <div className="section-content">
           <p>{raw_text}</p>
         </div>
@@ -114,7 +118,7 @@ export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = (
 
   return (
     <div className="investment-summary-section" id="businessOverview">
-      <div className="section-header">Business Overview</div>
+      <div className="section-header"><h2>Business Overview</h2></div>
       <div className="section-content">
         {/* 原始描述文本 */}
         <p className="business-overview-text">{raw_text}</p>

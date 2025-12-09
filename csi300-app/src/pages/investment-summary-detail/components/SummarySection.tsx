@@ -85,7 +85,7 @@ export const SummarySection: React.FC<SummarySectionProps> = ({ title, content, 
 
   return (
     <div className="investment-summary-section" id={id}>
-      <div className="section-header">{title}</div>
+      <div className="section-header"><h2>{title}</h2></div>
       <div className="section-content">
         <Markdown remarkPlugins={[remarkGfm]}>{cleanedContent}</Markdown>
       </div>
