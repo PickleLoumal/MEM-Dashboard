@@ -241,7 +241,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:4173",  # Vite Preview
 ]
 
-CORS_ALLOW_HEADERS = [*list(default_headers), "x-trace-id", "x-requested-with"]
+CORS_ALLOW_HEADERS = [*list(default_headers), "x-trace-id", "x-span-id", "x-requested-with"]
 
 # =============================================================================
 # Logging Configuration

@@ -36,7 +36,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 cd src/django_api
 python manage.py migrate
-python manage.py runserver 0.0.0.0:8000
+python manage.py runserver 0.0.0.0:8001
 ```
 Settings load `.env.local` then `.env`. Key variables: `DJANGO_SECRET_KEY`, `DEBUG`, `CORS_*`, `FRED_API_KEY`, `REDIS_URL`; database defaults are defined directly in `django_api/settings.py`.
 
@@ -45,7 +45,7 @@ Serve the root or `src/pages` after the API is running:
 ```bash
 python3 -m http.server 3000  # from repo root
 ```
-Visit `http://localhost:3000/` (root) or `http://localhost:3000/src/pages/US.html`. `config/api_config.js` points to `http://localhost:8000/api` for local usage.
+Visit `http://localhost:3000/` (root) or `http://localhost:3000/src/pages/US.html`. `config/api_config.js` points to `http://localhost:8001/api` for local usage.
 
 ### Chinese Stock dashboard (React + legacy)
 ```bash
@@ -55,7 +55,7 @@ npm run dev        # http://localhost:5173
 ```
 Set `.env.local` with at least:
 ```
-VITE_API_BASE=http://localhost:8000
+VITE_API_BASE=http://localhost:8001
 VITE_APP_NAME="Chinese Stock Dashboard"
 ```
 Legacy static pages live in `csi300-app/legacy` (serve with `python3 -m http.server 8082` if needed). Convenience starters: `scripts/active/production/dev-start-mem.sh` (ports 8000/3000) and `scripts/active/production/dev-start-csi300.sh` (ports 8001/5173/8082).

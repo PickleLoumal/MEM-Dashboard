@@ -8,7 +8,7 @@ django:
     echo "🐍 Starting Django API server on http://localhost:8001..."
     export PYTHONPATH=$PYTHONPATH:$(pwd)/src/django_api
     ./venv/bin/python src/django_api/manage.py migrate --verbosity=1
-    ./venv/bin/python src/django_api/manage.py runserver 8001
+    ./venv/bin/python src/django_api/manage.py runserver 0.0.0.0:8001
 
 # Start full development environment (Django + React)
 dev:
@@ -44,15 +44,17 @@ codegen:
     #!/bin/bash
     set -e
     echo "📄 Exporting OpenAPI schema from Django..."
-    (cd src/django_api && ../../venv/bin/python manage.py spectacular --file ../../schema.yaml)
+    ./venv/bin/python src/django_api/manage.py spectacular --file schema.yaml
     echo "🔧 Generating TypeScript types..."
     (cd csi300-app && npm run generate-api)
     echo "✅ Codegen complete! Types updated in csi300-app/src/shared/api/generated/"
 
 # 8. Generate investment summaries for all companies
 summary-all:
-    @echo "🚀 Starting batch generation of investment summaries..."
-    cd src/django_api && ../../venv/bin/python -m csi300.services.cli
+    #!/bin/bash
+    echo "🚀 Starting batch generation of investment summaries..."
+    export PYTHONPATH=$PYTHONPATH:$(pwd)/src/django_api
+    ./venv/bin/python -m csi300.services.cli
 
 # 9. Lint: Run Ruff linter on Python code (src only)
 lint:
