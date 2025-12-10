@@ -27,7 +27,7 @@ def create_fred_us_configs():
     created_count = 0
     updated_count = 0
     
-    print(f"Found {series_infos.count()} series to process")
+    logger.info(f"Found {series_infos.count()} series to process")
     
     # 为每个Series Info创建配置
     for info in series_infos:
@@ -88,46 +88,46 @@ def create_fred_us_configs():
         }
         
         # 创建或更新配置
-        config, created = FredUsIndicatorConfig.objects.update_or_create(
+        _, created = FredUsIndicatorConfig.objects.update_or_create(
             series_id=info.series_id,
             defaults=config_data
         )
         
         if created:
             created_count += 1
-            print(f"✅ Created config for {info.series_id}: {info.title}")
+            logger.info(f"Created config for {info.series_id}: {info.title}")
         else:
             updated_count += 1
-            print(f"🔄 Updated config for {info.series_id}: {info.title}")
+            logger.info(f"Updated config for {info.series_id}: {info.title}")
     
-    print(f"\n📊 Migration Summary:")
-    print(f"- Created: {created_count} new configurations")
-    print(f"- Updated: {updated_count} existing configurations")
-    print(f"- Total: {created_count + updated_count} configurations processed")
+    logger.info("Migration Summary:")
+    logger.info(f"- Created: {created_count} new configurations")
+    logger.info(f"- Updated: {updated_count} existing configurations")
+    logger.info(f"- Total: {created_count + updated_count} configurations processed")
     
     # 验证配置
     total_configs = FredUsIndicatorConfig.objects.count()
     active_configs = FredUsIndicatorConfig.objects.filter(is_active=True).count()
     auto_fetch_configs = FredUsIndicatorConfig.objects.filter(auto_fetch=True).count()
     
-    print(f"\n🔍 Configuration Verification:")
-    print(f"- Total configurations: {total_configs}")
-    print(f"- Active configurations: {active_configs}")
-    print(f"- Auto-fetch enabled: {auto_fetch_configs}")
+    logger.info("Configuration Verification:")
+    logger.info(f"- Total configurations: {total_configs}")
+    logger.info(f"- Active configurations: {active_configs}")
+    logger.info(f"- Auto-fetch enabled: {auto_fetch_configs}")
     
     # 按类别统计
-    print(f"\n📋 By Category:")
+    logger.info("By Category:")
     categories = FredUsIndicatorConfig.objects.values_list('category', flat=True).distinct()
     for category in categories:
         count = FredUsIndicatorConfig.objects.filter(category=category).count()
-        print(f"- {category}: {count} indicators")
+        logger.info(f"- {category}: {count} indicators")
     
     return created_count, updated_count
 
 
 def validate_migration():
     """验证迁移结果"""
-    print("\n🔍 Validation Results:")
+    logger.info("Validation Results:")
     
     # 检查是否所有Series Info都有对应的配置
     series_infos = FredUsSeriesInfo.objects.all()
@@ -140,39 +140,42 @@ def validate_migration():
     extra_configs = config_ids - series_ids
     
     if missing_configs:
-        print(f"⚠️  Missing configurations for: {missing_configs}")
+        logger.warning(f"Missing configurations for: {missing_configs}")
     else:
-        print("✅ All Series Info have corresponding configurations")
+        logger.info("All Series Info have corresponding configurations")
     
     if extra_configs:
-        print(f"ℹ️  Extra configurations (no Series Info): {extra_configs}")
+        logger.info(f"Extra configurations (no Series Info): {extra_configs}")
     
     # 检查自动抓取配置
     auto_fetch_count = configs.filter(auto_fetch=True, is_active=True).count()
-    print(f"✅ {auto_fetch_count} indicators configured for automatic fetching")
+    logger.info(f"{auto_fetch_count} indicators configured for automatic fetching")
     
     return len(missing_configs) == 0
 
 
 if __name__ == "__main__":
-    print("🚀 Starting FRED US Configuration Migration")
-    print("Based on BEA system patterns")
-    print("-" * 50)
+    # Configure console logging for CLI execution
+    logging.basicConfig(level=logging.INFO, format='%(message)s')
+    
+    logger.info("Starting FRED US Configuration Migration")
+    logger.info("Based on BEA system patterns")
+    logger.info("-" * 50)
     
     try:
         created, updated = create_fred_us_configs()
         
-        print("\n" + "=" * 50)
+        logger.info("=" * 50)
         validation_passed = validate_migration()
         
         if validation_passed:
-            print("\n✅ Migration completed successfully!")
-            print("🎯 All FRED US Series Info converted to auto-fetch configurations")
+            logger.info("Migration completed successfully!")
+            logger.info("All FRED US Series Info converted to auto-fetch configurations")
         else:
-            print("\n⚠️  Migration completed with warnings")
-            print("Please review the missing configurations")
+            logger.warning("Migration completed with warnings")
+            logger.warning("Please review the missing configurations")
             
     except Exception as e:
-        print(f"\n❌ Migration failed: {e}")
+        logger.error(f"Migration failed: {e}")
         import traceback
         traceback.print_exc()

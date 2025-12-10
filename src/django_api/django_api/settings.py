@@ -89,7 +89,6 @@ INSTALLED_APPS = [
     'fred_us',    # US FRED indicators (分离架构)
     'fred_jp',    # Japan FRED indicators (分离架构)
     'bea',
-    'indicators',
     'content',
     'csi300',     # CSI300 companies data
     'stocks',     # Stock data with AkShare integration

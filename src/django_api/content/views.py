@@ -77,9 +77,14 @@ class ModalContentViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'])
     def all_content(self, request):
-        """Get all content simplified version"""
-        # Implement batch retrieval logic
-        pass
+        """Get all content - simplified version for batch retrieval"""
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            'success': True,
+            'count': queryset.count(),
+            'data': serializer.data
+        })
 
 
 class ContentCategoryViewSet(viewsets.ReadOnlyModelViewSet):

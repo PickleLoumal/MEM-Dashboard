@@ -19,7 +19,11 @@ django.setup()
 
 from bea.models import BeaIndicatorConfig
 from bea.dynamic_config import DynamicBeaConfigManager
-import json
+import logging
+
+# Configure console logging for CLI
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+logger = logging.getLogger(__name__)
 
 
 def create_sample_configs():
@@ -139,74 +143,73 @@ def create_sample_configs():
             # 检查是否已存在
             existing = BeaIndicatorConfig.objects.filter(series_id=config_data['series_id']).first()
             if existing:
-                print(f"配置已存在: {config_data['series_id']} - 跳过")
+                logger.info(f"配置已存在: {config_data['series_id']} - 跳过")
                 continue
             
             # 创建新配置
             config = BeaIndicatorConfig.objects.create(**config_data)
-            print(f"✓ 创建配置: {config.series_id} - {config.name}")
+            logger.info(f"创建配置: {config.series_id} - {config.name}")
             created_count += 1
             
         except Exception as e:
-            print(f"✗ 创建配置失败 {config_data['series_id']}: {e}")
+            logger.error(f"创建配置失败 {config_data['series_id']}: {e}")
     
-    print(f"\n总共创建 {created_count} 个新配置")
+    logger.info(f"总共创建 {created_count} 个新配置")
     
     # 清除缓存
     DynamicBeaConfigManager.clear_all_cache()
-    print("缓存已清除")
+    logger.info("缓存已清除")
 
 
 def list_all_configs():
     """列出所有配置"""
-    print("\n=== 所有BEA指标配置 ===")
+    logger.info("=== 所有BEA指标配置 ===")
     
     configs = BeaIndicatorConfig.objects.all().order_by('priority', 'series_id')
     
-    print(f"{'Series ID':<20} {'Name':<30} {'Category':<20} {'Active':<8} {'Priority':<8}")
-    print("-" * 90)
+    logger.info(f"{'Series ID':<20} {'Name':<30} {'Category':<20} {'Active':<8} {'Priority':<8}")
+    logger.info("-" * 90)
     
     for config in configs:
-        status = "✓" if config.is_active else "✗"
-        print(f"{config.series_id:<20} {config.name[:28]:<30} {config.category:<20} {status:<8} {config.priority or 'N/A':<8}")
+        status_str = "Y" if config.is_active else "N"
+        logger.info(f"{config.series_id:<20} {config.name[:28]:<30} {config.category:<20} {status_str:<8} {config.priority or 'N/A':<8}")
     
-    print(f"\n总计: {configs.count()} 个配置")
+    logger.info(f"总计: {configs.count()} 个配置")
 
 
 def test_dynamic_system():
     """测试动态配置系统"""
-    print("\n=== 测试动态配置系统 ===")
+    logger.info("=== 测试动态配置系统 ===")
     
     # 测试配置管理器
     try:
         all_indicators = DynamicBeaConfigManager.get_all_indicators()
-        print(f"✓ 获取所有指标配置: {len(all_indicators)} 个")
+        logger.info(f"获取所有指标配置: {len(all_indicators)} 个")
         
         auto_fetch = DynamicBeaConfigManager.get_auto_fetch_indicators()
-        print(f"✓ 获取自动抓取配置: {len(auto_fetch)} 个")
+        logger.info(f"获取自动抓取配置: {len(auto_fetch)} 个")
         
         # 显示前3个配置
-        print("\n前3个激活的配置:")
+        logger.info("前3个激活的配置:")
         for i, (series_id, config) in enumerate(list(all_indicators.items())[:3]):
-            print(f"  {i+1}. {series_id}: {config['name']}")
-            print(f"     端点: {config['api_endpoint']}")
-            print(f"     分类: {config['category']}")
-            print()
+            logger.info(f"  {i+1}. {series_id}: {config['name']}")
+            logger.info(f"     端点: {config['api_endpoint']}")
+            logger.info(f"     分类: {config['category']}")
         
-        print("✓ 动态配置系统工作正常")
+        logger.info("动态配置系统工作正常")
         
     except Exception as e:
-        print(f"✗ 动态配置系统测试失败: {e}")
+        logger.error(f"动态配置系统测试失败: {e}")
 
 
 def show_api_endpoints():
     """显示所有可用的API端点"""
-    print("\n=== 可用API端点 ===")
+    logger.info("=== 可用API端点 ===")
     
     try:
         all_configs = DynamicBeaConfigManager.get_all_indicators()
         
-        print("1. 管理端点:")
+        logger.info("1. 管理端点:")
         management_endpoints = [
             "/api/bea/",
             "/api/bea/all_indicators/",
@@ -218,14 +221,14 @@ def show_api_endpoints():
         ]
         
         for endpoint in management_endpoints:
-            print(f"   {endpoint}")
+            logger.info(f"   {endpoint}")
         
-        print("\n2. 动态指标端点:")
+        logger.info("2. 动态指标端点:")
         for series_id, config in all_configs.items():
             endpoint = f"/api/bea/indicator/{series_id}/"
-            print(f"   {endpoint} - {config['name']}")
+            logger.info(f"   {endpoint} - {config['name']}")
         
-        print("\n3. 兼容性端点:")
+        logger.info("3. 兼容性端点:")
         legacy_endpoints = [
             "/api/bea/indicators/",
             "/api/bea/indicators/motor_vehicles/",
@@ -233,26 +236,26 @@ def show_api_endpoints():
         ]
         
         for endpoint in legacy_endpoints:
-            print(f"   {endpoint}")
+            logger.info(f"   {endpoint}")
         
-        print(f"\n总计: {len(management_endpoints) + len(all_configs) + len(legacy_endpoints)} 个端点")
+        logger.info(f"总计: {len(management_endpoints) + len(all_configs) + len(legacy_endpoints)} 个端点")
         
     except Exception as e:
-        print(f"✗ 获取API端点失败: {e}")
+        logger.error(f"获取API端点失败: {e}")
 
 
 def main():
     """主函数"""
-    print("BEA动态指标管理系统")
-    print("=" * 50)
+    logger.info("BEA动态指标管理系统")
+    logger.info("=" * 50)
     
     while True:
-        print("\n选择操作:")
-        print("1. 创建示例配置")
-        print("2. 列出所有配置")
-        print("3. 测试动态系统")
-        print("4. 显示API端点")
-        print("5. 退出")
+        logger.info("\n选择操作:")
+        logger.info("1. 创建示例配置")
+        logger.info("2. 列出所有配置")
+        logger.info("3. 测试动态系统")
+        logger.info("4. 显示API端点")
+        logger.info("5. 退出")
         
         choice = input("\n请选择 (1-5): ").strip()
         
@@ -265,10 +268,10 @@ def main():
         elif choice == '4':
             show_api_endpoints()
         elif choice == '5':
-            print("退出")
+            logger.info("退出")
             break
         else:
-            print("无效选择，请重试")
+            logger.warning("无效选择，请重试")
 
 
 if __name__ == '__main__':
