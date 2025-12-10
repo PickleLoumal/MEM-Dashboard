@@ -6,9 +6,9 @@ set shell := ["bash", "-c"]
 django:
     #!/bin/bash
     echo "🐍 Starting Django API server on http://localhost:8001..."
-    cd src/django_api
-    ../../venv/bin/python manage.py migrate --verbosity=1
-    ../../venv/bin/python manage.py runserver 8001
+    export PYTHONPATH=$PYTHONPATH:$(pwd)/src/django_api
+    ./venv/bin/python src/django_api/manage.py migrate --verbosity=1
+    ./venv/bin/python src/django_api/manage.py runserver 8001
 
 # Start full development environment (Django + React)
 dev:
