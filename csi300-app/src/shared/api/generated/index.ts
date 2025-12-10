@@ -34,7 +34,6 @@ export type { FredJpLatestValue } from './models/FredJpLatestValue';
 export type { FredUsIndicatorResponse } from './models/FredUsIndicatorResponse';
 export type { FundFlowPageResponse } from './models/FundFlowPageResponse';
 export type { GenerateAllScoresResponse } from './models/GenerateAllScoresResponse';
-export type { GenerateInvestmentSummaryError } from './models/GenerateInvestmentSummaryError';
 export type { GenerateInvestmentSummaryRequest } from './models/GenerateInvestmentSummaryRequest';
 export type { GenerateInvestmentSummaryResponse } from './models/GenerateInvestmentSummaryResponse';
 export type { GenerateStockScoreRequest } from './models/GenerateStockScoreRequest';
