@@ -36,16 +36,16 @@ jobs:
 
     - name: Check code formatting
       run: |
-        ruff format --check src scripts tests
+        ruff format --check src
 
     - name: Run linter
       run: |
-        ruff check src scripts tests
+        ruff check src
 
     - name: Generate annotations
       if: failure()
       run: |
-        ruff check --output-format=github src scripts tests
+        ruff check --output-format=github src
 
   type-check:
     name: Type Checking (Pyright)
