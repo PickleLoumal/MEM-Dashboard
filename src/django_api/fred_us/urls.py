@@ -3,19 +3,20 @@ URL Configuration for US FRED API
 美国FRED经济指标API路由配置 - 分离架构实现
 """
 
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+
 from . import views
 
 # 创建路由器
 router = DefaultRouter()
-router.register(r'', views.FredUsIndicatorViewSet, basename='fred-us')
+router.register(r"", views.FredUsIndicatorViewSet, basename="fred-us")
 
-app_name = 'fred_us'
+app_name = "fred_us"
 
 urlpatterns = [
     # 美国FRED API端点
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]
 
 # 可用的API端点：

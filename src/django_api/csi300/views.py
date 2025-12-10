@@ -13,52 +13,54 @@ CSI300 API Views
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Type
-from datetime import datetime
+import contextlib
+import logging
+from datetime import UTC, datetime
+from typing import Any
 
-from django.db.models import Q, Min, Max
+from django.db import connection
+from django.db.models import Max, Min, Q
 from django.db.models.query import QuerySet
 from django.http import Http404
-from django.db import connection
-from rest_framework import viewsets, status
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.serializers import Serializer
-from drf_spectacular.utils import extend_schema, OpenApiParameter
-from drf_spectacular.types import OpenApiTypes
-import logging
 
 from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary
 from .serializers import (
-    CSI300CompanySerializer, 
     CSI300CompanyListSerializer,
-    CSI300HSharesCompanySerializer,
-    CSI300HSharesCompanyListSerializer,
+    CSI300CompanySerializer,
     CSI300FilterOptionsSerializer,
-    CSI300InvestmentSummarySerializer,
+    CSI300HSharesCompanyListSerializer,
+    CSI300HSharesCompanySerializer,
     CSI300IndustryPeersComparisonSerializer,
-    CSI300PeerComparisonResponseSerializer
+    CSI300InvestmentSummarySerializer,
+    CSI300PeerComparisonResponseSerializer,
 )
 
 logger = logging.getLogger(__name__)
 
 # 类型别名
-SerializerClass = Type[Serializer[Any]]
+SerializerClass = type[Serializer[Any]]
 
 
 class CSI300Pagination(PageNumberPagination):
     """CSI300 API 分页配置"""
+
     page_size: int = 20
-    page_size_query_param: str = 'page_size'
+    page_size_query_param: str = "page_size"
     max_page_size: int = 100
 
 
 class CSI300HealthMixin:
     """CSI300 健康检查 Mixin"""
-    
-    @action(detail=False, methods=['get'], url_path='health')
+
+    @action(detail=False, methods=["get"], url_path="health")
     def health(self, request: Request) -> Response:
         """健康检查端点"""
         try:
@@ -68,93 +70,94 @@ class CSI300HealthMixin:
                     cursor.execute("SELECT 1")
             except Exception:
                 database_available = False
-            
+
             count = CSI300Company.objects.count() if database_available else 0
-            
-            return Response({
-                'status': 'healthy' if database_available else 'degraded',
-                'service': 'CSI300 API',
-                'total_companies': count,
-                'database_available': database_available,
-                'timestamp': datetime.now().isoformat()
-            })
+
+            return Response(
+                {
+                    "status": "healthy" if database_available else "degraded",
+                    "service": "CSI300 API",
+                    "total_companies": count,
+                    "database_available": database_available,
+                    "timestamp": datetime.now(tz=UTC).isoformat(),
+                }
+            )
         except Exception as e:
-            logger.error(f"CSI300 health check failed: {e}")
-            return Response({
-                'status': 'error',
-                'service': 'CSI300 API',
-                'error': str(e),
-                'database_available': False
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.exception("CSI300 health check failed")
+            return Response(
+                {
+                    "status": "error",
+                    "service": "CSI300 API",
+                    "error": str(e),
+                    "database_available": False,
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class CSI300SummaryMixin:
     """CSI300 摘要生成 Mixin"""
-    
-    @action(detail=False, methods=['post'], url_path='generate-summary')
+
+    @action(detail=False, methods=["post"], url_path="generate-summary")
     def generate_summary(self, request: Request) -> Response:
         """
         生成指定公司的 Investment Summary
-        
+
         使用 AI 模型生成公司投资摘要并保存到数据库。
         """
-        company_id_raw = request.data.get('company_id')
-        
+        company_id_raw = request.data.get("company_id")
+
         if not company_id_raw:
-            return Response({
-                'status': 'error',
-                'message': '缺少必需参数: company_id'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response(
+                {"status": "error", "message": "缺少必需参数: company_id"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             company_id = int(str(company_id_raw))
         except (ValueError, TypeError):
-            return Response({
-                'status': 'error',
-                'message': 'company_id 必须是整数'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response(
+                {"status": "error", "message": "company_id 必须是整数"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # 验证公司存在
         try:
             CSI300Company.objects.get(id=company_id)
         except CSI300Company.DoesNotExist:
-            return Response({
-                'status': 'error',
-                'message': f'公司 ID {company_id} 不存在'
-            }, status=status.HTTP_404_NOT_FOUND)
-        
+            return Response(
+                {"status": "error", "message": f"公司 ID {company_id} 不存在"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         # 导入并调用生成服务
         try:
             from .services import generate_company_summary
+
             result = generate_company_summary(company_id)
-            
-            if result['status'] == 'success':
+
+            if result["status"] == "success":
                 return Response(result, status=status.HTTP_200_OK)
-            else:
-                return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                
+            return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         except ImportError as e:
-            logger.error(f"Service import failed: {e}")
-            return Response({
-                'status': 'error',
-                'message': f'服务模块导入失败: {str(e)}'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.exception("Service import failed")
+            return Response(
+                {"status": "error", "message": f"服务模块导入失败: {e!s}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         except Exception as e:
-            logger.error(f"Summary generation failed: {e}")
-            return Response({
-                'status': 'error',
-                'message': f'生成失败: {str(e)}'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.exception("Summary generation failed")
+            return Response(
+                {"status": "error", "message": f"生成失败: {e!s}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
-class CSI300CompanyViewSet(
-    CSI300HealthMixin,
-    CSI300SummaryMixin,
-    viewsets.ReadOnlyModelViewSet
-):
+class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadOnlyModelViewSet):
     """
     CSI300 公司数据 ViewSet
-    
+
     提供 CSI300 指数成分股的只读 API 端点:
     - list: 获取公司列表 (支持筛选和分页)
     - retrieve: 获取单个公司详情
@@ -165,443 +168,450 @@ class CSI300CompanyViewSet(
     - health: 健康检查
     - generate_summary: 生成投资摘要
     """
-    
+
     queryset: QuerySet[CSI300Company] = CSI300Company.objects.all()
     serializer_class: SerializerClass = CSI300CompanySerializer
-    pagination_class: Type[PageNumberPagination] = CSI300Pagination
-    
+    pagination_class: type[PageNumberPagination] = CSI300Pagination
+
     def get_serializer_class(self) -> SerializerClass:
         """根据请求动态返回序列化器类"""
-        if self.action == 'list':
+        if self.action == "list":
             if self._is_hshares_request():
                 return CSI300HSharesCompanyListSerializer
             return CSI300CompanyListSerializer
-        if self.action == 'retrieve' and self._is_hshares_request():
+        if self.action == "retrieve" and self._is_hshares_request():
             return CSI300HSharesCompanySerializer
         return CSI300CompanySerializer
-    
-    def _normalize_region(self, region_value: Optional[str]) -> Optional[str]:
+
+    def _normalize_region(self, region_value: str | None) -> str | None:
         """标准化地区参数值"""
         if not region_value:
             return None
         normalized = region_value.strip()
-        if normalized.lower() == 'hong kong (h-shares)':
-            return 'Hong Kong'
+        if normalized.lower() == "hong kong (h-shares)":
+            return "Hong Kong"
         return normalized
-    
+
     def _is_hshares_request(self) -> bool:
         """判断当前请求是否为 H股数据请求"""
-        region = self._normalize_region(self.request.query_params.get('region'))
+        region = self._normalize_region(self.request.query_params.get("region"))
         if not region:
             return False
-        return region.lower() == 'hong kong'
-    
+        return region.lower() == "hong kong"
+
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """获取公司列表或 API 概览"""
         # 检查是否请求 API 概览
-        if request.query_params.get('overview') == 'true':
+        if request.query_params.get("overview") == "true":
             return self._api_overview(request)
         return super().list(request, *args, **kwargs)
-    
+
     def _api_overview(self, request: Request) -> Response:
         """返回 API 概览信息"""
         total_companies = CSI300Company.objects.count()
-        return Response({
-            'message': 'CSI300 Companies API',
-            'version': '1.0.0',
-            'endpoints': {
-                'companies': '/api/csi300/api/companies/',
-                'company_detail': '/api/csi300/api/companies/{id}/',
-                'filter_options': '/api/csi300/api/companies/filter_options/',
-                'search': '/api/csi300/api/companies/search/',
-                'health': '/api/csi300/api/companies/health/',
-                'generate_summary': '/api/csi300/api/companies/generate-summary/',
-            },
-            'total_companies': total_companies
-        })
-    
+        return Response(
+            {
+                "message": "CSI300 Companies API",
+                "version": "1.0.0",
+                "endpoints": {
+                    "companies": "/api/csi300/api/companies/",
+                    "company_detail": "/api/csi300/api/companies/{id}/",
+                    "filter_options": "/api/csi300/api/companies/filter_options/",
+                    "search": "/api/csi300/api/companies/search/",
+                    "health": "/api/csi300/api/companies/health/",
+                    "generate_summary": "/api/csi300/api/companies/generate-summary/",
+                },
+                "total_companies": total_companies,
+            }
+        )
+
     def get_queryset(self) -> Any:
         """获取查询集，根据请求参数动态筛选"""
         use_hshares: bool = self._is_hshares_request()
         queryset = (
-            CSI300HSharesCompany.objects.all() if use_hshares 
-            else CSI300Company.objects.all()
+            CSI300HSharesCompany.objects.all() if use_hshares else CSI300Company.objects.all()
         )
-        
+
         # 获取筛选参数
-        region = self._normalize_region(self.request.query_params.get('region'))
-        im_sector = self.request.query_params.get('im_sector')
-        industry = self.request.query_params.get('industry')
-        legacy_sub_industry = self.request.query_params.get('sub_industry')
+        region = self._normalize_region(self.request.query_params.get("region"))
+        im_sector = self.request.query_params.get("im_sector")
+        industry = self.request.query_params.get("industry")
+        legacy_sub_industry = self.request.query_params.get("sub_industry")
         if not industry and legacy_sub_industry:
             industry = legacy_sub_industry
-        gics_industry = self.request.query_params.get('gics_industry')
-        market_cap_min = self.request.query_params.get('market_cap_min')
-        market_cap_max = self.request.query_params.get('market_cap_max')
-        search = self.request.query_params.get('search')
-        industry_search = self.request.query_params.get('industry_search')
-        
-        logger.debug(f"Filtering: im_sector='{im_sector}', industry='{industry}', industry_search='{industry_search}'")
-        
+        gics_industry = self.request.query_params.get("gics_industry")
+        market_cap_min = self.request.query_params.get("market_cap_min")
+        market_cap_max = self.request.query_params.get("market_cap_max")
+        search = self.request.query_params.get("search")
+        industry_search = self.request.query_params.get("industry_search")
+
+        logger.debug(
+            f"Filtering: im_sector='{im_sector}', industry='{industry}', industry_search='{industry_search}'"
+        )
+
         if region:
             queryset = queryset.filter(region__iexact=region)
             logger.debug(f"After Region filter ('{region}'): {queryset.count()} companies")
-        
+
         if im_sector:
             queryset = queryset.filter(im_sector__exact=im_sector)
             logger.debug(f"After IM Sector filter: {queryset.count()} companies")
-        
+
         if industry:
             queryset = queryset.filter(industry__exact=industry)
             logger.debug(f"After Industry filter: {queryset.count()} companies")
-            
+
         if gics_industry:
             queryset = queryset.filter(gics_industry__icontains=gics_industry)
-            
+
         if market_cap_min:
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 queryset = queryset.filter(market_cap_local__gte=float(market_cap_min))
-            except (ValueError, TypeError):
-                pass
-                
+
         if market_cap_max:
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 queryset = queryset.filter(market_cap_local__lte=float(market_cap_max))
-            except (ValueError, TypeError):
-                pass
-        
+
         if search:
             queryset = queryset.filter(
-                Q(name__icontains=search) |
-                Q(ticker__icontains=search) |
-                Q(naming__icontains=search)
+                Q(name__icontains=search)
+                | Q(ticker__icontains=search)
+                | Q(naming__icontains=search)
             )
-        
+
         if industry_search:
             queryset = queryset.filter(Q(industry__icontains=industry_search))
             logger.debug(f"After Industry search filter: {queryset.count()} companies")
-        
-        return queryset.order_by('ticker')
-    
+
+        return queryset.order_by("ticker")
+
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """获取单个公司详情"""
         pk = kwargs.get(self.lookup_field, None)
         if pk is None:
             raise Http404("Company identifier is required")
-        
-        region = self._normalize_region(request.query_params.get('region'))
-        prefer_hshares: bool = bool(region and region.lower() == 'hong kong')
-        
+
+        region = self._normalize_region(request.query_params.get("region"))
+        prefer_hshares: bool = bool(region and region.lower() == "hong kong")
+
         primary_model = CSI300HSharesCompany if prefer_hshares else CSI300Company
-        primary_serializer = CSI300HSharesCompanySerializer if prefer_hshares else CSI300CompanySerializer
+        primary_serializer = (
+            CSI300HSharesCompanySerializer if prefer_hshares else CSI300CompanySerializer
+        )
         fallback_model = CSI300Company if prefer_hshares else CSI300HSharesCompany
-        fallback_serializer = CSI300CompanySerializer if prefer_hshares else CSI300HSharesCompanySerializer
-        
+        fallback_serializer = (
+            CSI300CompanySerializer if prefer_hshares else CSI300HSharesCompanySerializer
+        )
+
         instance = primary_model.objects.filter(pk=pk).first()
         serializer_class = primary_serializer
-        
+
         if instance is None:
             instance = fallback_model.objects.filter(pk=pk).first()
             serializer_class = fallback_serializer if instance else primary_serializer
-        
+
         if instance is None:
             raise Http404("Company not found")
-        
+
         serializer = serializer_class(instance, context=self.get_serializer_context())
         return Response(serializer.data)
-    
+
     @extend_schema(
         responses={200: CSI300FilterOptionsSerializer},
         parameters=[
-            OpenApiParameter(name='region', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY),
-            OpenApiParameter(name='im_sector', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY),
-        ]
+            OpenApiParameter(name="region", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY),
+            OpenApiParameter(
+                name="im_sector", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY
+            ),
+        ],
     )
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def filter_options(self, request: Request) -> Response:
         """获取可用的筛选选项"""
-        region_filter = self._normalize_region(request.query_params.get('region'))
-        im_sector_filter = request.query_params.get('im_sector')
+        region_filter = self._normalize_region(request.query_params.get("region"))
+        im_sector_filter = request.query_params.get("im_sector")
         base_queryset = (
-            CSI300HSharesCompany.objects.all() if region_filter and region_filter.lower() == 'hong kong' 
+            CSI300HSharesCompany.objects.all()
+            if region_filter and region_filter.lower() == "hong kong"
             else CSI300Company.objects.all()
         )
 
         if region_filter:
             base_queryset = base_queryset.filter(region__iexact=region_filter)
 
-        im_sectors = list(base_queryset.exclude(
-            im_sector__isnull=True
-        ).exclude(
-            im_sector__exact=''
-        ).values_list('im_sector', flat=True).distinct().order_by('im_sector'))
-
-        industry_queryset = base_queryset.exclude(
-            industry__isnull=True
-        ).exclude(
-            industry__exact=''
+        im_sectors = list(
+            base_queryset.exclude(im_sector__isnull=True)
+            .exclude(im_sector__exact="")
+            .values_list("im_sector", flat=True)
+            .distinct()
+            .order_by("im_sector")
         )
+
+        industry_queryset = base_queryset.exclude(industry__isnull=True).exclude(industry__exact="")
 
         if im_sector_filter:
             industry_queryset = industry_queryset.filter(im_sector=im_sector_filter)
 
-        industries = list(industry_queryset.values_list(
-            'industry', flat=True
-        ).distinct().order_by('industry'))
+        industries = list(
+            industry_queryset.values_list("industry", flat=True).distinct().order_by("industry")
+        )
 
-        gics_industries = list(base_queryset.exclude(
-            gics_industry__isnull=True
-        ).exclude(
-            gics_industry__exact=''
-        ).values_list('gics_industry', flat=True).distinct().order_by('gics_industry'))
+        gics_industries = list(
+            base_queryset.exclude(gics_industry__isnull=True)
+            .exclude(gics_industry__exact="")
+            .values_list("gics_industry", flat=True)
+            .distinct()
+            .order_by("gics_industry")
+        )
 
-        market_cap_range = base_queryset.exclude(
-            market_cap_local__isnull=True
-        ).aggregate(
-            min_cap=Min('market_cap_local'),
-            max_cap=Max('market_cap_local')
+        market_cap_range = base_queryset.exclude(market_cap_local__isnull=True).aggregate(
+            min_cap=Min("market_cap_local"), max_cap=Max("market_cap_local")
         )
 
         region_values = set(
-            CSI300Company.objects.exclude(
-                region__isnull=True
-            ).exclude(
-                region__exact=''
-            ).values_list('region', flat=True)
+            CSI300Company.objects.exclude(region__isnull=True)
+            .exclude(region__exact="")
+            .values_list("region", flat=True)
         )
 
         region_values.update(
-            CSI300HSharesCompany.objects.exclude(
-                region__isnull=True
-            ).exclude(
-                region__exact=''
-            ).values_list('region', flat=True)
+            CSI300HSharesCompany.objects.exclude(region__isnull=True)
+            .exclude(region__exact="")
+            .values_list("region", flat=True)
         )
 
         regions = sorted(region_values, key=lambda value: value.lower())
 
-        return Response({
-            'regions': regions,
-            'im_sectors': im_sectors,
-            'industries': industries,
-            'gics_industries': gics_industries,
-            'market_cap_range': {
-                'min': float(market_cap_range['min_cap']) if market_cap_range['min_cap'] else 0,
-                'max': float(market_cap_range['max_cap']) if market_cap_range['max_cap'] else 0
-            },
-            'filtered_by_region': bool(region_filter),
-            'region_filter': region_filter,
-            'filtered_by_sector': bool(im_sector_filter),
-            'sector_filter': im_sector_filter
-        })
-    
+        return Response(
+            {
+                "regions": regions,
+                "im_sectors": im_sectors,
+                "industries": industries,
+                "gics_industries": gics_industries,
+                "market_cap_range": {
+                    "min": float(market_cap_range["min_cap"]) if market_cap_range["min_cap"] else 0,
+                    "max": float(market_cap_range["max_cap"]) if market_cap_range["max_cap"] else 0,
+                },
+                "filtered_by_region": bool(region_filter),
+                "region_filter": region_filter,
+                "filtered_by_sector": bool(im_sector_filter),
+                "sector_filter": im_sector_filter,
+            }
+        )
+
     @extend_schema(
         responses={200: CSI300CompanyListSerializer(many=True)},
         parameters=[
-            OpenApiParameter(name='q', type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=True),
-        ]
+            OpenApiParameter(
+                name="q", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=True
+            ),
+        ],
     )
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def search(self, request: Request) -> Response:
         """搜索公司"""
-        query = request.query_params.get('q', '') or ''
-        
+        query = request.query_params.get("q", "") or ""
+
         if not query:
             return Response(
-                {'error': 'Search query is required'}, 
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Search query is required"}, status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         companies = CSI300Company.objects.filter(
-            Q(name__icontains=query) |
-            Q(ticker__icontains=query) |
-            Q(naming__icontains=query)
-        ).order_by('ticker')[:10]
-        
+            Q(name__icontains=query) | Q(ticker__icontains=query) | Q(naming__icontains=query)
+        ).order_by("ticker")[:10]
+
         serializer = CSI300CompanyListSerializer(companies, many=True)
         return Response(serializer.data)
-    
+
     @extend_schema(responses={200: CSI300InvestmentSummarySerializer})
-    @action(detail=True, methods=['get'])
-    def investment_summary(self, request: Request, pk: Optional[str] = None) -> Response:
+    @action(detail=True, methods=["get"])
+    def investment_summary(self, request: Request, pk: str | None = None) -> Response:
         """获取公司投资摘要"""
         try:
             company = self.get_object()
             summary = CSI300InvestmentSummary.objects.filter(company=company).first()
-            
+
             if not summary:
                 return Response(
-                    {'error': 'Investment summary not found for this company'}, 
-                    status=status.HTTP_404_NOT_FOUND
+                    {"error": "Investment summary not found for this company"},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
-            
+
             serializer = CSI300InvestmentSummarySerializer(summary)
             return Response(serializer.data)
-            
+
         except Exception:
-            return Response(
-                {'error': 'Company not found'}, 
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "Company not found"}, status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(responses={200: CSI300PeerComparisonResponseSerializer})
-    @action(detail=True, methods=['get'])
-    def industry_peers_comparison(self, request: Request, pk: Optional[str] = None) -> Response:
+    @action(detail=True, methods=["get"])
+    def industry_peers_comparison(self, request: Request, pk: str | None = None) -> Response:
         """获取同行业公司对比数据"""
         try:
             company = self.get_object()
-            
+
             if not company.im_sector:
                 return Response(
-                    {'error': 'Company industry information not available'}, 
-                    status=status.HTTP_404_NOT_FOUND
+                    {"error": "Company industry information not available"},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
-            
-            all_industry_companies = CSI300Company.objects.filter(
-                im_sector=company.im_sector
-            ).exclude(
-                market_cap_local__isnull=True
-            ).order_by('-market_cap_local')
-            
-            current_company_rank: Optional[int] = None
+
+            all_industry_companies = (
+                CSI300Company.objects.filter(im_sector=company.im_sector)
+                .exclude(market_cap_local__isnull=True)
+                .order_by("-market_cap_local")
+            )
+
+            current_company_rank: int | None = None
             for idx, comp in enumerate(all_industry_companies, 1):
                 if comp.id == company.id:
                     current_company_rank = idx
                     break
-            
+
             top_3_companies = all_industry_companies[:3]
-            
+
             if not top_3_companies:
                 return Response(
-                    {'error': 'No companies found in the same industry'}, 
-                    status=status.HTTP_404_NOT_FOUND
+                    {"error": "No companies found in the same industry"},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
-            
-            comparison_data: List[Dict[str, Any]] = []
-            
+
+            comparison_data: list[dict[str, Any]] = []
+
             company_serializer = CSI300IndustryPeersComparisonSerializer(company)
-            company_data: Dict[str, Any] = company_serializer.data
-            company_data['rank'] = current_company_rank
-            company_data['is_current_company'] = True
+            company_data: dict[str, Any] = company_serializer.data
+            company_data["rank"] = current_company_rank
+            company_data["is_current_company"] = True
             comparison_data.append(company_data)
-            
+
             for idx, top_company in enumerate(top_3_companies, 1):
                 top_serializer = CSI300IndustryPeersComparisonSerializer(top_company)
-                top_data: Dict[str, Any] = top_serializer.data
-                top_data['rank'] = idx
-                top_data['is_current_company'] = (top_company.id == company.id)
+                top_data: dict[str, Any] = top_serializer.data
+                top_data["rank"] = idx
+                top_data["is_current_company"] = top_company.id == company.id
                 comparison_data.append(top_data)
-            
-            return Response({
-                'target_company': {
-                    'id': company.id,
-                    'name': company.name,
-                    'ticker': company.ticker,
-                    'im_sector': company.im_sector,
-                    'rank': current_company_rank
-                },
-                'industry': company.im_sector,
-                'comparison_data': comparison_data,
-                'total_top_companies_shown': len(top_3_companies),
-                'total_companies_in_industry': all_industry_companies.count()
-            })
-            
-        except Exception:
+
             return Response(
-                {'error': 'Company not found'}, 
-                status=status.HTTP_404_NOT_FOUND
+                {
+                    "target_company": {
+                        "id": company.id,
+                        "name": company.name,
+                        "ticker": company.ticker,
+                        "im_sector": company.im_sector,
+                        "rank": current_company_rank,
+                    },
+                    "industry": company.im_sector,
+                    "comparison_data": comparison_data,
+                    "total_top_companies_shown": len(top_3_companies),
+                    "total_companies_in_industry": all_industry_companies.count(),
+                }
             )
+
+        except Exception:
+            return Response({"error": "Company not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 # ==========================================
 # 向后兼容的独立函数视图 (保持旧 URL 可用)
 # ==========================================
 
-from rest_framework.decorators import api_view
-from rest_framework import serializers as drf_serializers
 from drf_spectacular.utils import inline_serializer
+from rest_framework import serializers as drf_serializers
+from rest_framework.decorators import api_view
 
 
 @extend_schema(
-    responses={200: inline_serializer(
-        name='CSI300IndexResponse',
-        fields={
-            'message': drf_serializers.CharField(),
-            'version': drf_serializers.CharField(),
-            'endpoints': drf_serializers.DictField(),
-            'total_companies': drf_serializers.IntegerField(),
-        }
-    )}
+    responses={
+        200: inline_serializer(
+            name="CSI300IndexResponse",
+            fields={
+                "message": drf_serializers.CharField(),
+                "version": drf_serializers.CharField(),
+                "endpoints": drf_serializers.DictField(),
+                "total_companies": drf_serializers.IntegerField(),
+            },
+        )
+    }
 )
-@api_view(['GET'])
+@api_view(["GET"])
 def csi300_index(request: Request) -> Response:
     """CSI300 API 索引端点 (向后兼容)"""
     total_companies = CSI300Company.objects.count()
-    
-    return Response({
-        'message': 'CSI300 Companies API',
-        'version': '1.0.0',
-        'endpoints': {
-            'companies': '/api/csi300/api/companies/',
-            'company_detail': '/api/csi300/api/companies/{id}/',
-            'filter_options': '/api/csi300/api/companies/filter_options/',
-            'search': '/api/csi300/api/companies/search/',
-            'health': '/api/csi300/api/companies/health/',
-        },
-        'total_companies': total_companies
-    })
+
+    return Response(
+        {
+            "message": "CSI300 Companies API",
+            "version": "1.0.0",
+            "endpoints": {
+                "companies": "/api/csi300/api/companies/",
+                "company_detail": "/api/csi300/api/companies/{id}/",
+                "filter_options": "/api/csi300/api/companies/filter_options/",
+                "search": "/api/csi300/api/companies/search/",
+                "health": "/api/csi300/api/companies/health/",
+            },
+            "total_companies": total_companies,
+        }
+    )
 
 
 @extend_schema(
-    responses={200: inline_serializer(
-        name='CSI300HealthCheckResponse',
-        fields={
-            'status': drf_serializers.CharField(),
-            'service': drf_serializers.CharField(),
-            'total_companies': drf_serializers.IntegerField(),
-            'database_available': drf_serializers.BooleanField(),
-        }
-    )}
+    responses={
+        200: inline_serializer(
+            name="CSI300HealthCheckResponse",
+            fields={
+                "status": drf_serializers.CharField(),
+                "service": drf_serializers.CharField(),
+                "total_companies": drf_serializers.IntegerField(),
+                "database_available": drf_serializers.BooleanField(),
+            },
+        )
+    }
 )
-@api_view(['GET'])
+@api_view(["GET"])
 def health_check(request: Request) -> Response:
     """CSI300 API 健康检查端点 (向后兼容)"""
     try:
         count = CSI300Company.objects.count()
-        return Response({
-            'status': 'healthy',
-            'service': 'CSI300 API',
-            'total_companies': count,
-            'database_available': True
-        })
+        return Response(
+            {
+                "status": "healthy",
+                "service": "CSI300 API",
+                "total_companies": count,
+                "database_available": True,
+            }
+        )
     except Exception as e:
-        return Response({
-            'status': 'error',
-            'service': 'CSI300 API',
-            'error': str(e),
-            'database_available': False
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(
+            {
+                "status": "error",
+                "service": "CSI300 API",
+                "error": str(e),
+                "database_available": False,
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @extend_schema(
     request=inline_serializer(
-        name='GenerateInvestmentSummaryRequest',
+        name="GenerateInvestmentSummaryRequest",
         fields={
-            'company_id': drf_serializers.IntegerField(help_text='公司数据库 ID'),
-        }
+            "company_id": drf_serializers.IntegerField(help_text="公司数据库 ID"),
+        },
     ),
     responses={
         200: inline_serializer(
-            name='GenerateInvestmentSummaryResponse',
+            name="GenerateInvestmentSummaryResponse",
             fields={
-                'status': drf_serializers.CharField(),
-                'message': drf_serializers.CharField(),
-                'data': drf_serializers.DictField(),
-            }
+                "status": drf_serializers.CharField(),
+                "message": drf_serializers.CharField(),
+                "data": drf_serializers.DictField(),
+            },
         ),
-    }
+    },
 )
-@api_view(['POST'])
+@api_view(["POST"])
 def generate_investment_summary(request: Request) -> Response:
     """生成指定公司的 Investment Summary (向后兼容)"""
     # 委托给 ViewSet 的实现

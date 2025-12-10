@@ -1,4 +1,4 @@
-# Justfile for MEM Dashboard 2
+# Justfile for Project
 
 set shell := ["bash", "-c"]
 
@@ -53,3 +53,53 @@ codegen:
 summary-all:
     @echo "🚀 Starting batch generation of investment summaries..."
     cd src/django_api && ../../venv/bin/python -m csi300.services.cli
+
+# 9. Lint: Run Ruff linter on Python code (src only)
+lint:
+    @echo "🔍 Running Ruff linter on src/..."
+    ./venv/bin/ruff check src
+
+# 10. Lint Fix: Run Ruff linter with auto-fix
+lint-fix:
+    @echo "🔧 Running Ruff linter with auto-fix..."
+    ./venv/bin/ruff check --fix src
+
+# 11. Format: Run Ruff formatter on Python code
+format:
+    @echo "✨ Running Ruff formatter..."
+    ./venv/bin/ruff format src
+
+# 12. Format Check: Check if code is formatted correctly
+format-check:
+    @echo "📋 Checking code formatting..."
+    ./venv/bin/ruff format --check src
+
+# 13. Check: Run all code quality checks (lint + format check)
+check:
+    @echo "🔍 Running all code quality checks on src/..."
+    @echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    @echo "📋 Step 1: Checking code formatting..."
+    @echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    ./venv/bin/ruff format --check src
+    @echo ""
+    @echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    @echo "🔍 Step 2: Running linter..."
+    @echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    ./venv/bin/ruff check src
+    @echo ""
+    @echo "✅ All checks passed!"
+
+# 14. Fix: Run all auto-fixes (format + lint fix)
+fix:
+    @echo "🔧 Running all auto-fixes on src/..."
+    @echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    @echo "✨ Step 1: Formatting code..."
+    @echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    ./venv/bin/ruff format src
+    @echo ""
+    @echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    @echo "🔧 Step 2: Auto-fixing linter issues..."
+    @echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    ./venv/bin/ruff check --fix src
+    @echo ""
+    @echo "✅ All fixes applied!"

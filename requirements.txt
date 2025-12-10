@@ -1,5 +1,5 @@
 # =============================================================================
-# MEM Dashboard - Python Dependencies
+# Python Dependencies
 # =============================================================================
 # This is the single source of truth for all Python dependencies.
 # Do not create additional requirements files.
@@ -77,3 +77,6 @@ drf-spectacular>=0.27.0
 # Testing
 pytest>=9.0.1
 pytest-django>=4.11.1
+
+# Code Quality & Linting
+ruff>=0.8.0
