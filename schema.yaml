@@ -749,7 +749,7 @@ paths:
   /api/content/modals/all_content/:
     get:
       operationId: api_content_modals_all_content_retrieve
-      description: Get all content simplified version
+      description: Get all content - simplified version for batch retrieval
       tags:
       - api
       security:
@@ -779,16 +779,7 @@ paths:
   /api/csi300/:
     get:
       operationId: api_csi300_retrieve
-      description: |-
-        CSI300 API 索引端点
-
-        返回 API 概览信息，包括可用端点和统计数据。
-
-        Args:
-            request: DRF 请求对象
-
-        Returns:
-            Response: API 概览信息
+      description: CSI300 API 索引端点 (向后兼容)
       tags:
       - api
       security:
@@ -803,20 +794,7 @@ paths:
   /api/csi300/api/companies/:
     get:
       operationId: api_csi300_api_companies_list
-      description: |-
-        CSI300 公司数据 ViewSet
-
-        提供 CSI300 指数成分股的只读 API 端点:
-        - list: 获取公司列表 (支持筛选和分页)
-        - retrieve: 获取单个公司详情
-        - filter_options: 获取筛选选项
-        - search: 搜索公司
-        - investment_summary: 获取投资摘要
-        - industry_peers_comparison: 获取同行业对比
-
-        类型注解:
-        - 所有方法返回 Response 对象
-        - 查询参数通过 request.query_params 获取
+      description: 获取公司列表或 API 概览
       parameters:
       - name: page
         required: false
@@ -844,19 +822,7 @@ paths:
   /api/csi300/api/companies/{id}/:
     get:
       operationId: api_csi300_api_companies_retrieve
-      description: |-
-        获取单个公司详情
-
-        Args:
-            request: DRF 请求对象
-            *args: 位置参数
-            **kwargs: 关键字参数，包含 pk (公司 ID)
-
-        Returns:
-            Response: 包含公司详情的响应
-
-        Raises:
-            Http404: 当公司不存在时
+      description: 获取单个公司详情
       parameters:
       - in: path
         name: id
@@ -878,24 +844,7 @@ paths:
   /api/csi300/api/companies/{id}/industry_peers_comparison/:
     get:
       operationId: api_csi300_api_companies_industry_peers_comparison_retrieve
-      description: |-
-        获取同行业公司对比数据
-
-        返回目标公司与同行业前3名公司的关键指标对比。
-
-        Args:
-            request: DRF 请求对象
-            pk: 公司 ID
-
-        Returns:
-            Response: 同行业对比数据
-            {
-                target_company: { id, name, ticker, im_sector, rank },
-                industry: str,
-                comparison_data: List[PeerComparisonItem],
-                total_top_companies_shown: int,
-                total_companies_in_industry: int
-            }
+      description: 获取同行业公司对比数据
       parameters:
       - in: path
         name: id
@@ -917,15 +866,7 @@ paths:
   /api/csi300/api/companies/{id}/investment_summary/:
     get:
       operationId: api_csi300_api_companies_investment_summary_retrieve
-      description: |-
-        获取公司投资摘要
-
-        Args:
-            request: DRF 请求对象
-            pk: 公司 ID
-
-        Returns:
-            Response: 投资摘要数据或错误响应
+      description: 获取公司投资摘要
       parameters:
       - in: path
         name: id
@@ -947,27 +888,7 @@ paths:
   /api/csi300/api/companies/filter_options/:
     get:
       operationId: api_csi300_api_companies_filter_options_retrieve
-      description: |-
-        获取可用的筛选选项
-
-        支持级联筛选：
-        - 根据 region 返回对应地区的选项
-        - 根据 im_sector 返回对应行业的细分选项
-
-        Args:
-            request: DRF 请求对象
-
-        Returns:
-            Response: 包含筛选选项的响应
-            {
-                regions: List[str],
-                im_sectors: List[str],
-                industries: List[str],
-                gics_industries: List[str],
-                market_cap_range: { min: float, max: float },
-                filtered_by_region: bool,
-                filtered_by_sector: bool
-            }
+      description: 获取可用的筛选选项
       parameters:
       - in: query
         name: im_sector
@@ -988,19 +909,55 @@ paths:
               schema:
                 $ref: '#/components/schemas/CSI300FilterOptions'
           description: ''
+  /api/csi300/api/companies/generate-summary/:
+    post:
+      operationId: api_csi300_api_companies_generate_summary_create
+      description: |-
+        生成指定公司的 Investment Summary
+
+        使用 AI 模型生成公司投资摘要并保存到数据库。
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CSI300Company'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CSI300Company'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CSI300Company'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300Company'
+          description: ''
+  /api/csi300/api/companies/health/:
+    get:
+      operationId: api_csi300_api_companies_health_retrieve
+      description: 健康检查端点
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300Company'
+          description: ''
   /api/csi300/api/companies/search/:
     get:
       operationId: api_csi300_api_companies_search_list
-      description: |-
-        搜索公司
-
-        通过公司名称、股票代码或别名进行搜索。
-
-        Args:
-            request: DRF 请求对象，需要 'q' 查询参数
-
-        Returns:
-            Response: 匹配的公司列表 (最多 10 条)
+      description: 搜索公司
       parameters:
       - name: page
         required: false
@@ -1033,16 +990,7 @@ paths:
   /api/csi300/api/generate-summary/:
     post:
       operationId: api_csi300_api_generate_summary_create
-      description: |-
-        生成指定公司的 Investment Summary
-
-        使用 AI 模型生成公司投资摘要并保存到数据库。
-
-        Args:
-            request: DRF 请求对象，body 中包含 company_id
-
-        Returns:
-            Response: 生成结果
+      description: 生成指定公司的 Investment Summary (向后兼容)
       tags:
       - api
       requestBody:
@@ -1066,25 +1014,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/GenerateInvestmentSummaryResponse'
           description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenerateInvestmentSummaryError'
-          description: ''
   /api/csi300/health/:
     get:
       operationId: api_csi300_health_retrieve
-      description: |-
-        CSI300 API 健康检查端点
-
-        检查数据库连接和数据可用性。
-
-        Args:
-            request: DRF 请求对象
-
-        Returns:
-            Response: 健康状态信息
+      description: CSI300 API 健康检查端点 (向后兼容)
       tags:
       - api
       security:
@@ -1099,16 +1032,7 @@ paths:
   /api/fred/:
     get:
       operationId: api_fred_list
-      description: |-
-        API 根端点 - 返回 API 概览信息
-
-        GET /api/fred-us/
-
-        Args:
-            request: DRF 请求对象
-
-        Returns:
-            Response: API 概览信息
+      description: API 根端点 - 返回 API 概览信息
       tags:
       - api
       security:
@@ -1230,16 +1154,7 @@ paths:
   /api/fred-us/:
     get:
       operationId: api_fred_us_list
-      description: |-
-        API 根端点 - 返回 API 概览信息
-
-        GET /api/fred-us/
-
-        Args:
-            request: DRF 请求对象
-
-        Returns:
-            Response: API 概览信息
+      description: API 根端点 - 返回 API 概览信息
       tags:
       - api
       security:
@@ -1265,11 +1180,7 @@ paths:
         - status: 服务状态
         - all_indicators: 所有指标摘要
         - health: 健康检查
-        - 各种特定指标端点 (debt-to-gdp, cpi, unemployment, etc.)
-
-        类型注解:
-        - 所有方法返回 Response 对象
-        - 查询参数通过 request.query_params 获取
+        - 各种特定指标端点 (通过 Mixins 提供)
       parameters:
       - in: path
         name: id
@@ -1291,7 +1202,7 @@ paths:
   /api/fred-us/aaa-corporate-bond-yield/:
     get:
       operationId: api_fred_us_aaa_corporate_bond_yield_retrieve
-      description: 穆迪季节性Aaa级企业债券收益率 - GET /api/fred-us/aaa-corporate-bond-yield/
+      description: 穆迪Aaa级企业债券收益率 - GET /api/fred-us/aaa-corporate-bond-yield/
       tags:
       - api
       security:
@@ -1306,7 +1217,7 @@ paths:
   /api/fred-us/all_indicators/:
     get:
       operationId: api_fred_us_all_indicators_retrieve
-      description: 获取所有美国FRED指标概览 - GET /api/fred-us/all-indicators/
+      description: 获取所有美国FRED指标概览
       tags:
       - api
       security:
@@ -1336,7 +1247,7 @@ paths:
   /api/fred-us/baa-corporate-bond-yield/:
     get:
       operationId: api_fred_us_baa_corporate_bond_yield_retrieve
-      description: 穆迪季节性Baa级企业债券收益率 - GET /api/fred-us/baa-corporate-bond-yield/
+      description: 穆迪Baa级企业债券收益率 - GET /api/fred-us/baa-corporate-bond-yield/
       tags:
       - api
       security:
@@ -1396,7 +1307,7 @@ paths:
   /api/fred-us/banking-federal-funds-rate/:
     get:
       operationId: api_fred_us_banking_federal_funds_rate_retrieve
-      description: 联邦基金利率 (Banking Sector) - GET /api/fred-us/banking-federal-funds-rate/
+      description: 联邦基金利率 (Banking) - GET /api/fred-us/banking-federal-funds-rate/
       tags:
       - api
       security:
@@ -1411,7 +1322,7 @@ paths:
   /api/fred-us/banking-pce-inflation/:
     get:
       operationId: api_fred_us_banking_pce_inflation_retrieve
-      description: PCE价格指数 (通胀) - GET /api/fred-us/banking-pce-inflation/
+      description: PCE价格指数 (Banking) - GET /api/fred-us/banking-pce-inflation/
       tags:
       - api
       security:
@@ -1471,7 +1382,7 @@ paths:
   /api/fred-us/banking-unemployment-rate/:
     get:
       operationId: api_fred_us_banking_unemployment_rate_retrieve
-      description: 失业率 - GET /api/fred-us/banking-unemployment-rate/
+      description: 失业率 (Banking) - GET /api/fred-us/banking-unemployment-rate/
       tags:
       - api
       security:
@@ -1516,7 +1427,7 @@ paths:
   /api/fred-us/consumer-price-inflation/:
     get:
       operationId: api_fred_us_consumer_price_inflation_retrieve
-      description: 美国消费者价格通胀率 - GET /api/fred-us/consumer-price-inflation/
+      description: 消费者价格通胀率 - GET /api/fred-us/consumer-price-inflation/
       tags:
       - api
       security:
@@ -1606,7 +1517,7 @@ paths:
   /api/fred-us/customs-duties/:
     get:
       operationId: api_fred_us_customs_duties_retrieve
-      description: 联邦政府关税收入 - GET /api/fred-us/customs-duties/
+      description: 关税收入 - GET /api/fred-us/customs-duties/
       tags:
       - api
       security:
@@ -1756,7 +1667,7 @@ paths:
   /api/fred-us/federal-debt-gdp-ratio-gdf/:
     get:
       operationId: api_fred_us_federal_debt_gdp_ratio_gdf_retrieve
-      description: 联邦债务占GDP比例 (Government Deficit Financing) - GET /api/fred-us/federal-debt-gdp-ratio-gdf/
+      description: 联邦债务占GDP比例 (GDF) - GET /api/fred-us/federal-debt-gdp-ratio-gdf/
       tags:
       - api
       security:
@@ -1801,7 +1712,7 @@ paths:
   /api/fred-us/federal-debt-total-gdf/:
     get:
       operationId: api_fred_us_federal_debt_total_gdf_retrieve
-      description: 联邦债务总额 (Government Deficit Financing) - GET /api/fred-us/federal-debt-total-gdf/
+      description: 联邦债务总额 (GDF) - GET /api/fred-us/federal-debt-total-gdf/
       tags:
       - api
       security:
@@ -1816,7 +1727,7 @@ paths:
   /api/fred-us/federal-funds-rate/:
     get:
       operationId: api_fred_us_federal_funds_rate_retrieve
-      description: 联邦基金利率 - GET /api/fred-us/federal-funds-rate/
+      description: 联邦基金利率 (Money Supply) - GET /api/fred-us/federal-funds-rate/
       tags:
       - api
       security:
@@ -1876,7 +1787,7 @@ paths:
   /api/fred-us/federal-surplus-deficit-gdf/:
     get:
       operationId: api_fred_us_federal_surplus_deficit_gdf_retrieve
-      description: 联邦盈余或赤字 (Government Deficit Financing) - GET /api/fred-us/federal-surplus-deficit-gdf/
+      description: 联邦盈余或赤字 (GDF) - GET /api/fred-us/federal-surplus-deficit-gdf/
       tags:
       - api
       security:
@@ -1891,7 +1802,7 @@ paths:
   /api/fred-us/federal-surplus-deficit-mts/:
     get:
       operationId: api_fred_us_federal_surplus_deficit_mts_retrieve
-      description: 联邦财政盈余/赤字（月度财政报表）- GET /api/fred-us/federal-surplus-deficit-mts/
+      description: 财政盈余/赤字 - GET /api/fred-us/federal-surplus-deficit-mts/
       tags:
       - api
       security:
@@ -1921,7 +1832,7 @@ paths:
   /api/fred-us/fetch_data/:
     post:
       operationId: api_fred_us_fetch_data_create
-      description: 手动获取美国FRED数据 - POST /api/fred-us/fetch-data/
+      description: 手动获取美国FRED数据
       tags:
       - api
       requestBody:
@@ -1948,7 +1859,7 @@ paths:
   /api/fred-us/foreign-treasury-holdings/:
     get:
       operationId: api_fred_us_foreign_treasury_holdings_retrieve
-      description: 外国官方机构持有的美国国债 - GET /api/fred-us/foreign-treasury-holdings/
+      description: 外国持有的美国国债 - GET /api/fred-us/foreign-treasury-holdings/
       tags:
       - api
       security:
@@ -1993,7 +1904,7 @@ paths:
   /api/fred-us/health/:
     get:
       operationId: api_fred_us_health_retrieve
-      description: 健康检查端点 - GET /api/fred-us/health/
+      description: 健康检查端点
       tags:
       - api
       security:
@@ -2008,7 +1919,7 @@ paths:
   /api/fred-us/high-yield-bond-spread/:
     get:
       operationId: api_fred_us_high_yield_bond_spread_retrieve
-      description: ICE BofA美国高收益指数期权调整利差 - GET /api/fred-us/high-yield-bond-spread/
+      description: 高收益债券利差 - GET /api/fred-us/high-yield-bond-spread/
       tags:
       - api
       security:
@@ -2053,18 +1964,7 @@ paths:
   /api/fred-us/indicator/:
     get:
       operationId: api_fred_us_indicator_retrieve
-      description: |-
-        获取指定美国 FRED 指标数据
-
-        GET /api/fred-us/indicator/?name=UNRATE&limit=100
-
-        Args:
-            request: DRF 请求对象
-                - name: 指标名称 (必需)
-                - limit: 返回记录数 (默认 100)
-
-        Returns:
-            Response: 指标数据或错误响应
+      description: 获取指定美国 FRED 指标数据
       tags:
       - api
       security:
@@ -2256,10 +2156,40 @@ paths:
               schema:
                 $ref: '#/components/schemas/FredUsIndicatorResponse'
           description: ''
+  /api/fred-us/m1/:
+    get:
+      operationId: api_fred_us_m1_retrieve
+      description: M1货币供应量 - GET /api/fred-us/m1/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
   /api/fred-us/m1-money-supply/:
     get:
       operationId: api_fred_us_m1_money_supply_retrieve
       description: M1货币供应量 - GET /api/fred-us/m1-money-supply/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred-us/m2/:
+    get:
+      operationId: api_fred_us_m2_retrieve
+      description: M2货币供应量 - GET /api/fred-us/m2/
       tags:
       - api
       security:
@@ -2364,7 +2294,7 @@ paths:
   /api/fred-us/net-exports/:
     get:
       operationId: api_fred_us_net_exports_retrieve
-      description: 商品和服务净出口 - GET /api/fred-us/net-exports/
+      description: 净出口 - GET /api/fred-us/net-exports/
       tags:
       - api
       security:
@@ -2439,7 +2369,7 @@ paths:
   /api/fred-us/primary-credit-loans/:
     get:
       operationId: api_fred_us_primary_credit_loans_retrieve
-      description: 资产流动性和信贷便利：主要信贷贷款 - GET /api/fred-us/primary-credit-loans/
+      description: 主要信贷贷款 - GET /api/fred-us/primary-credit-loans/
       tags:
       - api
       security:
@@ -2469,7 +2399,7 @@ paths:
   /api/fred-us/real-exports/:
     get:
       operationId: api_fred_us_real_exports_retrieve
-      description: 实际商品和服务出口 - GET /api/fred-us/real-exports/
+      description: 实际出口 - GET /api/fred-us/real-exports/
       tags:
       - api
       security:
@@ -2484,7 +2414,7 @@ paths:
   /api/fred-us/real-imports/:
     get:
       operationId: api_fred_us_real_imports_retrieve
-      description: 实际商品和服务进口 - GET /api/fred-us/real-imports/
+      description: 实际进口 - GET /api/fred-us/real-imports/
       tags:
       - api
       security:
@@ -2499,7 +2429,7 @@ paths:
   /api/fred-us/status/:
     get:
       operationId: api_fred_us_status_retrieve
-      description: 获取美国FRED服务状态 - GET /api/fred-us/status/
+      description: 获取美国FRED服务状态
       tags:
       - api
       security:
@@ -2544,7 +2474,7 @@ paths:
   /api/fred-us/trade-balance-goods-services/:
     get:
       operationId: api_fred_us_trade_balance_goods_services_retrieve
-      description: 贸易平衡：商品和服务（国际收支基础）- GET /api/fred-us/trade-balance-goods-services/
+      description: 贸易平衡 - GET /api/fred-us/trade-balance-goods-services/
       tags:
       - api
       security:
@@ -2643,11 +2573,7 @@ paths:
         - status: 服务状态
         - all_indicators: 所有指标摘要
         - health: 健康检查
-        - 各种特定指标端点 (debt-to-gdp, cpi, unemployment, etc.)
-
-        类型注解:
-        - 所有方法返回 Response 对象
-        - 查询参数通过 request.query_params 获取
+        - 各种特定指标端点 (通过 Mixins 提供)
       parameters:
       - in: path
         name: id
@@ -2669,7 +2595,7 @@ paths:
   /api/fred/aaa-corporate-bond-yield/:
     get:
       operationId: api_fred_aaa_corporate_bond_yield_retrieve
-      description: 穆迪季节性Aaa级企业债券收益率 - GET /api/fred-us/aaa-corporate-bond-yield/
+      description: 穆迪Aaa级企业债券收益率 - GET /api/fred-us/aaa-corporate-bond-yield/
       tags:
       - api
       security:
@@ -2684,7 +2610,7 @@ paths:
   /api/fred/all_indicators/:
     get:
       operationId: api_fred_all_indicators_retrieve
-      description: 获取所有美国FRED指标概览 - GET /api/fred-us/all-indicators/
+      description: 获取所有美国FRED指标概览
       tags:
       - api
       security:
@@ -2714,7 +2640,7 @@ paths:
   /api/fred/baa-corporate-bond-yield/:
     get:
       operationId: api_fred_baa_corporate_bond_yield_retrieve
-      description: 穆迪季节性Baa级企业债券收益率 - GET /api/fred-us/baa-corporate-bond-yield/
+      description: 穆迪Baa级企业债券收益率 - GET /api/fred-us/baa-corporate-bond-yield/
       tags:
       - api
       security:
@@ -2774,7 +2700,7 @@ paths:
   /api/fred/banking-federal-funds-rate/:
     get:
       operationId: api_fred_banking_federal_funds_rate_retrieve
-      description: 联邦基金利率 (Banking Sector) - GET /api/fred-us/banking-federal-funds-rate/
+      description: 联邦基金利率 (Banking) - GET /api/fred-us/banking-federal-funds-rate/
       tags:
       - api
       security:
@@ -2789,7 +2715,7 @@ paths:
   /api/fred/banking-pce-inflation/:
     get:
       operationId: api_fred_banking_pce_inflation_retrieve
-      description: PCE价格指数 (通胀) - GET /api/fred-us/banking-pce-inflation/
+      description: PCE价格指数 (Banking) - GET /api/fred-us/banking-pce-inflation/
       tags:
       - api
       security:
@@ -2849,7 +2775,7 @@ paths:
   /api/fred/banking-unemployment-rate/:
     get:
       operationId: api_fred_banking_unemployment_rate_retrieve
-      description: 失业率 - GET /api/fred-us/banking-unemployment-rate/
+      description: 失业率 (Banking) - GET /api/fred-us/banking-unemployment-rate/
       tags:
       - api
       security:
@@ -2894,7 +2820,7 @@ paths:
   /api/fred/consumer-price-inflation/:
     get:
       operationId: api_fred_consumer_price_inflation_retrieve
-      description: 美国消费者价格通胀率 - GET /api/fred-us/consumer-price-inflation/
+      description: 消费者价格通胀率 - GET /api/fred-us/consumer-price-inflation/
       tags:
       - api
       security:
@@ -2984,7 +2910,7 @@ paths:
   /api/fred/customs-duties/:
     get:
       operationId: api_fred_customs_duties_retrieve
-      description: 联邦政府关税收入 - GET /api/fred-us/customs-duties/
+      description: 关税收入 - GET /api/fred-us/customs-duties/
       tags:
       - api
       security:
@@ -3134,7 +3060,7 @@ paths:
   /api/fred/federal-debt-gdp-ratio-gdf/:
     get:
       operationId: api_fred_federal_debt_gdp_ratio_gdf_retrieve
-      description: 联邦债务占GDP比例 (Government Deficit Financing) - GET /api/fred-us/federal-debt-gdp-ratio-gdf/
+      description: 联邦债务占GDP比例 (GDF) - GET /api/fred-us/federal-debt-gdp-ratio-gdf/
       tags:
       - api
       security:
@@ -3179,7 +3105,7 @@ paths:
   /api/fred/federal-debt-total-gdf/:
     get:
       operationId: api_fred_federal_debt_total_gdf_retrieve
-      description: 联邦债务总额 (Government Deficit Financing) - GET /api/fred-us/federal-debt-total-gdf/
+      description: 联邦债务总额 (GDF) - GET /api/fred-us/federal-debt-total-gdf/
       tags:
       - api
       security:
@@ -3194,7 +3120,7 @@ paths:
   /api/fred/federal-funds-rate/:
     get:
       operationId: api_fred_federal_funds_rate_retrieve
-      description: 联邦基金利率 - GET /api/fred-us/federal-funds-rate/
+      description: 联邦基金利率 (Money Supply) - GET /api/fred-us/federal-funds-rate/
       tags:
       - api
       security:
@@ -3254,7 +3180,7 @@ paths:
   /api/fred/federal-surplus-deficit-gdf/:
     get:
       operationId: api_fred_federal_surplus_deficit_gdf_retrieve
-      description: 联邦盈余或赤字 (Government Deficit Financing) - GET /api/fred-us/federal-surplus-deficit-gdf/
+      description: 联邦盈余或赤字 (GDF) - GET /api/fred-us/federal-surplus-deficit-gdf/
       tags:
       - api
       security:
@@ -3269,7 +3195,7 @@ paths:
   /api/fred/federal-surplus-deficit-mts/:
     get:
       operationId: api_fred_federal_surplus_deficit_mts_retrieve
-      description: 联邦财政盈余/赤字（月度财政报表）- GET /api/fred-us/federal-surplus-deficit-mts/
+      description: 财政盈余/赤字 - GET /api/fred-us/federal-surplus-deficit-mts/
       tags:
       - api
       security:
@@ -3299,7 +3225,7 @@ paths:
   /api/fred/fetch_data/:
     post:
       operationId: api_fred_fetch_data_create
-      description: 手动获取美国FRED数据 - POST /api/fred-us/fetch-data/
+      description: 手动获取美国FRED数据
       tags:
       - api
       requestBody:
@@ -3326,7 +3252,7 @@ paths:
   /api/fred/foreign-treasury-holdings/:
     get:
       operationId: api_fred_foreign_treasury_holdings_retrieve
-      description: 外国官方机构持有的美国国债 - GET /api/fred-us/foreign-treasury-holdings/
+      description: 外国持有的美国国债 - GET /api/fred-us/foreign-treasury-holdings/
       tags:
       - api
       security:
@@ -3371,7 +3297,7 @@ paths:
   /api/fred/health/:
     get:
       operationId: api_fred_health_retrieve
-      description: 健康检查端点 - GET /api/fred-us/health/
+      description: 健康检查端点
       tags:
       - api
       security:
@@ -3386,7 +3312,7 @@ paths:
   /api/fred/high-yield-bond-spread/:
     get:
       operationId: api_fred_high_yield_bond_spread_retrieve
-      description: ICE BofA美国高收益指数期权调整利差 - GET /api/fred-us/high-yield-bond-spread/
+      description: 高收益债券利差 - GET /api/fred-us/high-yield-bond-spread/
       tags:
       - api
       security:
@@ -3431,18 +3357,7 @@ paths:
   /api/fred/indicator/:
     get:
       operationId: api_fred_indicator_retrieve
-      description: |-
-        获取指定美国 FRED 指标数据
-
-        GET /api/fred-us/indicator/?name=UNRATE&limit=100
-
-        Args:
-            request: DRF 请求对象
-                - name: 指标名称 (必需)
-                - limit: 返回记录数 (默认 100)
-
-        Returns:
-            Response: 指标数据或错误响应
+      description: 获取指定美国 FRED 指标数据
       tags:
       - api
       security:
@@ -3634,10 +3549,40 @@ paths:
               schema:
                 $ref: '#/components/schemas/FredUsIndicatorResponse'
           description: ''
+  /api/fred/m1/:
+    get:
+      operationId: api_fred_m1_retrieve
+      description: M1货币供应量 - GET /api/fred-us/m1/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
   /api/fred/m1-money-supply/:
     get:
       operationId: api_fred_m1_money_supply_retrieve
       description: M1货币供应量 - GET /api/fred-us/m1-money-supply/
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FredUsIndicatorResponse'
+          description: ''
+  /api/fred/m2/:
+    get:
+      operationId: api_fred_m2_retrieve
+      description: M2货币供应量 - GET /api/fred-us/m2/
       tags:
       - api
       security:
@@ -3742,7 +3687,7 @@ paths:
   /api/fred/net-exports/:
     get:
       operationId: api_fred_net_exports_retrieve
-      description: 商品和服务净出口 - GET /api/fred-us/net-exports/
+      description: 净出口 - GET /api/fred-us/net-exports/
       tags:
       - api
       security:
@@ -3817,7 +3762,7 @@ paths:
   /api/fred/primary-credit-loans/:
     get:
       operationId: api_fred_primary_credit_loans_retrieve
-      description: 资产流动性和信贷便利：主要信贷贷款 - GET /api/fred-us/primary-credit-loans/
+      description: 主要信贷贷款 - GET /api/fred-us/primary-credit-loans/
       tags:
       - api
       security:
@@ -3847,7 +3792,7 @@ paths:
   /api/fred/real-exports/:
     get:
       operationId: api_fred_real_exports_retrieve
-      description: 实际商品和服务出口 - GET /api/fred-us/real-exports/
+      description: 实际出口 - GET /api/fred-us/real-exports/
       tags:
       - api
       security:
@@ -3862,7 +3807,7 @@ paths:
   /api/fred/real-imports/:
     get:
       operationId: api_fred_real_imports_retrieve
-      description: 实际商品和服务进口 - GET /api/fred-us/real-imports/
+      description: 实际进口 - GET /api/fred-us/real-imports/
       tags:
       - api
       security:
@@ -3877,7 +3822,7 @@ paths:
   /api/fred/status/:
     get:
       operationId: api_fred_status_retrieve
-      description: 获取美国FRED服务状态 - GET /api/fred-us/status/
+      description: 获取美国FRED服务状态
       tags:
       - api
       security:
@@ -3922,7 +3867,7 @@ paths:
   /api/fred/trade-balance-goods-services/:
     get:
       operationId: api_fred_trade_balance_goods_services_retrieve
-      description: 贸易平衡：商品和服务（国际收支基础）- GET /api/fred-us/trade-balance-goods-services/
+      description: 贸易平衡 - GET /api/fred-us/trade-balance-goods-services/
       tags:
       - api
       security:
@@ -4278,16 +4223,7 @@ paths:
   /csi300/:
     get:
       operationId: csi300_retrieve
-      description: |-
-        CSI300 API 索引端点
-
-        返回 API 概览信息，包括可用端点和统计数据。
-
-        Args:
-            request: DRF 请求对象
-
-        Returns:
-            Response: API 概览信息
+      description: CSI300 API 索引端点 (向后兼容)
       tags:
       - csi300
       security:
@@ -4302,20 +4238,7 @@ paths:
   /csi300/api/companies/:
     get:
       operationId: csi300_api_companies_list
-      description: |-
-        CSI300 公司数据 ViewSet
-
-        提供 CSI300 指数成分股的只读 API 端点:
-        - list: 获取公司列表 (支持筛选和分页)
-        - retrieve: 获取单个公司详情
-        - filter_options: 获取筛选选项
-        - search: 搜索公司
-        - investment_summary: 获取投资摘要
-        - industry_peers_comparison: 获取同行业对比
-
-        类型注解:
-        - 所有方法返回 Response 对象
-        - 查询参数通过 request.query_params 获取
+      description: 获取公司列表或 API 概览
       parameters:
       - name: page
         required: false
@@ -4343,19 +4266,7 @@ paths:
   /csi300/api/companies/{id}/:
     get:
       operationId: csi300_api_companies_retrieve
-      description: |-
-        获取单个公司详情
-
-        Args:
-            request: DRF 请求对象
-            *args: 位置参数
-            **kwargs: 关键字参数，包含 pk (公司 ID)
-
-        Returns:
-            Response: 包含公司详情的响应
-
-        Raises:
-            Http404: 当公司不存在时
+      description: 获取单个公司详情
       parameters:
       - in: path
         name: id
@@ -4377,24 +4288,7 @@ paths:
   /csi300/api/companies/{id}/industry_peers_comparison/:
     get:
       operationId: csi300_api_companies_industry_peers_comparison_retrieve
-      description: |-
-        获取同行业公司对比数据
-
-        返回目标公司与同行业前3名公司的关键指标对比。
-
-        Args:
-            request: DRF 请求对象
-            pk: 公司 ID
-
-        Returns:
-            Response: 同行业对比数据
-            {
-                target_company: { id, name, ticker, im_sector, rank },
-                industry: str,
-                comparison_data: List[PeerComparisonItem],
-                total_top_companies_shown: int,
-                total_companies_in_industry: int
-            }
+      description: 获取同行业公司对比数据
       parameters:
       - in: path
         name: id
@@ -4416,15 +4310,7 @@ paths:
   /csi300/api/companies/{id}/investment_summary/:
     get:
       operationId: csi300_api_companies_investment_summary_retrieve
-      description: |-
-        获取公司投资摘要
-
-        Args:
-            request: DRF 请求对象
-            pk: 公司 ID
-
-        Returns:
-            Response: 投资摘要数据或错误响应
+      description: 获取公司投资摘要
       parameters:
       - in: path
         name: id
@@ -4446,27 +4332,7 @@ paths:
   /csi300/api/companies/filter_options/:
     get:
       operationId: csi300_api_companies_filter_options_retrieve
-      description: |-
-        获取可用的筛选选项
-
-        支持级联筛选：
-        - 根据 region 返回对应地区的选项
-        - 根据 im_sector 返回对应行业的细分选项
-
-        Args:
-            request: DRF 请求对象
-
-        Returns:
-            Response: 包含筛选选项的响应
-            {
-                regions: List[str],
-                im_sectors: List[str],
-                industries: List[str],
-                gics_industries: List[str],
-                market_cap_range: { min: float, max: float },
-                filtered_by_region: bool,
-                filtered_by_sector: bool
-            }
+      description: 获取可用的筛选选项
       parameters:
       - in: query
         name: im_sector
@@ -4487,19 +4353,55 @@ paths:
               schema:
                 $ref: '#/components/schemas/CSI300FilterOptions'
           description: ''
+  /csi300/api/companies/generate-summary/:
+    post:
+      operationId: csi300_api_companies_generate_summary_create
+      description: |-
+        生成指定公司的 Investment Summary
+
+        使用 AI 模型生成公司投资摘要并保存到数据库。
+      tags:
+      - csi300
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CSI300Company'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CSI300Company'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CSI300Company'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300Company'
+          description: ''
+  /csi300/api/companies/health/:
+    get:
+      operationId: csi300_api_companies_health_retrieve
+      description: 健康检查端点
+      tags:
+      - csi300
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CSI300Company'
+          description: ''
   /csi300/api/companies/search/:
     get:
       operationId: csi300_api_companies_search_list
-      description: |-
-        搜索公司
-
-        通过公司名称、股票代码或别名进行搜索。
-
-        Args:
-            request: DRF 请求对象，需要 'q' 查询参数
-
-        Returns:
-            Response: 匹配的公司列表 (最多 10 条)
+      description: 搜索公司
       parameters:
       - name: page
         required: false
@@ -4532,16 +4434,7 @@ paths:
   /csi300/api/generate-summary/:
     post:
       operationId: csi300_api_generate_summary_create
-      description: |-
-        生成指定公司的 Investment Summary
-
-        使用 AI 模型生成公司投资摘要并保存到数据库。
-
-        Args:
-            request: DRF 请求对象，body 中包含 company_id
-
-        Returns:
-            Response: 生成结果
+      description: 生成指定公司的 Investment Summary (向后兼容)
       tags:
       - csi300
       requestBody:
@@ -4565,25 +4458,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/GenerateInvestmentSummaryResponse'
           description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenerateInvestmentSummaryError'
-          description: ''
   /csi300/health/:
     get:
       operationId: csi300_health_retrieve
-      description: |-
-        CSI300 API 健康检查端点
-
-        检查数据库连接和数据可用性。
-
-        Args:
-            request: DRF 请求对象
-
-        Returns:
-            Response: 健康状态信息
+      description: CSI300 API 健康检查端点 (向后兼容)
       tags:
       - csi300
       security:
@@ -6073,16 +5951,6 @@ components:
           type: string
       required:
       - success
-    GenerateInvestmentSummaryError:
-      type: object
-      properties:
-        status:
-          type: string
-        message:
-          type: string
-      required:
-      - message
-      - status
     GenerateInvestmentSummaryRequest:
       type: object
       properties:
@@ -6170,11 +6038,46 @@ components:
           type: boolean
         symbol:
           type: string
-        data:
+        company_name:
+          type: string
+        data_points:
           type: array
           items:
             type: object
             additionalProperties: {}
+        previous_close:
+          type: number
+          format: double
+        open_price:
+          type: number
+          format: double
+        current_price:
+          type: number
+          format: double
+        latest_close:
+          type: number
+          format: double
+        change:
+          type: number
+          format: double
+        change_pct:
+          type: number
+          format: double
+        day_range:
+          type: string
+        volume:
+          type: integer
+        trading_days:
+          type: integer
+        price_52w_high:
+          type: number
+          format: double
+        price_52w_low:
+          type: number
+          format: double
+        stock_score:
+          type: object
+          additionalProperties: {}
         error:
           type: string
       required:
@@ -6186,11 +6089,24 @@ components:
           type: boolean
         symbol:
           type: string
-        data:
+        company_name:
+          type: string
+        data_points:
           type: array
           items:
             type: object
             additionalProperties: {}
+        previous_close:
+          type: number
+          format: double
+        current_price:
+          type: number
+          format: double
+        open_price:
+          type: number
+          format: double
+        update_time:
+          type: string
         error:
           type: string
       required:
@@ -6299,9 +6215,6 @@ components:
       - updated_at
     PaginatedCSI300CompanyListList:
       type: object
-      required:
-      - count
-      - results
       properties:
         count:
           type: integer

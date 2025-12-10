@@ -19,11 +19,13 @@ export default defineConfig({
               req.url = '/src/pages/browser/index.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
             } else if (url === '/detail.html') {
               req.url = '/src/pages/detail/index.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
+            } else if (url === '/fund-flow.html') {
+              req.url = '/src/pages/fund-flow/index.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
             } else if (url === '/investment-summary-detail.html') {
               req.url = '/src/pages/investment-summary-detail/index.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
             } else if (url === '/index.html' || url === '/') {
               req.url = '/src/pages/index/index.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
-            } 
+            }
             // Map /assets requests to legacy assets folder
             else if (req.url.startsWith('/assets/')) {
               req.url = req.url.replace(/^\/assets\//, '/legacy/assets/');
@@ -86,6 +88,7 @@ export default defineConfig({
         browser: page('browser'),
         index: page('index'),
         detail: page('detail'),
+        'fund-flow': page('fund-flow'),
         'investment-summary-detail': page('investment-summary-detail')
       }
     }

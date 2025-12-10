@@ -5,7 +5,12 @@
 export type IntradayDataResponse = {
     success: boolean;
     symbol?: string;
-    data?: Array<Record<string, any>>;
+    company_name?: string;
+    data_points?: Array<Record<string, any>>;
+    previous_close?: number;
+    current_price?: number;
+    open_price?: number;
+    update_time?: string;
     error?: string;
 };
 

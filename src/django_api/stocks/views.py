@@ -122,9 +122,14 @@ def stock_list(request):
             fields={
                 "success": drf_serializers.BooleanField(),
                 "symbol": drf_serializers.CharField(required=False),
-                "data": drf_serializers.ListField(
+                "company_name": drf_serializers.CharField(required=False),
+                "data_points": drf_serializers.ListField(
                     child=drf_serializers.DictField(), required=False
                 ),
+                "previous_close": drf_serializers.FloatField(required=False),
+                "current_price": drf_serializers.FloatField(required=False),
+                "open_price": drf_serializers.FloatField(required=False),
+                "update_time": drf_serializers.CharField(required=False),
                 "error": drf_serializers.CharField(required=False),
             },
         )
@@ -212,9 +217,22 @@ def intraday_data(request):
             fields={
                 "success": drf_serializers.BooleanField(),
                 "symbol": drf_serializers.CharField(required=False),
-                "data": drf_serializers.ListField(
+                "company_name": drf_serializers.CharField(required=False),
+                "data_points": drf_serializers.ListField(
                     child=drf_serializers.DictField(), required=False
                 ),
+                "previous_close": drf_serializers.FloatField(required=False),
+                "open_price": drf_serializers.FloatField(required=False),
+                "current_price": drf_serializers.FloatField(required=False),
+                "latest_close": drf_serializers.FloatField(required=False),
+                "change": drf_serializers.FloatField(required=False),
+                "change_pct": drf_serializers.FloatField(required=False),
+                "day_range": drf_serializers.CharField(required=False),
+                "volume": drf_serializers.IntegerField(required=False),
+                "trading_days": drf_serializers.IntegerField(required=False),
+                "price_52w_high": drf_serializers.FloatField(required=False),
+                "price_52w_low": drf_serializers.FloatField(required=False),
+                "stock_score": drf_serializers.DictField(required=False),
                 "error": drf_serializers.CharField(required=False),
             },
         )
