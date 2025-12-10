@@ -4006,6 +4006,74 @@ paths:
               schema:
                 $ref: '#/components/schemas/PolicyUpdatesResponse'
           description: ''
+  /api/refinitiv/financial-data/:
+    get:
+      operationId: api_refinitiv_financial_data_retrieve
+      description: 从 Refinitiv 获取指定公司的完整财务数据，用于 Investment Summary 生成。
+      summary: 获取公司财务数据
+      parameters:
+      - in: query
+        name: ric
+        schema:
+          type: string
+        description: Reuters Instrument Code (e.g., 0425.SZ for XCMG)
+        required: true
+      tags:
+      - Refinitiv
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinancialContext'
+          description: ''
+  /api/refinitiv/search/:
+    get:
+      operationId: api_refinitiv_search_retrieve
+      description: 通过公司名称或代码搜索 Refinitiv 股票代码 (RIC)。
+      summary: 搜索股票代码
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: 最大返回数量
+      - in: query
+        name: query
+        schema:
+          type: string
+        description: 搜索关键词 (e.g., 'XCMG', 'construction machinery')
+        required: true
+      tags:
+      - Refinitiv
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinancialContext'
+          description: ''
+  /api/refinitiv/status/:
+    get:
+      operationId: api_refinitiv_status_retrieve
+      description: 测试与 Refinitiv Data Platform 的连接状态。
+      summary: 测试 Refinitiv 连接
+      tags:
+      - Refinitiv
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefinitivConnectionStatus'
+          description: ''
   /api/stocks/chart/lightweight/:
     get:
       operationId: api_stocks_chart_lightweight_retrieve
@@ -4475,6 +4543,60 @@ paths:
           description: ''
 components:
   schemas:
+    AnalystConsensus:
+      type: object
+      description: 分析师一致预期序列化器。
+      properties:
+        consensus_rating:
+          type: string
+          nullable: true
+          description: 共识评级 (Buy/Hold/Sell)
+        buy_pct:
+          type: integer
+          nullable: true
+          description: 买入评级占比
+        hold_pct:
+          type: integer
+          nullable: true
+          description: 持有评级占比
+        sell_pct:
+          type: integer
+          nullable: true
+          description: 卖出评级占比
+        num_analysts:
+          type: integer
+          nullable: true
+          description: 分析师数量
+        target_price_low:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: 目标价最低
+        target_price_high:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: 目标价最高
+        target_price_avg:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: 目标价平均
+        target_price_median:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: 目标价中位数
+        upside_pct:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+          description: 上涨潜力百分比
     ApiOverviewResponse:
       type: object
       properties:
@@ -4520,6 +4642,46 @@ components:
       - status
       - timestamp
       - version
+    BalanceSheetMetrics:
+      type: object
+      description: 资产负债表指标序列化器。
+      properties:
+        total_debt:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+          nullable: true
+          description: 总负债
+        total_equity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+          nullable: true
+          description: 总权益
+        debt_to_equity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,4})?$
+          nullable: true
+          description: 负债权益比
+        current_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,4})?$
+          nullable: true
+          description: 流动比率
+        quick_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,4})?$
+          nullable: true
+          description: 速动比率
+        interest_coverage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+          description: 利息覆盖率
     BeaAllIndicatorsResponse:
       type: object
       properties:
@@ -5848,6 +6010,98 @@ components:
         * `economic-indicators` - Economic Indicators
         * `investment-components` - Investment Components
         * `market-analysis` - Market Analysis
+    FinancialContext:
+      type: object
+      description: |-
+        Investment Summary 完整财务上下文序列化器。
+
+        用于 API 响应和 OpenAPI schema 生成。
+      properties:
+        ric:
+          type: string
+          description: Reuters Instrument Code
+        company_name:
+          type: string
+          nullable: true
+          description: 公司名称
+        ticker:
+          type: string
+          nullable: true
+          description: 股票代码
+        pricing:
+          allOf:
+          - $ref: '#/components/schemas/PricingData'
+          nullable: true
+          description: 股价数据
+        key_metrics:
+          allOf:
+          - $ref: '#/components/schemas/KeyMetrics'
+          nullable: true
+          description: 关键指标
+        valuation:
+          allOf:
+          - $ref: '#/components/schemas/ValuationMetrics'
+          nullable: true
+          description: 估值指标
+        balance_sheet:
+          allOf:
+          - $ref: '#/components/schemas/BalanceSheetMetrics'
+          nullable: true
+          description: 资产负债表指标
+        profitability:
+          allOf:
+          - $ref: '#/components/schemas/ProfitabilityMetrics'
+          nullable: true
+          description: 盈利能力指标
+        analyst_consensus:
+          allOf:
+          - $ref: '#/components/schemas/AnalystConsensus'
+          nullable: true
+          description: 分析师共识
+        segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/SegmentData'
+          description: 业务分部
+        revenue_forecast:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+          nullable: true
+          description: 收入预测
+        revenue_forecast_yoy:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,4})?$
+          nullable: true
+          description: 收入预测同比
+        eps_forecast:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,4})?$
+          nullable: true
+          description: EPS 预测
+        eps_forecast_yoy:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,4})?$
+          nullable: true
+          description: EPS 预测同比
+        data_source:
+          type: string
+          default: Refinitiv
+          description: 数据来源
+        fetch_timestamp:
+          type: string
+          nullable: true
+          description: 获取时间
+        errors:
+          type: array
+          items:
+            type: string
+          description: 错误信息列表
+      required:
+      - ric
     FredJpHealthCheckResponse:
       type: object
       properties:
@@ -6111,6 +6365,74 @@ components:
           type: string
       required:
       - success
+    KeyMetrics:
+      type: object
+      description: 关键财务指标序列化器。
+      properties:
+        fiscal_year:
+          type: string
+          nullable: true
+          description: 财年
+        total_revenue:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+          nullable: true
+          description: 总收入
+        total_revenue_yoy:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,4})?$
+          nullable: true
+          description: 收入同比增长率
+        operating_income:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+          nullable: true
+          description: 营业收入
+        operating_income_yoy:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,4})?$
+          nullable: true
+          description: 营业收入同比增长率
+        net_income:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+          nullable: true
+          description: 净利润
+        net_income_yoy:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,4})?$
+          nullable: true
+          description: 净利润同比增长率
+        operating_margin:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+          nullable: true
+          description: 营业利润率
+        operating_margin_yoy:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+          nullable: true
+          description: 营业利润率同比变化
+        gross_margin:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+          nullable: true
+          description: 毛利率
+        net_margin:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+          nullable: true
+          description: 净利率
     LightweightChartResponse:
       type: object
       properties:
@@ -6330,6 +6652,140 @@ components:
       - last_updated
       - source
       - success
+    PricingData:
+      type: object
+      description: 股价数据序列化器。
+      properties:
+        price_close:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,4})?$
+          nullable: true
+          description: 收盘价
+        price_date:
+          type: string
+          nullable: true
+          description: 价格日期
+        week_52_high:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,4})?$
+          nullable: true
+          description: 52周最高
+        week_52_low:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,4})?$
+          nullable: true
+          description: 52周最低
+        market_cap:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+          nullable: true
+          description: 市值
+        market_cap_display:
+          type: string
+          nullable: true
+          description: 市值显示格式 (e.g., '132.10B CNY')
+        currency:
+          type: string
+          default: CNY
+          description: 货币
+    ProfitabilityMetrics:
+      type: object
+      description: 盈利能力指标序列化器。
+      properties:
+        roe:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,4})?$
+          nullable: true
+          description: 净资产收益率
+        roa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,4})?$
+          nullable: true
+          description: 总资产收益率
+        roic:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,4})?$
+          nullable: true
+          description: 投入资本收益率
+        operating_cash_flow:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+          nullable: true
+          description: 经营现金流
+        free_cash_flow:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+          nullable: true
+          description: 自由现金流
+        capex:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+          nullable: true
+          description: 资本支出
+    RefinitivConnectionStatus:
+      type: object
+      description: Refinitiv 连接状态序列化器。
+      properties:
+        authenticated:
+          type: boolean
+          description: 是否已认证
+        credentials_configured:
+          type: boolean
+          description: 凭证是否已配置
+        error:
+          type: string
+          nullable: true
+          description: 错误信息
+      required:
+      - authenticated
+      - credentials_configured
+    SegmentData:
+      type: object
+      description: 业务分部数据序列化器。
+      properties:
+        name:
+          type: string
+          description: 分部名称
+        description:
+          type: string
+          nullable: true
+          description: 分部描述
+        revenue_pct:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          description: 占总收入百分比
+        gross_margin:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          description: 毛利率
+        operating_margin:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          description: 营业利润率
+        profit_contribution:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          description: 利润贡献百分比
+      required:
+      - name
     StockListResponse:
       type: object
       properties:
@@ -6384,3 +6840,43 @@ components:
           type: string
       required:
       - success
+    ValuationMetrics:
+      type: object
+      description: 估值指标序列化器。
+      properties:
+        pe_ttm:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+          description: 市盈率 (TTM)
+        pe_forward:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+          description: 预测市盈率
+        peg_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          nullable: true
+          description: PEG 比率
+        pb_ratio:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          nullable: true
+          description: 市净率
+        ev_ebitda:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+          description: EV/EBITDA
+        dividend_yield:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+          nullable: true
+          description: 股息收益率

@@ -20,7 +20,7 @@ from .parser import (
     extract_sources_from_key_takeaways,
     parse_business_overview_to_json,
 )
-from .prompt_template import AI_MAX_RETRIES, AI_MODEL, AI_SYSTEM_PROMPT, AI_TIMEOUT, PROMPT_TEMPLATE
+from .prompt import AI_MAX_RETRIES, AI_MODEL, AI_SYSTEM_PROMPT, AI_TIMEOUT, PROMPT_TEMPLATE
 from .utils import XAI_API_KEY, format_market_cap, get_stock_data_sync, safe_decimal
 
 logger = logging.getLogger(__name__)

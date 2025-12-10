@@ -1,5 +1,7 @@
 import React from 'react';
 import { logger } from '@shared/lib/logger';
+import { SectionHeader, SegmentBar, AiBadge } from './ui';
+import { Activity } from 'lucide-react';
 
 interface DivisionData {
   name: string;
@@ -42,9 +44,9 @@ function tryParseJSON(content: string): BusinessOverviewData | null {
     if (typeof data === 'object' && 'raw_text' in data) {
       return data as BusinessOverviewData;
     }
-    
+
     logger.warn('JSON parsed but missing raw_text or not an object', { dataKeys: Object.keys(data || {}) });
-    
+
     // 兼容性处理：如果缺失 raw_text 但有 key_metrics，我们构造一个
     if (typeof data === 'object' && 'key_metrics' in data) {
         return {
@@ -53,27 +55,22 @@ function tryParseJSON(content: string): BusinessOverviewData | null {
         };
     }
     return null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
 
-// 格式化指标名称
-function formatMetricName(key: string): string {
-  const nameMap: Record<string, string> = {
-    total_revenue: 'Total Revenue / Sales',
-    operating_income: 'Operating Income',
-    net_income: 'Net Income',
-    net_interest_margin: 'Net Interest Margin (NIM)',
-    operating_margin: 'Operating Margin',
-  };
-  return nameMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+// Parse percentage string to number
+function parsePercentage(val: string | null): number {
+  if (!val) return 0;
+  const num = parseFloat(val.replace('%', ''));
+  return isNaN(num) ? 0 : num;
 }
 
 export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = ({ content }) => {
   if (!content) {
-      logger.warn('BusinessOverviewSection received empty content');
-      return null;
+    logger.warn('BusinessOverviewSection received empty content');
+    return null;
   }
 
   const jsonData = tryParseJSON(content);
@@ -82,14 +79,15 @@ export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = (
   if (!jsonData) {
     logger.info('Rendering Business Overview as plain text', { length: content.length });
     return (
-      <div className="investment-summary-section" id="businessOverview">
-        <div className="section-header">
-          <h2>Business Overview</h2>
-        </div>
-        <div className="section-content">
-          <p>{content}</p>
-        </div>
-      </div>
+      <section className="doc-section">
+        <SectionHeader title="Executive Summary" showAiBadge />
+        <article className="doc-section-content doc-prose">
+          <p>
+            <span className="doc-drop-cap">{content.charAt(0)}</span>
+            {content.slice(1)}
+          </p>
+        </article>
+      </section>
     );
   }
 
@@ -99,91 +97,128 @@ export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = (
   // 如果解析失败，显示原始文本
   if (!parsed) {
     return (
-      <div className="investment-summary-section" id="businessOverview">
-        <div className="section-header">
-          <h2>Business Overview</h2>
-        </div>
-        <div className="section-content">
-          <p>{raw_text}</p>
-        </div>
-      </div>
+      <section className="doc-section">
+        <SectionHeader title="Executive Summary" showAiBadge />
+        <article className="doc-section-content doc-prose">
+          <p>
+            <span className="doc-drop-cap">{raw_text.charAt(0)}</span>
+            {raw_text.slice(1)}
+          </p>
+        </article>
+      </section>
     );
   }
 
-  const hasKeyMetrics = Object.keys(parsed.key_metrics).length > 0;
   const hasDivisions = parsed.divisions.length > 0;
   const hasDivisionMetrics = hasDivisions && parsed.divisions.some(
     d => d.sales_percentage || d.gross_profit_margin || d.profit_percentage
   );
 
   return (
-    <div className="investment-summary-section" id="businessOverview">
-      <div className="section-header"><h2>Business Overview</h2></div>
-      <div className="section-content">
-        {/* 原始描述文本 */}
-        <p className="business-overview-text">{raw_text}</p>
+    <>
+      {/* Executive Summary Section */}
+      <section className="doc-section">
+        <div className="doc-section-header-row">
+          <SectionHeader title="Executive Summary" showAiBadge />
+        </div>
+        <article className="doc-section-content doc-prose">
+          {raw_text && (
+            <p>
+              <span className="doc-drop-cap">{raw_text.charAt(0)}</span>
+              {raw_text.slice(1)}
+            </p>
+          )}
+        </article>
+      </section>
 
-        {/* 关键财务指标表格 */}
-        {hasKeyMetrics && (
-          <div className="business-overview-metrics">
-            <h4 className="metrics-title">
-              Key Financial Metrics
-              {parsed.fiscal_year && ` (FY${parsed.fiscal_year})`}
-            </h4>
-            <table className="metrics-table">
-              <thead>
-                <tr>
-                  <th>Metric</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(parsed.key_metrics).map(([key, value]) => (
-                  value && (
-                    <tr key={key}>
-                      <td>{formatMetricName(key)}</td>
-                      <td className="metric-value">{value}</td>
-                    </tr>
-                  )
-                ))}
-              </tbody>
-            </table>
+      {/* Segment Performance Section */}
+      {hasDivisionMetrics && (
+        <section className="doc-section">
+          <SectionHeader
+            title="Segment Performance"
+            icon={Activity}
+            subtitle={parsed.fiscal_year ? `FY${parsed.fiscal_year}` : undefined}
+          />
+          <div className="doc-section-content">
+            <div className="segment-bars-container">
+              {parsed.divisions.map((div, idx) => (
+                <SegmentBar
+                  key={idx}
+                  name={div.name}
+                  description={div.description}
+                  percentage={parsePercentage(div.sales_percentage)}
+                  margin={div.gross_profit_margin || undefined}
+                  profitContrib={div.profit_percentage || undefined}
+                />
+              ))}
+            </div>
           </div>
-        )}
-
-        {/* 业务部门贡献表格 */}
-        {hasDivisionMetrics && (
-          <div className="business-overview-divisions">
-            <h4 className="metrics-title">Division Breakdown</h4>
-            <table className="divisions-table">
-              <thead>
-                <tr>
-                  <th>Division</th>
-                  <th>% of Sales</th>
-                  <th>Gross Margin</th>
-                  <th>% of Profits</th>
-                </tr>
-              </thead>
-              <tbody>
-                {parsed.divisions.map((div, idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <strong>{div.name}</strong>
-                      {div.description && (
-                        <span className="division-desc"> - {div.description}</span>
-                      )}
-                    </td>
-                    <td className="metric-value">{div.sales_percentage || '-'}</td>
-                    <td className="metric-value">{div.gross_profit_margin || '-'}</td>
-                    <td className="metric-value">{div.profit_percentage || '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
+        </section>
+      )}
+    </>
   );
 };
 
+/**
+ * Export key metrics for sidebar usage
+ */
+export function extractKeyMetrics(content: string | undefined): Array<{
+  label: string;
+  value: string;
+  unit?: string;
+  yoy?: number;
+}> {
+  if (!content) return [];
+
+  const jsonData = tryParseJSON(content);
+  if (!jsonData?.parsed?.key_metrics) return [];
+
+  const metrics = jsonData.parsed.key_metrics as Record<string, string | undefined>;
+  const result: Array<{ label: string; value: string; unit?: string; yoy?: number }> = [];
+
+  const labelMap: Record<string, string> = {
+    total_revenue: 'Total Revenue',
+    operating_income: 'Op. Income',
+    net_income: 'Net Income',
+    net_interest_margin: 'NIM',
+    operating_margin: 'Op. Margin',
+  };
+
+  // List of base metric keys (without _yoy suffix)
+  const baseMetrics = ['total_revenue', 'operating_income', 'net_income', 'net_interest_margin', 'operating_margin'];
+
+  for (const key of baseMetrics) {
+    const value = metrics[key];
+    if (value) {
+      // Try to extract YoY value
+      const yoyKey = `${key}_yoy`;
+      const yoyValue = metrics[yoyKey];
+      let yoy: number | undefined;
+
+      if (yoyValue) {
+        // Parse YoY value (e.g., "+5.2%", "-3.1%", "+2.5pp")
+        const yoyMatch = yoyValue.match(/([+-]?[\d.]+)/);
+        if (yoyMatch) {
+          yoy = parseFloat(yoyMatch[1]);
+        }
+      }
+
+      result.push({
+        label: labelMap[key] || key.replace(/_/g, ' '),
+        value: value,
+        yoy,
+      });
+    }
+  }
+
+  return result.slice(0, 4); // Limit to 4 metrics for sidebar
+}
+
+/**
+ * Export fiscal year for sidebar
+ */
+export function extractFiscalYear(content: string | undefined): string | undefined {
+  if (!content) return undefined;
+  const jsonData = tryParseJSON(content);
+  return jsonData?.parsed?.fiscal_year || undefined;
+}

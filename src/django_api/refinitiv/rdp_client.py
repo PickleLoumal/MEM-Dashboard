@@ -470,3 +470,232 @@ class RDPClient:
         params = {"universe": ric, "limit": limit}
 
         return self._make_request("GET", endpoint, params=params)
+
+    # ========== Financial Data API Methods ==========
+
+    def get_financial_data(self, ric: str, fields: list[str] | None = None) -> dict | None:
+        """
+        Get comprehensive financial data using Data Grid API.
+
+        Args:
+            ric: RIC code (e.g., "0425.SZ" for XCMG)
+            fields: Optional list of TR.* fields. If None, uses default set.
+
+        Returns:
+            Financial data dict or None
+        """
+        endpoint = "/data/datagrid/beta1/"
+
+        # Default comprehensive field set for investment summary
+        if not fields:
+            fields = [
+                # Pricing
+                "TR.PriceClose",
+                "TR.PriceClose.Date",
+                "TR.52WeekHigh",
+                "TR.52WeekLow",
+                "TR.CompanyMarketCap",
+                # Revenue & Profitability
+                "TR.Revenue",
+                "TR.RevenueGrowthRate",
+                "TR.OperatingIncome",
+                "TR.NetIncome",
+                "TR.NetIncomeGrowthRate",
+                "TR.OperatingMargin",
+                "TR.GrossMargin",
+                "TR.NetProfitMargin",
+                # Per Share
+                "TR.EPS",
+                "TR.EPSGrowthRate",
+                "TR.DividendYield",
+                "TR.DividendPerShare",
+                # Valuation
+                "TR.PEEXCLXOR",  # P/E Ratio
+                "TR.PEGRatio",
+                "TR.PriceToBVPerShare",  # P/B Ratio
+                "TR.EVToEBITDA",
+                # Balance Sheet
+                "TR.TotalDebt",
+                "TR.TotalEquity",
+                "TR.DebtToEquity",
+                "TR.CurrentRatio",
+                "TR.QuickRatio",
+                # Profitability Ratios
+                "TR.ROE",
+                "TR.ROA",
+                "TR.ROIC",
+                # Cash Flow
+                "TR.OperatingCashFlow",
+                "TR.FreeCashFlow",
+                "TR.CapEx",
+            ]
+
+        payload = {"universe": [ric], "fields": fields}
+
+        return self._make_request("POST", endpoint, json_data=payload)
+
+    def get_analyst_estimates(self, ric: str) -> dict | None:
+        """
+        Get analyst estimates and recommendations.
+
+        Args:
+            ric: RIC code
+
+        Returns:
+            Analyst data dict or None
+        """
+        endpoint = "/data/datagrid/beta1/"
+
+        fields = [
+            # Consensus Recommendations
+            "TR.RecommendationMean",
+            "TR.NumOfStrongBuyRatings",
+            "TR.NumOfBuyRatings",
+            "TR.NumOfHoldRatings",
+            "TR.NumOfSellRatings",
+            "TR.NumOfStrongSellRatings",
+            "TR.NumOfAnalysts",
+            # Target Price
+            "TR.TargetPriceMean",
+            "TR.TargetPriceHigh",
+            "TR.TargetPriceLow",
+            "TR.TargetPriceMedian",
+            "TR.TargetPriceUpside",
+            # Estimates - Current Year
+            "TR.RevenueMeanEstimate",
+            "TR.EPSMeanEstimate",
+            "TR.NetIncomeMeanEstimate",
+            # Estimates - Next Year
+            "TR.RevenueMeanEstimate(Period=FY1)",
+            "TR.EPSMeanEstimate(Period=FY1)",
+            # Growth Estimates
+            "TR.RevenueGrowthRateMeanEstimate",
+            "TR.EPSGrowthRateMeanEstimate",
+        ]
+
+        payload = {"universe": [ric], "fields": fields}
+
+        return self._make_request("POST", endpoint, json_data=payload)
+
+    def get_segment_data(self, ric: str) -> dict | None:
+        """
+        Get business segment/division data.
+
+        Args:
+            ric: RIC code
+
+        Returns:
+            Segment data dict or None
+        """
+        endpoint = "/data/datagrid/beta1/"
+
+        fields = [
+            # Segment Revenue
+            "TR.BGS.BusSegmentName",
+            "TR.BGS.BusSegmentRevenue",
+            "TR.BGS.BusSegmentRevenuePct",
+            "TR.BGS.BusSegmentOperatingIncome",
+            "TR.BGS.BusSegmentOperatingMargin",
+            # Geographic Segments
+            "TR.BGS.GeoSegmentName",
+            "TR.BGS.GeoSegmentRevenue",
+            "TR.BGS.GeoSegmentRevenuePct",
+        ]
+
+        payload = {"universe": [ric], "fields": fields}
+
+        return self._make_request("POST", endpoint, json_data=payload)
+
+    def get_investment_summary_data(self, ric: str) -> dict[str, Any]:
+        """
+        Get all data needed for Investment Summary generation.
+
+        This is the main method for fetching comprehensive financial data
+        to inject into the AI prompt as context.
+
+        Args:
+            ric: RIC code (e.g., "0425.SZ")
+
+        Returns:
+            Dict with keys: 'pricing', 'financials', 'analysts', 'segments', 'errors'
+        """
+        result: dict[str, Any] = {
+            "ric": ric,
+            "pricing": None,
+            "financials": None,
+            "analysts": None,
+            "segments": None,
+            "errors": [],
+        }
+
+        # 1. Get pricing data
+        try:
+            pricing_fields = [
+                "TR.PriceClose",
+                "TR.PriceClose.Date",
+                "TR.52WeekHigh",
+                "TR.52WeekLow",
+                "TR.CompanyMarketCap",
+                "TR.Volume",
+            ]
+            result["pricing"] = self.get_financial_data(ric, pricing_fields)
+        except Exception as e:
+            result["errors"].append(f"Pricing error: {e!s}")
+            logger.exception("Failed to get pricing data")
+
+        # 2. Get financial fundamentals
+        try:
+            result["financials"] = self.get_financial_data(ric)
+        except Exception as e:
+            result["errors"].append(f"Financials error: {e!s}")
+            logger.exception("Failed to get financial data")
+
+        # 3. Get analyst estimates
+        try:
+            result["analysts"] = self.get_analyst_estimates(ric)
+        except Exception as e:
+            result["errors"].append(f"Analysts error: {e!s}")
+            logger.exception("Failed to get analyst data")
+
+        # 4. Get segment data
+        try:
+            result["segments"] = self.get_segment_data(ric)
+        except Exception as e:
+            result["errors"].append(f"Segments error: {e!s}")
+            logger.exception("Failed to get segment data")
+
+        return result
+
+    def test_connection(self) -> dict[str, Any]:
+        """
+        Test RDP connection and return status.
+
+        Returns:
+            Dict with connection status and details
+        """
+        result = {
+            "authenticated": False,
+            "credentials_configured": False,
+            "error": None,
+        }
+
+        # Check credentials
+        result["credentials_configured"] = all([
+            self.client_id,
+            self.username,
+            self.password,
+        ])
+
+        if not result["credentials_configured"]:
+            result["error"] = "Missing credentials. Check REFINITIV_* env vars."
+            return result
+
+        # Try authentication
+        try:
+            result["authenticated"] = self.authenticate()
+            if not result["authenticated"]:
+                result["error"] = "Authentication failed. Check credentials."
+        except Exception as e:
+            result["error"] = f"Authentication error: {e!s}"
+
+        return result
