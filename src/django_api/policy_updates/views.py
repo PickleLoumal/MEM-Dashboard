@@ -1,12 +1,12 @@
 import logging
-from typing import List
 
 from django.core.cache import cache
 from django.utils import timezone
-from rest_framework import status, serializers as drf_serializers
+from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
+from rest_framework import serializers as drf_serializers
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
 
 from .services import FederalRegisterService, FederalRegisterServiceError
 
@@ -17,23 +17,49 @@ CACHE_TTL_SECONDS = 60 * 5  # five minutes
 
 @extend_schema(
     parameters=[
-        OpenApiParameter(name='country', type=str, location=OpenApiParameter.QUERY, description='Country code', required=False),
-        OpenApiParameter(name='limit', type=int, location=OpenApiParameter.QUERY, description='Number of results', required=False),
-        OpenApiParameter(name='topics[]', type=str, location=OpenApiParameter.QUERY, description='Topic filters', required=False),
-        OpenApiParameter(name='q', type=str, location=OpenApiParameter.QUERY, description='Search term', required=False),
+        OpenApiParameter(
+            name="country",
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description="Country code",
+            required=False,
+        ),
+        OpenApiParameter(
+            name="limit",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="Number of results",
+            required=False,
+        ),
+        OpenApiParameter(
+            name="topics[]",
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description="Topic filters",
+            required=False,
+        ),
+        OpenApiParameter(
+            name="q",
+            type=str,
+            location=OpenApiParameter.QUERY,
+            description="Search term",
+            required=False,
+        ),
     ],
-    responses={200: inline_serializer(
-        name='PolicyUpdatesResponse',
-        fields={
-            'success': drf_serializers.BooleanField(),
-            'source': drf_serializers.CharField(),
-            'country': drf_serializers.CharField(),
-            'last_updated': drf_serializers.CharField(),
-            'count': drf_serializers.IntegerField(),
-            'data': drf_serializers.ListField(child=drf_serializers.DictField()),
-            'message': drf_serializers.CharField(required=False),
-        }
-    )}
+    responses={
+        200: inline_serializer(
+            name="PolicyUpdatesResponse",
+            fields={
+                "success": drf_serializers.BooleanField(),
+                "source": drf_serializers.CharField(),
+                "country": drf_serializers.CharField(),
+                "last_updated": drf_serializers.CharField(),
+                "count": drf_serializers.IntegerField(),
+                "data": drf_serializers.ListField(child=drf_serializers.DictField()),
+                "message": drf_serializers.CharField(required=False),
+            },
+        )
+    },
 )
 @api_view(["GET"])
 def policy_updates(request):
@@ -46,10 +72,14 @@ def policy_updates(request):
     except ValueError:
         limit = 8
 
-    topics_param: List[str] = request.query_params.getlist("topics[]") or request.query_params.getlist("topics") or []
+    topics_param: list[str] = (
+        request.query_params.getlist("topics[]") or request.query_params.getlist("topics") or []
+    )
     search_term = request.query_params.get("q")
 
-    cache_key = f"policy_updates_{country}_{limit}_{'_'.join(sorted(topics_param))}_{search_term or 'none'}"
+    cache_key = (
+        f"policy_updates_{country}_{limit}_{'_'.join(sorted(topics_param))}_{search_term or 'none'}"
+    )
     cached_payload = cache.get(cache_key)
     if cached_payload:
         return Response(cached_payload)
@@ -57,10 +87,12 @@ def policy_updates(request):
     service = FederalRegisterService()
 
     try:
-        raw_payload = service.fetch_policy_updates(limit=limit, search=search_term, topics=topics_param)
+        raw_payload = service.fetch_policy_updates(
+            limit=limit, search=search_term, topics=topics_param
+        )
         normalized_documents = service.normalize_documents(raw_payload)
     except FederalRegisterServiceError as exc:
-        logger.error("Failed to retrieve Federal Register updates: %s", exc, exc_info=True)
+        logger.exception("Failed to retrieve Federal Register updates")
         return Response(
             {
                 "success": False,

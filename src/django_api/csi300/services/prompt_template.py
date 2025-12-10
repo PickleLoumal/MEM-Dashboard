@@ -10,7 +10,9 @@ import os
 # ==========================================
 AI_CONFIG = {
     "model": os.environ.get("XAI_MODEL", "grok-4-1-fast-non-reasoning"),
-    "system_prompt": os.environ.get("XAI_SYSTEM_PROMPT", "You are Grok, a highly intelligent, helpful AI assistant."),
+    "system_prompt": os.environ.get(
+        "XAI_SYSTEM_PROMPT", "You are Grok, a highly intelligent, helpful AI assistant."
+    ),
     "timeout": int(os.environ.get("XAI_TIMEOUT", "120")),
     "max_retries": int(os.environ.get("XAI_MAX_RETRIES", "3")),
 }
@@ -27,17 +29,22 @@ AI_MAX_RETRIES = AI_CONFIG["max_retries"]
 PROMPT_INSTRUCTIONS = {
     "meta": {
         "objective": "Generate investment summary (max 5 pages, ~450-600 words)",
-        "coverage": ["business overview", "financial stability", "valuation", 
-                     "customer segments", "competitive landscape", "Buy/Hold/Sell"],
-        "disclaimer": "NOT professional investment advice"
+        "coverage": [
+            "business overview",
+            "financial stability",
+            "valuation",
+            "customer segments",
+            "competitive landscape",
+            "Buy/Hold/Sell",
+        ],
+        "disclaimer": "NOT professional investment advice",
     },
-    
     "data_sources": {
         "required": [
             "Company reports (10-K, 10-Q, SEC filings)",
             "MD&A statements, earnings transcripts",
             "Industry reports (McKinsey, Deloitte, EY)",
-            "Analyst notes (Piper Sandler, Goldman Sachs)"
+            "Analyst notes (Piper Sandler, Goldman Sachs)",
         ],
         "rules": [
             "Use ONLY real, accessible URLs (NO placeholders or guessed URLs)",
@@ -53,15 +60,13 @@ PROMPT_INSTRUCTIONS = {
             "Use most updated data",
             "Must be the exact same sources you have used in the analysis",
             "Do not use any other sources that are not in the analysis",
-            "When Doing the analysis, must using the source that you have verified"
-        ]
+            "When Doing the analysis, must using the source that you have verified",
+        ],
     },
-    
     "constraints": {
         "liquidity": "Current ratio < 1.3 = unhealthy (except cash businesses)",
-        "recommendation": "Focus on ONE action with pros/cons"
+        "recommendation": "Focus on ONE action with pros/cons",
     },
-    
     "sections": {
         "2_business_overview": {
             "format": "1 paragraph + REQUIRED JSON block",
@@ -71,7 +76,7 @@ PROMPT_INSTRUCTIONS = {
                 "strengths": ["Technology", "Brand", "Efficiency"],
                 "challenges": ["Market Pressures", "Risks"],
                 "time_frame": "FY or YTD; specify fiscal year-end",
-                "divisions": "Sales % + gross margin for each"
+                "divisions": "Sales % + gross margin for each",
             },
             "json_schema": {
                 "fiscal_year": "string",
@@ -79,22 +84,29 @@ PROMPT_INSTRUCTIONS = {
                     "total_revenue": "XX.XB CNY",
                     "operating_income": "X.XB CNY",
                     "net_income": "X.XB CNY",
-                    "operating_margin": "X.X%"
+                    "operating_margin": "X.X%",
                 },
                 "divisions": [
-                    {"name": "str", "description": "str", "sales_pct": "XX%", "gross_margin": "XX%", "profit_pct": "XX%"}
-                ]
+                    {
+                        "name": "str",
+                        "description": "str",
+                        "sales_pct": "XX%",
+                        "gross_margin": "XX%",
+                        "profit_pct": "XX%",
+                    }
+                ],
             },
-            "json_rules": ["Include ALL divisions", "Use null for unknowns", "REQUIRED"]
+            "json_rules": ["Include ALL divisions", "Use null for unknowns", "REQUIRED"],
         }
-    }
+    },
 }
 
 
-def build_prompt(company_name: str, ticker: str, date: str, 
-                 stock_price: str, currency: str, market_cap: str) -> str:
+def build_prompt(
+    company_name: str, ticker: str, date: str, stock_price: str, currency: str, market_cap: str
+) -> str:
     """构建完整的 prompt 字符串"""
-    
+
     return f"""{company_name}
 {ticker}
 As of today [{date}]
@@ -536,4 +548,3 @@ Industry Association Data | https://industry-association.org/data/2025
 
 **Output Format:** Markdown with bullet points for sections 3-12. Sources in Section 16 with fixed format.
 """
-

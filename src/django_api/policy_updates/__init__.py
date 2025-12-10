@@ -1,1 +1,1 @@
-default_app_config = 'policy_updates.apps.PolicyUpdatesConfig'
+default_app_config = "policy_updates.apps.PolicyUpdatesConfig"

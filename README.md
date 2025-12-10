@@ -103,8 +103,35 @@ api/                     Serverless health/indicator fallbacks
 ---
 
 ## Testing and quality
-- Backend: `pytest` (configured via `pytest.ini` with `DJANGO_SETTINGS_MODULE=django_api.settings`) or `python src/django_api/manage.py test`. Reuse DB with `--reuse-db`.
-- Frontend: from `csi300-app`, run `npm run lint`, `npm run typecheck`, and `npm run test` (Vitest + Testing Library with jsdom setup in `tests/frontend/setup.ts`).
+
+### Code Quality (Ruff)
+The project uses [Ruff](https://docs.astral.sh/ruff/) for Python linting and formatting - an extremely fast linter written in Rust that replaces Flake8, isort, Black, and more.
+
+```bash
+# Quick commands (using Justfile)
+just check      # Run all checks (lint + format check)
+just fix        # Auto-fix all issues (format + lint fix)
+
+# Individual commands
+just lint           # Run linter only
+just lint-fix       # Run linter with auto-fix
+just format         # Format code
+just format-check   # Check formatting without changes
+```
+
+Configuration is in `pyproject.toml`. Ruff enforces:
+- PEP 8 compliance (pycodestyle)
+- Import sorting (isort)
+- Django best practices
+- Modern Python patterns (pyupgrade)
+- Security checks (flake8-bugbear)
+- Type safety patterns
+
+See `.cursor/rules/project-rules/ruff-integration.mdc` for detailed usage guide.
+
+### Testing
+- **Backend**: `pytest` (configured via `pyproject.toml` with `DJANGO_SETTINGS_MODULE=django_api.settings`) or `python src/django_api/manage.py test`. Reuse DB with `--reuse-db`.
+- **Frontend**: from `csi300-app`, run `npm run lint`, `npm run typecheck`, and `npm run test` (Vitest + Testing Library with jsdom setup in `tests/frontend/setup.ts`).
 
 ---
 

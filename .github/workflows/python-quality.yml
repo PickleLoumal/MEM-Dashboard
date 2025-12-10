@@ -1,0 +1,73 @@
+name: Python Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '**.py'
+      - 'pyproject.toml'
+      - 'requirements.txt'
+      - '.github/workflows/python-quality.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '**.py'
+      - 'pyproject.toml'
+      - 'requirements.txt'
+
+jobs:
+  ruff:
+    name: Ruff Linting & Formatting
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+        cache: 'pip'
+
+    - name: Install Ruff
+      run: |
+        pip install ruff>=0.8.0
+
+    - name: Check code formatting
+      run: |
+        ruff format --check src scripts tests
+
+    - name: Run linter
+      run: |
+        ruff check src scripts tests
+
+    - name: Generate annotations
+      if: failure()
+      run: |
+        ruff check --output-format=github src scripts tests
+
+  type-check:
+    name: Type Checking (Pyright)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run Pyright
+      uses: jakebailey/pyright-action@v2
+      with:
+        version: latest
+        python-version: '3.13'
+

@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
-  title: MEM Dashboard API
+  title: Dashboard API
   version: 1.0.0
-  description: API for MEM Dashboard, including CSI300, FRED (US/JP), and BEA data.
+  description: API for Dashboard, including CSI300, FRED (US/JP), and BEA data.
 paths:
   /:
     get:

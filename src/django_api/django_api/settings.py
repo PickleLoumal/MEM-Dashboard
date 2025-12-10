@@ -18,16 +18,17 @@ from pathlib import Path
 # 尝试加载环境变量（如果dotenv可用）
 try:
     from dotenv import load_dotenv
-    # 项目根目录: MEM Dashboard 2/src/django_api/django_api/settings.py -> MEM Dashboard 2/
-    _project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-    _env_local_path = os.path.join(_project_root, '.env.local')
-    _env_path = os.path.join(_project_root, '.env')
-    
+
+    # 项目根目录: src/django_api/django_api/settings.py -> project_root/
+    _project_root = Path(__file__).resolve().parents[3]
+    _env_local_path = _project_root / ".env.local"
+    _env_path = _project_root / ".env"
+
     # 检查是否在本地开发环境（ENVIRONMENT != production）
     # .env.local 用 override=True 覆盖 shell 环境变量，方便本地开发
-    if os.path.exists(_env_local_path) and os.getenv('ENVIRONMENT') != 'production':
+    if _env_local_path.exists() and os.getenv("ENVIRONMENT") != "production":
         load_dotenv(dotenv_path=_env_local_path, override=True)
-    if os.path.exists(_env_path):
+    if _env_path.exists():
         load_dotenv(dotenv_path=_env_path)  # 作为fallback加载默认.env
 except ImportError:
     # dotenv不可用时，使用环境变量
@@ -46,88 +47,96 @@ sys.path.append(str(PROJECT_ROOT))
 # Initialize OpenTelemetry early in settings to ensure all subsequent
 # imports and operations are instrumented properly.
 
-OTEL_ENABLED = os.getenv('OTEL_ENABLED', 'false').lower() == 'true'
+OTEL_ENABLED = os.getenv("OTEL_ENABLED", "false").lower() == "true"
 
 if OTEL_ENABLED:
     try:
         from observability import setup_observability
+
         setup_observability()
     except ImportError as e:
         import logging
+
         logging.warning(f"OpenTelemetry not available: {e}. Continuing without observability.")
     except Exception as e:
         import logging
-        logging.warning(f"Failed to initialize OpenTelemetry: {e}. Continuing without observability.")
+
+        logging.warning(
+            f"Failed to initialize OpenTelemetry: {e}. Continuing without observability."
+        )
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-key-mem-dashboard-django-api-2025-migration-secure-development-environment')
+SECRET_KEY = os.getenv(
+    "DJANGO_SECRET_KEY",
+    "dev-key-mem-dashboard-django-api-2025-migration-secure-development-environment",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '*']
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "*"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     # DRF
-    'rest_framework',
-    'corsheaders',
-    'drf_spectacular',
+    "rest_framework",
+    "corsheaders",
+    "drf_spectacular",
     # MEM Dashboard apps
     # 注意：fred_common是工具模块，不是Django应用，不应在此列表中
-    'fred_us',    # US FRED indicators (分离架构)
-    'fred_jp',    # Japan FRED indicators (分离架构)
-    'bea',
-    'content',
-    'csi300',     # CSI300 companies data
-    'stocks',     # Stock data with AkShare integration
-    'policy_updates',  # Federal Register integration
+    "fred_us",  # US FRED indicators (分离架构)
+    "fred_jp",  # Japan FRED indicators (分离架构)
+    "bea",
+    "content",
+    "csi300",  # CSI300 companies data
+    "stocks",  # Stock data with AkShare integration
+    "policy_updates",  # Federal Register integration
 ]
 
 MIDDLEWARE = [
     # OpenTelemetry middleware (first for accurate timing)
-    'observability.middleware.OpenTelemetryMiddleware',
+    "observability.middleware.OpenTelemetryMiddleware",
     # CORS must be before CommonMiddleware
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'django_api.urls'
+ROOT_URLCONF = "django_api.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'django_api.wsgi.application'
+WSGI_APPLICATION = "django_api.wsgi.application"
 
 
 # Database - 使用现有PostgreSQL数据库
@@ -135,13 +144,13 @@ WSGI_APPLICATION = 'django_api.wsgi.application'
 # 优先从环境变量读取（AWS ECS），否则使用本地开发默认值
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'mem_dashboard'),
-        'USER': os.environ.get('DB_USER', 'postgres'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'password'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("DB_NAME", "mem_dashboard"),
+        "USER": os.environ.get("DB_USER", "postgres"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "password"),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
     }
 }
 
@@ -151,16 +160,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -168,9 +177,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'  # 与Flask API保持一致
+TIME_ZONE = "UTC"  # 与Flask API保持一致
 
 USE_I18N = True
 
@@ -180,40 +189,40 @@ USE_TZ = True  # 启用时区支持
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Additional locations of static files (only include if directory exists)
 STATICFILES_DIRS = []
-static_dir = os.path.join(BASE_DIR, 'static')
-if os.path.exists(static_dir):
+static_dir = BASE_DIR / "static"
+if static_dir.exists():
     STATICFILES_DIRS.append(static_dir)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Django REST Framework 配置
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
     ],
-    'DEFAULT_PAGINATION_CLASS': None,  # 禁用默认分页，保持与Flask API一致
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+    "DEFAULT_PAGINATION_CLASS": None,  # 禁用默认分页，保持与Flask API一致
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [],  # 禁用认证，保持与Flask API一致
-    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
-    'DEFAULT_METADATA_CLASS': 'rest_framework.metadata.SimpleMetadata',
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_AUTHENTICATION_CLASSES": [],  # 禁用认证，保持与Flask API一致
+    "EXCEPTION_HANDLER": "rest_framework.views.exception_handler",
+    "DEFAULT_METADATA_CLASS": "rest_framework.metadata.SimpleMetadata",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'MEM Dashboard API',
-    'DESCRIPTION': 'API for MEM Dashboard, including CSI300, FRED (US/JP), and BEA data.',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
+    "TITLE": "Dashboard API",
+    "DESCRIPTION": "API for Dashboard, including CSI300, FRED (US/JP), and BEA data.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
     # OTHER SETTINGS
 }
 
@@ -232,10 +241,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:4173",  # Vite Preview
 ]
 
-CORS_ALLOW_HEADERS = list(default_headers) + [
-    "x-trace-id",
-    "x-requested-with",
-]
+CORS_ALLOW_HEADERS = [*list(default_headers), "x-trace-id", "x-requested-with"]
 
 # =============================================================================
 # Logging Configuration
@@ -243,83 +249,83 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 # When OTEL_ENABLED=true, logging is configured by OpenTelemetry (observability module)
 # This Django LOGGING config serves as a fallback when OpenTelemetry is disabled
 
-LOG_DIR = os.path.join(PROJECT_ROOT, 'logs')
-os.makedirs(LOG_DIR, exist_ok=True)
+LOG_DIR = PROJECT_ROOT / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 # Log level from environment
-LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 if not OTEL_ENABLED:
     # Fallback logging configuration when OpenTelemetry is disabled
     LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-        'formatters': {
-            'verbose': {
-                'format': '{asctime} | {levelname:8s} | {name} | {message}',
-                'style': '{',
-                'datefmt': '%Y-%m-%d %H:%M:%S',
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "verbose": {
+                "format": "{asctime} | {levelname:8s} | {name} | {message}",
+                "style": "{",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
             },
-            'json': {
-                'format': '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s"}',
-                'datefmt': '%Y-%m-%dT%H:%M:%SZ',
-            },
-        },
-    'handlers': {
-            'console': {
-                'level': LOG_LEVEL,
-                'class': 'logging.StreamHandler',
-                'formatter': 'verbose',
-            },
-        'file': {
-                'level': LOG_LEVEL,
-                'class': 'logging.handlers.RotatingFileHandler',
-                'filename': os.path.join(LOG_DIR, 'mem-dashboard.log'),
-                'maxBytes': 10 * 1024 * 1024,  # 10MB
-                'backupCount': 5,
-                'formatter': 'verbose',
-            },
-            'error_file': {
-                'level': 'ERROR',
-                'class': 'logging.handlers.RotatingFileHandler',
-                'filename': os.path.join(LOG_DIR, 'mem-dashboard.error.log'),
-                'maxBytes': 10 * 1024 * 1024,  # 10MB
-                'backupCount': 5,
-                'formatter': 'verbose',
+            "json": {
+                "format": '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s"}',
+                "datefmt": "%Y-%m-%dT%H:%M:%SZ",
             },
         },
-        'root': {
-            'handlers': ['console', 'file', 'error_file'],
-            'level': LOG_LEVEL,
+        "handlers": {
+            "console": {
+                "level": LOG_LEVEL,
+                "class": "logging.StreamHandler",
+                "formatter": "verbose",
+            },
+            "file": {
+                "level": LOG_LEVEL,
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": str(LOG_DIR / "dashboard.log"),
+                "maxBytes": 10 * 1024 * 1024,  # 10MB
+                "backupCount": 5,
+                "formatter": "verbose",
+            },
+            "error_file": {
+                "level": "ERROR",
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": str(LOG_DIR / "dashboard.error.log"),
+                "maxBytes": 10 * 1024 * 1024,  # 10MB
+                "backupCount": 5,
+                "formatter": "verbose",
+            },
         },
-        'loggers': {
-            'django': {
-                'handlers': ['console', 'file'],
-                'level': LOG_LEVEL,
-                'propagate': False,
+        "root": {
+            "handlers": ["console", "file", "error_file"],
+            "level": LOG_LEVEL,
+        },
+        "loggers": {
+            "django": {
+                "handlers": ["console", "file"],
+                "level": LOG_LEVEL,
+                "propagate": False,
             },
-            'django.request': {
-                'handlers': ['console', 'file', 'error_file'],
-            'level': 'INFO',
-                'propagate': False,
+            "django.request": {
+                "handlers": ["console", "file", "error_file"],
+                "level": "INFO",
+                "propagate": False,
             },
-            'django.db.backends': {
-                'handlers': ['console'],
-                'level': 'WARNING',
-                'propagate': False,
+            "django.db.backends": {
+                "handlers": ["console"],
+                "level": "WARNING",
+                "propagate": False,
             },
             # Reduce noise from third-party libraries
-            'urllib3': {
-                'level': 'WARNING',
+            "urllib3": {
+                "level": "WARNING",
             },
-            'requests': {
-                'level': 'WARNING',
+            "requests": {
+                "level": "WARNING",
             },
-            'boto3': {
-                'level': 'WARNING',
+            "boto3": {
+                "level": "WARNING",
             },
-            'botocore': {
-                'level': 'WARNING',
+            "botocore": {
+                "level": "WARNING",
             },
         },
     }
@@ -327,11 +333,11 @@ else:
     # Minimal Django logging config when OpenTelemetry handles logging
     # This prevents double logging
     LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': True,  # Let OpenTelemetry handle all logging
-        'handlers': {},
-    'root': {
-            'handlers': [],
-            'level': LOG_LEVEL,
-    },
-}
+        "version": 1,
+        "disable_existing_loggers": True,  # Let OpenTelemetry handle all logging
+        "handlers": {},
+        "root": {
+            "handlers": [],
+            "level": LOG_LEVEL,
+        },
+    }

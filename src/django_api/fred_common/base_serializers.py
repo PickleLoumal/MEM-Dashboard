@@ -9,6 +9,7 @@ from rest_framework import serializers
 
 class BaseObservationSerializer(serializers.Serializer):
     """观测数据基础序列化器"""
+
     date = serializers.DateField()
     value = serializers.DecimalField(max_digits=20, decimal_places=6)
     series_id = serializers.CharField()
@@ -16,6 +17,7 @@ class BaseObservationSerializer(serializers.Serializer):
 
 class BaseLatestValueSerializer(serializers.Serializer):
     """最新值基础序列化器"""
+
     value = serializers.DecimalField(max_digits=20, decimal_places=6)
     date = serializers.DateField()
     formatted_date = serializers.CharField()
@@ -25,6 +27,7 @@ class BaseLatestValueSerializer(serializers.Serializer):
 
 class BaseStatusSerializer(serializers.Serializer):
     """状态基础序列化器"""
+
     success = serializers.BooleanField()
     system = serializers.CharField()
     database_available = serializers.BooleanField()
@@ -33,6 +36,7 @@ class BaseStatusSerializer(serializers.Serializer):
 
 class BaseErrorResponseSerializer(serializers.Serializer):
     """错误响应基础序列化器"""
+
     success = serializers.BooleanField(default=False)
     error = serializers.CharField()
     message = serializers.CharField(required=False)
@@ -41,6 +45,7 @@ class BaseErrorResponseSerializer(serializers.Serializer):
 
 class BaseHealthCheckSerializer(serializers.Serializer):
     """健康检查基础序列化器"""
+
     status = serializers.CharField()
     timestamp = serializers.DateTimeField()
     service = serializers.CharField()
@@ -52,6 +57,7 @@ class BaseHealthCheckSerializer(serializers.Serializer):
 
 class BaseIndicatorResponseSerializer(serializers.Serializer):
     """指标响应基础序列化器"""
+
     success = serializers.BooleanField()
     data = serializers.DictField(required=False)
     observations = serializers.ListField(child=serializers.DictField(), required=False)
@@ -60,6 +66,7 @@ class BaseIndicatorResponseSerializer(serializers.Serializer):
 
 class BaseAllIndicatorsSerializer(serializers.Serializer):
     """所有指标概览基础序列化器"""
+
     success = serializers.BooleanField()
     data = serializers.DictField()
     country = serializers.CharField()
@@ -67,12 +74,11 @@ class BaseAllIndicatorsSerializer(serializers.Serializer):
 
 
 __all__ = [
-    'BaseObservationSerializer',
-    'BaseLatestValueSerializer',
-    'BaseStatusSerializer',
-    'BaseErrorResponseSerializer',
-    'BaseHealthCheckSerializer',
-    'BaseIndicatorResponseSerializer',
-    'BaseAllIndicatorsSerializer',
+    "BaseAllIndicatorsSerializer",
+    "BaseErrorResponseSerializer",
+    "BaseHealthCheckSerializer",
+    "BaseIndicatorResponseSerializer",
+    "BaseLatestValueSerializer",
+    "BaseObservationSerializer",
+    "BaseStatusSerializer",
 ]
-

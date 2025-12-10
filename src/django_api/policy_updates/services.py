@@ -1,6 +1,6 @@
 import logging
 from datetime import timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import requests
 from django.utils import timezone
@@ -34,7 +34,7 @@ class FederalRegisterService:
     DEFAULT_TYPES = ["RULE", "NOTICE", "PROPOSED_RULE"]
     MAX_LIMIT = 25
 
-    def __init__(self, session: Optional[requests.Session] = None, timeout: int = 10) -> None:
+    def __init__(self, session: requests.Session | None = None, timeout: int = 10) -> None:
         self.session = session or requests.Session()
         self.timeout = timeout
         self.session.headers.setdefault(
@@ -46,16 +46,16 @@ class FederalRegisterService:
         self,
         *,
         limit: int = 8,
-        search: Optional[str] = None,
-        topics: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        search: str | None = None,
+        topics: list[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Fetch recent policy-related documents from the Federal Register.
         """
         per_page = max(1, min(limit, self.MAX_LIMIT))
         start_date = (timezone.now() - timedelta(days=21)).date().isoformat()
 
-        params: Dict[str, Any] = {
+        params: dict[str, Any] = {
             "order": "newest",
             "per_page": per_page,
             "conditions[publication_date][gte]": start_date,
@@ -81,20 +81,20 @@ class FederalRegisterService:
             response = self.session.get(self.API_BASE, params=params, timeout=self.timeout)
             response.raise_for_status()
         except requests.RequestException as exc:
-            logger.error("Federal Register request failed: %s", exc, exc_info=True)
+            logger.exception("Federal Register request failed")
             raise FederalRegisterServiceError("Unable to reach Federal Register API") from exc
 
         try:
             return response.json()
         except ValueError as exc:
-            logger.error("Federal Register response was not valid JSON", exc_info=True)
+            logger.exception("Federal Register response was not valid JSON", exc_info=True)
             raise FederalRegisterServiceError("Invalid response from Federal Register API") from exc
 
-    def normalize_documents(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def normalize_documents(self, payload: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Convert the Federal Register payload into the structure expected by the dashboard.
         """
-        normalized: List[Dict[str, Any]] = []
+        normalized: list[dict[str, Any]] = []
         results = payload.get("results") or []
 
         for doc in results:
@@ -128,8 +128,8 @@ class FederalRegisterService:
         return normalized
 
     @staticmethod
-    def _extract_tags(document: Dict[str, Any]) -> List[str]:
-        tags: List[str] = []
+    def _extract_tags(document: dict[str, Any]) -> list[str]:
+        tags: list[str] = []
 
         if document.get("topics"):
             tags.extend([topic for topic in document["topics"] if topic])
@@ -148,7 +148,7 @@ class FederalRegisterService:
         return unique_tags[:6]
 
     @staticmethod
-    def _extract_source(document: Dict[str, Any]) -> str:
+    def _extract_source(document: dict[str, Any]) -> str:
         agency_names = document.get("agency_names") or []
         if agency_names:
             return agency_names[0]
