@@ -42,6 +42,8 @@ urlpatterns = [
     path("csi300/", include("csi300.urls", namespace="csi300_legacy")),
     # Stock data API路由 (AkShare integration)
     path("api/stocks/", include("stocks.urls")),
+    # Refinitiv API路由
+    path("api/", include("refinitiv.urls")),
     # Content API路由
     path("", include("content.urls")),
 ]

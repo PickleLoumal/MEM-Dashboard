@@ -102,6 +102,7 @@ INSTALLED_APPS = [
     "csi300",  # CSI300 companies data
     "stocks",  # Stock data with AkShare integration
     "policy_updates",  # Federal Register integration
+    "refinitiv",  # Refinitiv Data Platform integration
 ]
 
 MIDDLEWARE = [

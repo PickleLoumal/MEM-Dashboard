@@ -334,10 +334,96 @@ def parse_business_overview_to_json(raw_text: str, company_name: str = "") -> st
     return json.dumps(result, ensure_ascii=False, indent=None)
 
 
+def parse_analyst_consensus(investment_firms_content: str) -> dict[str, Any] | None:
+    """
+    从 Investment Firms 内容中提取 analyst_consensus JSON 块。
+
+    Returns:
+        dict with consensus data or None if not found
+    """
+    if not investment_firms_content:
+        return None
+
+    consensus_pattern = re.compile(
+        r"```analyst_consensus\s*\n?(.*?)\n?```", re.DOTALL | re.IGNORECASE
+    )
+    match = consensus_pattern.search(investment_firms_content)
+
+    if not match:
+        return None
+
+    try:
+        json_str = match.group(1).strip()
+        consensus_data = json.loads(json_str)
+
+        # Validate required fields
+        required_fields = ["consensus_rating", "buy_pct", "hold_pct", "sell_pct"]
+        if all(field in consensus_data for field in required_fields):
+            logger.info(f"Successfully extracted analyst consensus: {consensus_data.get('consensus_rating')}")
+            return consensus_data
+        else:
+            logger.warning("Analyst consensus JSON missing required fields")
+            return None
+
+    except (json.JSONDecodeError, KeyError, TypeError) as e:
+        logger.warning(f"Failed to parse analyst_consensus JSON: {e}")
+        return None
+
+
+def extract_risk_severity(risks_content: str) -> list[dict[str, str]]:
+    """
+    从 Risks and Anomalies 内容中提取带严重程度的风险列表。
+
+    Returns:
+        list of dicts with 'text' and 'severity' keys
+    """
+    if not risks_content:
+        return []
+
+    risks = []
+    # Pattern to match [HIGH], [MEDIUM], [LOW] prefixed risks
+    severity_pattern = re.compile(
+        r"\*?\*?\[?(HIGH|MEDIUM|LOW)\]?\*?\*?\s*[-:]*\s*(.+?)(?=\n\*?\*?\[?(?:HIGH|MEDIUM|LOW)|\n\n|\Z)",
+        re.IGNORECASE | re.DOTALL
+    )
+
+    for match in severity_pattern.finditer(risks_content):
+        severity = match.group(1).upper()
+        text = match.group(2).strip()
+        # Clean up markdown formatting
+        text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
+        text = re.sub(r"\s+", " ", text).strip()
+
+        if text and len(text) > 20:
+            risks.append({
+                "text": text[:200] + ("..." if len(text) > 200 else ""),
+                "severity": severity.lower()
+            })
+
+    # If no severity markers found, fall back to extracting bullet points
+    if not risks:
+        bullet_pattern = re.compile(r"[-•●]\s*(.+?)(?=\n[-•●]|\n\n|\Z)", re.DOTALL)
+        for match in bullet_pattern.finditer(risks_content):
+            text = match.group(1).strip()
+            text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
+            text = re.sub(r"\s+", " ", text).strip()
+
+            if text and len(text) > 20:
+                # Default to medium severity if not specified
+                risks.append({
+                    "text": text[:200] + ("..." if len(text) > 200 else ""),
+                    "severity": "medium"
+                })
+
+    return risks[:5]  # Limit to top 5 risks
+
+
 __all__ = [
     "BO_PATTERNS",
     "SECTION_PATTERNS",
     "extract_ai_content_sections",
     "extract_sources_from_key_takeaways",
     "parse_business_overview_to_json",
+    "parse_analyst_consensus",
+    "extract_risk_severity",
 ]

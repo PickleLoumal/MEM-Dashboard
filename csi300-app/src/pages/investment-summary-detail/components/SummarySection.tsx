@@ -1,12 +1,45 @@
 import React from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { SectionHeader } from './ui';
+import {
+  TrendingUp,
+  Building2,
+  DollarSign,
+  Zap,
+  Users,
+  Swords,
+  AlertTriangle,
+  LineChart,
+  Building,
+  Scale,
+  Ship,
+  Lightbulb
+} from 'lucide-react';
 
 interface SummarySectionProps {
   title: string;
   content: string | undefined;
   id?: string;
 }
+
+// Map section IDs to icons
+const sectionIcons: Record<string, React.ElementType> = {
+  businessPerformance: TrendingUp,
+  industryContext: Building2,
+  financialStability: DollarSign,
+  keyFinancialsValuation: Scale,
+  bigTrendsEvents: Zap,
+  customerSegments: Users,
+  competitiveLandscape: Swords,
+  risksAnomalies: AlertTriangle,
+  forecastOutlook: LineChart,
+  investmentFirmsViews: Building,
+  industryRatioAnalysis: Scale,
+  tariffsSupplyChainRisks: Ship,
+  keyTakeaways: Lightbulb,
+  recommendedActionDetail: TrendingUp,
+};
 
 /**
  * 清理 markdown 内容：
@@ -17,30 +50,29 @@ interface SummarySectionProps {
  */
 function cleanMarkdownContent(content: string, sectionTitle: string): string {
   if (!content) return content;
-  
+
   let cleaned = content;
-  
+
   // 1. 移除所有代码块（```...```），包括 business_overview_data 等
   cleaned = cleaned.replace(/```[\s\S]*?```/g, '');
-  
+
   // 2. 移除裸露的 JSON 对象
-  // 匹配 { "xxx": ... } 格式的 JSON 块（支持嵌套）
   cleaned = removeJsonBlocks(cleaned);
-  
+
   // 3. 移除开头的 markdown 标题（# 开头的行）
   cleaned = cleaned.replace(/^#+\s+[^\n]+\n?/m, '');
-  
+
   // 4. 移除与 section title 重复的单独一行
   const escapedTitle = sectionTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const titlePattern = new RegExp(`^${escapedTitle}[:\\s]*\n`, 'im');
   cleaned = cleaned.replace(titlePattern, '');
-  
+
   // 5. 清理多余的空行（超过2个连续空行变成1个）
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
-  
+
   // 6. 移除开头的空行
   cleaned = cleaned.replace(/^\s*\n+/, '');
-  
+
   return cleaned;
 }
 
@@ -50,7 +82,7 @@ function cleanMarkdownContent(content: string, sectionTitle: string): string {
 function removeJsonBlocks(text: string): string {
   let result = '';
   let i = 0;
-  
+
   while (i < text.length) {
     // 检测是否是 JSON 块的开始: { 后面跟着换行和 "
     if (text[i] === '{') {
@@ -73,7 +105,7 @@ function removeJsonBlocks(text: string): string {
     result += text[i];
     i++;
   }
-  
+
   return result;
 }
 
@@ -83,13 +115,15 @@ export const SummarySection: React.FC<SummarySectionProps> = ({ title, content, 
   // 清理内容
   const cleanedContent = cleanMarkdownContent(content, title);
 
+  // Get icon for this section
+  const Icon = id ? sectionIcons[id] : undefined;
+
   return (
-    <div className="investment-summary-section" id={id}>
-      <div className="section-header"><h2>{title}</h2></div>
-      <div className="section-content">
+    <section className="doc-section" id={id}>
+      <SectionHeader title={title} icon={Icon} />
+      <div className="doc-section-content doc-prose">
         <Markdown remarkPlugins={[remarkGfm]}>{cleanedContent}</Markdown>
       </div>
-    </div>
+    </section>
   );
 };
-
