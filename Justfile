@@ -52,4 +52,4 @@ codegen:
 # 8. Generate investment summaries for all companies
 summary-all:
     @echo "🚀 Starting batch generation of investment summaries..."
-    ./venv/bin/python src/django_api/csi300/services/investment_summary_generator.py
+    cd src/django_api && ../../venv/bin/python -m csi300.services.cli

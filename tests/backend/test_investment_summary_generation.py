@@ -7,13 +7,13 @@ from rest_framework.test import APIClient
 
 # Django Model & Service Imports
 from csi300.models import CSI300Company, CSI300InvestmentSummary
-from csi300.services.investment_summary_generator import (
+from csi300.services import (
     generate_company_summary,
     parse_business_overview_to_json,
     safe_decimal,
     extract_ai_content_sections,
-    SECTION_PATTERNS
 )
+from csi300.services.parser import SECTION_PATTERNS
 
 # Fixtures
 @pytest.fixture
@@ -208,8 +208,8 @@ def test_section_regex_anchoring():
 # ==========================================
 
 @pytest.mark.django_db
-@patch('csi300.services.investment_summary_generator.Client')
-@patch('csi300.services.investment_summary_generator.yf.Ticker')
+@patch('csi300.services.generator.Client')
+@patch('csi300.services.utils.yf.Ticker')
 def test_service_generate_success(mock_yf, mock_client, test_company):
     """测试服务层生成逻辑 (Mock AI 和 Yahoo)"""
     # Mock Yahoo Finance
@@ -267,7 +267,7 @@ def test_service_nonexistent_company():
     assert '不存在' in result['message']
 
 @pytest.mark.django_db
-@patch('csi300.services.investment_summary_generator.Client')
+@patch('csi300.services.generator.Client')
 def test_service_ai_failure(mock_client, test_company):
     """测试服务层处理 AI 调用失败"""
     mock_client_instance = MagicMock()
