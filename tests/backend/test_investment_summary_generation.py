@@ -127,7 +127,7 @@ def test_parse_business_overview_json_block():
     """测试 AI 生成的 JSON 块解析"""
     text = """
     Some narrative text here.
-    
+
     ```business_overview_data
     {
         "fiscal_year": "2024",
@@ -157,7 +157,7 @@ def test_parse_business_overview_json_block():
 def test_parse_business_overview_fallback():
     """测试正则回退解析"""
     text = """
-    Key financials for FY2024: sales 100B CNY, operating income 10B CNY, 
+    Key financials for FY2024: sales 100B CNY, operating income 10B CNY,
     margins ~10%.
     """
 
@@ -183,10 +183,10 @@ def test_extract_ai_content_sections():
     content = """
     # Business Overview
     This is the business overview content.
-    
+
     ## Key Financials and Valuation
     Financial metrics here.
-    
+
     ### Recommended Action
     Buy this stock because...
     """
@@ -202,14 +202,14 @@ def test_extract_ai_content_sections():
 def test_section_regex_anchoring():
     """测试正则表达式锚点 (防止误匹配正文)"""
     # 模拟正文中包含 "Key Financials" 文本的情况
-    text_with_inline = """
-    Business Overview text here.
-    Key financials for FY2024 show revenue of 100B.
-    More text here.
-    
-    ## Key Financials and Valuation
-    This is the actual section.
-    """
+    # Note: Markdown headers must be at the start of a line (no leading whitespace)
+    text_with_inline = """Business Overview text here.
+Key financials for FY2024 show revenue of 100B.
+More text here.
+
+## Key Financials and Valuation
+This is the actual section.
+"""
 
     match = SECTION_PATTERNS["key_financials"].search(text_with_inline)
     assert match is not None
@@ -248,7 +248,7 @@ def test_service_generate_success(mock_yf, mock_client, test_company):
     mock_response.content = """
     # Business Overview
     Test company operates in technology sector.
-    
+
     ```business_overview_data
     {
         "fiscal_year": "2024",
@@ -256,10 +256,10 @@ def test_service_generate_success(mock_yf, mock_client, test_company):
         "divisions": []
     }
     ```
-    
+
     ## Key Financials and Valuation
     Strong financial performance.
-    
+
     ### Recommended Action
     Hold
     """
