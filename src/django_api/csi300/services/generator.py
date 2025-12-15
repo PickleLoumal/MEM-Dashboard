@@ -174,8 +174,12 @@ async def process_company_ai(
                 def call_xai():
                     # 使用新的 Agentic Tool Calling API (替代已弃用的 Live Search)
                     # 参考: https://docs.x.ai/docs/guides/tools/overview
+                    # 重要：必须使用 stream() 而非 sample() 才能获取完整的 inline_citations
+                    # TODO: 临时硬编码模型名称来测试 inline citations
+                    test_model = "grok-4-1-fast-non-reasoning"  # 不是 reasoning 或 non-reasoning 变体
+                    logger.info(f"Using model: {test_model} (hardcoded for inline citations test)")
                     chat = client.chat.create(
-                        model=AI_MODEL,
+                        model=test_model,
                         tools=[
                             web_search(),  # 网页搜索
                             x_search(),  # X/Twitter 搜索
@@ -196,12 +200,85 @@ async def process_company_ai(
 
                     chat.append(system(AI_SYSTEM_PROMPT + search_constraint))
                     chat.append(user(prompt))
-                    return chat.sample()
+
+                    # 使用 stream() 而非 sample() - 官方推荐方式
+                    # stream() 会自动在 content 中嵌入 [[N]](url) 格式的内联引用
+                    final_response = None
+                    chunk_inline_citations = []  # 收集流式过程中的 inline citations
+
+                    for response, chunk in chat.stream():
+                        final_response = response
+
+                        # 收集 chunk 中的 inline citations
+                        if hasattr(chunk, "inline_citations") and chunk.inline_citations:
+                            for cit in chunk.inline_citations:
+                                chunk_inline_citations.append(str(cit))
+
+                        # 记录工具调用（调试用）
+                        for tool_call in chunk.tool_calls:
+                            logger.debug(
+                                f"Tool call: {tool_call.function.name} "
+                                f"args: {tool_call.function.arguments[:100]}..."
+                            )
+
+                    # 调试：记录 chunk 级别的 inline citations
+                    if chunk_inline_citations:
+                        logger.info(f"Collected {len(chunk_inline_citations)} inline citations from chunks")
+
+                    return final_response
 
                 response = await loop.run_in_executor(executor, call_xai)
 
             if response and response.content and len(response.content.strip()) > 100:
                 ai_content = response.content
+
+                # ========== DEBUG: 写入调试文件 ==========
+                debug_file = "/tmp/xai_debug.txt"
+                try:
+                    with open(debug_file, "w") as f:
+                        f.write(f"=== DEBUG: xAI Inline Citations Test ===\n")
+                        f.write(f"Model: {AI_MODEL}\n")
+                        f.write(f"Content length: {len(ai_content)}\n\n")
+
+                        # 检查内容是否包含 inline citations 标记
+                        if "[[" in ai_content and "]](" in ai_content:
+                            f.write("✅ INLINE CITATIONS DETECTED in raw content!\n")
+                            import re
+                            citation_pattern = r'\[\[\d+\]\]\([^)]+\)'
+                            found_citations = re.findall(citation_pattern, ai_content)
+                            f.write(f"Found {len(found_citations)} inline citation marks:\n")
+                            for cit in found_citations[:10]:
+                                f.write(f"  - {cit}\n")
+                        else:
+                            f.write("❌ NO INLINE CITATIONS in raw content\n")
+
+                        # 检查 inline_citations 属性
+                        inline_cit = getattr(response, "inline_citations", None)
+                        f.write(f"\nresponse.inline_citations: {inline_cit}\n")
+                        f.write(f"inline_citations count: {len(inline_cit) if inline_cit else 0}\n")
+
+                        # 如果有 inline_citations，打印详细信息
+                        if inline_cit and len(inline_cit) > 0:
+                            f.write("\n=== INLINE CITATIONS DETAILS ===\n")
+                            for idx, ic in enumerate(inline_cit[:5]):
+                                f.write(f"  [{idx}] id={getattr(ic, 'id', '?')}, ")
+                                f.write(f"start={getattr(ic, 'start_index', '?')}, ")
+                                f.write(f"end={getattr(ic, 'end_index', '?')}\n")
+
+                        # 检查 citations 属性
+                        cit = getattr(response, "citations", None)
+                        f.write(f"\nresponse.citations count: {len(cit) if cit else 0}\n")
+                        f.write(f"citations (first 5): {cit[:5] if cit else None}\n")
+
+                        # 内容预览 - 显示前 500 字符看是否有 inline citations
+                        f.write(f"\n=== CONTENT PREVIEW (first 500 chars) ===\n")
+                        f.write(ai_content[:500])
+                        f.write(f"\n\n=== CONTENT PREVIEW (last 500 chars) ===\n")
+                        f.write(ai_content[-500:])
+
+                    logger.info(f"DEBUG info written to {debug_file}")
+                except Exception as e:
+                    logger.warning(f"Failed to write debug file: {e}")
 
                 # 尝试多种可能的 citations 属性名
                 live_citations = []
@@ -209,6 +286,7 @@ async def process_company_ai(
                 # 方法1: inline_citations (新 API - SDK 1.5.0+)
                 # 注意：当启用 include=["inline_citations"] 时，API 会自动在 content 中插入 [[N]](url) 格式
                 inline_citations = getattr(response, "inline_citations", None)
+                logger.info(f"inline_citations attribute: {inline_citations}, type: {type(inline_citations)}")
                 if inline_citations and len(inline_citations) > 0:
                     logger.info(f"Found inline_citations: {len(inline_citations)} items")
                     for idx, cit in enumerate(inline_citations):

@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import contextlib
 import logging
+import threading
+import uuid
 from datetime import UTC, datetime
 from typing import Any
 
@@ -31,7 +33,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
-from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary
+from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary, GenerationTask
 from .serializers import (
     CSI300CompanyListSerializer,
     CSI300CompanySerializer,
@@ -96,14 +98,14 @@ class CSI300HealthMixin:
 
 
 class CSI300SummaryMixin:
-    """CSI300 摘要生成 Mixin"""
+    """CSI300 摘要生成 Mixin - 异步模式"""
 
     @action(detail=False, methods=["post"], url_path="generate-summary")
     def generate_summary(self, request: Request) -> Response:
         """
-        生成指定公司的 Investment Summary
+        异步启动 Investment Summary 生成任务
 
-        使用 AI 模型生成公司投资摘要并保存到数据库。
+        立即返回 task_id，前端可通过 task-status API 轮询进度。
         """
         company_id_raw = request.data.get("company_id")
 
@@ -123,35 +125,173 @@ class CSI300SummaryMixin:
 
         # 验证公司存在
         try:
-            CSI300Company.objects.get(id=company_id)
+            company = CSI300Company.objects.get(id=company_id)
         except CSI300Company.DoesNotExist:
             return Response(
                 {"status": "error", "message": f"公司 ID {company_id} 不存在"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # 导入并调用生成服务
+        # 检查是否已有进行中的任务
+        existing_task = GenerationTask.objects.filter(
+            company_id=company_id,
+            status__in=[GenerationTask.Status.PENDING, GenerationTask.Status.PROCESSING],
+        ).first()
+
+        if existing_task:
+            return Response(
+                {
+                    "status": "accepted",
+                    "message": "任务已在进行中",
+                    "task_id": existing_task.task_id,
+                    "task_status": existing_task.status,
+                    "progress_percent": existing_task.progress_percent,
+                    "progress_message": existing_task.progress_message,
+                },
+                status=status.HTTP_202_ACCEPTED,
+            )
+
+        # 创建新任务
+        task_id = str(uuid.uuid4())
+        task = GenerationTask.objects.create(
+            task_id=task_id,
+            company=company,
+            status=GenerationTask.Status.PENDING,
+            progress_message="任务已创建，等待处理...",
+            progress_percent=0,
+        )
+
+        # 启动后台线程执行生成
+        thread = threading.Thread(
+            target=self._run_generation_task,
+            args=(task_id, company_id),
+            daemon=True,
+        )
+        thread.start()
+
+        logger.info(f"Started async generation task {task_id} for company {company.ticker}")
+
+        return Response(
+            {
+                "status": "accepted",
+                "message": "任务已启动",
+                "task_id": task_id,
+                "task_status": GenerationTask.Status.PENDING,
+                "progress_percent": 0,
+                "progress_message": "任务已创建，等待处理...",
+            },
+            status=status.HTTP_202_ACCEPTED,
+        )
+
+    def _run_generation_task(self, task_id: str, company_id: int) -> None:
+        """
+        后台线程执行生成任务
+
+        注意：此方法在独立线程中运行，需要独立的数据库连接。
+        """
+        import django
+
+        django.setup()
+
+        from django.db import connection as db_connection
+
         try:
+            # 更新任务状态为处理中
+            task = GenerationTask.objects.get(task_id=task_id)
+            task.status = GenerationTask.Status.PROCESSING
+            task.progress_message = "正在调用 AI 服务..."
+            task.progress_percent = 10
+            task.save(update_fields=["status", "progress_message", "progress_percent", "updated_at"])
+
+            # 导入并调用生成服务
             from .services import generate_company_summary
+
+            # 更新进度
+            task.progress_message = "AI 正在搜索和分析数据..."
+            task.progress_percent = 30
+            task.save(update_fields=["progress_message", "progress_percent", "updated_at"])
 
             result = generate_company_summary(company_id)
 
-            if result["status"] == "success":
-                return Response(result, status=status.HTTP_200_OK)
-            return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # 更新任务状态
+            task.refresh_from_db()
+            if result.get("status") == "success":
+                task.status = GenerationTask.Status.COMPLETED
+                task.progress_message = "生成完成"
+                task.progress_percent = 100
+                task.result_data = result.get("data", {})
+                task.completed_at = datetime.now(tz=UTC)
+                logger.info(f"Task {task_id} completed successfully")
+            else:
+                task.status = GenerationTask.Status.FAILED
+                task.progress_message = "生成失败"
+                task.error_message = result.get("message", "未知错误")
+                task.completed_at = datetime.now(tz=UTC)
+                logger.warning(f"Task {task_id} failed: {task.error_message}")
 
-        except ImportError as e:
-            logger.exception("Service import failed")
-            return Response(
-                {"status": "error", "message": f"服务模块导入失败: {e!s}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            task.save()
+
         except Exception as e:
-            logger.exception("Summary generation failed")
+            logger.exception(f"Task {task_id} failed with exception")
+            try:
+                task = GenerationTask.objects.get(task_id=task_id)
+                task.status = GenerationTask.Status.FAILED
+                task.progress_message = "生成失败"
+                task.error_message = str(e)
+                task.completed_at = datetime.now(tz=UTC)
+                task.save()
+            except Exception:
+                logger.exception(f"Failed to update task {task_id} status after error")
+        finally:
+            # 关闭数据库连接（线程安全）
+            db_connection.close()
+
+    @action(detail=False, methods=["get"], url_path="task-status/(?P<task_id>[^/.]+)")
+    def task_status(self, request: Request, task_id: str = "") -> Response:
+        """
+        查询任务状态
+
+        前端轮询此 API 获取生成进度。
+        """
+        if not task_id:
             return Response(
-                {"status": "error", "message": f"生成失败: {e!s}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                {"status": "error", "message": "缺少 task_id"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
+
+        try:
+            task = GenerationTask.objects.select_related("company").get(task_id=task_id)
+        except GenerationTask.DoesNotExist:
+            return Response(
+                {"status": "error", "message": f"任务 {task_id} 不存在"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        response_data = {
+            "status": "success",
+            "task_id": task.task_id,
+            "task_status": task.status,
+            "progress_percent": task.progress_percent,
+            "progress_message": task.progress_message,
+            "company_id": task.company_id,
+            "company_name": task.company.name,
+            "company_ticker": task.company.ticker,
+            "created_at": task.created_at.isoformat() if task.created_at else None,
+            "updated_at": task.updated_at.isoformat() if task.updated_at else None,
+        }
+
+        if task.status == GenerationTask.Status.COMPLETED:
+            response_data["result"] = task.result_data
+            response_data["completed_at"] = (
+                task.completed_at.isoformat() if task.completed_at else None
+            )
+        elif task.status == GenerationTask.Status.FAILED:
+            response_data["error"] = task.error_message
+            response_data["completed_at"] = (
+                task.completed_at.isoformat() if task.completed_at else None
+            )
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadOnlyModelViewSet):
@@ -619,3 +759,21 @@ def generate_investment_summary(request: Request) -> Response:
     viewset.request = request
     viewset.format_kwarg = None
     return viewset.generate_summary(request)
+
+
+@extend_schema(
+    summary="查询任务状态",
+    description="查询异步生成任务的状态和进度",
+    responses={
+        200: OpenApiTypes.OBJECT,
+        404: OpenApiTypes.OBJECT,
+    },
+)
+@api_view(["GET"])
+def task_status(request: Request, task_id: str) -> Response:
+    """查询任务状态 (向后兼容)"""
+    # 委托给 ViewSet 的实现
+    viewset = CSI300CompanyViewSet()
+    viewset.request = request
+    viewset.format_kwarg = None
+    return viewset.task_status(request, task_id=task_id)

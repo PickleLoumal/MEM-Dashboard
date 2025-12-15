@@ -31,7 +31,9 @@ class AIConfig:
         max_retries_str = os.environ.get("XAI_MAX_RETRIES", "3")
 
         return cls(
-            model=os.environ.get("XAI_MODEL", "grok-4-1-fast-non-reasoning"),
+            # grok-4-1-fast 支持完整的 agentic tools 和 inline citations
+            # grok-4-1-fast-non-reasoning 不支持自动 inline citations
+            model=os.environ.get("XAI_MODEL", "grok-4-1-fast"),
             system_prompt=os.environ.get(
                 "XAI_SYSTEM_PROMPT",
                 "You are Grok, a highly intelligent, helpful AI assistant.",
