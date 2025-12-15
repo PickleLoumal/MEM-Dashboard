@@ -1,0 +1,244 @@
+{
+  "success": true,
+  "total_endpoints_tested": 7,
+  "entitled": 2,
+  "not_entitled": 1,
+  "errors": 0,
+  "results": [
+    {
+      "endpoint": "/data/estimates/v2/summaries/non-periodic-measures",
+      "method": "GET",
+      "status_code": 400,
+      "permission_status": "unknown",
+      "error_message": "Validation error",
+      "has_data": true,
+      "response_body": {
+        "error": {
+          "id": "d8a2e50e-0cdd-4f44-9439-7916e71b14b8",
+          "code": "400",
+          "message": "Validation error",
+          "status": "Bad Request",
+          "errors": [
+            {
+              "key": "package",
+              "reason": "value is not one of the allowed values [\"base\",\"standard\",\"professional\"]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "endpoint": "/data/estimates/v2/summaries/non-periodic-measures-historical-snapshots",
+      "method": "GET",
+      "status_code": 400,
+      "permission_status": "unknown",
+      "error_message": "Validation error",
+      "has_data": true,
+      "response_body": {
+        "error": {
+          "id": "c34b6e6a-1edf-445a-91bc-654474176a69",
+          "code": "400",
+          "message": "Validation error",
+          "status": "Bad Request",
+          "errors": [
+            {
+              "key": "package",
+              "reason": "value is not one of the allowed values [\"base\",\"standard\",\"professional\"]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "endpoint": "/data/estimates/v2/summaries/recommendations",
+      "method": "GET",
+      "status_code": 400,
+      "permission_status": "unknown",
+      "error_message": "Validation error",
+      "has_data": true,
+      "response_body": {
+        "error": {
+          "id": "cbc798cb-9c10-4dc7-a2f1-c19d7c0f7b20",
+          "code": "400",
+          "message": "Validation error",
+          "status": "Bad Request",
+          "errors": [
+            {
+              "key": "package",
+              "reason": "value is not one of the allowed values [\"base\",\"standard\",\"professional\"]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "endpoint": "/data/estimates/v2/summaries/recommendations-historical-snapshots",
+      "method": "GET",
+      "status_code": 400,
+      "permission_status": "unknown",
+      "error_message": "Validation error",
+      "has_data": true,
+      "response_body": {
+        "error": {
+          "id": "449bb7da-cb00-47be-8f38-8425cbd0b929",
+          "code": "400",
+          "message": "Validation error",
+          "status": "Bad Request",
+          "errors": [
+            {
+              "key": "package",
+              "reason": "value is not one of the allowed values [\"base\",\"standard\",\"professional\"]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "endpoint": "/data/estimates/v2/coverages",
+      "method": "GET",
+      "status_code": 403,
+      "permission_status": "not_entitled",
+      "error_message": "access denied. Scopes required to access the resource: [trapi.data.est.sum]. Missing scopes: [trapi.data.est.sum]",
+      "has_data": true,
+      "response_body": {
+        "error": {
+          "id": "84bc1eb0-a637-4dad-996b-bb7b93f91324",
+          "code": "insufficient_scope",
+          "message": "access denied. Scopes required to access the resource: [trapi.data.est.sum]. Missing scopes: [trapi.data.est.sum]",
+          "status": "Forbidden"
+        }
+      }
+    },
+    {
+      "endpoint": "/data/datagrid/beta1/ (Basic Fields)",
+      "method": "POST",
+      "status_code": 200,
+      "permission_status": "entitled",
+      "error_message": null,
+      "has_data": true,
+      "response_body": {
+        "links": {
+          "count": 3
+        },
+        "variability": "",
+        "universe": [
+          {
+            "Instrument": "AAPL.O",
+            "Company Common Name": "Apple Inc",
+            "Organization PermID": "4295905573",
+            "Reporting Currency": "USD"
+          },
+          {
+            "Instrument": "MSFT.O",
+            "Company Common Name": "Microsoft Corp",
+            "Organization PermID": "4295907168",
+            "Reporting Currency": "USD"
+          },
+          {
+            "Instrument": "0700.HK",
+            "Company Common Name": "Tencent Holdings Ltd",
+            "Organization PermID": "4295865078",
+            "Reporting Currency": "CNY"
+          }
+        ],
+        "data": [
+          [
+            "AAPL.O",
+            278.03,
+            4108269424590,
+            "Apple Inc"
+          ],
+          [
+            "MSFT.O",
+            483.47,
+            3593331624862.85,
+            "Microsoft Corp"
+          ],
+          [
+            "0700.HK",
+            601.5,
+            5500664686495.5,
+            "Tencent Holdings Ltd"
+          ]
+        ],
+        "messages": {
+          "codes": [
+            [
+              -1,
+              -1,
+              -1,
+              -1
+            ],
+            [
+              -1,
+              -1,
+              -1,
+              -1
+            ],
+            [
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          ],
+          "descriptions": [
+            {
+              "code": -1,
+              "description": "ok"
+            }
+          ]
+        },
+        "headers": [
+          {
+            "name": "instrument",
+            "title": "Instrument",
+            "type": "string",
+            "description": "The requested Instrument as defined by the user."
+          },
+          {
+            "name": "TR.PriceClose",
+            "title": "Price Close",
+            "type": "number",
+            "decimalChar": ".",
+            "description": "The latest available closing price. If there are no trades for the most recent completed tradable day, the most recent prior tradable day with trading activity is used, provided the last tradable day for the instrument is within 378 completed calendar days (54 weeks)."
+          },
+          {
+            "name": "TR.CompanyMarketCap",
+            "title": "Company Market Cap",
+            "type": "number",
+            "decimalChar": ".",
+            "description": "The Company Market Capitalization represents the sum of market value for all relevant issue level share types. The issue level market value is calculated by multiplying the requested shares type by latest close price. This item supports Default, Free Float and Outstanding shares types. The default shares type is the most widely reported outstanding shares for a market and it is most commonly Issued, Outstanding, or Listed shares."
+          },
+          {
+            "name": "Company Name",
+            "title": "Company Name",
+            "type": "string",
+            "description": "Company Name."
+          }
+        ]
+      }
+    },
+    {
+      "endpoint": "/data/datagrid/beta1/ (Target Price Fields)",
+      "method": "POST",
+      "status_code": 200,
+      "permission_status": "entitled",
+      "error_message": null,
+      "has_data": true,
+      "response_body": {
+        "error": {
+          "code": 218,
+          "description": "The formula must contain at least one field or function."
+        }
+      }
+    }
+  ],
+  "entitled_endpoints": [
+    "/data/datagrid/beta1/ (Basic Fields)",
+    "/data/datagrid/beta1/ (Target Price Fields)"
+  ],
+  "not_entitled_endpoints": [
+    "/data/estimates/v2/coverages"
+  ]
+}

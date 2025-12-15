@@ -1,0 +1,279 @@
+{
+  "success": true,
+  "timestamp": "2025-12-12T12:42:08.539659",
+  "total_tests": 14,
+  "by_status": {
+    "success": 9,
+    "partial": 2,
+    "bad_request": 1,
+    "network_error": 2
+  },
+  "results": [
+    {
+      "api_name": "DataGrid - Basic Price Data",
+      "endpoint": "/data/datagrid/beta1/ (Basic Price Data)",
+      "method": "POST",
+      "status_code": 200,
+      "test_status": "success",
+      "error_message": null,
+      "latency_ms": 508.668,
+      "has_data": true,
+      "response_preview": "{\"links\": {\"count\": 2}, \"variability\": \"\", \"universe\": [{\"Instrument\": \"AAPL.O\", \"Company Common Name\": \"Apple Inc\", \"Organization PermID\": \"4295905573\", \"Reporting Currency\": \"USD\"}, {\"Instrument\": \"MSFT.O\", \"Company Common Name\": \"Microsoft Corp\", \"Organization PermID\": \"4295907168\", \"Reporting Currency\": \"USD\"}], \"data\": [[\"AAPL.O\", 278.03, 33247986, 279.095, 279.59, 273.81], [\"MSFT.O\", 483.47, 24669180, 476.63, 486.03, 475.86]], \"messages\": {\"codes\": [[-1, -1, -1, -1, -1, -1], [-1, -1, -1, -1, -1, -1]], \"descriptions\": [{\"code\": -1, \"description\": \"ok\"}]}, \"headers\": [{\"name\": \"instrument\", \"title\": \"Instrument\", \"type\": \"string\", \"description\": \"The requested Instrument as defined by the user.\"}, {\"name\": \"TR.PriceClose\", \"title\": \"Price Close\", \"type\": \"number\", \"decimalChar\": \".\", \"description\": \"The latest available closing price. If there are no trades for the most recent completed tradable day, the most recent prior tradable day with trading activity is used, provided the last tradable day for the instrument is within 378 completed calendar days (54 weeks).\"}, {\"name\": \"TR.Volume\", \"title\": \"Volume\", \"type\": \"number\", \"decimalChar\": \".\", \"description\": \"Volume for the latest trading day.  For stock exchanges that trade share by share, Volume is number of shares that traded on the trade date. For stock exchanges that trade in lots, Volume is divided by Lotsize, if the Lotsize is greater than one.\"}, {\"name\": \"TR.PriceOpen\", \"title\": \"Price Open\", \"type\": \"number\", \"d..."
+    },
+    {
+      "api_name": "DataGrid - Company Info",
+      "endpoint": "/data/datagrid/beta1/ (Company Info)",
+      "method": "POST",
+      "status_code": 200,
+      "test_status": "success",
+      "error_message": null,
+      "latency_ms": 396.00800000000004,
+      "has_data": true,
+      "response_preview": "{\"links\": {\"count\": 2}, \"variability\": \"\", \"universe\": [{\"Instrument\": \"AAPL.O\", \"Company Common Name\": \"Apple Inc\", \"Organization PermID\": \"4295905573\", \"Reporting Currency\": \"USD\"}, {\"Instrument\": \"MSFT.O\", \"Company Common Name\": \"Microsoft Corp\", \"Organization PermID\": \"4295907168\", \"Reporting Currency\": \"USD\"}], \"data\": [[\"AAPL.O\", \"Apple Inc\", \"Apple Inc\", \"United States of America\", \"Technology Hardware, Storage & Peripherals\"], [\"MSFT.O\", \"Microsoft Corp\", \"Microsoft Corp\", \"United States of America\", \"Software\"]], \"messages\": {\"codes\": [[-1, -1, -1, -1, -1], [-1, -1, -1, -1, -1]], \"descriptions\": [{\"code\": -1, \"description\": \"ok\"}]}, \"headers\": [{\"name\": \"instrument\", \"title\": \"Instrument\", \"type\": \"string\", \"description\": \"The requested Instrument as defined by the user.\"}, {\"name\": \"Company Name\", \"title\": \"Company Name\", \"type\": \"string\", \"description\": \"Company Name.\"}, {\"name\": \"TR.CommonName\", \"title\": \"Company Common Name\", \"type\": \"string\", \"description\": \"Where available provides the name of the organization most commonly used. Provides primary share class name for funds.\"}, {\"name\": \"TR.HeadquartersCountry\", \"title\": \"Country of Headquarters\", \"type\": \"string\", \"description\": \"Country of Headquarters, also known as Country of Domicile.\"}, {\"name\": \"TR.GICSIndustry\", \"title\": \"GICS Industry Name\", \"type\": \"string\", \"description\": \"Primary Global Industry Classification Standard (GICS) Industry Description. GICS Classifies companies with increasing granularity..."
+    },
+    {
+      "api_name": "DataGrid - Market Cap & Valuation",
+      "endpoint": "/data/datagrid/beta1/ (Market Cap & Valuation)",
+      "method": "POST",
+      "status_code": 200,
+      "test_status": "success",
+      "error_message": null,
+      "latency_ms": 669.846,
+      "has_data": true,
+      "response_preview": "{\"links\": {\"count\": 2}, \"variability\": \"\", \"universe\": [{\"Instrument\": \"AAPL.O\", \"Company Common Name\": \"Apple Inc\", \"Organization PermID\": \"4295905573\", \"Reporting Currency\": \"USD\"}, {\"Instrument\": \"MSFT.O\", \"Company Common Name\": \"Microsoft Corp\", \"Organization PermID\": \"4295907168\", \"Reporting Currency\": \"USD\"}], \"data\": [[\"AAPL.O\", 4108269424590, 37.437201830724, 0.3730540210919], [\"MSFT.O\", 3593331624862.85, 34.3975047277271, 0.760615178869943]], \"messages\": {\"codes\": [[-1, -1, -1, -1], [-1, -1, -1, -1]], \"descriptions\": [{\"code\": -1, \"description\": \"ok\"}]}, \"headers\": [{\"name\": \"instrument\", \"title\": \"Instrument\", \"type\": \"string\", \"description\": \"The requested Instrument as defined by the user.\"}, {\"name\": \"TR.CompanyMarketCap\", \"title\": \"Company Market Cap\", \"type\": \"number\", \"decimalChar\": \".\", \"description\": \"The Company Market Capitalization represents the sum of market value for all relevant issue level share types. The issue level market value is calculated by multiplying the requested shares type by latest close price. This item supports Default, Free Float and Outstanding shares types. The default shares type is the most widely reported outstanding shares for a market and it is most commonly Issued, Outstanding, or Listed shares.\"}, {\"name\": \"TR.PE\", \"title\": \"P/E (Daily Time Series Ratio)\", \"type\": \"number\", \"decimalChar\": \".\", \"description\": \"A valuation ratio of a company's current share price relative to its EPS. EPS is LTM Earnings per Share From Continuin..."
+    },
+    {
+      "api_name": "DataGrid - Financial Ratios",
+      "endpoint": "/data/datagrid/beta1/ (Financial Ratios)",
+      "method": "POST",
+      "status_code": 200,
+      "test_status": "success",
+      "error_message": null,
+      "latency_ms": 351.143,
+      "has_data": true,
+      "response_data": {
+        "links": {
+          "count": 2
+        },
+        "variability": "",
+        "universe": [
+          {
+            "Instrument": "AAPL.O",
+            "Company Common Name": "Apple Inc",
+            "Organization PermID": "4295905573",
+            "Reporting Currency": "USD"
+          },
+          {
+            "Instrument": "MSFT.O",
+            "Company Common Name": "Microsoft Corp",
+            "Organization PermID": "4295907168",
+            "Reporting Currency": "USD"
+          }
+        ],
+        "data": [
+          [
+            "AAPL.O",
+            0.89329
+          ],
+          [
+            "MSFT.O",
+            1.35345
+          ]
+        ],
+        "messages": {
+          "codes": [
+            [
+              -1,
+              -1
+            ],
+            [
+              -1,
+              -1
+            ]
+          ],
+          "descriptions": [
+            {
+              "code": -1,
+              "description": "ok"
+            }
+          ]
+        },
+        "headers": [
+          {
+            "name": "instrument",
+            "title": "Instrument",
+            "type": "string",
+            "description": "The requested Instrument as defined by the user."
+          },
+          {
+            "name": "TR.CurrentRatio",
+            "title": "Current Ratio",
+            "type": "number",
+            "decimalChar": ".",
+            "description": "Represents Total Current Assets divided by Total Current Liabilities."
+          }
+        ]
+      }
+    },
+    {
+      "api_name": "DataGrid - Revenue & Earnings",
+      "endpoint": "/data/datagrid/beta1/ (Revenue & Earnings)",
+      "method": "POST",
+      "status_code": 200,
+      "test_status": "success",
+      "error_message": null,
+      "latency_ms": 979.366,
+      "has_data": true,
+      "response_preview": "{\"links\": {\"count\": 2}, \"variability\": \"\", \"universe\": [{\"Instrument\": \"AAPL.O\", \"Company Common Name\": \"Apple Inc\", \"Organization PermID\": \"4295905573\", \"Reporting Currency\": \"USD\"}, {\"Instrument\": \"MSFT.O\", \"Company Common Name\": \"Microsoft Corp\", \"Organization PermID\": \"4295907168\", \"Reporting Currency\": \"USD\"}], \"data\": [[\"AAPL.O\", 416161000000, 112010000000, null, 144748000000], [\"MSFT.O\", 281724000000, 101832000000, null, 156528000000]], \"messages\": {\"codes\": [[-1, -1, -1, 221, -1], [-1, -1, -1, 221, -1]], \"descriptions\": [{\"code\": -1, \"description\": \"ok\"}, {\"code\": 221, \"description\": \"The access to field(s) denied.\"}]}, \"headers\": [{\"name\": \"instrument\", \"title\": \"Instrument\", \"type\": \"string\", \"description\": \"The requested Instrument as defined by the user.\"}, {\"name\": \"TR.Revenue\", \"title\": \"Revenue\", \"type\": \"number\", \"decimalChar\": \".\", \"description\": \"Is used for industrial and utility companies. It consists of revenue from the sale of merchandise, manufactured goods and services, and the distribution of regulated energy resources, depending on a specific company's industry.\"}, {\"name\": \"TR.NetIncome\", \"title\": \"Net Income Incl Extra Before Distributions\", \"type\": \"number\", \"decimalChar\": \".\", \"description\": \"Represents the sum of Net Income Before Extraordinary Items and Total Extraordinary Items.\"}, {\"name\": \"TR.EPS\", \"title\": \"EPS\", \"type\": \"string\", \"description\": \"This is the latest annualised rate that may reflect the last financial year or be derived from ..."
+    },
+    {
+      "api_name": "DataGrid - Target Price (I/B/E/S)",
+      "endpoint": "/data/datagrid/beta1/ (Target Price (I/B/E/S))",
+      "method": "POST",
+      "status_code": 200,
+      "test_status": "partial",
+      "error_message": "{'code': 218, 'description': 'The formula must contain at least one field or function.'}",
+      "latency_ms": 295.49199999999996,
+      "has_data": true,
+      "response_data": {
+        "error": {
+          "code": 218,
+          "description": "The formula must contain at least one field or function."
+        }
+      }
+    },
+    {
+      "api_name": "DataGrid - Analyst Recommendations",
+      "endpoint": "/data/datagrid/beta1/ (Analyst Recommendations)",
+      "method": "POST",
+      "status_code": 200,
+      "test_status": "partial",
+      "error_message": "{'code': 218, 'description': 'The formula must contain at least one field or function.'}",
+      "latency_ms": 295.283,
+      "has_data": true,
+      "response_data": {
+        "error": {
+          "code": 218,
+          "description": "The formula must contain at least one field or function."
+        }
+      }
+    },
+    {
+      "api_name": "DataGrid - ESG Scores",
+      "endpoint": "/data/datagrid/beta1/ (ESG Scores)",
+      "method": "POST",
+      "status_code": 200,
+      "test_status": "success",
+      "error_message": null,
+      "latency_ms": 868.891,
+      "has_data": true,
+      "response_preview": "{\"links\": {\"count\": 2}, \"variability\": \"\", \"universe\": [{\"Instrument\": \"AAPL.O\", \"Company Common Name\": \"Apple Inc\", \"Organization PermID\": \"4295905573\", \"Reporting Currency\": \"USD\"}, {\"Instrument\": \"MSFT.O\", \"Company Common Name\": \"Microsoft Corp\", \"Organization PermID\": \"4295907168\", \"Reporting Currency\": \"USD\"}], \"data\": [[\"AAPL.O\", 69.7905158035505, 65.1296486459277, 63.9240124209175], [\"MSFT.O\", 86.9849394546159, 77.6132958321334, 84.9154629469649]], \"messages\": {\"codes\": [[-1, -1, -1, -1], [-1, -1, -1, -1]], \"descriptions\": [{\"code\": -1, \"description\": \"ok\"}]}, \"headers\": [{\"name\": \"instrument\", \"title\": \"Instrument\", \"type\": \"string\", \"description\": \"The requested Instrument as defined by the user.\"}, {\"name\": \"TR.TRESGScore\", \"title\": \"ESG Score\", \"type\": \"number\", \"decimalChar\": \".\", \"description\": \"Refinitiv ESG Score is an overall company score based on the self-reported information in the environmental, social and corporate governance pillars.\"}, {\"name\": \"TR.EnvironmentPillarScore\", \"title\": \"Environmental Pillar Score\", \"type\": \"number\", \"decimalChar\": \".\", \"description\": \"The environmental pillar measures a company's impact on living and non-living natural systems, including the air, land and water, as well as complete ecosystems. It reflects how well a company uses best management practices to avoid environmental risks and capitalize on environmental opportunities in order to generate long term shareholder value.\"}, {\"name\": \"TR.SocialPillarScore\", \"title\": \"S..."
+    },
+    {
+      "api_name": "Historical Pricing - Interday",
+      "endpoint": "/data/historical-pricing/v1/views/interday-summaries/AAPL.O",
+      "method": "GET",
+      "status_code": 200,
+      "test_status": "success",
+      "error_message": null,
+      "latency_ms": 461.971,
+      "has_data": true,
+      "response_preview": "[{\"universe\": {\"ric\": \"AAPL.O\"}, \"interval\": \"P1D\", \"summaryTimestampLabel\": \"endPeriod\", \"adjustments\": [\"exchangeCorrection\", \"manualCorrection\", \"CCH\", \"CRE\", \"RTS\", \"RPO\"], \"defaultPricingField\": \"TRDPRC_1\", \"qos\": {\"timeliness\": \"delayed\"}, \"headers\": [{\"name\": \"DATE\", \"type\": \"string\"}, {\"name\": \"TRDPRC_1\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"HIGH_1\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"LOW_1\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"ACVOL_UNS\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"OPEN_PRC\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"BID\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"ASK\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"TRNOVR_UNS\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"VWAP\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"BLKCOUNT\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"BLKVOLUM\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"NUM_MOVES\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"TRD_STATUS\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"SALTIM\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"NAVALUE\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"VWAP_VOL\", \"type\": \"number\", \"decimalChar\": \".\"}], \"data\": [[\"2025-12-11\", 278.03, 279.59, 273.81, 33247986, 279.095, 278.07, 278.09, 9215533415, 277.0568, 61, 8737930, 578987, 1, 75600, null, 29314503], [\"2025-12-10\", 278.78, 279.75, 276.44, 33038318, 277.75, 278.71, 278.79, 9200505094, 278.4631, 53, 12230480,..."
+    },
+    {
+      "api_name": "Historical Pricing - Intraday",
+      "endpoint": "/data/historical-pricing/v1/views/intraday-summaries/AAPL.O",
+      "method": "GET",
+      "status_code": 200,
+      "test_status": "success",
+      "error_message": null,
+      "latency_ms": 958.893,
+      "has_data": true,
+      "response_preview": "[{\"universe\": {\"ric\": \"AAPL.O\"}, \"interval\": \"PT60M\", \"summaryTimestampLabel\": \"startPeriod\", \"adjustments\": [\"exchangeCorrection\", \"manualCorrection\", \"CCH\", \"CRE\", \"RTS\", \"RPO\"], \"defaultPricingField\": \"TRDPRC_1\", \"qos\": {\"timeliness\": \"delayed\"}, \"headers\": [{\"name\": \"DATE_TIME\", \"type\": \"string\"}, {\"name\": \"HIGH_1\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"LOW_1\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"OPEN_PRC\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"TRDPRC_1\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"NUM_MOVES\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"ACVOL_UNS\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"HIGH_YLD\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"LOW_YLD\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"OPEN_YLD\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"YIELD\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"VWAP\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"BID_HIGH_1\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"BID_LOW_1\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"OPEN_BID\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"BID\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"BID_NUMMOV\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"ASK_HIGH_1\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"ASK_LOW_1\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"OPEN_ASK\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"ASK\", \"type\": \"number\", \"decimalChar\": \".\"}, {\"name\": \"..."
+    },
+    {
+      "api_name": "Search - Company",
+      "endpoint": "/discovery/search/v1/search",
+      "method": "GET",
+      "status_code": null,
+      "test_status": "network_error",
+      "error_message": "Extra data: line 1 column 5 (char 4)",
+      "latency_ms": null,
+      "has_data": false
+    },
+    {
+      "api_name": "Symbology - Lookup",
+      "endpoint": "/discovery/symbology/v1/lookup",
+      "method": "POST",
+      "status_code": 400,
+      "test_status": "bad_request",
+      "error_message": "BAD_REQUEST",
+      "latency_ms": 255.836,
+      "has_data": true,
+      "response_data": {
+        "requestId": "b6aa4e52-9858-416c-81e5-9d9b28512beb",
+        "timestamp": "2025-12-12T04:42:07.657Z",
+        "status": 400,
+        "message": "Missing required parameter: type",
+        "error": "BAD_REQUEST",
+        "errorCodes": [
+          "MISSING_REQUIRED_PARAMETER"
+        ]
+      }
+    },
+    {
+      "api_name": "News - Headlines",
+      "endpoint": "/user-framework/mobile/news-service/v1/stories",
+      "method": "GET",
+      "status_code": null,
+      "test_status": "network_error",
+      "error_message": "Extra data: line 1 column 5 (char 4)",
+      "latency_ms": null,
+      "has_data": false
+    },
+    {
+      "api_name": "Quantitative Analytics - Bond",
+      "endpoint": "/data/quantitative-analytics/v1/financial-contracts",
+      "method": "POST",
+      "status_code": 200,
+      "test_status": "success",
+      "error_message": null,
+      "latency_ms": 496.995,
+      "has_data": true,
+      "response_data": {
+        "headers": [
+          {
+            "name": "MarketValueInDealCcy",
+            "type": "Float"
+          },
+          {
+            "name": "CleanPricePercent",
+            "type": "Float"
+          }
+        ],
+        "data": [
+          [
+            null,
+            null
+          ]
+        ]
+      }
+    }
+  ],
+  "working_apis": [
+    "DataGrid - Basic Price Data",
+    "DataGrid - Company Info",
+    "DataGrid - Market Cap & Valuation",
+    "DataGrid - Financial Ratios",
+    "DataGrid - Revenue & Earnings",
+    "DataGrid - ESG Scores",
+    "Historical Pricing - Interday",
+    "Historical Pricing - Intraday",
+    "Quantitative Analytics - Bond"
+  ],
+  "partial_apis": [
+    "DataGrid - Target Price (I/B/E/S)",
+    "DataGrid - Analyst Recommendations"
+  ],
+  "blocked_apis": []
+}

@@ -1,7 +1,6 @@
 import React from 'react';
 import { logger } from '@shared/lib/logger';
 import { SectionHeader, SegmentBar, AiBadge } from './ui';
-import { Activity } from 'lucide-react';
 
 interface DivisionData {
   name: string;
@@ -136,7 +135,6 @@ export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = (
         <section className="doc-section">
           <SectionHeader
             title="Segment Performance"
-            icon={Activity}
             subtitle={parsed.fiscal_year ? `FY${parsed.fiscal_year}` : undefined}
           />
           <div className="doc-section-content">

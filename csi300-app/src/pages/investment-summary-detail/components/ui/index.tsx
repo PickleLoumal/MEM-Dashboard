@@ -3,12 +3,6 @@
  * Professional document-style components for financial reports
  */
 import React from 'react';
-import {
-  BrainCircuit,
-  TrendingUp,
-  TrendingDown,
-  Minus
-} from 'lucide-react';
 
 /**
  * Citation component - displays [1] style references with hover tooltips
@@ -37,9 +31,6 @@ export const Delta = ({ val, suffix = '%' }: { val: number | string | undefined;
 
   return (
     <span className={`delta ${isPositive ? 'delta-positive' : isNegative ? 'delta-negative' : 'delta-neutral'}`}>
-      {isPositive && <TrendingUp size={12} className="delta-icon" />}
-      {isNegative && <TrendingDown size={12} className="delta-icon" />}
-      {!isPositive && !isNegative && <Minus size={12} className="delta-icon" />}
       <span className="delta-value">
         {isPositive ? '+' : ''}{numVal}{suffix}
       </span>
@@ -61,7 +52,6 @@ export const Tag = ({ text, variant = 'default' }: { text: string; variant?: 'de
  */
 export const AiBadge = ({ label = 'AI Insight' }: { label?: string }) => (
   <div className="ai-badge">
-    <BrainCircuit size={10} className="ai-badge-icon" />
     <span>{label}</span>
   </div>
 );
@@ -81,18 +71,15 @@ export const AiConfidence = ({ score }: { score: number }) => (
  */
 export const SectionHeader = ({
   title,
-  icon: Icon,
   showAiBadge = false,
   subtitle
 }: {
   title: string;
-  icon?: React.ElementType;
   showAiBadge?: boolean;
   subtitle?: string;
 }) => (
   <div className="doc-section-header">
     <div className="doc-section-header-left">
-      {Icon && <Icon size={12} className="doc-section-icon" />}
       <h2 className="doc-section-title">{title}</h2>
     </div>
     <div className="doc-section-header-right">
@@ -115,18 +102,28 @@ export const MetricRow = ({
   value: string | number;
   unit?: string;
   delta?: number;
-}) => (
-  <div className="metric-row">
-    <div className="metric-row-label">{label}</div>
-    <div className="metric-row-content">
-      <div className="metric-row-value">
-        {value}
-        {unit && <span className="metric-row-unit">{unit}</span>}
+}) => {
+  // Color the value based on delta (positive = green, negative = red)
+  const valueStyle: React.CSSProperties = {};
+  if (delta !== undefined && delta > 0) {
+    valueStyle.color = 'var(--doc-positive)';
+  } else if (delta !== undefined && delta < 0) {
+    valueStyle.color = 'var(--doc-negative)';
+  }
+
+  return (
+    <div className="metric-row">
+      <div className="metric-row-label">{label}</div>
+      <div className="metric-row-content">
+        <div className="metric-row-value" style={valueStyle}>
+          {value}
+          {unit && <span className="metric-row-unit">{unit}</span>}
+        </div>
+        {delta !== undefined && <Delta val={delta} />}
       </div>
-      {delta !== undefined && <Delta val={delta} />}
     </div>
-  </div>
-);
+  );
+};
 
 /**
  * Progress Bar component for segment visualization
