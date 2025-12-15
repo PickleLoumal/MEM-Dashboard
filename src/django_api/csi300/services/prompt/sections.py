@@ -229,47 +229,15 @@ Important industry ratios: (a) company values, (b) vs industry avg, (c) trends
 
 """
 
-# Section 16: Sources
+# Section 16: Sources (handled via Live Search citations - no AI output needed)
 SECTION_SOURCES = """## SECTION 16: Sources
 
-**⚠️ CRITICAL - FIXED FORMAT REQUIRED:**
-
-List all sources used in THIS EXACT FORMAT (one per line):
-```
-Source Title | https://example.com/full-url
-```
-
-**Example:**
-```
-Company Annual Report 2024 | https://company.com/investor-relations/annual-report-2024
-Goldman Sachs Analyst Note | https://goldmansachs.com/research/company-analysis
-McKinsey Industry Report | https://mckinsey.com/industries/report-2025
-SEC/CSRC Filings | https://sec.gov/cgi-bin/browse-edgar?company=TICKER
-Industry Association Data | https://industry-association.org/data/2025
-```
-
-**Rules:**
-- ONLY use existing, accessible URLs.
-- DO NOT use placeholders or guessed URLs.
-- Verify the URL structure (e.g., proper SEC filing links, official IR pages)
-- Verify the URL response is 200 OK
-- Verify the URL is not a 404 Not Found
-- Verify the URL is not a 403 Forbidden
-- Verify the URL is not a 401 Unauthorized
-- Verify the URL is not a 400 Bad Request
-- Verify the URL is not a 500 Internal Server Error
-- Verify the URL is not a 503 Service Unavailable
-- Verify the URL is not a 502 Bad Gateway
-- Format: `Title | URL` (pipe separator)
-- One source per line
-- Include diverse source types: company filings, analyst reports, industry reports
-- Must be the exact same sources you have used in the analysis
-- Do not use any other sources that are not in the analysis
-- When Doing the analysis, must using the source that you have verified
+Note: Source URLs are automatically captured from Live Search. You do not need to output URLs.
+Simply ensure your analysis references real, verifiable data sources.
 
 ---
 
-**Output Format:** Markdown with bullet points for sections 3-12. Sources in Section 16 with fixed format.
+**Output Format:** Markdown with bullet points for sections 3-12.
 """
 
 

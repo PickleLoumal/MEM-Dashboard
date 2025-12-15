@@ -264,20 +264,34 @@ def _parse_with_regex(raw_text: str, company_name: str = "") -> dict[str, Any]:
 def parse_business_overview_to_json(raw_text: str, company_name: str = "") -> str:
     """
     将 Business Overview 原始文本解析为结构化 JSON 字符串。
-    优先提取 AI 生成的 ```business_overview_data``` 代码块，
+    优先提取 AI 生成的 JSON 代码块（支持多种格式），
     如果没有则回退到正则表达式解析。
     """
     if not raw_text or not raw_text.strip():
         return json.dumps({"raw_text": "", "parsed": None}, ensure_ascii=False)
 
-    # 尝试提取 AI 生成的 JSON 代码块
-    json_block_pattern = re.compile(
-        r"```business_overview_data\s*\n?(.*?)\n?```", re.DOTALL | re.IGNORECASE
-    )
-    json_match = json_block_pattern.search(raw_text)
+    # 尝试提取 AI 生成的 JSON 代码块（支持多种格式）
+    # 1. ```business_overview_data ... ```
+    # 2. ```json ... ```
+    # 3. ``` ... ``` (无语言标识但内容是JSON)
+    # 注意：使用 (.*?) 匹配到代码块结束标记，而不是 (\{.*?\}) 避免嵌套 JSON 截断
+    json_block_patterns = [
+        re.compile(r"```business_overview_data\s*\n?(.*?)\n?```", re.DOTALL | re.IGNORECASE),
+        re.compile(r"```json\s*\n?(.*?)\n?```", re.DOTALL | re.IGNORECASE),
+        re.compile(r"```\s*\n?(\{[\s\S]*?\})\s*\n?```"),
+    ]
 
-    # 提取纯文本部分（去除 JSON 块）
-    clean_text = json_block_pattern.sub("", raw_text).strip()
+    json_match = None
+    for pattern in json_block_patterns:
+        json_match = pattern.search(raw_text)
+        if json_match:
+            break
+
+    # 提取纯文本部分（去除所有可能的 JSON 代码块）
+    clean_text = raw_text
+    for pattern in json_block_patterns:
+        clean_text = pattern.sub("", clean_text)
+    clean_text = clean_text.strip()
 
     parsed = {
         "company_name": company_name,

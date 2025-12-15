@@ -14,6 +14,7 @@ from typing import Any
 from asgiref.sync import sync_to_async
 from xai_sdk import Client
 from xai_sdk.chat import system, user
+from xai_sdk.search import SearchParameters
 
 from .parser import (
     extract_ai_content_sections,
@@ -155,6 +156,7 @@ async def process_company_ai(
 
     # AI 调用 (带信号量限制并发)
     ai_content = None
+    live_citations: list[str] = []  # Live Search 返回的真实 URLs
 
     for attempt in range(max_retries):
         try:
@@ -168,7 +170,15 @@ async def process_company_ai(
             async with ai_semaphore:
 
                 def call_xai():
-                    chat = client.chat.create(model=AI_MODEL)
+                    # 启用 Live Search 获取真实的 citations
+                    chat = client.chat.create(
+                        model=AI_MODEL,
+                        search_parameters=SearchParameters(
+                            mode="on",  # 强制启用 Live Search
+                            return_citations=True,
+                            max_search_results=20,
+                        ),
+                    )
                     chat.append(system(AI_SYSTEM_PROMPT))
                     chat.append(user(prompt))
                     return chat.sample()
@@ -177,6 +187,8 @@ async def process_company_ai(
 
             if response and response.content and len(response.content.strip()) > 100:
                 ai_content = response.content
+                # 提取 Live Search 返回的真实 citations
+                live_citations = getattr(response, "citations", []) or []
                 break
             logger.warning(f"AI returned empty content for {company_name}")
         except Exception:
@@ -209,18 +221,37 @@ async def process_company_ai(
             raw_business_overview, company_name
         )
 
-        # Extract sources
+        # Extract sources - 优先使用 Live Search 返回的真实 citations
         raw_key_takeaways = ai_sections.get("key_takeaways", "") or ""
-        raw_sources = ai_sections.get("sources", "") or ""
 
-        if raw_sources:
+        if live_citations:
+            # 使用 Live Search 返回的真实 URLs
+            # 格式化为 "Title | URL" 格式，title 从 URL 提取域名
+            formatted_sources = []
+            for url in live_citations:
+                try:
+                    from urllib.parse import urlparse
+                    parsed = urlparse(url)
+                    domain = parsed.netloc.replace("www.", "")
+                    # 简单的 title：使用域名
+                    formatted_sources.append(f"{domain} | {url}")
+                except Exception:
+                    formatted_sources.append(f"Source | {url}")
+            final_sources = "\n".join(formatted_sources)
             cleaned_key_takeaways = raw_key_takeaways
-            final_sources = raw_sources
+            logger.info(f"Using {len(live_citations)} Live Search citations for {company_name}")
         else:
-            cleaned_key_takeaways, extracted_sources = extract_sources_from_key_takeaways(
-                raw_key_takeaways
-            )
-            final_sources = extracted_sources
+            # Fallback: 尝试从 AI 生成的内容中提取
+            raw_sources = ai_sections.get("sources", "") or ""
+            if raw_sources:
+                cleaned_key_takeaways = raw_key_takeaways
+                final_sources = raw_sources
+            else:
+                cleaned_key_takeaways, extracted_sources = extract_sources_from_key_takeaways(
+                    raw_key_takeaways
+                )
+                final_sources = extracted_sources
+            logger.warning(f"No Live Search citations for {company_name}, using AI-generated sources")
 
         summary_data = {
             "report_date": today_date,
