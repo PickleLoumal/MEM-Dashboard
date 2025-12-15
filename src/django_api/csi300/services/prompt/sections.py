@@ -21,7 +21,7 @@ Market Cap: {5} {6}
 - Regulatory publications, industry reports (McKinsey, Deloitte, EY)
 - Industry-specific ratios vs median
 - Analyst notes (Piper Sandler, Goldman Sachs, etc.)
-- Provide links to sources used
+
 
 **Constraints:**
 - Current ratio < 1.3 = unhealthy liquidity (except cash businesses like McDonald's, JD.com)
@@ -69,7 +69,9 @@ SECTION_BUSINESS_OVERVIEW = """## SECTION 2: Business Overview
     "net_income": "X.XB CNY",
     "net_income_yoy": "+X.X%",
     "operating_margin": "X.X%",
-    "operating_margin_yoy": "-X.Xpp"
+    "operating_margin_yoy": "-X.Xpp",
+    "net_interest_margin": "X.X%",
+    "net_interest_margin_yoy": "-X.Xbps"
   }},
   "divisions": [
     {{"name": "Division 1", "description": "products/services", "sales_pct": "XX%", "gross_margin": "XX%", "profit_pct": "XX%"}},
@@ -77,6 +79,8 @@ SECTION_BUSINESS_OVERVIEW = """## SECTION 2: Business Overview
   ]
 }}
 ```
+
+**Note for Banks:** Include net_interest_margin (NIM) instead of operating_margin. For non-financial companies, include operating_margin.
 
 **Rules for JSON block:**
 - Replace ALL values with actual researched data

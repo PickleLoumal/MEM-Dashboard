@@ -737,6 +737,26 @@
   text-decoration: underline;
 }
 
+/* Inline Citation Links - 上标脚注样式 */
+.inline-citation {
+  color: var(--doc-accent);
+  text-decoration: none;
+  cursor: pointer;
+  margin: 0 1px;
+}
+
+.inline-citation sup {
+  font-size: 10px;
+  font-weight: 500;
+  vertical-align: super;
+  line-height: 0;
+}
+
+.inline-citation:hover {
+  color: var(--doc-heading);
+  text-decoration: underline;
+}
+
 .doc-prose code {
   font-family: var(--font-mono);
   font-size: 0.9em;
@@ -1309,23 +1329,16 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .source-doc-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 8px;
-  border-radius: var(--doc-radius);
-  border: 1px solid transparent;
+  gap: 8px;
+  padding: 4px 0;
   transition: all 0.15s ease;
   cursor: pointer;
-}
-
-.source-doc-item:hover {
-  background: var(--doc-bg);
-  border-color: var(--doc-border);
 }
 
 .source-doc-file-icon {
@@ -1379,6 +1392,27 @@
 
 .source-doc-item:hover .source-doc-external {
   opacity: 1;
+}
+
+/* Source Docs Toggle Button */
+.source-docs-toggle {
+  display: block;
+  width: 100%;
+  padding: 8px 0;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--doc-text-muted);
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--doc-border);
+  cursor: pointer;
+  transition: color 0.15s ease;
+  text-align: center;
+}
+
+.source-docs-toggle:hover {
+  color: var(--doc-heading);
 }
 
 /* Sidebar Footer - Hidden, footer only at page bottom */

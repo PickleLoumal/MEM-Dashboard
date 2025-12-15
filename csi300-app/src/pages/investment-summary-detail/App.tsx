@@ -191,7 +191,7 @@ export default function App() {
         <div className="doc-actions-header no-print">
           <div className="doc-live-indicator">
             <span className="doc-live-dot ai-dot"></span>
-            <span>Live Analysis • v2.4</span>
+            <span>Live Analysis • v3.1.0</span>
           </div>
           <div className="doc-actions">
             <button

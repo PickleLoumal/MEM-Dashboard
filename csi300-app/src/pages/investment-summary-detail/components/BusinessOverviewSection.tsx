@@ -174,18 +174,46 @@ export function extractKeyMetrics(content: string | undefined): Array<{
   const metrics = jsonData.parsed.key_metrics as Record<string, string | undefined>;
   const result: Array<{ label: string; value: string; unit?: string; yoy?: number }> = [];
 
+  // Label mapping for known keys
   const labelMap: Record<string, string> = {
     total_revenue: 'Total Revenue',
     operating_income: 'Op. Income',
     net_income: 'Net Income',
     net_interest_margin: 'NIM',
     operating_margin: 'Op. Margin',
+    gross_margin: 'Gross Margin',
+    roa: 'ROA',
+    roe: 'ROE',
   };
 
-  // List of base metric keys (without _yoy suffix)
-  const baseMetrics = ['total_revenue', 'operating_income', 'net_income', 'net_interest_margin', 'operating_margin'];
+  // Preferred order of metrics to display
+  const preferredOrder = [
+    'total_revenue',
+    'operating_income',
+    'net_income',
+    'operating_margin',
+    'net_interest_margin',
+    'gross_margin',
+    'roa',
+    'roe',
+  ];
 
-  for (const key of baseMetrics) {
+  // Collect all base metrics (keys without _yoy suffix)
+  const baseMetricKeys = Object.keys(metrics).filter(
+    key => !key.endsWith('_yoy') && metrics[key] && metrics[key] !== 'null'
+  );
+
+  // Sort by preferred order, with unknown keys at the end
+  baseMetricKeys.sort((a, b) => {
+    const aIdx = preferredOrder.indexOf(a);
+    const bIdx = preferredOrder.indexOf(b);
+    if (aIdx === -1 && bIdx === -1) return 0;
+    if (aIdx === -1) return 1;
+    if (bIdx === -1) return -1;
+    return aIdx - bIdx;
+  });
+
+  for (const key of baseMetricKeys) {
     const value = metrics[key];
     if (value) {
       // Try to extract YoY value
@@ -194,16 +222,25 @@ export function extractKeyMetrics(content: string | undefined): Array<{
       let yoy: number | undefined;
 
       if (yoyValue) {
-        // Parse YoY value (e.g., "+5.2%", "-3.1%", "+2.5pp")
+        // Parse YoY value (e.g., "+5.2%", "-3.1%", "+2.5pp", "-10.9%")
         const yoyMatch = yoyValue.match(/([+-]?[\d.]+)/);
         if (yoyMatch) {
           yoy = parseFloat(yoyMatch[1]);
+          // Handle negative sign
+          if (yoyValue.startsWith('-') && yoy > 0) {
+            yoy = -yoy;
+          }
         }
       }
 
+      // Format label: use map if available, otherwise humanize key
+      const label = labelMap[key] || key
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+
       result.push({
-        label: labelMap[key] || key.replace(/_/g, ' '),
-        value: value,
+        label,
+        value,
         yoy,
       });
     }
