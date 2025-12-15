@@ -2,7 +2,7 @@
  * Sidebar Components for Investment Summary
  * Sticky sidebar with price, metrics, risks, and sources
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { RecommendationBadge, RiskAlert, MetricRow } from './ui';
 import { ParsedSource, parseSources } from './SourcesSection';
 
@@ -247,13 +247,21 @@ function getFaviconUrl(hostname: string): string {
 /**
  * Source Documents Card
  */
+const INITIAL_DISPLAY_COUNT = 5;
+
 export const SourceDocumentsCard: React.FC<SourceDocumentsCardProps> = ({ sources }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   if (!sources) return null;
 
   const parsedSources = parseSources(sources);
-  const displaySources = parsedSources.slice(0, 100);
 
-  if (displaySources.length === 0) return null;
+  if (parsedSources.length === 0) return null;
+
+  const hasMore = parsedSources.length > INITIAL_DISPLAY_COUNT;
+  const displaySources = isExpanded
+    ? parsedSources
+    : parsedSources.slice(0, INITIAL_DISPLAY_COUNT);
 
   return (
     <div className="sidebar-card">
@@ -277,12 +285,23 @@ export const SourceDocumentsCard: React.FC<SourceDocumentsCardProps> = ({ source
                 rel="noopener noreferrer"
                 className="source-doc-title"
               >
-                {source.title}
+                {source.title && source.title !== 'Source' ? source.title : source.hostname}
               </a>
             </div>
           </li>
         ))}
       </ul>
+
+      {hasMore && (
+        <button
+          className="source-docs-toggle"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded
+            ? 'Show less'
+            : `Show more (${parsedSources.length - INITIAL_DISPLAY_COUNT})`}
+        </button>
+      )}
     </div>
   );
 };

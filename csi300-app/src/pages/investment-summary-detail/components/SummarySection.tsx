@@ -1,7 +1,62 @@
 import React from 'react';
-import Markdown from 'react-markdown';
+import Markdown, { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { SectionHeader } from './ui';
+
+/**
+ * 提取 children 的文本内容（处理 React 元素数组情况）
+ */
+function extractText(children: React.ReactNode): string {
+  if (typeof children === 'string') return children;
+  if (typeof children === 'number') return String(children);
+  if (Array.isArray(children)) {
+    return children.map(extractText).join('');
+  }
+  if (React.isValidElement(children)) {
+    const props = children.props as { children?: React.ReactNode };
+    if (props.children) {
+      return extractText(props.children);
+    }
+  }
+  return '';
+}
+
+/**
+ * 自定义链接渲染器
+ * 识别 [[n]] 格式的引用链接，渲染为上标脚注样式
+ */
+const markdownComponents: Components = {
+  a: ({ href, children, ...props }) => {
+    // 提取文本内容（处理嵌套元素情况）
+    const text = extractText(children).trim();
+
+    // 检测引用格式: [1], [2], ... (来自 [[1]] markdown 解析)
+    const citationMatch = text.match(/^\[(\d+)\]$/);
+
+    if (citationMatch && href) {
+      const citationNum = citationMatch[1];
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-citation"
+          title={href}
+          {...props}
+        >
+          <sup>[{citationNum}]</sup>
+        </a>
+      );
+    }
+
+    // 普通链接
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+        {children}
+      </a>
+    );
+  },
+};
 
 interface SummarySectionProps {
   title: string;
@@ -87,7 +142,9 @@ export const SummarySection: React.FC<SummarySectionProps> = ({ title, content, 
     <section className="doc-section" id={id}>
       <SectionHeader title={title} />
       <div className="doc-section-content doc-prose">
-        <Markdown remarkPlugins={[remarkGfm]}>{cleanedContent}</Markdown>
+        <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          {cleanedContent}
+        </Markdown>
       </div>
     </section>
   );

@@ -8,13 +8,15 @@ import asyncio
 import datetime
 import logging
 import random
+import re
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
+from urllib.parse import urlparse
 
 from asgiref.sync import sync_to_async
 from xai_sdk import Client
 from xai_sdk.chat import system, user
-from xai_sdk.search import SearchParameters
+from xai_sdk.tools import web_search, x_search
 
 from .parser import (
     extract_ai_content_sections,
@@ -170,16 +172,29 @@ async def process_company_ai(
             async with ai_semaphore:
 
                 def call_xai():
-                    # 启用 Live Search 获取真实的 citations
+                    # 使用新的 Agentic Tool Calling API (替代已弃用的 Live Search)
+                    # 参考: https://docs.x.ai/docs/guides/tools/overview
                     chat = client.chat.create(
                         model=AI_MODEL,
-                        search_parameters=SearchParameters(
-                            mode="on",  # 强制启用 Live Search
-                            return_citations=True,
-                            max_search_results=20,
-                        ),
+                        tools=[
+                            web_search(),  # 网页搜索
+                            x_search(),  # X/Twitter 搜索
+                        ],
+                        # 启用内联引用 - API 自动在文本中嵌入引用标记
+                        include=["inline_citations"],
                     )
-                    chat.append(system(AI_SYSTEM_PROMPT))
+
+                    # 增强 system prompt，约束搜索范围
+                    search_constraint = (
+                        f"\n\n**CRITICAL SEARCH CONSTRAINT**: "
+                        f"When performing web searches, you MUST search ONLY for information "
+                        f"directly related to '{company_name}' (Stock Code: {ticker}). "
+                        f"Do NOT include information about unrelated companies, competitors, "
+                        f"or general industry trends unless explicitly tied to this company. "
+                        f"All citations must be from official sources about this specific company."
+                    )
+
+                    chat.append(system(AI_SYSTEM_PROMPT + search_constraint))
                     chat.append(user(prompt))
                     return chat.sample()
 
@@ -187,12 +202,126 @@ async def process_company_ai(
 
             if response and response.content and len(response.content.strip()) > 100:
                 ai_content = response.content
-                # 提取 Live Search 返回的真实 citations
-                live_citations = getattr(response, "citations", []) or []
+
+                # 尝试多种可能的 citations 属性名
+                live_citations = []
+
+                # 方法1: inline_citations (新 API - SDK 1.5.0+)
+                # 注意：当启用 include=["inline_citations"] 时，API 会自动在 content 中插入 [[N]](url) 格式
+                inline_citations = getattr(response, "inline_citations", None)
+                if inline_citations and len(inline_citations) > 0:
+                    logger.info(f"Found inline_citations: {len(inline_citations)} items")
+                    for idx, cit in enumerate(inline_citations):
+                        try:
+                            url = None
+                            title = None
+                            start_index = getattr(cit, "start_index", None)
+                            cit_id = getattr(cit, "id", str(idx + 1))
+
+                            # 使用 HasField 检查 protobuf oneof 字段
+                            if hasattr(cit, "HasField"):
+                                if cit.HasField("web_citation"):
+                                    url = cit.web_citation.url
+                                    title = getattr(cit.web_citation, "title", None)
+                                elif cit.HasField("x_citation"):
+                                    url = cit.x_citation.url
+                                    title = getattr(cit.x_citation, "title", None) or "X Post"
+                            else:
+                                # 兼容非 protobuf 对象
+                                if hasattr(cit, "web_citation") and cit.web_citation:
+                                    url = cit.web_citation.url
+                                    title = getattr(cit.web_citation, "title", None)
+                                elif hasattr(cit, "x_citation") and cit.x_citation:
+                                    url = cit.x_citation.url
+                                    title = getattr(cit.x_citation, "title", None) or "X Post"
+
+                            if url:
+                                # 确保 title 是有效值，否则从 URL 提取域名
+                                if not title or title == url:
+                                    try:
+                                        parsed = urlparse(url)
+                                        title = parsed.netloc.replace("www.", "")
+                                    except Exception:
+                                        title = "Source"
+                                live_citations.append(f"{title} | {url}")
+                        except Exception as e:
+                            logger.warning(f"Failed to parse citation: {e}, cit: {cit}")
+
+                    # 注意：当使用 inline_citations 时，API 已经在 response.content 中插入了 [[N]](url) 格式
+                    # 检查 content 是否包含引用标记
+                    if "[[" in ai_content and "]](" in ai_content:
+                        logger.info("Inline citations detected in content (API auto-inserted)")
+
+                # 方法2: citations (旧 API 兼容)
+                if not live_citations:
+                    old_citations = getattr(response, "citations", None)
+                    if old_citations:
+                        logger.info(f"Found citations (legacy): {len(old_citations)} items, sample: {old_citations[:2] if old_citations else 'empty'}")
+                        for cit in old_citations:
+                            try:
+                                if isinstance(cit, str):
+                                    # 检查是否是纯 URL
+                                    if cit.startswith("http"):
+                                        # 从 URL 提取更有意义的标题
+                                        try:
+                                            parsed_url = urlparse(cit)
+                                            domain = parsed_url.netloc.replace("www.", "")
+                                            # 尝试从路径中提取标题
+                                            path = parsed_url.path.strip("/")
+                                            if path:
+                                                # 取路径最后一部分作为标题
+                                                path_parts = path.split("/")
+                                                last_part = path_parts[-1] if path_parts else ""
+                                                # 清理并格式化
+                                                title = last_part.replace("-", " ").replace("_", " ").replace(".html", "").replace(".pdf", " (PDF)").replace(".PDF", " (PDF)")
+                                                title = " ".join(word.capitalize() for word in title.split()[:6])  # 限制长度
+                                                if not title or title.isdigit():
+                                                    title = domain
+                                            else:
+                                                title = domain
+                                            live_citations.append(f"{title} | {cit}")
+                                        except Exception:
+                                            live_citations.append(f"Source | {cit}")
+                                    elif "|" in cit:
+                                        # 已经是 "title | url" 格式
+                                        live_citations.append(cit)
+                                    else:
+                                        # 其他格式，尝试提取 URL
+                                        url_match = re.search(r'https?://[^\s]+', cit)
+                                        if url_match:
+                                            url = url_match.group(0)
+                                            title = cit.replace(url, "").strip() or "Source"
+                                            live_citations.append(f"{title} | {url}")
+                                        else:
+                                            live_citations.append(f"Source | {cit}")
+                                elif hasattr(cit, "url"):
+                                    url = cit.url
+                                    # 优先使用 API 返回的真实标题
+                                    title = getattr(cit, "title", None)
+                                    if not title:
+                                        title = getattr(cit, "name", None)
+                                    if not title:
+                                        # 从 URL 提取
+                                        try:
+                                            parsed_url = urlparse(url)
+                                            title = parsed_url.netloc.replace("www.", "")
+                                        except Exception:
+                                            title = url
+                                    live_citations.append(f"{title} | {url}")
+                            except Exception as e:
+                                logger.warning(f"Failed to parse legacy citation: {e}")
+
+                # 方法3: 从 response 中提取 tool_results (Agentic API 可能在这里返回搜索结果)
+                if not live_citations:
+                    tool_results = getattr(response, "tool_results", None) or getattr(response, "tool_calls", None)
+                    if tool_results:
+                        logger.info(f"Found tool_results/tool_calls: {type(tool_results)}")
+
+                logger.info(f"Total extracted citations for {company_name}: {len(live_citations)}")
                 break
             logger.warning(f"AI returned empty content for {company_name}")
-        except Exception:
-            logger.exception("AI Error for {company_name} (Attempt {attempt + 1})")
+        except Exception as e:
+            logger.exception(f"AI Error for {company_name} (Attempt {attempt + 1})")
 
     if not ai_content:
         result["message"] = "AI Generation Failed"
@@ -225,19 +354,8 @@ async def process_company_ai(
         raw_key_takeaways = ai_sections.get("key_takeaways", "") or ""
 
         if live_citations:
-            # 使用 Live Search 返回的真实 URLs
-            # 格式化为 "Title | URL" 格式，title 从 URL 提取域名
-            formatted_sources = []
-            for url in live_citations:
-                try:
-                    from urllib.parse import urlparse
-                    parsed = urlparse(url)
-                    domain = parsed.netloc.replace("www.", "")
-                    # 简单的 title：使用域名
-                    formatted_sources.append(f"{domain} | {url}")
-                except Exception:
-                    formatted_sources.append(f"Source | {url}")
-            final_sources = "\n".join(formatted_sources)
+            # live_citations 已经是 "Title | URL" 格式，直接使用
+            final_sources = "\n".join(live_citations)
             cleaned_key_takeaways = raw_key_takeaways
             logger.info(f"Using {len(live_citations)} Live Search citations for {company_name}")
         else:
