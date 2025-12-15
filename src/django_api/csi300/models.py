@@ -538,3 +538,91 @@ class CSI300InvestmentSummary(models.Model):
 
     def __str__(self):
         return f"{self.company.ticker} - {self.report_date}"
+
+
+class GenerationTask(models.Model):
+    """
+    异步生成任务模型
+
+    用于追踪长时间运行的 AI 生成任务状态，支持前端轮询。
+    """
+
+    # Type hints for Django dynamic attributes
+    objects: ClassVar[models.Manager]  # type: ignore[type-arg]
+    DoesNotExist: ClassVar[type[Exception]]
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        PROCESSING = "processing", "Processing"
+        COMPLETED = "completed", "Completed"
+        FAILED = "failed", "Failed"
+
+    # Task identification
+    task_id = models.CharField(
+        max_length=36,
+        unique=True,
+        db_index=True,
+        help_text="UUID task identifier",
+    )
+
+    # Related company
+    company = models.ForeignKey(
+        CSI300Company,
+        on_delete=models.CASCADE,
+        related_name="generation_tasks",
+        help_text="Company being processed",
+    )
+
+    # Status tracking
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+        help_text="Current task status",
+    )
+
+    # Progress info
+    progress_message = models.CharField(
+        max_length=500,
+        default="",
+        blank=True,
+        help_text="Current progress message",
+    )
+    progress_percent = models.IntegerField(
+        default=0,
+        help_text="Progress percentage (0-100)",
+    )
+
+    # Result storage
+    result_data = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Task result data (on success)",
+    )
+    error_message = models.TextField(
+        default="",
+        blank=True,
+        help_text="Error message (on failure)",
+    )
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Task completion time",
+    )
+
+    class Meta:
+        db_table = "csi300_generation_task"
+        verbose_name = "Generation Task"
+        verbose_name_plural = "Generation Tasks"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"Task {self.task_id[:8]} - {self.company.ticker} ({self.status})"

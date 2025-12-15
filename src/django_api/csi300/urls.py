@@ -5,10 +5,12 @@ CSI300 URL Configuration
 1. 新路由 (推荐): 通过 ViewSet actions 访问
    - /api/csi300/api/companies/health/
    - /api/csi300/api/companies/generate-summary/
+   - /api/csi300/api/companies/task-status/<task_id>/
 
 2. 旧路由 (向后兼容): 保持原有 URL 可用
    - /api/csi300/health/
    - /api/csi300/api/generate-summary/
+   - /api/csi300/api/task-status/<task_id>/
 """
 
 from django.urls import include, path
@@ -32,5 +34,10 @@ urlpatterns = [
         "api/generate-summary/",
         views.generate_investment_summary,
         name="generate_investment_summary",
+    ),
+    path(
+        "api/task-status/<str:task_id>/",
+        views.task_status,
+        name="task_status",
     ),
 ]

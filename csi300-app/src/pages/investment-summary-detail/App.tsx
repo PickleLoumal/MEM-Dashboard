@@ -27,6 +27,8 @@ export default function App() {
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [justGenerated, setJustGenerated] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [progressPercent, setProgressPercent] = useState(0);
+  const [progressMessage, setProgressMessage] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -87,27 +89,40 @@ export default function App() {
     setGenerating(true);
     setGenerateError(null);
     setJustGenerated(false);
+    setProgressPercent(0);
+    setProgressMessage('任务已启动...');
 
     try {
-      const result = await generateInvestmentSummary(companyId);
+      // 使用带进度回调的异步生成
+      const result = await generateInvestmentSummary(companyId, (percent, message) => {
+        setProgressPercent(percent);
+        setProgressMessage(message);
+      });
 
       if (result.status === 'success') {
         log.info('Generation success, refreshing data');
+        setProgressMessage('正在加载数据...');
         const updatedSummary = await fetchInvestmentSummary(companyId);
         setData(updatedSummary);
         setGenerateError(null);
         setGenerating(false);
         setJustGenerated(true);
+        setProgressPercent(0);
+        setProgressMessage('');
         setTimeout(() => setJustGenerated(false), 2000);
       } else {
         log.error('Generation returned failure status', { result });
         setGenerateError(result.message || 'Generation failed');
         setGenerating(false);
+        setProgressPercent(0);
+        setProgressMessage('');
       }
     } catch (err) {
       log.error('Regenerate exception', { error: err });
       setGenerateError(err instanceof Error ? err.message : 'Generation failed, please retry');
       setGenerating(false);
+      setProgressPercent(0);
+      setProgressMessage('');
     }
   }, [companyId]);
 
@@ -213,11 +228,12 @@ export default function App() {
               className={`doc-regenerate-btn ${generating ? 'generating' : ''}`}
               onClick={handleRegenerate}
               disabled={generating}
+              title={generating ? progressMessage : ''}
             >
               {generating ? (
                 <>
                   <span className="doc-btn-spinner"></span>
-                  Generating...
+                  {progressPercent > 0 ? `${progressPercent}%` : 'Starting...'}
                 </>
               ) : (
                 <>
