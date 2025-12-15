@@ -127,7 +127,7 @@ function deriveIndustries(data: FilterOptionsResponse | null) {
 function renderCellValue(column: ColumnDefinition, company: Company): React.ReactNode {
   const field = FieldMap[column.id] || column.id;
   let rawValue = company[field];
-  
+
   // Fallback for sector
   if (column.id === 'sector' && !rawValue) {
     rawValue = company.industry || (company as any).im_code || '-';
@@ -145,7 +145,7 @@ function renderCellValue(column: ColumnDefinition, company: Company): React.Reac
   // Apply Formatting using Legacy Formatters
   let formatted = String(rawValue);
   const formatterName = column.format;
-  
+
   if (formatterName && Formatters[formatterName as keyof typeof Formatters]) {
     formatted = Formatters[formatterName as keyof typeof Formatters](rawValue, column.decimals);
   }
@@ -248,7 +248,7 @@ function BrowserPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [columns, setColumns] = useState<ColumnDefinition[]>(DEFAULT_COLUMNS);
-  const [pinnedColumns, setPinnedColumns] = useState<string[]>(() => 
+  const [pinnedColumns, setPinnedColumns] = useState<string[]>(() =>
     columnManifest.columns.filter(c => c.defaultPinned).map(c => c.id)
   );
 
@@ -475,18 +475,6 @@ function BrowserPage() {
           </div>
 
           <div className="filter-group app-form-field">
-            <label className="filter-label app-label">Search Companies</label>
-            <input
-              type="text"
-              name="company_search"
-              value={pendingCompanySearch}
-              onChange={(e) => setPendingCompanySearch(e.target.value)}
-              className="filter-input app-input"
-              placeholder="Search by company name or ticker..."
-            />
-          </div>
-
-          <div className="filter-group app-form-field">
             <label className="filter-label app-label">Search by Industry</label>
             <input
               type="text"
@@ -498,6 +486,16 @@ function BrowserPage() {
             />
           </div>
         </div>
+
+        <label className="filter-label app-label">Search Companies</label>
+        <input
+          type="text"
+          name="company_search"
+          value={pendingCompanySearch}
+          onChange={(e) => setPendingCompanySearch(e.target.value)}
+          className="filter-input app-input"
+          placeholder="Search by company name or ticker..."
+        />
 
         <div className="filter-actions app-actions">
           <button type="button" onClick={handleClear} className="btn btn-secondary app-button app-button--secondary">
@@ -526,8 +524,8 @@ function BrowserPage() {
                 </span>
               );
             })()}
-            <ColumnSelector 
-              manifest={columnManifest} 
+            <ColumnSelector
+              manifest={columnManifest}
               onColumnChange={handleColumnChange}
               maxPinnedColumns={3}
             />

@@ -1,7 +1,7 @@
 /* CSI300 React App – 主样式文件
    一比一复刻 app-base.css 的所有样式 */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
+/* Roboto font import removed - using SF Pro system fonts */
 
 /* Import legacy styles (global-nav only, column-selector uses React component) */
 @import url('/legacy/assets/css/global-nav.css');
@@ -12,7 +12,7 @@
 
 /* ===== CSS 变量 - 与 app-base.css 完全一致 ===== */
 :root {
-  --app-font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --app-font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --app-body-bg: #f7f8fc;
   --app-surface: #fff;
   --app-surface-muted: #f2f3f5;

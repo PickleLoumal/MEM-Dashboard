@@ -43,9 +43,9 @@
   --doc-shadow: var(--app-shadow-soft, 0 8px 20px rgba(15, 23, 42, 0.08));
   --doc-shadow-lg: var(--app-shadow-hover, 0 10px 24px rgba(15, 23, 42, 0.1));
 
-  /* Typography - Use Roboto from main.css */
-  --font-sans: var(--app-font-family, 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif);
-  --font-mono: 'JetBrains Mono', 'SF Mono', 'Roboto Mono', monospace;
+  /* Typography - Use Helvetica from main.css */
+  --font-sans: var(--app-font-family, 'Helvetica Neue', Helvetica, Arial, sans-serif);
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
 
   /* Spacing - Match app radius */
   --doc-radius: var(--app-radius-md, 10px);
@@ -153,7 +153,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 0;
-  margin-bottom: 12px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .doc-live-indicator {
@@ -289,7 +290,9 @@
   background: var(--doc-paper);
   border: 1px solid rgba(210, 216, 226, 0.6);
   border-radius: var(--doc-radius-lg);
-  box-shadow: var(--doc-shadow);
+  box-shadow: none;
+  margin-left: 0;
+  margin-right: 0;
   overflow: hidden;
 }
 
@@ -523,6 +526,7 @@
   font-size: inherit;
   line-height: inherit;
   font-weight: inherit;
+  font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
 }
 
 .doc-prose p:last-child {
@@ -851,7 +855,7 @@
 
 .segment-bar-fill {
   height: 100%;
-  background: var(--doc-accent);
+  background-color: var(--app-text);
   border-radius: 3px;
   transition: width 1s ease-out;
 }
@@ -883,8 +887,6 @@
 
 @media (min-width: 1024px) {
   .doc-sidebar {
-    /* Offset to align with paper-card header (skip actions-header height ~52px) */
-    margin-top: 52px;
     position: sticky;
     top: 100px;
     align-self: start;
@@ -895,7 +897,7 @@
   background: var(--doc-paper);
   border: 1px solid rgba(210, 216, 226, 0.6);
   border-radius: var(--doc-radius-lg);
-  box-shadow: var(--doc-shadow);
+  box-shadow: none;
   padding: 20px;
 }
 
@@ -912,7 +914,7 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--doc-heading);
-  margin: 0;
+  margin: 5px 0;
 }
 
 .sidebar-card-title-with-icon {
@@ -923,7 +925,7 @@
 }
 
 .sidebar-card-subtitle {
-  font-family: var(--font-mono);
+  font-family: "SF Pro", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 12px;
   color: var(--doc-text-muted);
 }
@@ -1021,11 +1023,13 @@
 }
 
 .consensus-bar-buy {
-  background: var(--doc-heading);
+  background: var(--app-success, var(--doc-positive));
+  color: var(--app-success, var(--doc-positive));
 }
 
 .consensus-bar-hold {
-  background: var(--doc-text-muted);
+  background: var(--doc-warning);
+  color: var(--doc-warning);
 }
 
 .consensus-bar-sell {
@@ -1167,7 +1171,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px;
+  padding: 10px 8px;
   border-radius: var(--doc-radius);
   border: 1px solid transparent;
   transition: all 0.15s ease;
@@ -1202,6 +1206,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   transition: color 0.15s ease;
+  margin: 0;
 }
 
 .source-doc-item:hover .source-doc-title {

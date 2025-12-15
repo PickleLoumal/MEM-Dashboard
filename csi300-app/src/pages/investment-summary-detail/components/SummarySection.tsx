@@ -2,44 +2,12 @@ import React from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { SectionHeader } from './ui';
-import {
-  TrendingUp,
-  Building2,
-  DollarSign,
-  Zap,
-  Users,
-  Swords,
-  AlertTriangle,
-  LineChart,
-  Building,
-  Scale,
-  Ship,
-  Lightbulb
-} from 'lucide-react';
 
 interface SummarySectionProps {
   title: string;
   content: string | undefined;
   id?: string;
 }
-
-// Map section IDs to icons
-const sectionIcons: Record<string, React.ElementType> = {
-  businessPerformance: TrendingUp,
-  industryContext: Building2,
-  financialStability: DollarSign,
-  keyFinancialsValuation: Scale,
-  bigTrendsEvents: Zap,
-  customerSegments: Users,
-  competitiveLandscape: Swords,
-  risksAnomalies: AlertTriangle,
-  forecastOutlook: LineChart,
-  investmentFirmsViews: Building,
-  industryRatioAnalysis: Scale,
-  tariffsSupplyChainRisks: Ship,
-  keyTakeaways: Lightbulb,
-  recommendedActionDetail: TrendingUp,
-};
 
 /**
  * 清理 markdown 内容：
@@ -115,12 +83,9 @@ export const SummarySection: React.FC<SummarySectionProps> = ({ title, content, 
   // 清理内容
   const cleanedContent = cleanMarkdownContent(content, title);
 
-  // Get icon for this section
-  const Icon = id ? sectionIcons[id] : undefined;
-
   return (
     <section className="doc-section" id={id}>
-      <SectionHeader title={title} icon={Icon} />
+      <SectionHeader title={title} />
       <div className="doc-section-content doc-prose">
         <Markdown remarkPlugins={[remarkGfm]}>{cleanedContent}</Markdown>
       </div>

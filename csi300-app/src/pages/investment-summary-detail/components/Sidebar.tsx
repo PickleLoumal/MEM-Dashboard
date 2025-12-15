@@ -3,13 +3,6 @@
  * Sticky sidebar with price, metrics, risks, and sources
  */
 import React from 'react';
-import {
-  TrendingUp,
-  AlertTriangle,
-  FileText,
-  ExternalLink,
-  Shield
-} from 'lucide-react';
 import { RecommendationBadge, RiskAlert, MetricRow } from './ui';
 import { ParsedSource, parseSources } from './SourcesSection';
 
@@ -74,7 +67,6 @@ export const PriceCard: React.FC<PriceCardProps> = ({
           <div className="consensus-label">Consensus</div>
           <div className="consensus-value">
             <RecommendationBadge action={recommendation} />
-            <TrendingUp size={16} className="consensus-icon" />
           </div>
         </div>
 
@@ -227,8 +219,7 @@ export const RiskFactorsCard: React.FC<RiskFactorsCardProps> = ({ risks }) => {
 
   return (
     <div className="sidebar-card">
-      <h3 className="sidebar-card-title sidebar-card-title-with-icon">
-        <AlertTriangle size={12} />
+      <h3 className="sidebar-card-title" style={{ marginTop: 10, marginBottom: 10 }}>
         Risk Factors
       </h3>
 
@@ -263,7 +254,6 @@ export const SourceDocumentsCard: React.FC<SourceDocumentsCardProps> = ({ source
       <ul className="source-docs-list">
         {displaySources.map((source, idx) => (
           <li key={idx} className="source-doc-item">
-            <FileText size={14} className="source-doc-file-icon" />
             <div className="source-doc-content">
               <a
                 href={source.url.startsWith('http') ? source.url : `https://${source.url}`}
@@ -274,7 +264,6 @@ export const SourceDocumentsCard: React.FC<SourceDocumentsCardProps> = ({ source
                 {source.title}
               </a>
             </div>
-            <ExternalLink size={12} className="source-doc-external" />
           </li>
         ))}
       </ul>
@@ -318,7 +307,6 @@ export const CompanyMiniCard: React.FC<{
 export const SidebarFooter: React.FC = () => (
   <div className="sidebar-footer">
     <div className="sidebar-footer-badge">
-      <Shield size={10} />
       <span>Financial AIGC Engine</span>
     </div>
     <p className="sidebar-footer-disclaimer">

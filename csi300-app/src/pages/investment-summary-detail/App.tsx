@@ -1,11 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-  RefreshCw,
-  Printer,
-  Share2,
-  Shield,
-  ArrowLeft
-} from 'lucide-react';
+import { Printer, Share2, RefreshCw } from 'lucide-react';
 import { GlobalNav } from '@shared/components/GlobalNav';
 import { fetchInvestmentSummary, generateInvestmentSummary } from './api';
 import { InvestmentSummary } from './types';
@@ -172,8 +166,7 @@ export default function App() {
             <h3>Investment Summary Not Available</h3>
             <p>{error || 'No data found'}</p>
             <button onClick={handleBackToDetail} className="doc-error-btn">
-              <ArrowLeft size={14} />
-              Back to Company
+              ← Back to Company
             </button>
           </div>
         </div>
@@ -194,53 +187,53 @@ export default function App() {
       }} />
 
       <div className={`doc-layout ${mounted ? 'doc-layout-visible' : ''}`}>
+        {/* Actions Header (above grid) */}
+        <div className="doc-actions-header no-print">
+          <div className="doc-live-indicator">
+            <span className="doc-live-dot ai-dot"></span>
+            <span>Live Analysis • v2.4</span>
+          </div>
+          <div className="doc-actions">
+            <button
+              className="doc-action-btn"
+              onClick={handlePrint}
+              title="Print"
+            >
+              <Printer size={16} />
+            </button>
+            <button
+              className="doc-action-btn"
+              onClick={handleShare}
+              title="Share"
+            >
+              <Share2 size={16} />
+            </button>
+            <div className="doc-action-divider"></div>
+            <button
+              className={`doc-regenerate-btn ${generating ? 'generating' : ''}`}
+              onClick={handleRegenerate}
+              disabled={generating}
+            >
+              {generating ? (
+                <>
+                  <span className="doc-btn-spinner"></span>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw size={11} />
+                  Regenerate
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
         {/* Two Column Layout */}
         <div className="doc-grid animate-enter">
 
           {/* LEFT COLUMN: Main Document */}
           <div className="doc-main-column">
-
-            {/* Actions Header (outside paper) */}
-            <div className="doc-actions-header no-print">
-              <div className="doc-live-indicator">
-                <span className="doc-live-dot ai-dot"></span>
-                <span>Live Analysis • v2.4</span>
-              </div>
-              <div className="doc-actions">
-                <button
-                  className="doc-action-btn"
-                  onClick={handlePrint}
-                  title="Print"
-                >
-                  <Printer size={16} />
-                </button>
-                <button
-                  className="doc-action-btn"
-                  onClick={handleShare}
-                  title="Share"
-                >
-                  <Share2 size={16} />
-                </button>
-                <div className="doc-action-divider"></div>
-                <button
-                  className={`doc-regenerate-btn ${generating ? 'generating' : ''}`}
-                  onClick={handleRegenerate}
-                  disabled={generating}
-                >
-                  {generating ? (
-                    <>
-                      <span className="doc-btn-spinner"></span>
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw size={11} />
-                      Regenerate
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
 
             {/* Progress/Error Bar */}
             {(generating || generateError) && (
@@ -366,7 +359,6 @@ export default function App() {
                 {/* Document Footer */}
                 <footer className="doc-footer">
                   <div className="doc-footer-badge">
-                    <Shield size={12} />
                     <span>Financial AIGC Engine</span>
                   </div>
                   <p className="doc-footer-disclaimer">
