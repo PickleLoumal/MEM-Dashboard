@@ -31,7 +31,7 @@ export function parseSources(sourcesText: string): ParsedSource[] {
 
     const lines = sourcesText.split('\n').filter(line => line.trim().length > 0);
     const parsed: ParsedSource[] = [];
-    
+
     for (const line of lines) {
         let title = '';
         let url = '';
@@ -51,7 +51,7 @@ export function parseSources(sourcesText: string): ParsedSource[] {
                 url = hypotheticalMatch[2].trim();
             }
         }
-        
+
         // Pattern 2: Standard Markdown [text](url)
         if (!url) {
             const mdMatch = line.match(/\[([^\]]+)\]\(([^)]+)\)/);
@@ -60,7 +60,7 @@ export function parseSources(sourcesText: string): ParsedSource[] {
                 url = mdMatch[2];
             }
         }
-        
+
         // Pattern 3: "Title: https://url" format
         if (!url) {
             const colonUrlMatch = line.match(/^(.+?):\s*(https?:\/\/[^\s]+)/i);
@@ -69,7 +69,7 @@ export function parseSources(sourcesText: string): ParsedSource[] {
                 url = colonUrlMatch[2].trim();
             }
         }
-        
+
         // Pattern 4: Raw URL in line
         if (!url) {
             const rawUrlMatch = line.match(/(https?:\/\/[^\s\]\)]+)/);
@@ -94,7 +94,7 @@ export function parseSources(sourcesText: string): ParsedSource[] {
             .replace(/:$/, '')
             .replace(/\s+/g, ' ')
             .trim();
-        
+
         if (url) {
             const hostname = getHostname(url);
             parsed.push({
@@ -124,8 +124,8 @@ export const SourcesBadge: React.FC<{ sources: string | undefined; className?: s
                 {uniqueHosts.length > 0 ? (
                     uniqueHosts.map((host, i) => (
                         <div key={host} className="source-favicon" style={{ zIndex: 10 - i }}>
-                            <img 
-                                src={`https://www.google.com/s2/favicons?domain=${host}&sz=32`} 
+                            <img
+                                src={`https://www.google.com/s2/favicons?domain=${host}&sz=32`}
                                 alt=""
                                 onError={(e) => {
                                     const target = e.target as HTMLImageElement;
@@ -164,13 +164,13 @@ export const SourcesSection: React.FC<SourcesSectionProps> = ({ sources }) => {
   const parsedSources = parseSources(sources);
   const lineCount = sources.split('\n').filter(l => l.trim()).length;
   const displayCount = parsedSources.length || lineCount;
-  
+
   if (displayCount === 0) return null;
 
   return (
     <div className="investment-summary-section sources-section">
-      <div 
-        className="section-header sources-header" 
+      <div
+        className="section-header sources-header"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="sources-title-group">
@@ -192,8 +192,8 @@ export const SourcesSection: React.FC<SourcesSectionProps> = ({ sources }) => {
                   {parsedSources.map((source, index) => (
                     <li key={index} className="source-item">
                         <div className="source-item-icon">
-                            <img 
-                                src={`https://www.google.com/s2/favicons?domain=${source.hostname}&sz=32`} 
+                            <img
+                                src={`https://www.google.com/s2/favicons?domain=${source.hostname}&sz=32`}
                                 alt=""
                                 onError={(e) => {
                                     const target = e.target as HTMLImageElement;
@@ -209,10 +209,10 @@ export const SourcesSection: React.FC<SourcesSectionProps> = ({ sources }) => {
                         </div>
                         <div className="source-item-content">
                             <div className="source-item-title">{source.title}</div>
-                            <a 
-                                href={source.url.startsWith('http') ? source.url : `https://${source.url}`} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
+                            <a
+                                href={source.url.startsWith('http') ? source.url : `https://${source.url}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="source-item-link"
                             >
                                 {source.hostname}

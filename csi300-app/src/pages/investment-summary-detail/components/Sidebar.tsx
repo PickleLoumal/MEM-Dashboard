@@ -237,13 +237,21 @@ interface SourceDocumentsCardProps {
 }
 
 /**
+ * Get favicon URL for a hostname
+ */
+function getFaviconUrl(hostname: string): string {
+  // Use Google's favicon service
+  return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+}
+
+/**
  * Source Documents Card
  */
 export const SourceDocumentsCard: React.FC<SourceDocumentsCardProps> = ({ sources }) => {
   if (!sources) return null;
 
   const parsedSources = parseSources(sources);
-  const displaySources = parsedSources.slice(0, 5);
+  const displaySources = parsedSources.slice(0, 100);
 
   if (displaySources.length === 0) return null;
 
@@ -255,6 +263,14 @@ export const SourceDocumentsCard: React.FC<SourceDocumentsCardProps> = ({ source
         {displaySources.map((source, idx) => (
           <li key={idx} className="source-doc-item">
             <div className="source-doc-content">
+              <img
+                src={getFaviconUrl(source.hostname)}
+                alt=""
+                className="source-doc-favicon"
+                width={14}
+                height={14}
+                loading="lazy"
+              />
               <a
                 href={source.url.startsWith('http') ? source.url : `https://${source.url}`}
                 target="_blank"

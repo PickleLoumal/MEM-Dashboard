@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Printer, Share2, RefreshCw } from 'lucide-react';
+import { Printer, Share2, Sparkles } from 'lucide-react';
 import { GlobalNav } from '@shared/components/GlobalNav';
 import { fetchInvestmentSummary, generateInvestmentSummary } from './api';
 import { InvestmentSummary } from './types';
@@ -221,8 +221,11 @@ export default function App() {
                 </>
               ) : (
                 <>
-                  <RefreshCw size={11} />
                   Regenerate
+                  <span className="doc-btn-credits">
+                    <Sparkles size={12} fill="currentColor" />
+                    <span>2</span>
+                  </span>
                 </>
               )}
             </button>
