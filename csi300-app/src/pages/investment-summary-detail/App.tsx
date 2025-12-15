@@ -9,9 +9,9 @@ import { BusinessOverviewSection, extractKeyMetrics, extractFiscalYear } from '.
 import {
   PriceCard,
   KeyMetricsCard,
-  RiskFactorsCard,
   SourceDocumentsCard
 } from './components/Sidebar';
+import { TableOfContents } from './components/TableOfContents';
 import { Tag, AiBadge } from './components/ui';
 import { logger } from '@shared/lib/logger';
 import '@shared/styles/main.css';
@@ -229,10 +229,30 @@ export default function App() {
           </div>
         </div>
 
-        {/* Two Column Layout */}
+        {/* Three Column Layout */}
         <div className="doc-grid animate-enter">
 
-          {/* LEFT COLUMN: Main Document */}
+          {/* LEFT NAV: Table of Contents */}
+          <TableOfContents
+            visibleSections={[
+              'executiveSummary',
+              'businessPerformance',
+              'industryContext',
+              'financialStability',
+              'keyFinancialsValuation',
+              'bigTrendsEvents',
+              'customerSegments',
+              'competitiveLandscape',
+              'forecastOutlook',
+              'investmentFirmsViews',
+              'recommendedActionDetail',
+              'industryRatioAnalysis',
+              ...(data.tariffs_supply_chain_risks ? ['tariffsSupplyChainRisks'] : []),
+              'keyTakeaways',
+            ]}
+          />
+
+          {/* CENTER COLUMN: Main Document */}
           <div className="doc-main-column">
 
             {/* Progress/Error Bar */}
@@ -284,7 +304,9 @@ export default function App() {
               <div className="doc-body">
 
                 {/* Business Overview / Executive Summary */}
-                <BusinessOverviewSection content={data.business_overview} />
+                <section id="executiveSummary">
+                  <BusinessOverviewSection content={data.business_overview} />
+                </section>
 
                 {/* Other Sections */}
                 <SummarySection
@@ -393,9 +415,6 @@ export default function App() {
                 fiscalYear={fiscalYear}
               />
             )}
-
-            {/* Risk Factors Card */}
-            <RiskFactorsCard risks={data.risks_anomalies} />
 
             {/* Source Documents Card */}
             <SourceDocumentsCard sources={data.sources} />
