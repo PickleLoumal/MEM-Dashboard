@@ -221,17 +221,6 @@ async def process_company_ai(
                             for cit in chunk.inline_citations:
                                 chunk_inline_citations.append(str(cit))
 
-                        # #region agent log
-                        # 每20个chunk记录一次用于调试
-                        if chunk_count <= 5 or chunk_count % 20 == 0:
-                            import json as _json
-                            from pathlib import Path as _Path
-                            from datetime import datetime as _dt
-                            _log_path = _Path("/Volumes/Pickle Samsung SSD/ALFIE/.cursor/debug.log")
-                            with _log_path.open("a") as _f:
-                                _f.write(_json.dumps({"location":"generator.py:225","message":"chunk_stream","data":{"chunk_count":chunk_count,"content_length":content_length,"chunk_content_len":len(chunk.content) if hasattr(chunk,"content") and chunk.content else 0,"has_tool_calls":len(chunk.tool_calls) if hasattr(chunk,"tool_calls") else 0},"timestamp":_dt.now().isoformat(),"sessionId":"debug-session","runId":"run2","hypothesisId":"CHUNK"}) + "\n")
-                        # #endregion
-
                         # 记录工具调用（调试用）
                         for tool_call in chunk.tool_calls:
                             logger.debug(
