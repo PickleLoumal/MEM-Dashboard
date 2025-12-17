@@ -64,12 +64,15 @@ archives/
 
 # Documentation and scripts (development only)
 docs/
+data/
+second_brain/ # second brain for personal knowledge management
 scripts/
 src/backend/
 *.sh
 *.md
 !README.md
 verification_*/
+visualization/
 report_*.txt
 
 # Data directories
@@ -119,6 +122,7 @@ Thumbs.db
 
 # Testing files
 test/
+tests/
 *test*.html
 debug*.html
 

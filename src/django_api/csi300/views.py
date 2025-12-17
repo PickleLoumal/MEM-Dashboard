@@ -25,7 +25,8 @@ from django.db.models import Max, Min, Q
 from django.db.models.query import QuerySet
 from django.http import Http404
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
+from rest_framework import serializers as drf_serializers
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -43,6 +44,8 @@ from .serializers import (
     CSI300IndustryPeersComparisonSerializer,
     CSI300InvestmentSummarySerializer,
     CSI300PeerComparisonResponseSerializer,
+    GenerationTaskStartResponseSerializer,
+    GenerationTaskStatusResponseSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -100,6 +103,20 @@ class CSI300HealthMixin:
 class CSI300SummaryMixin:
     """CSI300 摘要生成 Mixin - 异步模式"""
 
+    @extend_schema(
+        request=inline_serializer(
+            name="GenerateSummaryRequest",
+            fields={
+                "company_id": drf_serializers.IntegerField(help_text="公司数据库 ID"),
+            },
+        ),
+        responses={
+            202: GenerationTaskStartResponseSerializer,
+            400: OpenApiTypes.OBJECT,
+            404: OpenApiTypes.OBJECT,
+        },
+        description="异步启动 Investment Summary 生成任务。立即返回 task_id，前端可通过 task-status API 轮询进度。",
+    )
     @action(detail=False, methods=["post"], url_path="generate-summary")
     def generate_summary(self, request: Request) -> Response:
         """
@@ -153,7 +170,7 @@ class CSI300SummaryMixin:
 
         # 创建新任务
         task_id = str(uuid.uuid4())
-        task = GenerationTask.objects.create(
+        GenerationTask.objects.create(
             task_id=task_id,
             company=company,
             status=GenerationTask.Status.PENDING,
@@ -203,7 +220,7 @@ class CSI300SummaryMixin:
             task.progress_percent = 10
             task.save(update_fields=["status", "progress_message", "progress_percent", "updated_at"])
 
-            # 导入并调用生成服务
+        # 导入并调用生成服务
             from .services import generate_company_summary
 
             # 更新进度
@@ -246,6 +263,22 @@ class CSI300SummaryMixin:
             # 关闭数据库连接（线程安全）
             db_connection.close()
 
+    @extend_schema(
+        responses={
+            200: GenerationTaskStatusResponseSerializer,
+            400: OpenApiTypes.OBJECT,
+            404: OpenApiTypes.OBJECT,
+        },
+        parameters=[
+            OpenApiParameter(
+                name="task_id",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                description="任务 UUID",
+            ),
+        ],
+        description="查询异步生成任务的状态和进度。前端轮询此 API 获取生成进度。",
+    )
     @action(detail=False, methods=["get"], url_path="task-status/(?P<task_id>[^/.]+)")
     def task_status(self, request: Request, task_id: str = "") -> Response:
         """
@@ -656,8 +689,6 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
 # 向后兼容的独立函数视图 (保持旧 URL 可用)
 # ==========================================
 
-from drf_spectacular.utils import inline_serializer
-from rest_framework import serializers as drf_serializers
 from rest_framework.decorators import api_view
 
 
@@ -741,15 +772,11 @@ def health_check(request: Request) -> Response:
         },
     ),
     responses={
-        200: inline_serializer(
-            name="GenerateInvestmentSummaryResponse",
-            fields={
-                "status": drf_serializers.CharField(),
-                "message": drf_serializers.CharField(),
-                "data": drf_serializers.DictField(),
-            },
-        ),
+        202: GenerationTaskStartResponseSerializer,
+        400: OpenApiTypes.OBJECT,
+        404: OpenApiTypes.OBJECT,
     },
+    description="异步启动 Investment Summary 生成任务 (向后兼容端点)",
 )
 @api_view(["POST"])
 def generate_investment_summary(request: Request) -> Response:
@@ -763,14 +790,23 @@ def generate_investment_summary(request: Request) -> Response:
 
 @extend_schema(
     summary="查询任务状态",
-    description="查询异步生成任务的状态和进度",
+    description="查询异步生成任务的状态和进度 (向后兼容端点)",
     responses={
-        200: OpenApiTypes.OBJECT,
+        200: GenerationTaskStatusResponseSerializer,
+        400: OpenApiTypes.OBJECT,
         404: OpenApiTypes.OBJECT,
     },
+    parameters=[
+        OpenApiParameter(
+            name="task_id",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.PATH,
+            description="任务 UUID",
+        ),
+    ],
 )
 @api_view(["GET"])
-def task_status(request: Request, task_id: str) -> Response:
+def task_status_view(request: Request, task_id: str) -> Response:
     """查询任务状态 (向后兼容)"""
     # 委托给 ViewSet 的实现
     viewset = CSI300CompanyViewSet()

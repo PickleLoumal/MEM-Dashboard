@@ -37,7 +37,7 @@ urlpatterns = [
     ),
     path(
         "api/task-status/<str:task_id>/",
-        views.task_status,
+        views.task_status_view,
         name="task_status",
     ),
 ]

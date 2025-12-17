@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary
+from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary, GenerationTask
 
 
 class CSI300CompanySerializer(serializers.ModelSerializer):
@@ -240,3 +240,94 @@ class CSI300PeerComparisonResponseSerializer(serializers.Serializer):
     comparison_data = CSI300PeerComparisonItemSerializer(many=True)
     total_top_companies_shown = serializers.IntegerField()
     total_companies_in_industry = serializers.IntegerField()
+
+
+# ============================================
+# Generation Task Serializers (异步任务相关)
+# ============================================
+
+
+class TaskStatusEnum(serializers.ChoiceField):
+    """任务状态枚举字段"""
+
+    def __init__(self, **kwargs: object) -> None:
+        super().__init__(choices=GenerationTask.Status.choices, **kwargs)
+
+
+class GenerationTaskStartResponseSerializer(serializers.Serializer):
+    """
+    启动生成任务的响应序列化器
+
+    用于 POST /generate-summary/ 的响应
+    """
+
+    status = serializers.ChoiceField(
+        choices=["accepted", "error"],
+        help_text="响应状态: 'accepted' 表示任务已接受, 'error' 表示错误",
+    )
+    message = serializers.CharField(help_text="响应消息")
+    task_id = serializers.CharField(
+        required=False,
+        allow_null=True,
+        help_text="任务 UUID (仅当 status='accepted' 时返回)",
+    )
+    task_status = serializers.ChoiceField(
+        choices=GenerationTask.Status.choices,
+        required=False,
+        allow_null=True,
+        help_text="当前任务状态",
+    )
+    progress_percent = serializers.IntegerField(
+        required=False,
+        default=0,
+        help_text="进度百分比 (0-100)",
+    )
+    progress_message = serializers.CharField(
+        required=False,
+        default="",
+        help_text="进度消息",
+    )
+
+
+class GenerationTaskStatusResponseSerializer(serializers.Serializer):
+    """
+    任务状态查询响应序列化器
+
+    用于 GET /task-status/{task_id}/ 的响应
+    """
+
+    status = serializers.ChoiceField(
+        choices=["success", "error"],
+        help_text="API 响应状态",
+    )
+    task_id = serializers.CharField(help_text="任务 UUID")
+    task_status = serializers.ChoiceField(
+        choices=GenerationTask.Status.choices,
+        help_text="任务执行状态: pending, processing, completed, failed",
+    )
+    progress_percent = serializers.IntegerField(
+        min_value=0,
+        max_value=100,
+        help_text="进度百分比 (0-100)",
+    )
+    progress_message = serializers.CharField(help_text="当前进度消息")
+    company_id = serializers.IntegerField(help_text="公司 ID")
+    company_name = serializers.CharField(help_text="公司名称")
+    company_ticker = serializers.CharField(help_text="公司股票代码")
+    created_at = serializers.DateTimeField(help_text="任务创建时间")
+    updated_at = serializers.DateTimeField(help_text="任务最后更新时间")
+    completed_at = serializers.DateTimeField(
+        required=False,
+        allow_null=True,
+        help_text="任务完成时间 (仅当任务完成或失败时返回)",
+    )
+    result = serializers.JSONField(
+        required=False,
+        allow_null=True,
+        help_text="任务结果数据 (仅当 task_status='completed' 时返回)",
+    )
+    error = serializers.CharField(
+        required=False,
+        allow_null=True,
+        help_text="错误消息 (仅当 task_status='failed' 时返回)",
+    )
