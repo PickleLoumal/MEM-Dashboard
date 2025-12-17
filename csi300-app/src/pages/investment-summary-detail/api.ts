@@ -203,8 +203,16 @@ export async function generateInvestmentSummary(
       try {
         lastStatus = await fetchTaskStatus(taskId, trace);
 
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/3c9e20bd-5a8a-44ae-bb55-74841691e0fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:207',message:'poll_response_received',data:{attempt:attempts,status:lastStatus.task_status,percent:lastStatus.progress_percent,message:lastStatus.progress_message,beforeCallback:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B'})}).catch(()=>{});
+        // #endregion
+
         // Report progress
         onProgress?.(lastStatus.progress_percent, lastStatus.progress_message);
+
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/3c9e20bd-5a8a-44ae-bb55-74841691e0fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:211',message:'onProgress_callback_invoked',data:{attempt:attempts,percent:lastStatus.progress_percent,message:lastStatus.progress_message,afterCallback:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B'})}).catch(()=>{});
+        // #endregion
 
         span.addEvent('poll', {
           attempt: attempts,

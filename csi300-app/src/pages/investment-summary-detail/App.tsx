@@ -95,8 +95,14 @@ export default function App() {
     try {
       // 使用带进度回调的异步生成
       const result = await generateInvestmentSummary(companyId, (percent, message) => {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/3c9e20bd-5a8a-44ae-bb55-74841691e0fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'App.tsx:99',message:'progress_callback_entry',data:{percent,message,beforeSetState:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         setProgressPercent(percent);
         setProgressMessage(message);
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/3c9e20bd-5a8a-44ae-bb55-74841691e0fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'App.tsx:103',message:'progress_callback_exit',data:{percent,message,afterSetState:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
       });
 
       if (result.status === 'success') {
@@ -229,6 +235,13 @@ export default function App() {
               onClick={handleRegenerate}
               disabled={generating}
               title={generating ? progressMessage : ''}
+              ref={(el) => {
+                // #region agent log
+                if (generating && el) {
+                  fetch('http://127.0.0.1:7242/ingest/3c9e20bd-5a8a-44ae-bb55-74841691e0fe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'App.tsx:242',message:'button_render',data:{progressPercent,progressMessage,displayText:progressPercent > 0 ? `${progressPercent}%` : 'Starting...',renderTime:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C,D'})}).catch(()=>{});
+                }
+                // #endregion
+              }}
             >
               {generating ? (
                 <>
