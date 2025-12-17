@@ -324,7 +324,7 @@ export default function App() {
 
                 {/* Business Overview / Executive Summary */}
                 <section id="executiveSummary">
-                  <BusinessOverviewSection content={data.business_overview} />
+                <BusinessOverviewSection content={data.business_overview} />
                 </section>
 
                 {/* Other Sections */}

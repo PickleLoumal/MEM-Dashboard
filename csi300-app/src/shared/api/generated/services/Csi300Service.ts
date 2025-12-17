@@ -9,7 +9,9 @@ import type { CSI300IndexResponse } from '../models/CSI300IndexResponse';
 import type { CSI300InvestmentSummary } from '../models/CSI300InvestmentSummary';
 import type { CSI300PeerComparisonResponse } from '../models/CSI300PeerComparisonResponse';
 import type { GenerateInvestmentSummaryRequest } from '../models/GenerateInvestmentSummaryRequest';
-import type { GenerateInvestmentSummaryResponse } from '../models/GenerateInvestmentSummaryResponse';
+import type { GenerateSummaryRequest } from '../models/GenerateSummaryRequest';
+import type { GenerationTaskStartResponse } from '../models/GenerationTaskStartResponse';
+import type { GenerationTaskStatusResponse } from '../models/GenerationTaskStatusResponse';
 import type { PaginatedCSI300CompanyListList } from '../models/PaginatedCSI300CompanyListList';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -118,16 +120,14 @@ export class Csi300Service {
         });
     }
     /**
-     * 生成指定公司的 Investment Summary
-     *
-     * 使用 AI 模型生成公司投资摘要并保存到数据库。
+     * 异步启动 Investment Summary 生成任务。立即返回 task_id，前端可通过 task-status API 轮询进度。
      * @param requestBody
-     * @returns CSI300Company
+     * @returns GenerationTaskStartResponse
      * @throws ApiError
      */
     public static csi300ApiCompaniesGenerateSummaryCreate(
-        requestBody: CSI300Company,
-    ): CancelablePromise<CSI300Company> {
+        requestBody: GenerateSummaryRequest,
+    ): CancelablePromise<GenerationTaskStartResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/csi300/api/companies/generate-summary/',
@@ -170,19 +170,54 @@ export class Csi300Service {
         });
     }
     /**
-     * 生成指定公司的 Investment Summary (向后兼容)
+     * 查询异步生成任务的状态和进度。前端轮询此 API 获取生成进度。
+     * @param taskId 任务 UUID
+     * @returns GenerationTaskStatusResponse
+     * @throws ApiError
+     */
+    public static csi300ApiCompaniesTaskStatusRetrieve(
+        taskId: string,
+    ): CancelablePromise<GenerationTaskStatusResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/csi300/api/companies/task-status/{task_id}/',
+            path: {
+                'task_id': taskId,
+            },
+        });
+    }
+    /**
+     * 异步启动 Investment Summary 生成任务 (向后兼容端点)
      * @param requestBody
-     * @returns GenerateInvestmentSummaryResponse
+     * @returns GenerationTaskStartResponse
      * @throws ApiError
      */
     public static csi300ApiGenerateSummaryCreate(
         requestBody: GenerateInvestmentSummaryRequest,
-    ): CancelablePromise<GenerateInvestmentSummaryResponse> {
+    ): CancelablePromise<GenerationTaskStartResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/csi300/api/generate-summary/',
             body: requestBody,
             mediaType: 'application/json',
+        });
+    }
+    /**
+     * 查询任务状态
+     * 查询异步生成任务的状态和进度 (向后兼容端点)
+     * @param taskId 任务 UUID
+     * @returns GenerationTaskStatusResponse
+     * @throws ApiError
+     */
+    public static csi300ApiTaskStatusRetrieve(
+        taskId: string,
+    ): CancelablePromise<GenerationTaskStatusResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/csi300/api/task-status/{task_id}/',
+            path: {
+                'task_id': taskId,
+            },
         });
     }
     /**
