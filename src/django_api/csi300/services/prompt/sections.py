@@ -233,15 +233,21 @@ Important industry ratios: (a) company values, (b) vs industry avg, (c) trends
 
 """
 
-# Section 16: Sources (handled via Live Search citations - no AI output needed)
+# Section 16: Sources (handled via inline citations)
 SECTION_SOURCES = """## SECTION 16: Sources
 
-Note: Source URLs are automatically captured from Live Search. You do not need to output URLs.
-Simply ensure your analysis references real, verifiable data sources.
+**IMPORTANT - INLINE CITATIONS REQUIRED:**
+You MUST include inline citations throughout your response using the format [[N]](url) where N is the citation number.
+- Place citations at the end of sentences where you reference specific data, facts, or statistics
+- Example: "The company's revenue grew 15% in FY2024.[[1]](https://source-url.com)"
+- Each distinct source should have a unique citation number
+- Reuse the same citation number when referencing the same source again
+
+This ensures all claims are properly attributed to their sources.
 
 ---
 
-**Output Format:** Markdown with bullet points for sections 3-12.
+**Output Format:** Markdown with bullet points for sections 3-12. Include inline citations [[N]](url) for all factual claims.
 """
 
 
