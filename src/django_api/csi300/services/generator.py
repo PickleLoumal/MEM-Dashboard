@@ -10,7 +10,7 @@ import logging
 import random
 import re
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any
+from typing import Any, Callable
 from urllib.parse import urlparse
 
 from asgiref.sync import sync_to_async
@@ -123,10 +123,14 @@ async def process_company_ai(
     today: str,
     today_date: datetime.date,
     max_retries: int = AI_MAX_RETRIES,
+    progress_callback: Callable[[int, str], Any] | None = None,
 ) -> dict[str, Any]:
     """
     阶段2: 处理单个公司的 AI 调用 (股票数据已预获取)
     只对 AI 调用加信号量，DB 操作不加锁
+
+    Args:
+        progress_callback: Optional async callback(percent: int, message: str) for progress updates
     """
     loop = asyncio.get_running_loop()
     start_time = datetime.datetime.now(tz=datetime.UTC)
@@ -201,14 +205,32 @@ async def process_company_ai(
                     # stream() 会自动在 content 中嵌入 [[N]](url) 格式的内联引用
                     final_response = None
                     chunk_inline_citations = []  # 收集流式过程中的 inline citations
+                    chunk_count = 0
+                    content_length = 0  # 累计内容长度
 
                     for response, chunk in chat.stream():
                         final_response = response
+                        chunk_count += 1
+
+                        # 累计内容长度用于进度计算
+                        if hasattr(chunk, "content") and chunk.content:
+                            content_length += len(chunk.content)
 
                         # 收集 chunk 中的 inline citations
                         if hasattr(chunk, "inline_citations") and chunk.inline_citations:
                             for cit in chunk.inline_citations:
                                 chunk_inline_citations.append(str(cit))
+
+                        # #region agent log
+                        # 每20个chunk记录一次用于调试
+                        if chunk_count <= 5 or chunk_count % 20 == 0:
+                            import json as _json
+                            from pathlib import Path as _Path
+                            from datetime import datetime as _dt
+                            _log_path = _Path("/Volumes/Pickle Samsung SSD/ALFIE/.cursor/debug.log")
+                            with _log_path.open("a") as _f:
+                                _f.write(_json.dumps({"location":"generator.py:225","message":"chunk_stream","data":{"chunk_count":chunk_count,"content_length":content_length,"chunk_content_len":len(chunk.content) if hasattr(chunk,"content") and chunk.content else 0,"has_tool_calls":len(chunk.tool_calls) if hasattr(chunk,"tool_calls") else 0},"timestamp":_dt.now().isoformat(),"sessionId":"debug-session","runId":"run2","hypothesisId":"CHUNK"}) + "\n")
+                        # #endregion
 
                         # 记录工具调用（调试用）
                         for tool_call in chunk.tool_calls:
@@ -435,12 +457,15 @@ async def process_company_ai(
 # ==========================================
 
 
-async def generate_company_summary_async(company_id: int) -> dict[str, Any]:
+async def generate_company_summary_async(
+    company_id: int, progress_callback: Callable[[int, str], Any] | None = None
+) -> dict[str, Any]:
     """
     异步生成单个公司的 Investment Summary
 
     Args:
         company_id: 公司数据库 ID
+        progress_callback: Optional async callback(percent: int, message: str) for progress updates
 
     Returns:
         Dict 包含 status, message, data 等字段
@@ -474,7 +499,16 @@ async def generate_company_summary_async(company_id: int) -> dict[str, Any]:
 
     # 调用 AI 生成
     result = await process_company_ai(
-        ai_semaphore, executor, client, company_obj, stock_data, PROMPT_TEMPLATE, today, today_date
+        ai_semaphore,
+        executor,
+        client,
+        company_obj,
+        stock_data,
+        PROMPT_TEMPLATE,
+        today,
+        today_date,
+        max_retries=AI_MAX_RETRIES,
+        progress_callback=progress_callback,
     )
 
     executor.shutdown(wait=False)
@@ -518,17 +552,20 @@ async def generate_company_summary_async(company_id: int) -> dict[str, Any]:
         }
 
 
-def generate_company_summary(company_id: int) -> dict[str, Any]:
+def generate_company_summary(
+    company_id: int, progress_callback: Callable[[int, str], Any] | None = None
+) -> dict[str, Any]:
     """
     同步接口：生成单个公司的 Investment Summary
 
     Args:
         company_id: 公司数据库 ID
+        progress_callback: Optional async callback(percent: int, message: str) for progress updates
 
     Returns:
         Dict 包含 status, message, data 等字段
     """
-    return asyncio.run(generate_company_summary_async(company_id))
+    return asyncio.run(generate_company_summary_async(company_id, progress_callback))
 
 
 # ==========================================

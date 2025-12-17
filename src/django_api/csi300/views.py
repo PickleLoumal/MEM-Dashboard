@@ -220,6 +220,15 @@ class CSI300SummaryMixin:
             task.progress_percent = 10
             task.save(update_fields=["status", "progress_message", "progress_percent", "updated_at"])
 
+            # #region agent log
+            import json
+            from pathlib import Path
+            from datetime import datetime
+            log_path = Path("/Volumes/Pickle Samsung SSD/ALFIE/.cursor/debug.log")
+            with log_path.open("a") as f:
+                f.write(json.dumps({"location":"views.py:221","message":"progress_update_10","data":{"task_id":task_id,"percent":10,"message":"正在调用 AI 服务..."},"timestamp":datetime.now().isoformat(),"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}) + "\n")
+            # #endregion
+
         # 导入并调用生成服务
             from .services import generate_company_summary
 
@@ -228,7 +237,17 @@ class CSI300SummaryMixin:
             task.progress_percent = 30
             task.save(update_fields=["progress_message", "progress_percent", "updated_at"])
 
+            # #region agent log
+            with log_path.open("a") as f:
+                f.write(json.dumps({"location":"views.py:230","message":"progress_update_30","data":{"task_id":task_id,"percent":30,"message":"AI 正在搜索和分析数据...","beforeGeneration":datetime.now().isoformat()},"timestamp":datetime.now().isoformat(),"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}) + "\n")
+            # #endregion
+
             result = generate_company_summary(company_id)
+
+            # #region agent log
+            with log_path.open("a") as f:
+                f.write(json.dumps({"location":"views.py:237","message":"generation_complete","data":{"task_id":task_id,"afterGeneration":datetime.now().isoformat(),"resultStatus":result.get("status")},"timestamp":datetime.now().isoformat(),"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}) + "\n")
+            # #endregion
 
             # 更新任务状态
             task.refresh_from_db()
@@ -239,6 +258,11 @@ class CSI300SummaryMixin:
                 task.result_data = result.get("data", {})
                 task.completed_at = datetime.now(tz=UTC)
                 logger.info(f"Task {task_id} completed successfully")
+
+                # #region agent log
+                with log_path.open("a") as f:
+                    f.write(json.dumps({"location":"views.py:250","message":"progress_update_100","data":{"task_id":task_id,"percent":100,"message":"生成完成"},"timestamp":datetime.now().isoformat(),"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}) + "\n")
+                # #endregion
             else:
                 task.status = GenerationTask.Status.FAILED
                 task.progress_message = "生成失败"

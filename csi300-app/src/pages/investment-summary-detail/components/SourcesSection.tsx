@@ -35,12 +35,14 @@ export function parseSources(sourcesText: string): ParsedSource[] {
     for (const line of lines) {
         let title = '';
         let url = '';
+        let matchedPattern = '';
 
         // Pattern 0 (PRIMARY): "Title | URL" format (new fixed format from prompt)
         const pipeMatch = line.match(/^(.+?)\s*\|\s*(https?:\/\/[^\s]+|[a-zA-Z0-9][-a-zA-Z0-9]*\.[a-zA-Z]{2,}[^\s]*)/);
         if (pipeMatch) {
             title = pipeMatch[1].trim();
             url = pipeMatch[2].trim();
+            matchedPattern = 'Pattern0_Pipe';
         }
 
         // Pattern 1: "Title: [hypothetical link - domain.com/path]" or "Title: [hypothetical link: domain.com/path]"
@@ -49,6 +51,7 @@ export function parseSources(sourcesText: string): ParsedSource[] {
             if (hypotheticalMatch) {
                 title = hypotheticalMatch[1].trim();
                 url = hypotheticalMatch[2].trim();
+                matchedPattern = 'Pattern1_Hypothetical';
             }
         }
 
@@ -58,6 +61,7 @@ export function parseSources(sourcesText: string): ParsedSource[] {
             if (mdMatch) {
                 title = line.replace(mdMatch[0], '').trim() || mdMatch[1];
                 url = mdMatch[2];
+                matchedPattern = 'Pattern2_Markdown';
             }
         }
 
@@ -67,6 +71,7 @@ export function parseSources(sourcesText: string): ParsedSource[] {
             if (colonUrlMatch) {
                 title = colonUrlMatch[1].trim();
                 url = colonUrlMatch[2].trim();
+                matchedPattern = 'Pattern3_Colon';
             }
         }
 
@@ -76,6 +81,7 @@ export function parseSources(sourcesText: string): ParsedSource[] {
             if (rawUrlMatch) {
                 url = rawUrlMatch[1];
                 title = line.replace(url, '').replace(/[\[\]\(\)|:-]/g, ' ').trim();
+                matchedPattern = 'Pattern4_RawURL';
             }
         }
 
@@ -85,6 +91,7 @@ export function parseSources(sourcesText: string): ParsedSource[] {
             if (domainMatch) {
                 url = domainMatch[1];
                 title = line.replace(domainMatch[0], '').replace(/[\[\]\(\)|:-]/g, ' ').replace(/hypothetical link/gi, '').trim();
+                matchedPattern = 'Pattern5_Domain';
             }
         }
 
