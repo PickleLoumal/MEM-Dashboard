@@ -1,6 +1,127 @@
 import React from 'react';
+import Markdown, { Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { logger } from '@shared/lib/logger';
 import { SectionHeader, SegmentBar, AiBadge } from './ui';
+
+/**
+ * 提取 children 的文本内容（处理 React 元素数组情况）
+ */
+function extractText(children: React.ReactNode): string {
+  if (typeof children === 'string') return children;
+  if (typeof children === 'number') return String(children);
+  if (Array.isArray(children)) {
+    return children.map(extractText).join('');
+  }
+  if (React.isValidElement(children)) {
+    const props = children.props as { children?: React.ReactNode };
+    if (props.children) {
+      return extractText(props.children);
+    }
+  }
+  return '';
+}
+
+/**
+ * 创建自定义 Markdown 组件
+ * @param withDropCap 是否启用首字下沉效果（仅第一段）
+ */
+function createMarkdownComponents(withDropCap: boolean): Components {
+  let paragraphIndex = 0;
+
+  return {
+    a: ({ href, children, ...props }) => {
+      // 提取文本内容（处理嵌套元素情况）
+      const text = extractText(children).trim();
+
+      // 检测引用格式: [1], [2], ... (来自 [[1]] markdown 解析)
+      const citationMatch = text.match(/^\[(\d+)\]$/);
+
+      if (citationMatch && href) {
+        const citationNum = citationMatch[1];
+        return (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-citation"
+            title={href}
+            {...props}
+          >
+            <sup>[{citationNum}]</sup>
+          </a>
+        );
+      }
+
+      // 普通链接
+      return (
+        <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+          {children}
+        </a>
+      );
+    },
+    // 自定义段落渲染，第一段添加首字下沉效果
+    p: ({ children, ...props }) => {
+      const currentIndex = paragraphIndex++;
+      const isFirstParagraph = currentIndex === 0 && withDropCap;
+
+      if (isFirstParagraph) {
+        // 提取第一个字符用于首字下沉
+        const textContent = extractText(children);
+        if (textContent.length > 0) {
+          const firstChar = textContent.charAt(0);
+          // 重建 children，将第一个字符替换为 drop-cap span
+          return (
+            <p {...props}>
+              <span className="doc-drop-cap">{firstChar}</span>
+              {renderChildrenWithoutFirstChar(children, firstChar)}
+            </p>
+          );
+        }
+      }
+
+      return <p {...props}>{children}</p>;
+    },
+  };
+}
+
+/**
+ * 移除 children 中的第一个字符（用于首字下沉）
+ */
+function renderChildrenWithoutFirstChar(children: React.ReactNode, firstChar: string): React.ReactNode {
+  if (typeof children === 'string') {
+    return children.startsWith(firstChar) ? children.slice(1) : children;
+  }
+  if (Array.isArray(children)) {
+    let firstCharRemoved = false;
+    return children.map((child, idx) => {
+      if (firstCharRemoved) return child;
+      if (typeof child === 'string' && child.startsWith(firstChar)) {
+        firstCharRemoved = true;
+        return child.slice(1);
+      }
+      if (React.isValidElement(child)) {
+        const props = child.props as { children?: React.ReactNode };
+        if (props.children) {
+          const textContent = extractText(props.children);
+          if (textContent.startsWith(firstChar)) {
+            firstCharRemoved = true;
+            // 重建元素，移除第一个字符
+            return React.cloneElement(child, {
+              ...props,
+              children: renderChildrenWithoutFirstChar(props.children, firstChar),
+            } as React.Attributes);
+          }
+        }
+      }
+      return child;
+    });
+  }
+  return children;
+}
+
+// 用于非首字下沉场景的标准组件
+const standardMarkdownComponents = createMarkdownComponents(false);
 
 interface DivisionData {
   name: string;
@@ -74,17 +195,16 @@ export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = (
 
   const jsonData = tryParseJSON(content);
 
-  // 如果不是 JSON 格式，使用原有的纯文本渲染
+  // 如果不是 JSON 格式，使用 Markdown 渲染（支持 inline citations + 首字下沉）
   if (!jsonData) {
-    logger.info('Rendering Business Overview as plain text', { length: content.length });
+    logger.info('Rendering Business Overview as Markdown', { length: content.length });
     return (
       <section className="doc-section">
         <SectionHeader title="Executive Summary" showAiBadge />
         <article className="doc-section-content doc-prose">
-          <p>
-            <span className="doc-drop-cap">{content.charAt(0)}</span>
-            {content.slice(1)}
-          </p>
+          <Markdown remarkPlugins={[remarkGfm]} components={createMarkdownComponents(true)}>
+            {content}
+          </Markdown>
         </article>
       </section>
     );
@@ -93,16 +213,15 @@ export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = (
   const { raw_text, parsed } = jsonData;
   logger.info('Rendering Business Overview from JSON', { hasParsed: !!parsed, fiscalYear: parsed?.fiscal_year });
 
-  // 如果解析失败，显示原始文本
+  // 如果解析失败，使用 Markdown 渲染原始文本（带首字下沉）
   if (!parsed) {
     return (
       <section className="doc-section">
         <SectionHeader title="Executive Summary" showAiBadge />
         <article className="doc-section-content doc-prose">
-          <p>
-            <span className="doc-drop-cap">{raw_text.charAt(0)}</span>
-            {raw_text.slice(1)}
-          </p>
+          <Markdown remarkPlugins={[remarkGfm]} components={createMarkdownComponents(true)}>
+            {raw_text}
+          </Markdown>
         </article>
       </section>
     );
@@ -122,10 +241,9 @@ export const BusinessOverviewSection: React.FC<BusinessOverviewSectionProps> = (
         </div>
         <article className="doc-section-content doc-prose">
           {raw_text && (
-            <p>
-              <span className="doc-drop-cap">{raw_text.charAt(0)}</span>
-              {raw_text.slice(1)}
-            </p>
+            <Markdown remarkPlugins={[remarkGfm]} components={createMarkdownComponents(true)}>
+              {raw_text}
+            </Markdown>
           )}
         </article>
       </section>
