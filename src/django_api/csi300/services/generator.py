@@ -350,7 +350,7 @@ async def process_company_ai(
                 logger.info(f"Total extracted citations for {company_name}: {len(live_citations)}")
                 break
             logger.warning(f"AI returned empty content for {company_name}")
-        except Exception as e:
+        except Exception:
             logger.exception(f"AI Error for {company_name} (Attempt {attempt + 1})")
 
     if not ai_content:

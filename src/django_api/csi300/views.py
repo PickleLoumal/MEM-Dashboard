@@ -149,7 +149,25 @@ class CSI300SummaryMixin:
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # 检查是否已有进行中的任务
+        # 清理僵尸任务：超过 5 分钟仍在 pending/processing 状态的任务
+        from datetime import timedelta
+
+        zombie_threshold = datetime.now(tz=UTC) - timedelta(minutes=5)
+        zombie_tasks = GenerationTask.objects.filter(
+            company_id=company_id,
+            status__in=[GenerationTask.Status.PENDING, GenerationTask.Status.PROCESSING],
+            updated_at__lt=zombie_threshold,
+        )
+        zombie_count = zombie_tasks.count()
+        if zombie_count > 0:
+            zombie_tasks.update(
+                status=GenerationTask.Status.FAILED,
+                error_message="任务超时，已自动清理",
+                completed_at=datetime.now(tz=UTC),
+            )
+            logger.warning(f"Cleaned up {zombie_count} zombie tasks for company {company_id}")
+
+        # 检查是否已有进行中的任务（非僵尸）
         existing_task = GenerationTask.objects.filter(
             company_id=company_id,
             status__in=[GenerationTask.Status.PENDING, GenerationTask.Status.PROCESSING],
