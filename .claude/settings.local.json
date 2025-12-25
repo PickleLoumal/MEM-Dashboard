@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rg:*)",
+      "Bash(lsof:*)",
+      "Bash(curl:*)",
+      "Bash(chmod:*)",
+      "Bash(./scripts/active/stop_apis.sh:*)",
+      "Bash(diff:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)"
+    ],
+    "deny": []
+  }
+}

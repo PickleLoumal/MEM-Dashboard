@@ -10,8 +10,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterUniqueTogether(
-            name='csi300investmentsummary',
-            unique_together=set(),
+        # Skip this operation - no constraint exists to remove
+        # The unique_together was already handled in previous migrations
+        migrations.RunSQL(
+            sql="SELECT 1; -- No-op: unique_together constraint doesn't exist",
+            reverse_sql="SELECT 1; -- No reverse operation needed",
         ),
     ]
