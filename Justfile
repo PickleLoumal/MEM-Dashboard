@@ -21,7 +21,12 @@ start:
 
 # 2. Install: Install Python dependencies from requirements.txt
 install:
+    #!/bin/bash
+    set -e
+    echo "📦 Installing Python dependencies from requirements.txt..."
+    ./venv/bin/pip install --upgrade pip
     ./venv/bin/pip install -r requirements.txt
+    echo "✅ Dependencies installed successfully!"
 
 # 3. Deploy CSI300 Frontend: Deploy the CSI300 React app to AWS
 deploy-csi300-frontend:
@@ -31,9 +36,13 @@ deploy-csi300-frontend:
 deploy-ecs:
     ./venv/bin/python scripts/active/deployment/deploy_to_ecs.py
 
-# 5. Sync Data: Sync local database data to RDS
+# 5. Sync Data: Sync local database data to RDS (push)
 sync-data:
     ./venv/bin/python scripts/active/deployment/sync_data_to_rds.py
+
+# 5b. Pull Data: Pull data from AWS RDS to local database
+pull-data:
+    ./venv/bin/python scripts/active/deployment/sync_data_from_rds.py
 
 # 6. Deploy MEM Frontend: Deploy the MEM Dashboard frontend to AWS
 deploy-mem-frontend:
