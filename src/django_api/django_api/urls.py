@@ -46,4 +46,6 @@ urlpatterns = [
     path("api/", include("refinitiv.urls")),
     # Content API路由
     path("", include("content.urls")),
+    # PDF Generation Service
+    path("api/pdf/", include("pdf_service.urls", namespace="pdf_service")),
 ]

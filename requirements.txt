@@ -80,3 +80,10 @@ pytest-django>=4.11.1
 
 # Code Quality & Linting
 ruff>=0.8.0
+
+# Django Channels (WebSocket support for PDF generation progress)
+channels>=4.0.0
+channels-redis>=4.2.0
+
+# Jinja2 (for LaTeX template rendering in PDF service)
+Jinja2>=3.1.0
