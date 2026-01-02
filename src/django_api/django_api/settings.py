@@ -103,7 +103,17 @@ INSTALLED_APPS = [
     "stocks",  # Stock data with AkShare integration
     "policy_updates",  # Federal Register integration
     "refinitiv",  # Refinitiv Data Platform integration
+    "pdf_service",  # PDF Report Generation Service
+    # Django Channels for WebSocket support (optional, graceful fallback if not installed)
 ]
+
+# Try to add channels if installed
+try:
+    import channels  # noqa: F401
+
+    INSTALLED_APPS.insert(0, "channels")
+except ImportError:
+    pass
 
 MIDDLEWARE = [
     # OpenTelemetry middleware (first for accurate timing)
@@ -342,3 +352,47 @@ else:
             "level": LOG_LEVEL,
         },
     }
+
+# =============================================================================
+# Django Channels Configuration (for WebSocket support)
+# =============================================================================
+# Uses Redis as channel layer backend for cross-process message passing
+
+ASGI_APPLICATION = "django_api.asgi.application"
+
+# Channel layer configuration
+# In production, use Redis; in development, can use in-memory layer
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(REDIS_HOST, int(REDIS_PORT))],
+            "prefix": "pdf_ws",
+        },
+    },
+}
+
+# Fallback to in-memory channel layer if Redis not available (development only)
+if DEBUG and os.getenv("USE_INMEMORY_CHANNELS", "false").lower() == "true":
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
+    }
+
+# =============================================================================
+# PDF Service Configuration
+# =============================================================================
+
+# AWS S3 configuration for PDF storage
+PDF_S3_BUCKET = os.getenv("PDF_S3_BUCKET", "alfie-pdf-reports")
+PDF_S3_REGION = os.getenv("AWS_REGION", "ap-east-1")
+
+# AWS SQS configuration for async PDF generation
+PDF_SQS_QUEUE_URL = os.getenv("PDF_SQS_QUEUE_URL", "")
+
+# Pre-signed URL expiration (1 hour default)
+PDF_DOWNLOAD_URL_EXPIRATION = int(os.getenv("PDF_DOWNLOAD_URL_EXPIRATION", "3600"))
