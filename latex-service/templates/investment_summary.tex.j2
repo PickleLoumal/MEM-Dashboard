@@ -84,9 +84,17 @@
 \subsection{Key Highlights}
 
 \begin{itemize}[leftmargin=*]
+\BLOCK{ if company.price_date }
     \item \textbf{Stock Price:} \VAR{ company.previous_close | currency('USD') } (as of \VAR{ company.price_date | date })
+\BLOCK{ else }
+    \item \textbf{Stock Price:} \VAR{ company.previous_close | currency('USD') }
+\BLOCK{ endif }
     \item \textbf{Market Cap:} \VAR{ summary.market_cap_display | escape }
+\BLOCK{ if company.price_52w_low and company.price_52w_high }
     \item \textbf{52-Week Range:} \VAR{ company.price_52w_low | currency('USD') } — \VAR{ company.price_52w_high | currency('USD') }
+\BLOCK{ else }
+    \item \textbf{52-Week Range:} N/A
+\BLOCK{ endif }
     \item \textbf{P/E Ratio:} \VAR{ company.pe_ratio_trailing | number }
     \item \textbf{EPS (TTM):} \VAR{ company.eps_trailing | currency('USD') }
     \item \textbf{Dividend Yield:} \VAR{ company.dividend_yield_fy0 | percentage }
@@ -124,10 +132,26 @@
     \endhead
 
     P/E Ratio (Trailing) & \VAR{ company.pe_ratio_trailing | number } & — \\
+\BLOCK{ if company.pe_ratio_forward }
     P/E Ratio (Forward) & \VAR{ company.pe_ratio_forward | number } & — \\
+\BLOCK{ else }
+    P/E Ratio (Forward) & N/A & — \\
+\BLOCK{ endif }
+\BLOCK{ if company.pb_ratio }
     P/B Ratio & \VAR{ company.pb_ratio | number } & — \\
+\BLOCK{ else }
+    P/B Ratio & N/A & — \\
+\BLOCK{ endif }
+\BLOCK{ if company.ps_ratio }
     P/S Ratio & \VAR{ company.ps_ratio | number } & — \\
+\BLOCK{ else }
+    P/S Ratio & N/A & — \\
+\BLOCK{ endif }
+\BLOCK{ if company.ev_ebitda }
     EV/EBITDA & \VAR{ company.ev_ebitda | number } & — \\
+\BLOCK{ else }
+    EV/EBITDA & N/A & — \\
+\BLOCK{ endif }
 
     \bottomrule
 \end{longtable}
@@ -142,9 +166,17 @@
 
     Return on Equity (ROE) & \VAR{ company.roe_trailing | percentage } \\
     Return on Assets (ROA) & \VAR{ company.roa_trailing | percentage } \\
+\BLOCK{ if company.gross_margin }
     Gross Margin & \VAR{ company.gross_margin | percentage } \\
+\BLOCK{ else }
+    Gross Margin & N/A \\
+\BLOCK{ endif }
     Operating Margin & \VAR{ company.operating_margin | percentage } \\
+\BLOCK{ if company.net_margin }
     Net Margin & \VAR{ company.net_margin | percentage } \\
+\BLOCK{ else }
+    Net Margin & N/A \\
+\BLOCK{ endif }
 
     \bottomrule
 \end{longtable}
@@ -255,10 +287,26 @@
     \endhead
 
     EPS Growth (YoY) & \VAR{ company.eps_growth_percent | percentage } \\
+\BLOCK{ if company.revenue_growth_percent }
     Revenue Growth & \VAR{ company.revenue_growth_percent | percentage } \\
+\BLOCK{ else }
+    Revenue Growth & N/A \\
+\BLOCK{ endif }
+\BLOCK{ if company.target_price_mean }
     Target Price (Mean) & \VAR{ company.target_price_mean | currency('USD') } \\
+\BLOCK{ else }
+    Target Price (Mean) & N/A \\
+\BLOCK{ endif }
+\BLOCK{ if company.target_price_high }
     Target Price (High) & \VAR{ company.target_price_high | currency('USD') } \\
+\BLOCK{ else }
+    Target Price (High) & N/A \\
+\BLOCK{ endif }
+\BLOCK{ if company.target_price_low }
     Target Price (Low) & \VAR{ company.target_price_low | currency('USD') } \\
+\BLOCK{ else }
+    Target Price (Low) & N/A \\
+\BLOCK{ endif }
 
     \bottomrule
 \end{longtable}

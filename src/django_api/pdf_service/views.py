@@ -203,6 +203,8 @@ class PDFTaskViewSet(ErrorResponseMixin, viewsets.ViewSet):
         try:
             summary = CSI300InvestmentSummary.objects.get(company=company)
             return {
+                # Required by LaTeX template (line 37)
+                "company_name": company.name,
                 "report_date": str(summary.report_date),
                 "stock_price_previous_close": float(summary.stock_price_previous_close or 0),
                 "market_cap_display": summary.market_cap_display,
@@ -218,39 +220,91 @@ class PDFTaskViewSet(ErrorResponseMixin, viewsets.ViewSet):
                 "competitive_landscape": summary.competitive_landscape,
                 "risks_anomalies": summary.risks_anomalies,
                 "forecast_outlook": summary.forecast_outlook,
+                # Alias for template compatibility (line 268)
+                "growth_analysis": summary.forecast_outlook,
                 "investment_firms_views": summary.investment_firms_views,
                 "industry_ratio_analysis": summary.industry_ratio_analysis,
                 "tariffs_supply_chain_risks": summary.tariffs_supply_chain_risks,
                 "key_takeaways": summary.key_takeaways,
                 "sources": summary.sources,
+                # Risk factors list (template lines 232-241)
+                "risk_factors": [],  # Placeholder - can be populated from structured data
             }
         except CSI300InvestmentSummary.DoesNotExist:
-            return {}
+            return {
+                "company_name": company.name,
+                "risk_factors": [],
+            }
 
     def _prepare_company_data(self, company: CSI300Company) -> dict:
         """Extract company financial data for PDF generation."""
         return {
+            # Basic Info
             "name": company.name,
             "ticker": company.ticker,
             "region": company.region,
             "industry": company.industry,
             "im_sector": company.im_sector,
             "business_description": company.business_description,
+            # Alias mappings for LaTeX template compatibility
+            "sector": company.im_sector,  # Template uses 'sector' (lines 47, 107)
+            "country": company.region,  # Template uses 'country' (line 110)
+            "exchange_code": self._get_exchange_code(company),  # Lines 46, 109
+            # Price Data
             "price_local_currency": float(company.price_local_currency or 0),
             "previous_close": float(company.previous_close or 0),
             "currency": company.currency,
+            "price_date": str(company.last_trade_date) if company.last_trade_date else "",  # Line 87
+            "price_52w_low": float(company.price_52w_low or 0),  # Line 89
+            "price_52w_high": float(company.price_52w_high or 0),  # Line 89
+            # Market Cap
             "market_cap_local": float(company.market_cap_local or 0),
             "market_cap_usd": float(company.market_cap_usd or 0),
+            # Valuation Ratios
             "pe_ratio_trailing": float(company.pe_ratio_trailing or 0),
             "pe_ratio_consensus": float(company.pe_ratio_consensus or 0),
+            "pe_ratio_forward": None,  # Not in DB - template will show N/A (line 127)
+            "pb_ratio": None,  # Not in DB - template will show N/A (line 128)
+            "ps_ratio": None,  # Not in DB - template will show N/A (line 129)
+            "ev_ebitda": None,  # Not in DB - template will show N/A (line 130)
+            # Earnings
             "eps_trailing": float(company.eps_trailing or 0),
+            "eps_growth_percent": float(company.eps_growth_percent or 0),  # Line 257
+            "revenue_growth_percent": None,  # Not in DB - requires calculation
+            # Profitability
             "roe_trailing": float(company.roe_trailing or 0),
             "roa_trailing": float(company.roa_trailing or 0),
+            "gross_margin": None,  # Not in DB - template will show N/A (line 145)
+            "operating_margin": float(company.operating_margin_trailing or 0),  # Line 146
+            "net_margin": None,  # Not in DB - template will show N/A (line 147)
+            # Dividend
             "dividend_yield_fy0": float(company.dividend_yield_fy0 or 0),
+            # Liquidity & Solvency
             "debt_to_equity": float(company.debt_to_equity or 0),
             "current_ratio": float(company.current_ratio or 0),
             "quick_ratio": float(company.quick_ratio or 0),
+            "interest_coverage": float(company.interest_coverage_ratio or 0),  # Line 169
+            # Target Prices (Growth Outlook section)
+            "target_price_mean": None,  # Not in DB currently
+            "target_price_high": None,  # Not in DB currently
+            "target_price_low": None,  # Not in DB currently
         }
+
+    def _get_exchange_code(self, company: CSI300Company) -> str:
+        """Derive exchange code from ticker or region."""
+        ticker = company.ticker or ""
+        region = company.region or ""
+
+        if ".SS" in ticker or ".SH" in ticker:
+            return "SSE"  # Shanghai Stock Exchange
+        if ".SZ" in ticker:
+            return "SZSE"  # Shenzhen Stock Exchange
+        if ".HK" in ticker or "Hong Kong" in region:
+            return "HKEX"  # Hong Kong Exchange
+        if "Mainland China" in region:
+            return "A-Share"
+
+        return "N/A"
 
     @extend_schema(
         parameters=[

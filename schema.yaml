@@ -4068,6 +4068,210 @@ paths:
               schema:
                 $ref: '#/components/schemas/GlobalHealthCheckResponse'
           description: ''
+  /api/pdf/internal/callback/:
+    post:
+      operationId: api_pdf_internal_callback_create
+      description: Internal callback for LaTeX worker status updates
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/pdf/tasks/download/{task_id}/:
+    get:
+      operationId: api_pdf_tasks_download_retrieve
+      description: Get pre-signed download URL for a completed PDF
+      parameters:
+      - in: path
+        name: task_id
+        schema:
+          type: string
+        description: Task UUID
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PDFDownloadResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/pdf/tasks/history/:
+    get:
+      operationId: api_pdf_tasks_history_list
+      description: List recent PDF generation tasks
+      parameters:
+      - in: query
+        name: company_id
+        schema:
+          type: integer
+        description: Optional company ID filter
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PDFTask'
+          description: ''
+  /api/pdf/tasks/request/:
+    post:
+      operationId: api_pdf_tasks_request_create
+      description: Request generation of a PDF report for a company
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PDFRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PDFRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PDFRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PDFTaskCreateResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/pdf/tasks/status/{task_id}/:
+    get:
+      operationId: api_pdf_tasks_status_retrieve
+      description: Get current status and progress of a PDF generation task
+      parameters:
+      - in: path
+        name: task_id
+        schema:
+          type: string
+        description: Task UUID
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PDFTask'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/pdf/templates/:
+    get:
+      operationId: api_pdf_templates_list
+      description: |-
+        ViewSet for listing available PDF templates.
+
+        Provides read-only access to active templates for selection.
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PDFTemplate'
+          description: ''
+  /api/pdf/templates/{id}/:
+    get:
+      operationId: api_pdf_templates_retrieve
+      description: |-
+        ViewSet for listing available PDF templates.
+
+        Provides read-only access to active templates for selection.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this PDF Template.
+        required: true
+      tags:
+      - api
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PDFTemplateDetail'
+          description: ''
   /api/policy/updates/:
     get:
       operationId: api_policy_updates_retrieve
@@ -6867,6 +7071,289 @@ components:
     NullEnum:
       enum:
       - null
+    PDFDownloadResponse:
+      type: object
+      description: Response serializer for download URL endpoint.
+      properties:
+        task_id:
+          type: string
+          format: uuid
+          description: Task identifier
+        download_url:
+          type: string
+          format: uri
+          description: Pre-signed S3 URL for downloading the PDF
+        expires_at:
+          type: string
+          format: date-time
+          description: Expiration time for the download URL
+        filename:
+          type: string
+          description: Suggested filename for the download
+      required:
+      - download_url
+      - expires_at
+      - filename
+      - task_id
+    PDFRequest:
+      type: object
+      description: |-
+        Serializer for PDF generation request.
+
+        Note: Validation only checks existence, actual objects are fetched in the view
+        to avoid duplicate queries. View handles race conditions with try-except.
+      properties:
+        company_id:
+          type: integer
+          minimum: 1
+          description: ID of the company for which to generate PDF
+        template_id:
+          type: integer
+          minimum: 1
+          nullable: true
+          description: Optional template ID (uses default template if not specified)
+      required:
+      - company_id
+    PDFTask:
+      type: object
+      description: Serializer for PDF task status responses.
+      properties:
+        task_id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique task identifier
+        company_ticker:
+          type: string
+          readOnly: true
+          description: Company ticker symbol
+        company_name:
+          type: string
+          readOnly: true
+          description: Company name
+        template_name:
+          type: string
+          readOnly: true
+          description: Template display name
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PDFTaskStatusEnum'
+          readOnly: true
+          description: |-
+            Current task status
+
+            * `pending` - Pending
+            * `processing` - Processing
+            * `generating_charts` - Generating Charts
+            * `compiling` - Compiling LaTeX
+            * `uploading` - Uploading to S3
+            * `completed` - Completed
+            * `failed` - Failed
+        status_display:
+          type: string
+          readOnly: true
+          description: Human-readable status
+        progress:
+          type: integer
+          readOnly: true
+          description: Progress percentage (0-100)
+        error_message:
+          type: string
+          readOnly: true
+          description: Error message if task failed
+        download_url:
+          type: string
+          format: uri
+          readOnly: true
+          description: Pre-signed S3 download URL
+        download_url_expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: Expiration time for the download URL
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When task completed (success or failure)
+        processing_time_ms:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Total processing time in milliseconds
+      required:
+      - company_name
+      - company_ticker
+      - completed_at
+      - created_at
+      - download_url
+      - download_url_expires_at
+      - error_message
+      - processing_time_ms
+      - progress
+      - status
+      - status_display
+      - task_id
+      - template_name
+    PDFTaskCreateResponse:
+      type: object
+      description: Response serializer for task creation endpoint.
+      properties:
+        task_id:
+          type: string
+          format: uuid
+          description: Unique task identifier for tracking
+        status:
+          type: string
+          description: Initial task status (pending)
+        message:
+          type: string
+          description: Confirmation message
+        websocket_url:
+          type: string
+          description: WebSocket URL for real-time status updates
+      required:
+      - message
+      - status
+      - task_id
+      - websocket_url
+    PDFTaskStatusEnum:
+      enum:
+      - pending
+      - processing
+      - generating_charts
+      - compiling
+      - uploading
+      - completed
+      - failed
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `processing` - Processing
+        * `generating_charts` - Generating Charts
+        * `compiling` - Compiling LaTeX
+        * `uploading` - Uploading to S3
+        * `completed` - Completed
+        * `failed` - Failed
+    PDFTemplate:
+      type: object
+      description: Serializer for PDF templates (read-only, for listing available
+        templates).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          description: Template identifier (e.g., 'investment_summary_v1')
+        display_name:
+          type: string
+          readOnly: true
+          description: Human-readable template name (e.g., 'Investment Summary Report')
+        description:
+          type: string
+          readOnly: true
+          description: Template description and usage notes
+        version:
+          type: string
+          readOnly: true
+          description: Template version
+        is_default:
+          type: boolean
+          readOnly: true
+          description: Whether this is the default template for new reports
+        page_size:
+          type: string
+          readOnly: true
+          description: LaTeX page size (a4paper, letterpaper, etc.)
+      required:
+      - description
+      - display_name
+      - id
+      - is_default
+      - name
+      - page_size
+      - version
+    PDFTemplateDetail:
+      type: object
+      description: Detailed serializer for PDF templates (includes content for preview).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+          description: Template identifier (e.g., 'investment_summary_v1')
+        display_name:
+          type: string
+          readOnly: true
+          description: Human-readable template name (e.g., 'Investment Summary Report')
+        description:
+          type: string
+          readOnly: true
+          description: Template description and usage notes
+        version:
+          type: string
+          readOnly: true
+          description: Template version
+        is_default:
+          type: boolean
+          readOnly: true
+          description: Whether this is the default template for new reports
+        page_size:
+          type: string
+          readOnly: true
+          description: LaTeX page size (a4paper, letterpaper, etc.)
+        margins:
+          readOnly: true
+          description: 'Page margins as JSON (e.g., {"top": "2cm", "bottom": "2cm",
+            "left": "2.5cm", "right": "2.5cm"})'
+        header_left:
+          type: string
+          readOnly: true
+          description: Left header content
+        header_right:
+          type: string
+          readOnly: true
+          description: Right header content
+        footer_center:
+          type: string
+          readOnly: true
+          description: Center footer content (e.g., page numbers)
+        charts_config:
+          readOnly: true
+          description: Chart definitions as JSON array
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - charts_config
+      - created_at
+      - description
+      - display_name
+      - footer_center
+      - header_left
+      - header_right
+      - id
+      - is_default
+      - margins
+      - name
+      - page_size
+      - updated_at
+      - version
     PaginatedCSI300CompanyListList:
       type: object
       properties:
