@@ -1,0 +1,226 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "ALFIE PDF Generation Service Infrastructure - SQS Queue and S3 Bucket with lifecycle rules",
+  "Parameters": {
+    "EnvironmentName": {
+      "Description": "Environment name prefix for resource naming",
+      "Type": "String",
+      "Default": "alfie"
+    },
+    "RetentionDays": {
+      "Description": "Number of days to retain generated PDF reports in S3",
+      "Type": "Number",
+      "Default": 7,
+      "MinValue": 1,
+      "MaxValue": 365
+    },
+    "MessageRetentionPeriod": {
+      "Description": "SQS message retention period in seconds (default: 24 hours)",
+      "Type": "Number",
+      "Default": 86400
+    },
+    "VisibilityTimeout": {
+      "Description": "SQS visibility timeout in seconds (should exceed LaTeX compilation time)",
+      "Type": "Number",
+      "Default": 300,
+      "MinValue": 60,
+      "MaxValue": 43200
+    }
+  },
+  "Resources": {
+    "PDFGenerationQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "QueueName": {"Fn::Sub": "${EnvironmentName}-pdf-generation"},
+        "VisibilityTimeout": {"Ref": "VisibilityTimeout"},
+        "MessageRetentionPeriod": {"Ref": "MessageRetentionPeriod"},
+        "ReceiveMessageWaitTimeSeconds": 20,
+        "RedrivePolicy": {
+          "deadLetterTargetArn": {"Fn::GetAtt": ["PDFGenerationDLQ", "Arn"]},
+          "maxReceiveCount": 3
+        },
+        "Tags": [
+          {"Key": "Project", "Value": "ALFIE"},
+          {"Key": "Service", "Value": "PDF-Generation"},
+          {"Key": "Environment", "Value": {"Ref": "EnvironmentName"}}
+        ]
+      }
+    },
+    "PDFGenerationDLQ": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "QueueName": {"Fn::Sub": "${EnvironmentName}-pdf-generation-dlq"},
+        "MessageRetentionPeriod": 1209600,
+        "Tags": [
+          {"Key": "Project", "Value": "ALFIE"},
+          {"Key": "Service", "Value": "PDF-Generation-DLQ"},
+          {"Key": "Environment", "Value": {"Ref": "EnvironmentName"}}
+        ]
+      }
+    },
+    "PDFReportsBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {"Fn::Sub": "${EnvironmentName}-pdf-reports-${AWS::AccountId}"},
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "DeleteReportsAfterRetention",
+              "Status": "Enabled",
+              "Prefix": "reports/",
+              "ExpirationInDays": {"Ref": "RetentionDays"}
+            },
+            {
+              "Id": "DeleteChartsAfterRetention",
+              "Status": "Enabled",
+              "Prefix": "charts/",
+              "ExpirationInDays": {"Ref": "RetentionDays"}
+            },
+            {
+              "Id": "CleanupIncompleteMultipartUploads",
+              "Status": "Enabled",
+              "AbortIncompleteMultipartUpload": {
+                "DaysAfterInitiation": 1
+              }
+            }
+          ]
+        },
+        "CorsConfiguration": {
+          "CorsRules": [
+            {
+              "AllowedOrigins": ["*"],
+              "AllowedMethods": ["GET"],
+              "AllowedHeaders": ["*"],
+              "MaxAge": 3600
+            }
+          ]
+        },
+        "Tags": [
+          {"Key": "Project", "Value": "ALFIE"},
+          {"Key": "Service", "Value": "PDF-Reports"},
+          {"Key": "Environment", "Value": {"Ref": "EnvironmentName"}}
+        ]
+      }
+    },
+    "PDFServicePolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": {"Fn::Sub": "${EnvironmentName}-pdf-service-policy"},
+        "Description": "Policy for PDF generation service to access SQS and S3",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "SQSAccess",
+              "Effect": "Allow",
+              "Action": [
+                "sqs:SendMessage",
+                "sqs:ReceiveMessage",
+                "sqs:DeleteMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:ChangeMessageVisibility"
+              ],
+              "Resource": [
+                {"Fn::GetAtt": ["PDFGenerationQueue", "Arn"]},
+                {"Fn::GetAtt": ["PDFGenerationDLQ", "Arn"]}
+              ]
+            },
+            {
+              "Sid": "S3Access",
+              "Effect": "Allow",
+              "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:ListBucket"
+              ],
+              "Resource": [
+                {"Fn::GetAtt": ["PDFReportsBucket", "Arn"]},
+                {"Fn::Sub": "${PDFReportsBucket.Arn}/*"}
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "LaTeXServiceTaskRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {"Fn::Sub": "${EnvironmentName}-latex-service-task-role"},
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          {"Ref": "PDFServicePolicy"}
+        ],
+        "Tags": [
+          {"Key": "Project", "Value": "ALFIE"},
+          {"Key": "Service", "Value": "LaTeX-Service"},
+          {"Key": "Environment", "Value": {"Ref": "EnvironmentName"}}
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "PDFQueueURL": {
+      "Description": "URL of the PDF generation SQS queue",
+      "Value": {"Ref": "PDFGenerationQueue"},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-PDFQueueURL"}}
+    },
+    "PDFQueueARN": {
+      "Description": "ARN of the PDF generation SQS queue",
+      "Value": {"Fn::GetAtt": ["PDFGenerationQueue", "Arn"]},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-PDFQueueARN"}}
+    },
+    "PDFDLQueueURL": {
+      "Description": "URL of the PDF generation dead letter queue",
+      "Value": {"Ref": "PDFGenerationDLQ"},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-PDFDLQueueURL"}}
+    },
+    "PDFBucketName": {
+      "Description": "Name of the S3 bucket for PDF reports",
+      "Value": {"Ref": "PDFReportsBucket"},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-PDFBucketName"}}
+    },
+    "PDFBucketARN": {
+      "Description": "ARN of the S3 bucket for PDF reports",
+      "Value": {"Fn::GetAtt": ["PDFReportsBucket", "Arn"]},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-PDFBucketARN"}}
+    },
+    "PDFServicePolicyARN": {
+      "Description": "ARN of the IAM policy for PDF service access",
+      "Value": {"Ref": "PDFServicePolicy"},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-PDFServicePolicyARN"}}
+    },
+    "LaTeXServiceTaskRoleARN": {
+      "Description": "ARN of the LaTeX Service ECS Task Role",
+      "Value": {"Fn::GetAtt": ["LaTeXServiceTaskRole", "Arn"]},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-LaTeXServiceTaskRoleARN"}}
+    }
+  }
+}
+
