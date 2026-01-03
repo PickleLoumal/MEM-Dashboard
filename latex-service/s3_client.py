@@ -9,7 +9,6 @@ from __future__ import annotations
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import BinaryIO
 
 import boto3
 from botocore.exceptions import ClientError

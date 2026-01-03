@@ -369,8 +369,20 @@ def run_worker() -> None:
                 receipt_handle = message.get("ReceiptHandle")
                 success = process_message(message)
 
-                if success and receipt_handle:
-                    delete_message(receipt_handle)
+                # Always delete the message after processing to prevent infinite retry loops
+                # Failed tasks have their status updated via callback before this point
+                if receipt_handle:
+                    if success:
+                        delete_message(receipt_handle)
+                    else:
+                        # Delete failed messages to prevent infinite retry
+                        # The task status is already marked as FAILED via callback
+                        # Use DLQ configuration on SQS side for retry/analysis needs
+                        delete_message(receipt_handle)
+                        logger.warning(
+                            "Deleted failed message to prevent retry loop",
+                            extra={"receipt_handle": receipt_handle[:50]},
+                        )
 
                 consecutive_errors = 0
 

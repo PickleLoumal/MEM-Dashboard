@@ -10,7 +10,7 @@ from __future__ import annotations
 import io
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -56,6 +56,29 @@ class ChartResult:
     width: float = 0.9  # Relative width for LaTeX
 
 
+# Type alias for chart generator functions
+ChartGenerator = Callable[[dict[str, Any], dict[str, Any]], "ChartResult | None"]
+
+# Registry of chart generators - add new chart types here (Open/Closed Principle)
+# This avoids long if/elif chains and makes adding new chart types trivial
+CHART_GENERATORS: dict[str, ChartGenerator] = {}
+
+
+def register_chart_generator(chart_type: str) -> Callable[[ChartGenerator], ChartGenerator]:
+    """
+    Decorator to register a chart generator function.
+
+    Usage:
+        @register_chart_generator("my_chart_type")
+        def generate_my_chart(data, config) -> ChartResult | None:
+            ...
+    """
+    def decorator(func: ChartGenerator) -> ChartGenerator:
+        CHART_GENERATORS[chart_type] = func
+        return func
+    return decorator
+
+
 def generate_charts(
     data: dict[str, Any],
     charts_config: list[dict[str, Any]],
@@ -78,31 +101,25 @@ def generate_charts(
         chart_type = chart_config.get("type", "")
         chart_name = chart_config.get("name", "chart")
 
-        try:
-            if chart_type == "stock_price":
-                result = generate_stock_price_chart(data, chart_config)
-            elif chart_type == "roe_trend":
-                result = generate_roe_trend_chart(data, chart_config)
-            elif chart_type == "pe_ratio":
-                result = generate_pe_ratio_chart(data, chart_config)
-            elif chart_type == "financial_summary":
-                result = generate_financial_summary_chart(data, chart_config)
-            elif chart_type == "key_metrics":
-                result = generate_key_metrics_chart(data, chart_config)
-            else:
-                logger.warning(f"Unknown chart type: {chart_type}")
-                continue
+        # Use registry pattern instead of if/elif chain
+        generator = CHART_GENERATORS.get(chart_type)
+        if generator is None:
+            logger.warning(f"Unknown chart type: {chart_type}")
+            continue
 
+        try:
+            result = generator(data, chart_config)
             if result:
                 results.append(result)
                 logger.info(f"Generated chart: {chart_name}")
 
-        except Exception as e:
-            logger.exception(f"Failed to generate chart {chart_name}: {e}")
+        except Exception:
+            logger.exception(f"Failed to generate chart {chart_name}")
 
     return results
 
 
+@register_chart_generator("stock_price")
 def generate_stock_price_chart(
     data: dict[str, Any],
     config: dict[str, Any],
@@ -143,6 +160,7 @@ def generate_stock_price_chart(
     return _fig_to_result(fig, "stock_price")
 
 
+@register_chart_generator("roe_trend")
 def generate_roe_trend_chart(
     data: dict[str, Any],
     config: dict[str, Any],
@@ -188,6 +206,7 @@ def generate_roe_trend_chart(
     return _fig_to_result(fig, "roe_trend")
 
 
+@register_chart_generator("pe_ratio")
 def generate_pe_ratio_chart(
     data: dict[str, Any],
     config: dict[str, Any],
@@ -225,6 +244,7 @@ def generate_pe_ratio_chart(
     return _fig_to_result(fig, "pe_ratio")
 
 
+@register_chart_generator("financial_summary")
 def generate_financial_summary_chart(
     data: dict[str, Any],
     config: dict[str, Any],
@@ -265,6 +285,7 @@ def generate_financial_summary_chart(
     return _fig_to_result(fig, "financial_summary")
 
 
+@register_chart_generator("key_metrics")
 def generate_key_metrics_chart(
     data: dict[str, Any],
     config: dict[str, Any],

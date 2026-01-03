@@ -7,10 +7,13 @@ Sends status updates back to the Django API for task progress tracking.
 from __future__ import annotations
 
 import logging
+from functools import lru_cache
 from typing import Literal
 
 import requests
+from requests.adapters import HTTPAdapter
 from requests.exceptions import RequestException
+from urllib3.util.retry import Retry
 
 from config import config
 
@@ -26,6 +29,43 @@ TaskStatus = Literal[
     "completed",
     "failed",
 ]
+
+
+@lru_cache(maxsize=1)
+def _get_http_session() -> requests.Session:
+    """
+    Get cached HTTP session with connection pooling and retry logic.
+
+    Returns:
+        Configured requests.Session instance
+    """
+    session = requests.Session()
+
+    # Configure retry strategy
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=0.5,
+        status_forcelist=[500, 502, 503, 504],
+        allowed_methods=["POST"],
+    )
+
+    # Mount adapter with retry and connection pooling
+    adapter = HTTPAdapter(
+        max_retries=retry_strategy,
+        pool_connections=5,
+        pool_maxsize=10,
+    )
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
+    # Set default headers
+    session.headers.update({"Content-Type": "application/json"})
+
+    # Add API key if configured
+    if config.internal_api_key:
+        session.headers["X-Internal-API-Key"] = config.internal_api_key
+
+    return session
 
 
 def update_task_status(
@@ -60,19 +100,12 @@ def update_task_status(
         "s3_key": s3_key,
     }
 
-    headers = {
-        "Content-Type": "application/json",
-    }
-
-    # Add API key if configured
-    if config.internal_api_key:
-        headers["X-Internal-API-Key"] = config.internal_api_key
+    session = _get_http_session()
 
     try:
-        response = requests.post(
+        response = session.post(
             config.django_callback_url,
             json=payload,
-            headers=headers,
             timeout=30,
         )
 
