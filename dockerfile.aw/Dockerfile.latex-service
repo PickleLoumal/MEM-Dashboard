@@ -1,0 +1,74 @@
+# =============================================================================
+# LaTeX Compiler Service Dockerfile
+# =============================================================================
+# This Dockerfile builds a container for compiling LaTeX documents with
+# full CJK (Chinese/Japanese/Korean) support via XeLaTeX.
+#
+# Image size: ~1.5GB (due to TeX Live)
+# Build time: ~5-10 minutes
+# =============================================================================
+
+FROM python:3.12-slim AS base
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install system dependencies and TeX Live
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # TeX Live core with XeLaTeX
+    texlive-xetex \
+    texlive-fonts-recommended \
+    texlive-fonts-extra \
+    texlive-latex-extra \
+    texlive-latex-recommended \
+    # CJK language support
+    texlive-lang-chinese \
+    texlive-lang-japanese \
+    # Fonts for CJK rendering
+    fonts-noto-cjk \
+    fonts-noto-cjk-extra \
+    fonts-liberation \
+    # Build tools for matplotlib
+    gcc \
+    g++ \
+    # PDF utilities
+    ghostscript \
+    poppler-utils \
+    # Cleanup
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Create non-root user for security
+RUN groupadd --gid 1000 latex \
+    && useradd --uid 1000 --gid latex --shell /bin/bash --create-home latex
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements first for layer caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY --chown=latex:latex . .
+
+# Create directories for temporary files
+RUN mkdir -p /app/tmp /app/output \
+    && chown -R latex:latex /app
+
+# Switch to non-root user
+USER latex
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import boto3; print('healthy')" || exit 1
+
+# Default command
+CMD ["python", "-u", "worker.py"]
+
