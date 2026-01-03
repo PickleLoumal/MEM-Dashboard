@@ -7,7 +7,8 @@ Renders Jinja2 LaTeX templates with data and chart references.
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +27,16 @@ logger = logging.getLogger(__name__)
 
 # Default templates directory
 TEMPLATES_DIR = Path(__file__).parent / "templates"
+
+
+def _register_filters(env: Environment) -> None:
+    """Register custom LaTeX filters on a Jinja2 environment."""
+    env.filters["escape"] = escape_latex
+    env.filters["escape_para"] = escape_latex_preserve_newlines
+    env.filters["number"] = format_number
+    env.filters["percentage"] = format_percentage
+    env.filters["currency"] = format_currency
+    env.filters["date"] = lambda d: _format_date(d)
 
 
 def create_jinja_env(templates_dir: Path | None = None) -> Environment:
@@ -55,14 +66,28 @@ def create_jinja_env(templates_dir: Path | None = None) -> Environment:
         lstrip_blocks=True,
     )
 
-    # Register custom filters
-    env.filters["escape"] = escape_latex
-    env.filters["escape_para"] = escape_latex_preserve_newlines
-    env.filters["number"] = format_number
-    env.filters["percentage"] = format_percentage
-    env.filters["currency"] = format_currency
-    env.filters["date"] = lambda d: _format_date(d)
+    _register_filters(env)
+    return env
 
+
+@lru_cache(maxsize=1)
+def _get_string_jinja_env() -> Environment:
+    """
+    Get cached Jinja2 environment for string templates.
+
+    This avoids recreating the environment on every render call.
+    """
+    env = Environment(
+        block_start_string=r"\BLOCK{",
+        block_end_string=r"}",
+        variable_start_string=r"\VAR{",
+        variable_end_string=r"}",
+        comment_start_string=r"\#{",
+        comment_end_string=r"}",
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
+    _register_filters(env)
     return env
 
 
@@ -108,35 +133,21 @@ def render_template(
     # Build chart references for template
     chart_refs = {chart.name: f"{chart.name}.png" for chart in charts}
 
+    # Use timezone-aware UTC datetime for consistency across environments
+    now_utc = datetime.now(timezone.utc)
+
     # Prepare template context
     context = {
         "summary": data.get("summary", {}),
         "company": data.get("company", {}),
         "charts": chart_refs,
         "settings": settings,
-        "report_date": datetime.now().strftime("%B %d, %Y"),
-        "generated_at": datetime.now().isoformat(),
+        "report_date": now_utc.strftime("%B %d, %Y"),
+        "generated_at": now_utc.isoformat(),
     }
 
-    # Create Jinja environment for string template
-    env = Environment(
-        block_start_string=r"\BLOCK{",
-        block_end_string=r"}",
-        variable_start_string=r"\VAR{",
-        variable_end_string=r"}",
-        comment_start_string=r"\#{",
-        comment_end_string=r"}",
-        trim_blocks=True,
-        lstrip_blocks=True,
-    )
-
-    # Register filters
-    env.filters["escape"] = escape_latex
-    env.filters["escape_para"] = escape_latex_preserve_newlines
-    env.filters["number"] = format_number
-    env.filters["percentage"] = format_percentage
-    env.filters["currency"] = format_currency
-    env.filters["date"] = lambda d: _format_date(d)
+    # Use cached Jinja environment for string templates
+    env = _get_string_jinja_env()
 
     try:
         # Render main content
@@ -300,12 +311,15 @@ def render_from_file(
     template = env.get_template(template_name)
     chart_refs = {chart.name: f"{chart.name}.png" for chart in charts}
 
+    # Use timezone-aware UTC datetime
+    now_utc = datetime.now(timezone.utc)
+
     context = {
         "summary": data.get("summary", {}),
         "company": data.get("company", {}),
         "charts": chart_refs,
         "settings": settings or {},
-        "report_date": datetime.now().strftime("%B %d, %Y"),
+        "report_date": now_utc.strftime("%B %d, %Y"),
     }
 
     body = template.render(**context)

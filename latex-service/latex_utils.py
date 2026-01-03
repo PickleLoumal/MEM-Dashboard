@@ -7,7 +7,6 @@ Provides LaTeX-specific utilities: escaping, compilation, and file handling.
 from __future__ import annotations
 
 import logging
-import os
 import re
 import shutil
 import subprocess
@@ -19,22 +18,25 @@ from config import config
 logger = logging.getLogger(__name__)
 
 
-# LaTeX special characters that need escaping
-LATEX_SPECIAL_CHARS = {
-    "&": r"\&",
-    "%": r"\%",
-    "$": r"\$",
-    "#": r"\#",
-    "_": r"\_",
-    "{": r"\{",
-    "}": r"\}",
-    "~": r"\textasciitilde{}",
-    "^": r"\textasciicircum{}",
-    "\\": r"\textbackslash{}",
-    "<": r"\textless{}",
-    ">": r"\textgreater{}",
-    "|": r"\textbar{}",
-}
+# LaTeX special characters that need escaping (order matters!)
+# Note: Backslash must be handled FIRST to avoid double-escaping
+LATEX_SPECIAL_CHARS_ORDERED = [
+    # Backslash MUST be first - otherwise \& becomes \\textbackslash{}&
+    ("\\", r"\textbackslash{}"),
+    # Then all other special characters
+    ("&", r"\&"),
+    ("%", r"\%"),
+    ("$", r"\$"),
+    ("#", r"\#"),
+    ("_", r"\_"),
+    ("{", r"\{"),
+    ("}", r"\}"),
+    ("~", r"\textasciitilde{}"),
+    ("^", r"\textasciicircum{}"),
+    ("<", r"\textless{}"),
+    (">", r"\textgreater{}"),
+    ("|", r"\textbar{}"),
+]
 
 
 def escape_latex(text: str | None) -> str:
@@ -46,6 +48,10 @@ def escape_latex(text: str | None) -> str:
 
     Returns:
         LaTeX-safe escaped string
+
+    Note:
+        The order of escaping is critical - backslash must be escaped first
+        to avoid double-escaping issues (e.g., & -> \\& -> \\textbackslash{}&)
     """
     if text is None:
         return ""
@@ -53,8 +59,8 @@ def escape_latex(text: str | None) -> str:
     if not isinstance(text, str):
         text = str(text)
 
-    # Replace special characters
-    for char, escape in LATEX_SPECIAL_CHARS.items():
+    # Replace special characters in correct order (backslash first!)
+    for char, escape in LATEX_SPECIAL_CHARS_ORDERED:
         text = text.replace(char, escape)
 
     return text
@@ -188,6 +194,17 @@ def compile_latex(
     work_dir = Path(mkdtemp(prefix=f"latex_{task_id}_", dir=config.tmp_dir))
 
     try:
+        # Copy charts from output directory to work directory
+        # XeLaTeX needs local file access for \includegraphics
+        charts_source = config.output_dir / task_id
+        if charts_source.exists():
+            for chart_file in charts_source.glob("*.png"):
+                shutil.copy2(chart_file, work_dir / chart_file.name)
+            logger.debug(
+                "Copied charts to work directory",
+                extra={"task_id": task_id, "count": len(list(charts_source.glob("*.png")))},
+            )
+
         # Write .tex file
         tex_file = work_dir / f"{output_name}.tex"
         tex_file.write_text(tex_content, encoding="utf-8")

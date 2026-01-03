@@ -65,9 +65,9 @@ RUN mkdir -p /app/tmp /app/output \
 # Switch to non-root user
 USER latex
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import boto3; print('healthy')" || exit 1
+# Health check - validates Python environment and critical imports
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD python -c "import boto3; import jinja2; import matplotlib; from config import config; print('healthy')" || exit 1
 
 # Default command
 CMD ["python", "-u", "worker.py"]
