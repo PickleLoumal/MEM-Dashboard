@@ -9,7 +9,7 @@
 // Re-export the auto-generated type from OpenAPI codegen
 export type { CSI300InvestmentSummary as InvestmentSummary } from '@shared/api/generated';
 
-// Re-export task-related types
+// Re-export task-related types (AI generation)
 export type {
   GenerationTaskStartResponse as StartTaskResponse,
   GenerationTaskStatusResponse as TaskStatusResponse,
@@ -19,3 +19,19 @@ export { TaskStatusEnum } from '@shared/api/generated';
 
 // Legacy type alias for backward compatibility
 export type TaskStatus = 'pending' | 'processing' | 'completed' | 'failed';
+
+// ==========================================
+// PDF Generation Types
+// ==========================================
+
+// Re-export PDF-related types from OpenAPI codegen
+export type {
+  PDFTask,
+  PDFTaskCreateResponse,
+  PDFRequest,
+  PDFDownloadResponse,
+  PDFTemplate,
+  PDFTemplateDetail,
+} from '@shared/api/generated';
+
+export { PDFTaskStatusEnum } from '@shared/api/generated';

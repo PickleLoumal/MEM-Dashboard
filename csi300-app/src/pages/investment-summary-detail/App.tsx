@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Printer, Share2, Sparkles } from 'lucide-react';
+import { Share2, Sparkles, FileText } from 'lucide-react';
 import { GlobalNav } from '@shared/components/GlobalNav';
 import { fetchInvestmentSummary, generateInvestmentSummary } from './api';
 import { InvestmentSummary } from './types';
@@ -13,6 +13,8 @@ import {
 } from './components/Sidebar';
 import { TableOfContents } from './components/TableOfContents';
 import { Tag, AiBadge } from './components/ui';
+import { PDFGenerationModal } from './components/PDFGenerationModal';
+import { usePDFGeneration } from './hooks';
 import { logger } from '@shared/lib/logger';
 import '@shared/styles/main.css';
 import './styles.css';
@@ -29,6 +31,7 @@ export default function App() {
   const [mounted, setMounted] = useState(false);
   const [progressPercent, setProgressPercent] = useState(0);
   const [progressMessage, setProgressMessage] = useState('');
+  const [showPdfModal, setShowPdfModal] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -126,9 +129,36 @@ export default function App() {
     }
   }, [companyId]);
 
-  const handlePrint = () => {
-    window.print();
-  };
+  // PDF Generation Hook - only enabled when companyId is valid
+  const numericCompanyId = companyId ? Number(companyId) : null;
+
+  const pdfGeneration = usePDFGeneration({
+    companyId: numericCompanyId ?? 0,
+    onComplete: (downloadUrl) => {
+      logger.startTrace().info('[PDF] Generation complete', { downloadUrl });
+      // Auto-open download in new tab
+      window.open(downloadUrl, '_blank');
+    },
+    onError: (errorMsg) => {
+      logger.startTrace().error('[PDF] Generation failed', { error: errorMsg });
+    },
+  });
+
+  const handleGeneratePDF = useCallback(() => {
+    if (!numericCompanyId || numericCompanyId <= 0) {
+      logger.startTrace().warn('[PDF] Invalid company ID, cannot generate PDF');
+      return;
+    }
+    setShowPdfModal(true);
+    pdfGeneration.startGeneration();
+  }, [numericCompanyId, pdfGeneration]);
+
+  const handleClosePdfModal = useCallback(() => {
+    setShowPdfModal(false);
+    if (!pdfGeneration.downloadUrl && !pdfGeneration.errorMessage) {
+      pdfGeneration.cancel();
+    }
+  }, [pdfGeneration]);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -211,10 +241,11 @@ export default function App() {
           <div className="doc-actions">
             <button
               className="doc-action-btn"
-              onClick={handlePrint}
-              title="Print"
+              onClick={handleGeneratePDF}
+              title="Download PDF Report"
+              disabled={pdfGeneration.isGenerating}
             >
-              <Printer size={16} />
+              <FileText size={16} />
             </button>
             <button
               className="doc-action-btn"
@@ -440,6 +471,19 @@ export default function App() {
           </aside>
         </div>
       </div>
+
+      {/* PDF Generation Modal */}
+      <PDFGenerationModal
+        isOpen={showPdfModal}
+        status={pdfGeneration.status}
+        statusDisplay={pdfGeneration.statusDisplay}
+        progress={pdfGeneration.progress}
+        errorMessage={pdfGeneration.errorMessage}
+        downloadUrl={pdfGeneration.downloadUrl}
+        companyName={data.company_name}
+        onClose={handleClosePdfModal}
+        onRetry={handleGeneratePDF}
+      />
     </>
   );
 }

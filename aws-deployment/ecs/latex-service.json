@@ -1,0 +1,47 @@
+{
+  "serviceName": "alfie-latex-service",
+  "cluster": "alfie-cluster",
+  "taskDefinition": "alfie-latex-service",
+  "desiredCount": 1,
+  "launchType": "FARGATE",
+  "platformVersion": "LATEST",
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "subnets": [
+        "${PRIVATE_SUBNET_A}",
+        "${PRIVATE_SUBNET_B}"
+      ],
+      "securityGroups": [
+        "${ECS_SG}"
+      ],
+      "assignPublicIp": "DISABLED"
+    }
+  },
+  "deploymentConfiguration": {
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 100,
+    "deploymentCircuitBreaker": {
+      "enable": true,
+      "rollback": true
+    }
+  },
+  "schedulingStrategy": "REPLICA",
+  "enableECSManagedTags": true,
+  "propagateTags": "TASK_DEFINITION",
+  "enableExecuteCommand": true,
+  "tags": [
+    {
+      "key": "Project",
+      "value": "ALFIE"
+    },
+    {
+      "key": "Service",
+      "value": "LaTeX-Service"
+    },
+    {
+      "key": "Environment",
+      "value": "production"
+    }
+  ]
+}
+

@@ -114,3 +114,24 @@ fix:
     ./venv/bin/ruff check --fix src
     @echo ""
     @echo "✅ All fixes applied!"
+
+# 15. Deploy PDF Service: Deploy PDF generation infrastructure to AWS
+deploy-pdf-service:
+    #!/bin/bash
+    echo "📄 Deploying PDF Service Infrastructure to AWS..."
+    chmod +x aws-deployment/scripts/deploy-pdf-service.sh
+    bash aws-deployment/scripts/deploy-pdf-service.sh
+
+# 16. Deploy PDF Service (skip Docker build): Deploy infrastructure only
+deploy-pdf-service-infra:
+    #!/bin/bash
+    echo "📄 Deploying PDF Service Infrastructure (skip Docker build)..."
+    chmod +x aws-deployment/scripts/deploy-pdf-service.sh
+    bash aws-deployment/scripts/deploy-pdf-service.sh --skip-build
+
+# 17. Build LaTeX Service Image: Build and push LaTeX Docker image only
+build-latex-service:
+    #!/bin/bash
+    echo "🐳 Building LaTeX Service Docker image..."
+    chmod +x aws-deployment/scripts/deploy-pdf-service.sh
+    bash aws-deployment/scripts/deploy-pdf-service.sh --skip-infra

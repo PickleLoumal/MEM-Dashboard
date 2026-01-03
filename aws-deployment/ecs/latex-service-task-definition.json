@@ -1,0 +1,117 @@
+{
+  "family": "alfie-latex-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "4096",
+  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/alfie-latex-service-task-role",
+  "containerDefinitions": [
+    {
+      "name": "latex-worker",
+      "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/alfie-latex-service:latest",
+      "essential": true,
+      "environment": [
+        {
+          "name": "ENVIRONMENT",
+          "value": "production"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "${AWS_REGION}"
+        },
+        {
+          "name": "PDF_SQS_QUEUE_URL",
+          "value": "${PDF_SQS_QUEUE_URL}"
+        },
+        {
+          "name": "PDF_S3_BUCKET",
+          "value": "${PDF_S3_BUCKET}"
+        },
+        {
+          "name": "S3_CHARTS_PREFIX",
+          "value": "charts/"
+        },
+        {
+          "name": "S3_REPORTS_PREFIX",
+          "value": "reports/"
+        },
+        {
+          "name": "DJANGO_CALLBACK_URL",
+          "value": "${DJANGO_CALLBACK_URL}"
+        },
+        {
+          "name": "WORKER_POLL_INTERVAL",
+          "value": "20"
+        },
+        {
+          "name": "WORKER_VISIBILITY_TIMEOUT",
+          "value": "300"
+        },
+        {
+          "name": "WORKER_MAX_MESSAGES",
+          "value": "1"
+        },
+        {
+          "name": "LATEX_TIMEOUT_SECONDS",
+          "value": "120"
+        },
+        {
+          "name": "LATEX_MAX_RETRIES",
+          "value": "2"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "PDF_INTERNAL_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:${AWS_REGION}:${AWS_ACCOUNT_ID}:secret:alfie/pdf-service:internal_api_key::"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/alfie-latex-service",
+          "awslogs-region": "${AWS_REGION}",
+          "awslogs-stream-prefix": "latex",
+          "awslogs-create-group": "true"
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "python -c 'import boto3; print(\"healthy\")' || exit 1"
+        ],
+        "interval": 60,
+        "timeout": 10,
+        "retries": 3,
+        "startPeriod": 30
+      },
+      "mountPoints": [],
+      "volumesFrom": [],
+      "ulimits": [
+        {
+          "name": "nofile",
+          "softLimit": 65536,
+          "hardLimit": 65536
+        }
+      ]
+    }
+  ],
+  "volumes": [],
+  "placementConstraints": [],
+  "tags": [
+    {
+      "key": "Project",
+      "value": "ALFIE"
+    },
+    {
+      "key": "Service",
+      "value": "LaTeX-Service"
+    },
+    {
+      "key": "Environment",
+      "value": "production"
+    }
+  ]
+}
+
