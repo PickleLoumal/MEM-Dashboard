@@ -1,6 +1,6 @@
 {
   "serviceName": "alfie-latex-service",
-  "cluster": "alfie-cluster",
+  "cluster": "mem-dashboard-cluster",
   "taskDefinition": "alfie-latex-service",
   "desiredCount": 1,
   "launchType": "FARGATE",
