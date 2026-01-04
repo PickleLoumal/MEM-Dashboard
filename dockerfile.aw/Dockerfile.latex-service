@@ -4,6 +4,9 @@
 # This Dockerfile builds a container for compiling LaTeX documents with
 # full CJK (Chinese/Japanese/Korean) support via XeLaTeX.
 #
+# Build command (from project root):
+#   docker build -f dockerfile.aw/Dockerfile.latex-service -t alfie-latex-service .
+#
 # Image size: ~1.5GB (due to TeX Live)
 # Build time: ~5-10 minutes
 # =============================================================================
@@ -50,13 +53,13 @@ RUN groupadd --gid 1000 latex \
 WORKDIR /app
 
 # Copy requirements first for layer caching
-COPY requirements.txt .
+COPY latex-service/requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY --chown=latex:latex . .
+# Copy application code from latex-service directory
+COPY --chown=latex:latex latex-service/ .
 
 # Create directories for temporary files
 RUN mkdir -p /app/tmp /app/output \
@@ -71,4 +74,3 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
 
 # Default command
 CMD ["python", "-u", "worker.py"]
-
