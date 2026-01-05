@@ -37,7 +37,7 @@ deploy-ecs:
     ./venv/bin/python scripts/active/deployment/deploy_to_ecs.py
 
 # 5. Sync Data: Sync local database data to RDS (push)
-sync-data:
+sync:
     ./venv/bin/python scripts/active/deployment/sync_data_to_rds.py
 
 # 5b. Pull Data: Pull data from AWS RDS to local database

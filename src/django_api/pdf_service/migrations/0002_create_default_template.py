@@ -300,13 +300,8 @@ DEFAULT_PREAMBLE = r'''% Document class and packages
 % Page geometry
 \usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
 
-% Language and fonts
-\usepackage{fontspec}
-\usepackage{xeCJK}
-\setmainfont{Noto Serif}
-\setsansfont{Noto Sans}
-\setCJKmainfont{Noto Serif CJK SC}
-\setCJKsansfont{Noto Sans CJK SC}
+% Fonts - use XeLaTeX defaults (Latin Modern)
+% No fontspec configuration needed for English-only reports
 
 % Colors
 \usepackage{xcolor}
@@ -374,10 +369,13 @@ def create_default_template(apps, schema_editor):
             header_left='Investment Summary Report',
             header_right='{{ company.ticker }}',
             footer_center='Page {{ page }}',
+            # IMPORTANT: 'type' must match registered chart generators in
+            # latex-service/chart_generator.py (e.g., 'stock_price', NOT 'line')
             charts_config=[
-                {'name': 'stock_price', 'type': 'line', 'title': 'Stock Price Performance'},
-                {'name': 'roe_trend', 'type': 'bar', 'title': 'ROE Trend'},
-                {'name': 'pe_ratio', 'type': 'line', 'title': 'P/E Ratio Trend'},
+                {'name': 'stock_price', 'type': 'stock_price', 'title': 'Stock Price Performance'},
+                {'name': 'roe_trend', 'type': 'roe_trend', 'title': 'ROE Trend'},
+                {'name': 'pe_ratio', 'type': 'pe_ratio', 'title': 'P/E Ratio Trend'},
+                {'name': 'financial_summary', 'type': 'financial_summary', 'title': 'Financial Summary'},
             ],
             version='1.0',
             is_active=True,

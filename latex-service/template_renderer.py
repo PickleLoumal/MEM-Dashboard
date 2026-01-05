@@ -76,6 +76,7 @@ def _get_string_jinja_env() -> Environment:
     Get cached Jinja2 environment for string templates.
 
     This avoids recreating the environment on every render call.
+    Uses LaTeX-compatible delimiters to avoid conflicts with LaTeX syntax.
     """
     env = Environment(
         block_start_string=r"\BLOCK{",
@@ -84,6 +85,8 @@ def _get_string_jinja_env() -> Environment:
         variable_end_string=r"}",
         comment_start_string=r"\#{",
         comment_end_string=r"}",
+        line_statement_prefix="%%",
+        line_comment_prefix="%#",
         trim_blocks=True,
         lstrip_blocks=True,
     )
@@ -150,13 +153,17 @@ def render_template(
     env = _get_string_jinja_env()
 
     try:
+        # Render preamble (it may contain Jinja2 variables like \VAR{ company.ticker })
+        preamble_template = env.from_string(preamble)
+        rendered_preamble = preamble_template.render(**context)
+
         # Render main content
         template = env.from_string(template_content)
         rendered_body = template.render(**context)
 
         # Build complete document
         document = build_document(
-            preamble=preamble,
+            preamble=rendered_preamble,
             body=rendered_body,
             settings=settings,
         )
@@ -177,113 +184,29 @@ def build_document(
     """
     Build a complete LaTeX document.
 
+    The preamble from the database already contains:
+    - \\documentclass
+    - All package imports (geometry, fancyhdr, colors, etc.)
+    - Page settings (margins, headers, footers)
+    - \\begin{document}
+
+    This function simply combines preamble + body + \\end{document}.
+
     Args:
-        preamble: Package imports and custom commands
+        preamble: Complete document preamble including \\begin{document}
         body: Rendered document body
-        settings: Page settings
+        settings: Page settings (currently unused, settings are in preamble)
 
     Returns:
         Complete LaTeX document
     """
-    page_size = settings.get("page_size", "a4paper")
-    margins = settings.get("margins", {})
-
-    # Default margins
-    top = margins.get("top", "2.5cm")
-    bottom = margins.get("bottom", "2.5cm")
-    left = margins.get("left", "2.5cm")
-    right = margins.get("right", "2.5cm")
-
-    # Header/Footer
-    header_left = settings.get("header_left", "")
-    header_right = settings.get("header_right", "")
-    footer_center = settings.get("footer_center", r"\thepage")
-
-    document = rf"""
-\documentclass[{page_size},11pt]{{article}}
-
-% ============================================================================
-% PACKAGES
-% ============================================================================
-\usepackage{{fontspec}}
-\usepackage{{xeCJK}}
-\usepackage{{geometry}}
-\usepackage{{graphicx}}
-\usepackage{{booktabs}}
-\usepackage{{longtable}}
-\usepackage{{array}}
-\usepackage{{xcolor}}
-\usepackage{{hyperref}}
-\usepackage{{fancyhdr}}
-\usepackage{{titlesec}}
-\usepackage{{enumitem}}
-\usepackage{{float}}
-\usepackage{{caption}}
-
-% ============================================================================
-% PAGE GEOMETRY
-% ============================================================================
-\geometry{{
-    top={top},
-    bottom={bottom},
-    left={left},
-    right={right}
-}}
-
-% ============================================================================
-% FONTS
-% ============================================================================
-\setmainfont{{Noto Sans}}
-\setCJKmainfont{{Noto Sans CJK SC}}
-
-% ============================================================================
-% COLORS
-% ============================================================================
-\definecolor{{primary}}{{HTML}}{{2563eb}}
-\definecolor{{secondary}}{{HTML}}{{10b981}}
-\definecolor{{accent}}{{HTML}}{{f59e0b}}
-\definecolor{{danger}}{{HTML}}{{ef4444}}
-\definecolor{{textgray}}{{HTML}}{{6b7280}}
-
-% ============================================================================
-% HEADER/FOOTER
-% ============================================================================
-\pagestyle{{fancy}}
-\fancyhf{{}}
-\fancyhead[L]{{{escape_latex(header_left)}}}
-\fancyhead[R]{{{escape_latex(header_right)}}}
-\fancyfoot[C]{{{footer_center}}}
-\renewcommand{{\headrulewidth}}{{0.4pt}}
-\renewcommand{{\footrulewidth}}{{0pt}}
-
-% ============================================================================
-% SECTION STYLING
-% ============================================================================
-\titleformat{{\section}}
-    {{\Large\bfseries\color{{primary}}}}
-    {{\thesection}}
-    {{1em}}
-    {{}}
-
-\titleformat{{\subsection}}
-    {{\large\bfseries\color{{primary!80!black}}}}
-    {{\thesubsection}}
-    {{1em}}
-    {{}}
-
-% ============================================================================
-% CUSTOM PREAMBLE
-% ============================================================================
-{preamble}
-
-% ============================================================================
-% DOCUMENT
-% ============================================================================
-\begin{{document}}
+    # Preamble already includes \documentclass, packages, and \begin{document}
+    # Just append the body and close the document
+    document = f"""{preamble}
 
 {body}
 
-\end{{document}}
+\\end{{document}}
 """
     return document
 

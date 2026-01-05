@@ -273,23 +273,48 @@ def compile_latex(
 
 
 def _extract_latex_error(log_file: Path, stderr: str) -> str:
-    """Extract meaningful error message from LaTeX log."""
+    """Extract meaningful error message from LaTeX log with context."""
     error_lines = []
+    context_lines = []
+    in_error = False
 
     if log_file.exists():
         try:
             log_content = log_file.read_text(encoding="utf-8", errors="ignore")
-            # Look for error patterns
-            for line in log_content.split("\n"):
-                if line.startswith("!") or "Error:" in line or "error:" in line:
-                    error_lines.append(line.strip())
-                    if len(error_lines) >= 5:
-                        break
-        except Exception:
-            pass
+            lines = log_content.split("\n")
 
+            for i, line in enumerate(lines):
+                # Capture error line
+                if line.startswith("!"):
+                    in_error = True
+                    error_lines.append(line.strip())
+                    # Get next few lines for context
+                    for j in range(1, 6):
+                        if i + j < len(lines):
+                            context_lines.append(lines[i + j].strip())
+                    break
+                elif "Error:" in line or "error:" in line:
+                    error_lines.append(line.strip())
+                    if len(error_lines) >= 3:
+                        break
+
+            # Also look for "l.XXX" line number indicator
+            for line in lines:
+                if line.startswith("l.") and line[2:].split()[0].isdigit():
+                    error_lines.append(line.strip())
+                    break
+
+        except Exception as e:
+            logger.warning(f"Failed to parse log file: {e}")
+
+    result_parts = []
     if error_lines:
-        return "\n".join(error_lines)
+        result_parts.append("\n".join(error_lines))
+    if context_lines:
+        result_parts.append("Context: " + " | ".join(context_lines[:3]))
+
+    if result_parts:
+        return " ".join(result_parts)
 
     if stderr:
         return stderr[:500]
