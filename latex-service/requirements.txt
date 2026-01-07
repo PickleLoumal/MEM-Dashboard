@@ -17,6 +17,9 @@ numpy>=1.26.0
 # HTTP client for Django callbacks
 requests>=2.31.0
 
+# Markdown to LaTeX conversion
+pypandoc>=1.13
+
 # Utilities
 python-dotenv>=1.0.0
 

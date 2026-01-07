@@ -6,6 +6,7 @@ Provides LaTeX-specific utilities: escaping, compilation, and file handling.
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 import shutil
@@ -16,6 +17,48 @@ from tempfile import mkdtemp
 from config import config
 
 logger = logging.getLogger(__name__)
+
+
+def _extract_text_from_json(text: str) -> str:
+    """
+    Extract plain text from JSON-formatted string if applicable.
+
+    Some database fields store JSON like:
+    {"raw_text": "actual content...", "parsed": {...}}
+
+    This function detects JSON and extracts the raw_text field.
+
+    Args:
+        text: Input text (may be JSON or plain text)
+
+    Returns:
+        Extracted raw_text if JSON, otherwise original text
+    """
+    if not text or not isinstance(text, str):
+        return text or ""
+
+    text = text.strip()
+
+    # Quick check: does it look like JSON?
+    if not (text.startswith("{") and text.endswith("}")):
+        return text
+
+    try:
+        data = json.loads(text)
+        if isinstance(data, dict):
+            # Try to get raw_text field
+            if "raw_text" in data:
+                return data["raw_text"]
+            # Or try common alternatives
+            if "text" in data:
+                return data["text"]
+            if "content" in data:
+                return data["content"]
+        # If parsed but no text field found, return original
+        return text
+    except (json.JSONDecodeError, TypeError):
+        # Not valid JSON, return as-is
+        return text
 
 
 # LaTeX special characters that need escaping (order matters!)
@@ -68,17 +111,19 @@ def escape_latex(text: str | None) -> str:
 
 def markdown_to_latex(text: str | None) -> str:
     """
-    Convert Markdown formatting to LaTeX before escaping.
+    Convert Markdown formatting to LaTeX using pypandoc.
 
-    Handles common Markdown syntax from AI-generated content:
+    Handles all Markdown syntax from AI-generated content:
     - **bold** → \\textbf{bold}
     - *italic* → \\textit{italic}
-    - [text](url) → text\\footnote{url}
+    - [text](url) → proper hyperlinks
     - [[n]](url) → citation format
     - - list items → \\item
 
+    Also handles JSON-formatted fields by extracting raw_text.
+
     Args:
-        text: Markdown-formatted text
+        text: Markdown-formatted text (or JSON containing raw_text)
 
     Returns:
         LaTeX-formatted string
@@ -89,78 +134,103 @@ def markdown_to_latex(text: str | None) -> str:
     if not isinstance(text, str):
         text = str(text)
 
-    # Step 1: Extract and protect URLs/citations before any processing
-    # Store citations for footnotes: [[n]](url) or [n](url)
-    citations: dict[str, str] = {}
-    citation_counter = [0]  # Use list to allow mutation in closure
+    # Extract text from JSON if applicable
+    text = _extract_text_from_json(text)
 
-    def extract_citation(match: re.Match) -> str:
-        """Extract citation and store URL for footnote."""
-        bracket_content = match.group(1)  # The [n] or [[n]] content
-        url = match.group(2)
-        citation_counter[0] += 1
-        key = f"__CITE_{citation_counter[0]}__"
-        citations[key] = url
-        # Return just the citation number in superscript
-        # Extract just the number from [[n]] or [n]
-        num = re.sub(r"[\[\]]", "", bracket_content)
-        return f"__CITEREF_{num}_{citation_counter[0]}__"
+    text = text.strip()
+    if not text:
+        return ""
 
-    # Match [[n]](url) or [n](url) citation patterns
-    text = re.sub(r"\[(\[?\d+\]?)\]\(([^)]+)\)", extract_citation, text)
+    try:
+        import pypandoc
 
-    # Step 2: Handle inline links [text](url) → text (see footnote)
-    def convert_link(match: re.Match) -> str:
-        """Convert markdown link to text with footnote marker."""
-        link_text = match.group(1)
-        url = match.group(2)
-        citation_counter[0] += 1
-        key = f"__LINK_{citation_counter[0]}__"
-        citations[key] = url
-        return f"{link_text}__FNREF_{citation_counter[0]}__"
+        # Convert Markdown to LaTeX using pandoc
+        # Use 'latex' output format for body content (no document wrapper)
+        latex = pypandoc.convert_text(
+            text,
+            to="latex",
+            format="markdown",
+            extra_args=[
+                "--wrap=none",  # Don't wrap lines
+            ],
+        )
 
-    text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", convert_link, text)
+        # Clean up pandoc output
+        latex = latex.strip()
 
-    # Step 3: Convert Markdown formatting BEFORE LaTeX escaping
-    # Bold: **text** or __text__
-    bold_pattern = r"\*\*([^*]+)\*\*|__([^_]+)__"
+        # Remove pandoc-specific commands that LaTeX doesn't know
+        # \tightlist is used by pandoc for compact lists
+        latex = latex.replace(r"\tightlist", "")
 
-    def bold_replace(match: re.Match) -> str:
-        content = match.group(1) or match.group(2)
-        return f"__BOLD_START__{content}__BOLD_END__"
+        # Remove empty lines that might be left after removing commands
+        latex = re.sub(r"\n\s*\n\s*\n", "\n\n", latex)
 
-    text = re.sub(bold_pattern, bold_replace, text)
+        return latex
 
-    # Italic: *text* or _text_ (but not inside words)
-    italic_pattern = r"(?<![*_])\*([^*]+)\*(?![*_])|(?<![*_])_([^_]+)_(?![*_])"
+    except ImportError:
+        logger.warning("pypandoc not available, falling back to basic escaping")
+        return _markdown_to_latex_fallback(text)
+    except Exception as e:
+        logger.warning(f"pypandoc conversion failed: {e}, falling back to basic escaping")
+        return _markdown_to_latex_fallback(text)
 
-    def italic_replace(match: re.Match) -> str:
-        content = match.group(1) or match.group(2)
-        return f"__ITALIC_START__{content}__ITALIC_END__"
 
-    text = re.sub(italic_pattern, italic_replace, text)
+def _markdown_to_latex_fallback(text: str) -> str:
+    """
+    Fallback Markdown to LaTeX conversion when pypandoc is unavailable.
 
-    # Step 4: Now escape LaTeX special characters
+    Handles basic patterns:
+    - **bold** → \\textbf{bold}
+    - *italic* → \\textit{italic}
+    - [[n]](url) → superscript citation
+
+    Args:
+        text: Markdown-formatted text
+
+    Returns:
+        LaTeX-formatted string with basic conversion
+    """
+    # Use UUID-like placeholders that won't be affected by escape_latex
+    # (only contain alphanumeric characters)
+    BOLD_START = "XBOLDSTARTX"
+    BOLD_END = "XBOLDENDX"
+    ITALIC_START = "XITALICSTARTX"
+    ITALIC_END = "XITALICENDX"
+    CITE_PREFIX = "XCITEX"
+
+    # Step 1: Handle citation links [[n]](url) → placeholder for superscript
+    def citation_replace(match: re.Match) -> str:
+        num = match.group(1).strip("[]")
+        return f"{CITE_PREFIX}{num}{CITE_PREFIX}"
+
+    text = re.sub(r"\[\[(\d+)\]\]\([^)]+\)", citation_replace, text)
+    text = re.sub(r"\[(\d+)\]\([^)]+\)", citation_replace, text)
+
+    # Step 2: Handle regular links [text](url) → text only
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+
+    # Step 3: Bold **text** → placeholder
+    text = re.sub(r"\*\*([^*]+)\*\*", rf"{BOLD_START}\1{BOLD_END}", text)
+
+    # Step 4: Italic *text* → placeholder (not matching ** for bold)
+    text = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", rf"{ITALIC_START}\1{ITALIC_END}", text)
+
+    # Step 5: Escape LaTeX special characters
     text = escape_latex(text)
 
-    # Step 5: Restore LaTeX formatting commands
-    text = text.replace("__BOLD_START__", r"\textbf{")
-    text = text.replace("__BOLD_END__", "}")
-    text = text.replace("__ITALIC_START__", r"\textit{")
-    text = text.replace("__ITALIC_END__", "}")
+    # Step 6: Restore formatting (after escaping, placeholders are intact)
+    text = text.replace(BOLD_START, r"\textbf{")
+    text = text.replace(BOLD_END, "}")
+    text = text.replace(ITALIC_START, r"\textit{")
+    text = text.replace(ITALIC_END, "}")
 
-    # Step 6: Restore citations as superscript references
-    for i in range(1, citation_counter[0] + 1):
-        # Citation references: [n] → superscript
-        cite_ref_pattern = f"__CITEREF_(\\d+)_{i}__"
-        text = re.sub(cite_ref_pattern, r"[\\textsuperscript{\1}]", text)
-
-        # Footnote references for links
-        fn_ref = f"__FNREF_{i}__"
-        if fn_ref in text:
-            url = citations.get(f"__LINK_{i}__", "")
-            # Escape URL for LaTeX (already escaped, just add footnote)
-            text = text.replace(fn_ref, "")  # Remove marker, URL in citation
+    # Step 7: Restore citations as superscript
+    # Find all XCITEX{num}XCITEX patterns and convert to [superscript]
+    text = re.sub(
+        rf"{CITE_PREFIX}(\d+){CITE_PREFIX}",
+        r"[\\textsuperscript{\1}]",
+        text,
+    )
 
     return text
 
@@ -172,14 +242,24 @@ def escape_latex_preserve_newlines(text: str | None) -> str:
     Converts double newlines to LaTeX paragraph breaks (\\par).
     Single newlines are converted to spaces.
     Handles Markdown formatting (bold, italic, links, citations).
+    Also handles JSON-formatted fields by extracting raw_text.
 
     Args:
-        text: Input text (may contain Markdown)
+        text: Input text (may contain Markdown or JSON)
 
     Returns:
         LaTeX-safe string with preserved paragraphs and formatting
     """
     if text is None:
+        return ""
+
+    if not isinstance(text, str):
+        text = str(text)
+
+    # Extract text from JSON if applicable
+    text = _extract_text_from_json(text)
+
+    if not text:
         return ""
 
     # Step 1: Handle bullet points - convert to LaTeX itemize

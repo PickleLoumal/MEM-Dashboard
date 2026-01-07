@@ -41,6 +41,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # PDF utilities
     ghostscript \
     poppler-utils \
+    # Pandoc for Markdown to LaTeX conversion
+    pandoc \
     # Cleanup
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
