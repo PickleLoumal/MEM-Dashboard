@@ -2,3 +2,10 @@
 !.env
 !.env.*
 
+
+# Allow Cursor to access and modify .cursor/rules directory
+!.cursor/
+!.cursor/**
+!.cursor/rules/
+!.cursor/rules/**
+!.cursor/mcp.json

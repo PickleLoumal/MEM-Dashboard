@@ -2,7 +2,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ContentTypeEnum } from './ContentTypeEnum';
 /**
  * Modal content serializer
  */
@@ -44,7 +43,7 @@ export type ModalContent = {
      * * `investment-components` - Investment Components
      * * `market-analysis` - Market Analysis
      */
-    content_type: ContentTypeEnum;
+    content_type: ModalContent.content_type;
     readonly breakdown: Array<Record<string, any>>;
     /**
      * Whether to display in frontend
@@ -57,4 +56,26 @@ export type ModalContent = {
     readonly created_at: string;
     readonly updated_at: string;
 };
+export namespace ModalContent {
+    /**
+     * Specific type of content
+     *
+     * * `consumer-spending` - Consumer Spending
+     * * `motor-vehicles` - Motor Vehicles
+     * * `services-exports` - Services Exports
+     * * `goods-exports` - Goods Exports
+     * * `economic-indicators` - Economic Indicators
+     * * `investment-components` - Investment Components
+     * * `market-analysis` - Market Analysis
+     */
+    export enum content_type {
+        CONSUMER_SPENDING = 'consumer-spending',
+        MOTOR_VEHICLES = 'motor-vehicles',
+        SERVICES_EXPORTS = 'services-exports',
+        GOODS_EXPORTS = 'goods-exports',
+        ECONOMIC_INDICATORS = 'economic-indicators',
+        INVESTMENT_COMPONENTS = 'investment-components',
+        MARKET_ANALYSIS = 'market-analysis',
+    }
+}
 

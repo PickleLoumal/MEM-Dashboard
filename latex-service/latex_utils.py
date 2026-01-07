@@ -66,29 +66,168 @@ def escape_latex(text: str | None) -> str:
     return text
 
 
-def escape_latex_preserve_newlines(text: str | None) -> str:
+def markdown_to_latex(text: str | None) -> str:
     """
-    Escape LaTeX characters while preserving paragraph breaks.
+    Convert Markdown formatting to LaTeX before escaping.
 
-    Converts double newlines to LaTeX paragraph breaks (\\par).
-    Single newlines are converted to spaces.
+    Handles common Markdown syntax from AI-generated content:
+    - **bold** → \\textbf{bold}
+    - *italic* → \\textit{italic}
+    - [text](url) → text\\footnote{url}
+    - [[n]](url) → citation format
+    - - list items → \\item
 
     Args:
-        text: Input text
+        text: Markdown-formatted text
 
     Returns:
-        LaTeX-safe string with preserved paragraphs
+        LaTeX-formatted string
     """
     if text is None:
         return ""
 
-    # Split into paragraphs
+    if not isinstance(text, str):
+        text = str(text)
+
+    # Step 1: Extract and protect URLs/citations before any processing
+    # Store citations for footnotes: [[n]](url) or [n](url)
+    citations: dict[str, str] = {}
+    citation_counter = [0]  # Use list to allow mutation in closure
+
+    def extract_citation(match: re.Match) -> str:
+        """Extract citation and store URL for footnote."""
+        bracket_content = match.group(1)  # The [n] or [[n]] content
+        url = match.group(2)
+        citation_counter[0] += 1
+        key = f"__CITE_{citation_counter[0]}__"
+        citations[key] = url
+        # Return just the citation number in superscript
+        # Extract just the number from [[n]] or [n]
+        num = re.sub(r"[\[\]]", "", bracket_content)
+        return f"__CITEREF_{num}_{citation_counter[0]}__"
+
+    # Match [[n]](url) or [n](url) citation patterns
+    text = re.sub(r"\[(\[?\d+\]?)\]\(([^)]+)\)", extract_citation, text)
+
+    # Step 2: Handle inline links [text](url) → text (see footnote)
+    def convert_link(match: re.Match) -> str:
+        """Convert markdown link to text with footnote marker."""
+        link_text = match.group(1)
+        url = match.group(2)
+        citation_counter[0] += 1
+        key = f"__LINK_{citation_counter[0]}__"
+        citations[key] = url
+        return f"{link_text}__FNREF_{citation_counter[0]}__"
+
+    text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", convert_link, text)
+
+    # Step 3: Convert Markdown formatting BEFORE LaTeX escaping
+    # Bold: **text** or __text__
+    bold_pattern = r"\*\*([^*]+)\*\*|__([^_]+)__"
+
+    def bold_replace(match: re.Match) -> str:
+        content = match.group(1) or match.group(2)
+        return f"__BOLD_START__{content}__BOLD_END__"
+
+    text = re.sub(bold_pattern, bold_replace, text)
+
+    # Italic: *text* or _text_ (but not inside words)
+    italic_pattern = r"(?<![*_])\*([^*]+)\*(?![*_])|(?<![*_])_([^_]+)_(?![*_])"
+
+    def italic_replace(match: re.Match) -> str:
+        content = match.group(1) or match.group(2)
+        return f"__ITALIC_START__{content}__ITALIC_END__"
+
+    text = re.sub(italic_pattern, italic_replace, text)
+
+    # Step 4: Now escape LaTeX special characters
+    text = escape_latex(text)
+
+    # Step 5: Restore LaTeX formatting commands
+    text = text.replace("__BOLD_START__", r"\textbf{")
+    text = text.replace("__BOLD_END__", "}")
+    text = text.replace("__ITALIC_START__", r"\textit{")
+    text = text.replace("__ITALIC_END__", "}")
+
+    # Step 6: Restore citations as superscript references
+    for i in range(1, citation_counter[0] + 1):
+        # Citation references: [n] → superscript
+        cite_ref_pattern = f"__CITEREF_(\\d+)_{i}__"
+        text = re.sub(cite_ref_pattern, r"[\\textsuperscript{\1}]", text)
+
+        # Footnote references for links
+        fn_ref = f"__FNREF_{i}__"
+        if fn_ref in text:
+            url = citations.get(f"__LINK_{i}__", "")
+            # Escape URL for LaTeX (already escaped, just add footnote)
+            text = text.replace(fn_ref, "")  # Remove marker, URL in citation
+
+    return text
+
+
+def escape_latex_preserve_newlines(text: str | None) -> str:
+    """
+    Convert Markdown to LaTeX and preserve paragraph breaks.
+
+    Converts double newlines to LaTeX paragraph breaks (\\par).
+    Single newlines are converted to spaces.
+    Handles Markdown formatting (bold, italic, links, citations).
+
+    Args:
+        text: Input text (may contain Markdown)
+
+    Returns:
+        LaTeX-safe string with preserved paragraphs and formatting
+    """
+    if text is None:
+        return ""
+
+    # Step 1: Handle bullet points - convert to LaTeX itemize
+    lines = text.split("\n")
+    processed_lines = []
+    in_list = False
+
+    for line in lines:
+        stripped = line.strip()
+        # Check for markdown bullet points
+        if stripped.startswith("- ") or stripped.startswith("* "):
+            if not in_list:
+                processed_lines.append("\\begin{itemize}[leftmargin=*,nosep]")
+                in_list = True
+            # Convert bullet to \item
+            item_content = stripped[2:]  # Remove "- " or "* "
+            processed_lines.append(f"\\item {markdown_to_latex(item_content)}")
+        else:
+            if in_list and stripped:
+                # End of list
+                processed_lines.append("\\end{itemize}")
+                in_list = False
+            processed_lines.append(line)
+
+    if in_list:
+        processed_lines.append("\\end{itemize}")
+
+    text = "\n".join(processed_lines)
+
+    # Step 2: Split into paragraphs
     paragraphs = re.split(r"\n\s*\n", text)
 
-    # Escape each paragraph and join with \par
-    escaped_paragraphs = [escape_latex(p.replace("\n", " ").strip()) for p in paragraphs]
+    # Step 3: Process each paragraph
+    escaped_paragraphs = []
+    for p in paragraphs:
+        p = p.strip()
+        if not p:
+            continue
 
-    return r"\par ".join(p for p in escaped_paragraphs if p)
+        # Check if this is an itemize block (already processed)
+        if p.startswith("\\begin{itemize}") or "\\item" in p:
+            escaped_paragraphs.append(p)
+        else:
+            # Regular paragraph: convert markdown and escape
+            escaped = markdown_to_latex(p.replace("\n", " "))
+            escaped_paragraphs.append(escaped)
+
+    return r"\par ".join(escaped_paragraphs)
 
 
 def format_number(value: float | int | None, decimals: int = 2) -> str:

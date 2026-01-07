@@ -2,7 +2,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { PDFTaskStatusEnum } from './PDFTaskStatusEnum';
 /**
  * Serializer for PDF task status responses.
  */
@@ -34,7 +33,7 @@ export type PDFTask = {
      * * `completed` - Completed
      * * `failed` - Failed
      */
-    readonly status: PDFTaskStatusEnum;
+    readonly status: PDFTask.status;
     /**
      * Human-readable status
      */
@@ -65,4 +64,26 @@ export type PDFTask = {
      */
     readonly processing_time_ms: number | null;
 };
+export namespace PDFTask {
+    /**
+     * Current task status
+     *
+     * * `pending` - Pending
+     * * `processing` - Processing
+     * * `generating_charts` - Generating Charts
+     * * `compiling` - Compiling LaTeX
+     * * `uploading` - Uploading to S3
+     * * `completed` - Completed
+     * * `failed` - Failed
+     */
+    export enum status {
+        PENDING = 'pending',
+        PROCESSING = 'processing',
+        GENERATING_CHARTS = 'generating_charts',
+        COMPILING = 'compiling',
+        UPLOADING = 'uploading',
+        COMPLETED = 'completed',
+        FAILED = 'failed',
+    }
+}
 

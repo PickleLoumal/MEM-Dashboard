@@ -38,8 +38,7 @@ urlpatterns = [
     path("api/policy/", include("policy_updates.urls")),
     # CSI300 API路由
     path("api/csi300/", include("csi300.urls")),
-    # CSI300 Django模板路由 (兼容旧版本)
-    path("csi300/", include("csi300.urls", namespace="csi300_legacy")),
+    # NOTE: Legacy /csi300/ route removed - all frontend should use /api/csi300/
     # Stock data API路由 (AkShare integration)
     path("api/stocks/", include("stocks.urls")),
     # Refinitiv API路由

@@ -1,17 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { GlobalNav } from '@shared/components/GlobalNav';
+import {
+  Csi300Service,
+  OpenAPI,
+  type CSI300FilterOptions,
+} from '@shared/api/generated';
 import '@shared/styles/main.css';
 import './styles.css';
 
-type FilterOptionsResponse = {
-  total_count?: number;
-  company_count?: number;
-  total_companies?: number;
-  im_sectors?: string[];
-  im_codes?: string[];
-  industries?: string[];
-};
+// Configure OpenAPI base URL BEFORE any API calls
+// Production: empty string (generated paths already include /api prefix, CloudFront proxies /api/* to ALB)
+// Development: localhost:8001
+OpenAPI.BASE = (
+  import.meta.env.VITE_API_BASE ??
+  (import.meta.env.MODE === 'development' ? 'http://localhost:8001' : '')
+).replace(/\/$/, '');
 
 type Filters = {
   im_sector: string;
@@ -20,40 +24,19 @@ type Filters = {
   industry_search: string;
 };
 
-// 生产环境使用 /api（CloudFront 代理 /api/* -> ALB），开发环境默认 localhost:8001
-const API_BASE = (import.meta.env.VITE_API_BASE ?? (import.meta.env.MODE === 'development' ? 'http://localhost:8001' : '/api')).replace(/\/$/, '');
-
-function buildFilterOptionsUrl(params?: Record<string, string>) {
-  const query = new URLSearchParams();
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) query.append(key, value);
-    });
-  }
-  const qs = query.toString();
-  return `${API_BASE}/csi300/api/companies/filter_options/${qs ? `?${qs}` : ''}`;
-}
-
-async function fetchFilterOptions(params?: Record<string, string>): Promise<FilterOptionsResponse> {
-  const url = buildFilterOptionsUrl(params);
-  const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-  });
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-  }
-  return res.json();
-}
-
 function useFilterOptions(initialSector: string) {
-  const [data, setData] = useState<FilterOptionsResponse | null>(null);
+  const [data, setData] = useState<CSI300FilterOptions | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let ignore = false;
     setLoading(true);
-    fetchFilterOptions(initialSector ? { im_sector: initialSector } : undefined)
+
+    Csi300Service.apiCsi300ApiCompaniesFilterOptionsRetrieve(
+      initialSector || undefined,
+      undefined // region
+    )
       .then((res) => {
         if (ignore) return;
         setData(res);
@@ -76,25 +59,21 @@ function useFilterOptions(initialSector: string) {
   return { data, loading, error };
 }
 
-function getTotalCount(data: FilterOptionsResponse | null) {
+function getTotalCount(data: CSI300FilterOptions | null): number | null {
   if (!data) return null;
-  return data.total_count ?? data.company_count ?? data.total_companies ?? null;
+  // Note: CSI300FilterOptions doesn't have total_count, but we can estimate from market_cap_range
+  // or fetch company count separately if needed
+  return null;
 }
 
-function deriveSectors(data: FilterOptionsResponse | null) {
+function deriveSectors(data: CSI300FilterOptions | null): string[] {
   if (!data) return [];
-  if (data.im_sectors?.length) return data.im_sectors;
-  if (data.im_codes?.length) return data.im_codes;
-  if (data.industries?.length) return data.industries;
-  return [];
+  return data.im_sectors || [];
 }
 
-function deriveIndustries(data: FilterOptionsResponse | null) {
+function deriveIndustries(data: CSI300FilterOptions | null): string[] {
   if (!data) return [];
-  if (data.industries?.length) return data.industries;
-  if (data.im_sectors?.length) return data.im_sectors;
-  if (data.im_codes?.length) return data.im_codes;
-  return [];
+  return data.industries || [];
 }
 
 function FilterPage() {
@@ -125,7 +104,6 @@ function FilterPage() {
   // In Vite dev mode, pages are at /src/pages/xxx/index.html
   // In production build, they're at /xxx.html (or configured output)
   const getBrowserPath = () => {
-    // Use MODE instead of DEV (more reliable in production builds)
     const isDev = import.meta.env.MODE === 'development';
     return isDev ? '/src/pages/browser/index.html' : '/browser.html';
   };
@@ -151,10 +129,12 @@ function FilterPage() {
     setFilters((prev) => ({ ...prev, im_sector: value, industry: '' }));
     setIndustryLoading(true);
     try {
-      const res = await fetchFilterOptions(value ? { im_sector: value } : undefined);
+      const res = await Csi300Service.apiCsi300ApiCompaniesFilterOptionsRetrieve(
+        value || undefined,
+        undefined
+      );
       setIndustryOptions(deriveIndustries(res));
     } catch (err) {
-      // Keep previous options on error
       console.error('Failed to load industry options', err);
     } finally {
       setIndustryLoading(false);
@@ -166,90 +146,94 @@ function FilterPage() {
       <GlobalNav />
       <main className="page-shell app-shell">
         <div className="page-header">
-        <h1 className="page-title">Chinese Stock Dashboard</h1>
-        <p className="page-subtitle">Filter and browse Chinese stock companies</p>
-      </div>
-
-      <div className="filter-card-wrapper">
-        <div className="filter-container app-card">
-          <p className="total-count" id="totalCount">
-            {loading ? 'Loading total count...' : totalCount ? `Total ${totalCount} companies in database` : 'Chinese Stock Dashboard filters ready'}
-          </p>
-
-          {error ? <div className="error app-notice">{error}</div> : null}
-
-          <form className="filter-form" onSubmit={handleSubmit}>
-            <div className="filter-grid app-form-grid app-form-grid--two">
-              <div className="filter-group app-form-field">
-                <label className="filter-label app-label">Industry Matrix Sector</label>
-                <select
-                  name="im_sector"
-                  value={filters.im_sector}
-                  onChange={handleSectorChange}
-                  className="filter-select app-select"
-                >
-                  <option value="">All Industry Matrix Sectors</option>
-                  {sectorOptions.map((sector) => (
-                    <option value={sector} key={sector}>
-                      {sector}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="filter-group app-form-field">
-                <label className="filter-label app-label">Industry within selected sector</label>
-                <select
-                  name="industry"
-                  value={filters.industry}
-                  onChange={onChange('industry')}
-                  className="filter-select app-select"
-                  disabled={industryLoading}
-                >
-                  <option value="">{industryLoading ? 'Loading...' : 'All Industries'}</option>
-                  {industryOptions.map((industry) => (
-                    <option value={industry} key={industry}>
-                      {industry}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="filter-group app-form-field">
-                <label className="filter-label app-label">Search Companies</label>
-                <input
-                  type="text"
-                  name="company_search"
-                  value={filters.company_search}
-                  onChange={onChange('company_search')}
-                  className="filter-input app-input"
-                  placeholder="Search by company name or ticker..."
-                />
-              </div>
-
-              <div className="filter-group app-form-field">
-                <label className="filter-label app-label">Search by Industry</label>
-                <input
-                  type="text"
-                  name="industry_search"
-                  value={filters.industry_search}
-                  onChange={onChange('industry_search')}
-                  className="filter-input app-input"
-                  placeholder="Search by industry name..."
-                />
-              </div>
-            </div>
-
-            <div className="filter-actions app-actions app-actions--center">
-              <button type="button" onClick={handleClear} className="btn btn-secondary app-button app-button--secondary">
-                Clear Filters
-              </button>
-              <button type="submit" className="btn btn-primary app-button app-button--primary">
-                Apply Filters
-              </button>
-            </div>
-          </form>
+          <h1 className="page-title">Chinese Stock Dashboard</h1>
+          <p className="page-subtitle">Filter and browse Chinese stock companies</p>
         </div>
+
+        <div className="filter-card-wrapper">
+          <div className="filter-container app-card">
+            <p className="total-count" id="totalCount">
+              {loading
+                ? 'Loading...'
+                : totalCount
+                  ? `Total ${totalCount} companies in database`
+                  : 'Chinese Stock Dashboard filters ready'}
+            </p>
+
+            {error ? <div className="error app-notice">{error}</div> : null}
+
+            <form className="filter-form" onSubmit={handleSubmit}>
+              <div className="filter-grid app-form-grid app-form-grid--two">
+                <div className="filter-group app-form-field">
+                  <label className="filter-label app-label">Industry Matrix Sector</label>
+                  <select
+                    name="im_sector"
+                    value={filters.im_sector}
+                    onChange={handleSectorChange}
+                    className="filter-select app-select"
+                  >
+                    <option value="">All Industry Matrix Sectors</option>
+                    {sectorOptions.map((sector) => (
+                      <option value={sector} key={sector}>
+                        {sector}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="filter-group app-form-field">
+                  <label className="filter-label app-label">Industry within selected sector</label>
+                  <select
+                    name="industry"
+                    value={filters.industry}
+                    onChange={onChange('industry')}
+                    className="filter-select app-select"
+                    disabled={industryLoading}
+                  >
+                    <option value="">{industryLoading ? 'Loading...' : 'All Industries'}</option>
+                    {industryOptions.map((industry) => (
+                      <option value={industry} key={industry}>
+                        {industry}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="filter-group app-form-field">
+                  <label className="filter-label app-label">Search Companies</label>
+                  <input
+                    type="text"
+                    name="company_search"
+                    value={filters.company_search}
+                    onChange={onChange('company_search')}
+                    className="filter-input app-input"
+                    placeholder="Search by company name or ticker..."
+                  />
+                </div>
+
+                <div className="filter-group app-form-field">
+                  <label className="filter-label app-label">Search by Industry</label>
+                  <input
+                    type="text"
+                    name="industry_search"
+                    value={filters.industry_search}
+                    onChange={onChange('industry_search')}
+                    className="filter-input app-input"
+                    placeholder="Search by industry name..."
+                  />
+                </div>
+              </div>
+
+              <div className="filter-actions app-actions app-actions--center">
+                <button type="button" onClick={handleClear} className="btn btn-secondary app-button app-button--secondary">
+                  Clear Filters
+                </button>
+                <button type="submit" className="btn btn-primary app-button app-button--primary">
+                  Apply Filters
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </main>
     </>

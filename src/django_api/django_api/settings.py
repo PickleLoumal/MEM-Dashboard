@@ -79,6 +79,17 @@ DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "*"]
 
+# =============================================================================
+# Proxy SSL Configuration (CloudFront/ALB)
+# =============================================================================
+# CloudFront terminates HTTPS and forwards requests to ALB/ECS as HTTP.
+# This setting tells Django to trust the X-Forwarded-Proto header to determine
+# if the original request was HTTPS. Required for:
+# - request.is_secure() to return True for HTTPS requests
+# - WebSocket URLs to use wss:// instead of ws://
+# - CSRF protection to work correctly
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 
 # Application definition
 
@@ -234,7 +245,14 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API for Dashboard, including CSI300, FRED (US/JP), and BEA data.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
-    # OTHER SETTINGS
+    # Tag endpoints by Django app name for cleaner TypeScript service generation
+    # This ensures openapi-typescript-codegen generates Csi300Service, FredUsService, etc.
+    "PREPROCESSING_HOOKS": [
+        "django_api.openapi_hooks.preprocess_schema",
+    ],
+    "POSTPROCESSING_HOOKS": [
+        "django_api.openapi_hooks.postprocess_schema",
+    ],
 }
 
 # CORS配置 - 允许前端访问
@@ -361,22 +379,24 @@ else:
 ASGI_APPLICATION = "django_api.asgi.application"
 
 # Channel layer configuration
-# In production, use Redis; in development, can use in-memory layer
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+# In production, use Redis; in development, use in-memory layer by default
+REDIS_HOST = os.getenv("REDIS_HOST", "")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [(REDIS_HOST, int(REDIS_PORT))],
-            "prefix": "pdf_ws",
+# Use Redis in production (when REDIS_HOST is set), otherwise use in-memory layer
+if REDIS_HOST:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [(REDIS_HOST, int(REDIS_PORT))],
+                "prefix": "pdf_ws",
+            },
         },
-    },
-}
-
-# Fallback to in-memory channel layer if Redis not available (development only)
-if DEBUG and os.getenv("USE_INMEMORY_CHANNELS", "false").lower() == "true":
+    }
+else:
+    # In-memory channel layer for local development (no Redis required)
+    # Note: This only works within a single process, which is fine for development
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",

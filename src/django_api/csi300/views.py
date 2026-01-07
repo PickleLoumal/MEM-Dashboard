@@ -390,6 +390,58 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
             return False
         return region.lower() == "hong kong"
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="region",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Filter by region (e.g., 'Mainland China', 'Hong Kong')",
+            ),
+            OpenApiParameter(
+                name="im_sector",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Filter by Industry Matrix sector",
+            ),
+            OpenApiParameter(
+                name="industry",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Filter by industry name",
+            ),
+            OpenApiParameter(
+                name="gics_industry",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Filter by GICS industry (partial match)",
+            ),
+            OpenApiParameter(
+                name="search",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Search by company name or ticker",
+            ),
+            OpenApiParameter(
+                name="industry_search",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Search by industry name (partial match)",
+            ),
+            OpenApiParameter(
+                name="market_cap_min",
+                type=OpenApiTypes.NUMBER,
+                location=OpenApiParameter.QUERY,
+                description="Minimum market cap filter",
+            ),
+            OpenApiParameter(
+                name="market_cap_max",
+                type=OpenApiTypes.NUMBER,
+                location=OpenApiParameter.QUERY,
+                description="Maximum market cap filter",
+            ),
+        ],
+    )
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """获取公司列表或 API 概览"""
         # 检查是否请求 API 概览

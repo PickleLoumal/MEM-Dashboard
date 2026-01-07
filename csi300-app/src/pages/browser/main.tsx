@@ -4,21 +4,22 @@ import { GlobalNav } from '@shared/components/GlobalNav';
 import { ColumnSelector } from '@shared/components/ColumnSelector/ColumnSelector';
 import { columnManifest, Formatters, FieldMap, getCellClass } from '@shared/lib/column-manifest';
 import type { ColumnChangeData, ColumnDefinition } from '@shared/components/ColumnSelector/types';
+import {
+  Csi300Service,
+  OpenAPI,
+  type CSI300FilterOptions,
+  type CSI300CompanyList,
+} from '@shared/api/generated';
 import '@shared/styles/main.css';
 import './styles.css';
 
-type FilterOptionsResponse = {
-  total_count?: number;
-  company_count?: number;
-  total_companies?: number;
-  im_sectors?: string[];
-  im_codes?: string[];
-  industries?: string[];
-  regions?: string[];
-  available_regions?: string[];
-  region_options?: string[];
-  region_counts?: Record<string, number>;
-};
+// Configure OpenAPI base URL BEFORE any API calls
+// Production: empty string (generated paths already include /api prefix, CloudFront proxies /api/* to ALB)
+// Development: localhost:8001
+OpenAPI.BASE = (
+  import.meta.env.VITE_API_BASE ??
+  (import.meta.env.MODE === 'development' ? 'http://localhost:8001' : '')
+).replace(/\/$/, '');
 
 type Filters = {
   im_sector: string;
@@ -28,109 +29,38 @@ type Filters = {
   region: string;
 };
 
-type Company = {
-  id: number | string;
-  name: string;
-  ticker: string;
-  region?: string;
-  im_sector?: string;
-  industry?: string;
-  market_cap_usd?: number;
-  price?: number;
-  pe_ratio_trailing?: number;
-  [key: string]: unknown;
-};
-
 // Column type now imported from types.ts
 // Default columns derived from columnManifest
 const DEFAULT_COLUMNS = columnManifest.columns.filter(col => col.defaultVisible);
 
-// 生产环境使用 /api（CloudFront 代理 /api/* -> ALB），开发环境默认 localhost:8001
-const API_BASE = (import.meta.env.VITE_API_BASE ?? (import.meta.env.MODE === 'development' ? 'http://localhost:8001' : '/api')).replace(/\/$/, '');
-const FILTER_ENDPOINT = '/csi300/api/companies/filter_options/';
-const COMPANIES_ENDPOINT = '/csi300/api/companies/';
 const SEARCH_DEBOUNCE_MS = 300;
 
-function buildFilterOptionsUrl(params?: Record<string, string>) {
-  const query = new URLSearchParams();
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => value && query.append(key, value));
+function deriveRegions(data: CSI300FilterOptions | null): string[] {
+  if (!data?.regions?.length) {
+    return ['Mainland China', 'Hong Kong'];
   }
-  const qs = query.toString();
-  return `${API_BASE}${FILTER_ENDPOINT}${qs ? `?${qs}` : ''}`;
+  return [...new Set(data.regions.filter(Boolean))].sort((a, b) =>
+    a.toLowerCase().localeCompare(b.toLowerCase())
+  );
 }
 
-async function fetchFilterOptions(params?: Record<string, string>): Promise<FilterOptionsResponse> {
-  const res = await fetch(buildFilterOptionsUrl(params), {
-    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-  return res.json();
-}
-
-async function fetchCompanies(filters: Partial<Filters> & { page: number; page_size: number }) {
-  const qs = new URLSearchParams();
-  if (filters.im_sector) qs.append('im_sector', filters.im_sector);
-  if (filters.industry) qs.append('industry', filters.industry);
-  if (filters.company_search) qs.append('search', filters.company_search);
-  if (filters.industry_search) qs.append('industry_search', filters.industry_search);
-  if (filters.region) qs.append('region', filters.region.replace(/\s*\(.*\)$/, ''));
-  qs.append('page', String(filters.page));
-  qs.append('page_size', String(filters.page_size));
-  const url = `${API_BASE}${COMPANIES_ENDPOINT}?${qs.toString()}`;
-  const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-  return res.json();
-}
-
-function deriveCount(data: FilterOptionsResponse | null) {
-  if (!data) return null;
-  return data.total_count ?? data.company_count ?? data.total_companies ?? null;
-}
-
-function dedupeSorted(values: string[] | undefined) {
-  return Array.from(new Set((values || []).filter(Boolean))).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-}
-
-function deriveRegions(data: FilterOptionsResponse | null) {
-  const set = new Set<string>();
-  const pushArr = (arr?: string[]) => arr?.forEach((v) => v && set.add(v));
-  if (data) {
-    pushArr(data.regions);
-    pushArr(data.available_regions);
-    pushArr(data.region_options);
-    if (data.region_counts) Object.keys(data.region_counts).forEach((r) => r && set.add(r));
-  }
-  if (!set.size) ['Mainland China', 'Hong Kong'].forEach((r) => set.add(r));
-  return dedupeSorted(Array.from(set));
-}
-
-function deriveSectors(data: FilterOptionsResponse | null) {
+function deriveSectors(data: CSI300FilterOptions | null): string[] {
   if (!data) return [];
-  if (data.im_sectors?.length) return data.im_sectors;
-  if (data.im_codes?.length) return data.im_codes;
-  if (data.industries?.length) return data.industries;
-  return [];
+  return data.im_sectors || [];
 }
 
-function deriveIndustries(data: FilterOptionsResponse | null) {
+function deriveIndustries(data: CSI300FilterOptions | null): string[] {
   if (!data) return [];
-  if (data.industries?.length) return data.industries;
-  if (data.im_sectors?.length) return data.im_sectors;
-  if (data.im_codes?.length) return data.im_codes;
-  return [];
+  return data.industries || [];
 }
 
-
-function renderCellValue(column: ColumnDefinition, company: Company): React.ReactNode {
+function renderCellValue(column: ColumnDefinition, company: CSI300CompanyList): React.ReactNode {
   const field = FieldMap[column.id] || column.id;
-  let rawValue = company[field];
+  let rawValue = (company as Record<string, unknown>)[field];
 
   // Fallback for sector
   if (column.id === 'sector' && !rawValue) {
-    rawValue = company.industry || (company as any).im_code || '-';
+    rawValue = company.industry || '-';
   }
 
   if (rawValue === null || rawValue === undefined || rawValue === '') {
@@ -151,22 +81,20 @@ function renderCellValue(column: ColumnDefinition, company: Company): React.Reac
   }
 
   // Apply colorization for price and profitability metrics
-  // Legacy behavior: colorize if column.colorize is true OR if it's price column
   if (column.colorize || (column.id.includes('price') && !column.id.includes('high') && !column.id.includes('low'))) {
-      const num = parseFloat(String(rawValue));
-      if (!isNaN(num)) {
-        // Green for positive, Red for negative
-        const color = num >= 0 ? '#059669' : '#dc2626';
-        return <span style={{ color }}>{formatted}</span>;
-      }
+    const num = parseFloat(String(rawValue));
+    if (!isNaN(num)) {
+      const color = num >= 0 ? '#059669' : '#dc2626';
+      return <span style={{ color }}>{formatted}</span>;
+    }
   }
 
   // Handle max display for large values
   if (column.maxDisplay && typeof rawValue === 'number' && rawValue > column.maxDisplay) {
-      return <span title={`${formatted} - ${column.tooltip || 'Value exceeds display limit'}`}>{column.maxDisplay}+</span>;
+    return <span title={`${formatted} - ${column.tooltip || 'Value exceeds display limit'}`}>{column.maxDisplay}+</span>;
   }
 
-  // Chip format (legacy implementation was inline style)
+  // Chip format
   if (column.format === 'chip') {
     return <span style={{ background: '#f3f4f6', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>{formatted}</span>;
   }
@@ -182,15 +110,13 @@ function getRegionBadge(region?: string) {
   return { label: region, attr: 'unknown' };
 }
 
-// GlobalNav and ColumnSelector are now React components
-
-// 分页组件 - 与旧版一致
+// Pagination component
 function Pagination({ page, pages, onPageChange }: { page: number; pages: number; onPageChange: (p: number) => void }) {
   if (pages <= 1) return null;
 
   const maxPagesToShow = 5;
   let startPage = Math.max(1, page - Math.floor(maxPagesToShow / 2));
-  let endPage = Math.min(pages, startPage + maxPagesToShow - 1);
+  const endPage = Math.min(pages, startPage + maxPagesToShow - 1);
   if (endPage - startPage + 1 < maxPagesToShow) {
     startPage = Math.max(1, endPage - maxPagesToShow + 1);
   }
@@ -223,7 +149,6 @@ function Pagination({ page, pages, onPageChange }: { page: number; pages: number
 
 
 function BrowserPage() {
-
   const [filters, setFilters] = useState<Filters>({
     im_sector: '',
     industry: '',
@@ -235,12 +160,12 @@ function BrowserPage() {
   const [pendingIndustrySearch, setPendingIndustrySearch] = useState('');
   const searchDebounceRef = useRef<number | null>(null);
   const industrySearchDebounceRef = useRef<number | null>(null);
-  const [filterData, setFilterData] = useState<FilterOptionsResponse | null>(null);
+  const [filterData, setFilterData] = useState<CSI300FilterOptions | null>(null);
   const [industryOptions, setIndustryOptions] = useState<string[]>([]);
   const [regions, setRegions] = useState<string[]>([]);
   const [loadingFilters, setLoadingFilters] = useState(false);
 
-  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companies, setCompanies] = useState<CSI300CompanyList[]>([]);
   const [totalResults, setTotalResults] = useState(0);
   const [page, setPage] = useState(1);
   const pageSize = 20;
@@ -258,7 +183,7 @@ function BrowserPage() {
     setPinnedColumns(data.pinnedColumns);
   }, []);
 
-  // 初始解析 URL
+  // Parse URL on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const next: Filters = {
@@ -273,11 +198,15 @@ function BrowserPage() {
     setPendingIndustrySearch(next.industry_search);
   }, []);
 
-  // 拉取筛选项
+  // Fetch filter options using generated API
   useEffect(() => {
     let ignore = false;
     setLoadingFilters(true);
-    fetchFilterOptions(filters.im_sector ? { im_sector: filters.im_sector } : undefined)
+
+    Csi300Service.apiCsi300ApiCompaniesFilterOptionsRetrieve(
+      filters.im_sector || undefined,
+      undefined // region
+    )
       .then((data) => {
         if (ignore) return;
         setFilterData(data);
@@ -286,49 +215,57 @@ function BrowserPage() {
       })
       .catch((err) => {
         if (ignore) return;
-        setError(err instanceof Error ? err.message : '筛选项加载失败');
+        setError(err instanceof Error ? err.message : 'Failed to load filter options');
       })
       .finally(() => {
         if (ignore) return;
         setLoadingFilters(false);
       });
+
     return () => {
       ignore = true;
     };
   }, [filters.im_sector]);
 
-  // 拉取公司数据
+  // Fetch companies using generated API
   useEffect(() => {
     let ignore = false;
     setLoading(true);
     setError(null);
-    fetchCompanies({ ...filters, page, page_size: pageSize })
+
+    // Clean region value (remove count suffix like "Hong Kong (123)")
+    const cleanRegion = filters.region ? filters.region.replace(/\s*\(.*\)$/, '') : undefined;
+
+    Csi300Service.apiCsi300ApiCompaniesList(
+      undefined, // gicsIndustry
+      filters.im_sector || undefined,
+      filters.industry || undefined,
+      filters.industry_search || undefined,
+      undefined, // marketCapMax
+      undefined, // marketCapMin
+      page,
+      pageSize,
+      cleanRegion,
+      filters.company_search || undefined
+    )
       .then((res) => {
         if (ignore) return;
-        if (Array.isArray(res)) {
-          setCompanies(res);
-          setTotalResults(res.length);
-        } else if (res?.results) {
-          setCompanies(res.results);
-          setTotalResults(res.count || 0);
-        } else {
-          setError('Unexpected response format');
-        }
+        setCompanies(res.results || []);
+        setTotalResults(res.count || 0);
       })
       .catch((err) => {
         if (ignore) return;
-        setError(err instanceof Error ? err.message : '加载公司列表失败');
+        setError(err instanceof Error ? err.message : 'Failed to load companies');
       })
       .finally(() => {
         if (ignore) return;
         setLoading(false);
       });
+
     return () => {
       ignore = true;
     };
   }, [filters, page]);
-
-  const totalCount = useMemo(() => deriveCount(filterData), [filterData]);
 
   const sectorOptions = useMemo(() => deriveSectors(filterData), [filterData]);
 
@@ -344,7 +281,10 @@ function BrowserPage() {
     setPage(1);
     try {
       setLoadingFilters(true);
-      const res = await fetchFilterOptions(value ? { im_sector: value } : undefined);
+      const res = await Csi300Service.apiCsi300ApiCompaniesFilterOptionsRetrieve(
+        value || undefined,
+        undefined
+      );
       setFilterData(res);
       setIndustryOptions(deriveIndustries(res));
       setRegions(deriveRegions(res));
@@ -354,6 +294,7 @@ function BrowserPage() {
       setLoadingFilters(false);
     }
   };
+
   const resultsCount = loading ? 'Loading...' : `${totalResults} companies`;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -387,6 +328,7 @@ function BrowserPage() {
     return [...pinned, ...rest];
   }, [columns, pinnedColumns]);
 
+  // Debounce company search
   useEffect(() => {
     if (searchDebounceRef.current) window.clearTimeout(searchDebounceRef.current);
     searchDebounceRef.current = window.setTimeout(() => {
@@ -398,6 +340,7 @@ function BrowserPage() {
     };
   }, [pendingCompanySearch]);
 
+  // Debounce industry search
   useEffect(() => {
     if (industrySearchDebounceRef.current) window.clearTimeout(industrySearchDebounceRef.current);
     industrySearchDebounceRef.current = window.setTimeout(() => {
@@ -417,208 +360,208 @@ function BrowserPage() {
           <h1 className="page-title">Chinese Stock Search Results</h1>
         </div>
 
-      {error ? <div className="error app-notice">{error}</div> : null}
+        {error ? <div className="error app-notice">{error}</div> : null}
 
-      <form className="filter-section app-card" onSubmit={handleSubmit}>
-        <div className="filter-grid app-form-grid app-form-grid--two">
-          <div className="filter-group app-form-field">
-            <label className="filter-label app-label">Industry Matrix Sector</label>
-            <select
-              name="im_sector"
-              value={filters.im_sector}
-              onChange={handleSectorChange}
-              className="filter-select app-select"
-            >
-              <option value="">All Industry Matrix Sectors</option>
-              {sectorOptions.map((sector) => (
-                <option key={sector} value={sector}>
-                  {sector}
-                </option>
-              ))}
-            </select>
+        <form className="filter-section app-card" onSubmit={handleSubmit}>
+          <div className="filter-grid app-form-grid app-form-grid--two">
+            <div className="filter-group app-form-field">
+              <label className="filter-label app-label">Industry Matrix Sector</label>
+              <select
+                name="im_sector"
+                value={filters.im_sector}
+                onChange={handleSectorChange}
+                className="filter-select app-select"
+              >
+                <option value="">All Industry Matrix Sectors</option>
+                {sectorOptions.map((sector) => (
+                  <option key={sector} value={sector}>
+                    {sector}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-group app-form-field">
+              <label className="filter-label app-label">Region</label>
+              <select
+                name="region"
+                value={filters.region}
+                onChange={onFilterChange('region')}
+                className="filter-select app-select"
+              >
+                <option value="">All Regions</option>
+                {regions.map((region) => (
+                  <option key={region} value={region}>
+                    {region}
+                  </option>
+                ))}
+              </select>
+              <p className="filter-help">Hong Kong reflects the latest H-shares dataset.</p>
+            </div>
+
+            <div className="filter-group app-form-field">
+              <label className="filter-label app-label">Industry within selected sector</label>
+              <select
+                name="industry"
+                value={filters.industry}
+                onChange={onFilterChange('industry')}
+                className="filter-select app-select"
+                disabled={loadingFilters}
+              >
+                <option value="">{loadingFilters ? 'Loading...' : 'All Industries'}</option>
+                {industryOptions.map((ind) => (
+                  <option key={ind} value={ind}>
+                    {ind}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-group app-form-field">
+              <label className="filter-label app-label">Search by Industry</label>
+              <input
+                type="text"
+                name="industry_search"
+                value={pendingIndustrySearch}
+                onChange={(e) => setPendingIndustrySearch(e.target.value)}
+                className="filter-input app-input"
+                placeholder="Search by industry name..."
+              />
+            </div>
           </div>
 
-          <div className="filter-group app-form-field">
-            <label className="filter-label app-label">Region</label>
-            <select
-              name="region"
-              value={filters.region}
-              onChange={onFilterChange('region')}
-              className="filter-select app-select"
-            >
-              <option value="">All Regions</option>
-              {regions.map((region) => (
-                <option key={region} value={region}>
-                  {region}
-                </option>
-              ))}
-            </select>
-            <p className="filter-help">Hong Kong reflects the latest H-shares dataset.</p>
+          <label className="filter-label app-label">Search Companies</label>
+          <input
+            type="text"
+            name="company_search"
+            value={pendingCompanySearch}
+            onChange={(e) => setPendingCompanySearch(e.target.value)}
+            className="filter-input app-input"
+            placeholder="Search by company name or ticker..."
+          />
+
+          <div className="filter-actions app-actions">
+            <button type="button" onClick={handleClear} className="btn btn-secondary app-button app-button--secondary">
+              Clear Filters
+            </button>
+            <button type="submit" className="btn btn-primary app-button app-button--primary">
+              Apply Filters
+            </button>
+          </div>
+        </form>
+
+        <div className="results-section app-card">
+          <div className="results-header">
+            <div>
+              <h2 className="results-title">Search Results</h2>
+              <p className="results-count" id="resultsCount">
+                {resultsCount}
+              </p>
+            </div>
+            <div className="results-meta">
+              {(() => {
+                const badge = getRegionBadge(filters.region);
+                return (
+                  <span className="region-badge" data-region={badge.attr}>
+                    {badge.label}
+                  </span>
+                );
+              })()}
+              <ColumnSelector
+                manifest={columnManifest}
+                onColumnChange={handleColumnChange}
+                maxPinnedColumns={3}
+              />
+            </div>
           </div>
 
-          <div className="filter-group app-form-field">
-            <label className="filter-label app-label">Industry within selected sector</label>
-            <select
-              name="industry"
-              value={filters.industry}
-              onChange={onFilterChange('industry')}
-              className="filter-select app-select"
-              disabled={loadingFilters}
-            >
-              <option value="">{loadingFilters ? 'Loading...' : 'All Industries'}</option>
-              {industryOptions.map((ind) => (
-                <option key={ind} value={ind}>
-                  {ind}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group app-form-field">
-            <label className="filter-label app-label">Search by Industry</label>
-            <input
-              type="text"
-              name="industry_search"
-              value={pendingIndustrySearch}
-              onChange={(e) => setPendingIndustrySearch(e.target.value)}
-              className="filter-input app-input"
-              placeholder="Search by industry name..."
-            />
-          </div>
-        </div>
-
-        <label className="filter-label app-label">Search Companies</label>
-        <input
-          type="text"
-          name="company_search"
-          value={pendingCompanySearch}
-          onChange={(e) => setPendingCompanySearch(e.target.value)}
-          className="filter-input app-input"
-          placeholder="Search by company name or ticker..."
-        />
-
-        <div className="filter-actions app-actions">
-          <button type="button" onClick={handleClear} className="btn btn-secondary app-button app-button--secondary">
-            Clear Filters
-          </button>
-          <button type="submit" className="btn btn-primary app-button app-button--primary">
-            Apply Filters
-          </button>
-        </div>
-      </form>
-
-      <div className="results-section app-card">
-        <div className="results-header">
-          <div>
-            <h2 className="results-title">Search Results</h2>
-            <p className="results-count" id="resultsCount">
-              {resultsCount}
-            </p>
-          </div>
-          <div className="results-meta">
-            {(() => {
-              const badge = getRegionBadge(filters.region);
-              return (
-                <span className="region-badge" data-region={badge.attr}>
-                  {badge.label}
-                </span>
-              );
-            })()}
-            <ColumnSelector
-              manifest={columnManifest}
-              onColumnChange={handleColumnChange}
-              maxPinnedColumns={3}
-            />
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="loading">
-            <p>Loading companies...</p>
-          </div>
-        ) : companies.length === 0 ? (
-          <div className="no-results">
-            <p>No companies found matching the criteria</p>
-          </div>
-        ) : (
-          <div id="resultsContainer">
-            <table className="company-table app-table" id="companyTable">
-              <thead>
-                <tr>
-                  {orderedColumns.map((col) => {
-                     const isPinned = pinnedColumns.includes(col.id);
-                     const alignClass = col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left';
-                     const pinnedClass = isPinned ? 'pinned-column' : '';
-                     const finalClass = `${alignClass} ${pinnedClass}`.trim();
-                     return (
-                      <th key={col.id} className={finalClass}>
-                        {col.displayName}
-                      </th>
-                    );
-                  })}
-                </tr>
-              </thead>
-              <tbody id="companyTableBody">
-                {companies.map((c) => (
-                  <tr key={c.id} className="clickable-row" onClick={() => (window.location.href = `detail.html?id=${c.id}`)}>
+          {loading ? (
+            <div className="loading">
+              <p>Loading companies...</p>
+            </div>
+          ) : companies.length === 0 ? (
+            <div className="no-results">
+              <p>No companies found matching the criteria</p>
+            </div>
+          ) : (
+            <div id="resultsContainer">
+              <table className="company-table app-table" id="companyTable">
+                <thead>
+                  <tr>
                     {orderedColumns.map((col) => {
                       const isPinned = pinnedColumns.includes(col.id);
                       const alignClass = col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left';
-                      const cellClass = getCellClass(col);
                       const pinnedClass = isPinned ? 'pinned-column' : '';
-                      const finalClass = `${alignClass} ${cellClass} ${pinnedClass}`.trim();
+                      const finalClass = `${alignClass} ${pinnedClass}`.trim();
                       return (
-                        <td
-                          key={col.id}
-                          className={finalClass}
-                        >
-                          {renderCellValue(col, c)}
-                        </td>
+                        <th key={col.id} className={finalClass}>
+                          {col.displayName}
+                        </th>
                       );
                     })}
                   </tr>
+                </thead>
+                <tbody id="companyTableBody">
+                  {companies.map((c) => (
+                    <tr key={c.id} className="clickable-row" onClick={() => (window.location.href = `detail.html?id=${c.id}`)}>
+                      {orderedColumns.map((col) => {
+                        const isPinned = pinnedColumns.includes(col.id);
+                        const alignClass = col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left';
+                        const cellClass = getCellClass(col);
+                        const pinnedClass = isPinned ? 'pinned-column' : '';
+                        const finalClass = `${alignClass} ${cellClass} ${pinnedClass}`.trim();
+                        return (
+                          <td
+                            key={col.id}
+                            className={finalClass}
+                          >
+                            {renderCellValue(col, c)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="mobile-company-list" id="mobileCompanyList">
+                {companies.map((c) => (
+                  <div key={c.id} className="mobile-company-card" onClick={() => (window.location.href = `detail.html?id=${c.id}`)}>
+                    <div className="mobile-company-header">
+                      <div className="mobile-company-name">{c.name}</div>
+                      <div className="mobile-company-ticker">{c.ticker}</div>
+                    </div>
+                    <div className="mobile-company-details">
+                      <div className="mobile-company-detail">
+                        <span className="mobile-company-detail-label">Region</span>
+                        <span className="mobile-company-detail-value">{c.region || '-'}</span>
+                      </div>
+                      <div className="mobile-company-detail">
+                        <span className="mobile-company-detail-label">Industry Matrix Sector</span>
+                        <span className="mobile-company-detail-value">{c.im_sector || '-'}</span>
+                      </div>
+                      <div className="mobile-company-detail">
+                        <span className="mobile-company-detail-label">Industry</span>
+                        <span className="mobile-company-detail-value">{c.industry || '-'}</span>
+                      </div>
+                      <div className="mobile-company-detail">
+                        <span className="mobile-company-detail-label">Market Cap (USD M)</span>
+                        <span className="mobile-company-detail-value">
+                          {typeof (c as Record<string, unknown>).market_cap_usd === 'number'
+                            ? ((c as Record<string, unknown>).market_cap_usd as number).toLocaleString('en-US', { maximumFractionDigits: 0 })
+                            : '-'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
 
-            <div className="mobile-company-list" id="mobileCompanyList">
-              {companies.map((c) => (
-                <div key={c.id} className="mobile-company-card" onClick={() => (window.location.href = `detail.html?id=${c.id}`)}>
-                  <div className="mobile-company-header">
-                    <div className="mobile-company-name">{c.name}</div>
-                    <div className="mobile-company-ticker">{c.ticker}</div>
-                  </div>
-                  <div className="mobile-company-details">
-                    <div className="mobile-company-detail">
-                      <span className="mobile-company-detail-label">Region</span>
-                      <span className="mobile-company-detail-value">{c.region || '-'}</span>
-                    </div>
-                    <div className="mobile-company-detail">
-              <span className="mobile-company-detail-label">Industry Matrix Sector</span>
-              <span className="mobile-company-detail-value">{c.im_sector || '-'}</span>
-                    </div>
-                    <div className="mobile-company-detail">
-                      <span className="mobile-company-detail-label">Industry</span>
-                      <span className="mobile-company-detail-value">{c.industry || '-'}</span>
-                    </div>
-                    <div className="mobile-company-detail">
-                      <span className="mobile-company-detail-label">Market Cap (USD M)</span>
-                      <span className="mobile-company-detail-value">
-                        {typeof c.market_cap_usd === 'number'
-                          ? c.market_cap_usd.toLocaleString('en-US', { maximumFractionDigits: 0 })
-                          : '-'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              <Pagination page={page} pages={pages} onPageChange={setPage} />
             </div>
-
-            <Pagination page={page} pages={pages} onPageChange={setPage} />
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 }

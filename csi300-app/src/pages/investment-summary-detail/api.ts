@@ -10,31 +10,25 @@
 import { logger } from '@shared/lib/logger';
 import {
   Csi300Service,
-  OpenAPI,
-  TaskStatusEnum,
+  GenerationTaskStatusResponse,
   type CSI300InvestmentSummary,
   type GenerationTaskStartResponse,
-  type GenerationTaskStatusResponse,
 } from '@shared/api/generated';
 
 // Re-export the generated type for use by components
 export type { CSI300InvestmentSummary as InvestmentSummary } from '@shared/api/generated';
 
-// Re-export TaskStatusEnum for convenience
-export { TaskStatusEnum };
+// TaskStatusEnum is now GenerationTaskStatusResponse.task_status
+export const TaskStatusEnum = GenerationTaskStatusResponse.task_status;
 
-// Configure OpenAPI base URL
-// Production uses /api (CloudFront proxy), development uses localhost:8001
-OpenAPI.BASE = (
-  import.meta.env.VITE_API_BASE ??
-  (import.meta.env.MODE === 'development' ? 'http://localhost:8001' : '/api')
-).replace(/\/$/, '');
+// Note: OpenAPI.BASE is configured in main.tsx before this module is imported
+// Csi300Service now generates paths with /api prefix (after removing legacy route)
 
 // ==========================================
 // Type aliases for backward compatibility
 // ==========================================
 
-export type TaskStatus = `${TaskStatusEnum}`;
+export type TaskStatus = `${typeof TaskStatusEnum[keyof typeof TaskStatusEnum]}`;
 
 export type StartTaskResponse = GenerationTaskStartResponse;
 
@@ -84,7 +78,7 @@ export async function fetchInvestmentSummary(
     span.addEvent('request_start');
 
     // Use generated service
-    const data = await Csi300Service.csi300ApiCompaniesInvestmentSummaryRetrieve(
+    const data = await Csi300Service.apiCsi300ApiCompaniesInvestmentSummaryRetrieve(
       Number(companyId)
     );
 
@@ -120,7 +114,7 @@ async function startGenerationTask(
   trace.info('[Starting generation task]', { companyId });
 
   // Use generated service
-  const response = await Csi300Service.csi300ApiGenerateSummaryCreate({
+  const response = await Csi300Service.apiCsi300ApiGenerateSummaryCreate({
     company_id: Number(companyId),
   });
 
@@ -137,7 +131,7 @@ async function fetchTaskStatus(
   trace: ReturnType<typeof logger.startTrace>
 ): Promise<GenerationTaskStatusResponse> {
   // Use generated service
-  return await Csi300Service.csi300ApiTaskStatusRetrieve(taskId);
+  return await Csi300Service.apiCsi300ApiTaskStatusRetrieve(taskId);
 }
 
 /**
@@ -303,7 +297,7 @@ export function createTracedApiClient(context: Record<string, unknown> = {}) {
       return trace.traceAsync(
         'fetchInvestmentSummary',
         () =>
-          Csi300Service.csi300ApiCompaniesInvestmentSummaryRetrieve(
+          Csi300Service.apiCsi300ApiCompaniesInvestmentSummaryRetrieve(
             Number(companyId)
           ),
         { companyId }

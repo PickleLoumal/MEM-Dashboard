@@ -9,11 +9,13 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { logger } from '@shared/lib/logger';
 import {
-  ApiService,
-  PDFTaskStatusEnum,
-  type PDFTask,
+  PdfService,
+  PDFTask,
   type PDFTaskCreateResponse,
 } from '@shared/api/generated';
+
+// PDFTaskStatusEnum is now PDFTask.status
+const PDFTaskStatusEnum = PDFTask.status;
 
 // ==========================================
 // Types
@@ -25,7 +27,7 @@ export interface PDFGenerationState {
   /** Current task ID */
   taskId: string | null;
   /** Current status */
-  status: PDFTaskStatusEnum | null;
+  status: PDFTask.status | null;
   /** Human-readable status */
   statusDisplay: string;
   /** Progress percentage (0-100) */
@@ -62,7 +64,7 @@ export interface UsePDFGenerationReturn extends PDFGenerationState {
  */
 interface WebSocketStatusMessage {
   type: 'status_update' | 'initial_status' | 'pong';
-  status: PDFTaskStatusEnum;
+  status: PDFTask.status;
   status_display: string;
   progress: number;
   error_message?: string;
@@ -73,7 +75,7 @@ interface WebSocketStatusMessage {
 // Status Display Mapping
 // ==========================================
 
-const STATUS_MESSAGES: Record<PDFTaskStatusEnum, string> = {
+const STATUS_MESSAGES: Record<PDFTask.status, string> = {
   [PDFTaskStatusEnum.PENDING]: 'Preparing...',
   [PDFTaskStatusEnum.PROCESSING]: 'Processing data...',
   [PDFTaskStatusEnum.GENERATING_CHARTS]: 'Generating charts...',
@@ -198,7 +200,7 @@ export function usePDFGeneration(
         }
 
         try {
-          const status = await ApiService.apiPdfTasksStatusRetrieve(taskId);
+          const status = await PdfService.apiPdfTasksStatusRetrieve(taskId);
           handleStatusUpdate(status);
         } catch (err) {
           trace.warn('[PDF] Poll error', { attempt: pollAttemptsRef.current, err });
@@ -292,7 +294,7 @@ export function usePDFGeneration(
     try {
       // Request PDF generation
       const response: PDFTaskCreateResponse =
-        await ApiService.apiPdfTasksRequestCreate({
+        await PdfService.apiPdfTasksRequestCreate({
           company_id: companyId,
         });
 

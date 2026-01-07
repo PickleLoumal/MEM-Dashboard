@@ -45,8 +45,25 @@ def get_s3_client() -> Any:
     Get cached boto3 S3 client.
 
     Uses lru_cache to avoid creating new clients on every call.
+    Uses region-specific endpoint to ensure presigned URLs work correctly
+    for buckets in ap-east-1 (Hong Kong) region.
     """
-    return boto3.client("s3", region_name=AWS_REGION)
+    from botocore.config import Config  # noqa: PLC0415
+
+    # Use region-specific endpoint for ap-east-1
+    # Global endpoint (s3.amazonaws.com) returns IllegalLocationConstraintException
+    # for presigned URLs when bucket is in ap-east-1
+    endpoint_url = f"https://s3.{AWS_REGION}.amazonaws.com"
+
+    config = Config(
+        s3={"addressing_style": "virtual"},
+    )
+    return boto3.client(
+        "s3",
+        region_name=AWS_REGION,
+        endpoint_url=endpoint_url,
+        config=config,
+    )
 
 
 def _is_fifo_queue(queue_url: str) -> bool:
@@ -191,6 +208,18 @@ def update_task_status_from_worker(
             if task.created_at:
                 delta = timezone.now() - task.created_at
                 task.processing_time_ms = int(delta.total_seconds() * 1000)
+
+        # Generate download URL when task is completed with s3_key
+        if status == PDFTask.Status.COMPLETED and s3_key:
+            try:
+                url, expires_at = generate_presigned_download_url(s3_key)
+                task.download_url = url
+                task.download_url_expires_at = expires_at
+            except Exception as e:
+                logger.warning(
+                    "Failed to generate download URL",
+                    extra={"task_id": task_id, "error": str(e)},
+                )
 
         task.save()
 

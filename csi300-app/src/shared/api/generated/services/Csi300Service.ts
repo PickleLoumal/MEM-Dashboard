@@ -22,29 +22,53 @@ export class Csi300Service {
      * @returns CSI300IndexResponse
      * @throws ApiError
      */
-    public static csi300Retrieve(): CancelablePromise<CSI300IndexResponse> {
+    public static apiCsi300Retrieve(): CancelablePromise<CSI300IndexResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/csi300/',
+            url: '/api/csi300/',
         });
     }
     /**
      * 获取公司列表或 API 概览
+     * @param gicsIndustry Filter by GICS industry (partial match)
+     * @param imSector Filter by Industry Matrix sector
+     * @param industry Filter by industry name
+     * @param industrySearch Search by industry name (partial match)
+     * @param marketCapMax Maximum market cap filter
+     * @param marketCapMin Minimum market cap filter
      * @param page A page number within the paginated result set.
      * @param pageSize Number of results to return per page.
+     * @param region Filter by region (e.g., 'Mainland China', 'Hong Kong')
+     * @param search Search by company name or ticker
      * @returns PaginatedCSI300CompanyListList
      * @throws ApiError
      */
-    public static csi300ApiCompaniesList(
+    public static apiCsi300ApiCompaniesList(
+        gicsIndustry?: string,
+        imSector?: string,
+        industry?: string,
+        industrySearch?: string,
+        marketCapMax?: number,
+        marketCapMin?: number,
         page?: number,
         pageSize?: number,
+        region?: string,
+        search?: string,
     ): CancelablePromise<PaginatedCSI300CompanyListList> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/csi300/api/companies/',
+            url: '/api/csi300/api/companies/',
             query: {
+                'gics_industry': gicsIndustry,
+                'im_sector': imSector,
+                'industry': industry,
+                'industry_search': industrySearch,
+                'market_cap_max': marketCapMax,
+                'market_cap_min': marketCapMin,
                 'page': page,
                 'page_size': pageSize,
+                'region': region,
+                'search': search,
             },
         });
     }
@@ -54,12 +78,12 @@ export class Csi300Service {
      * @returns CSI300Company
      * @throws ApiError
      */
-    public static csi300ApiCompaniesRetrieve(
+    public static apiCsi300ApiCompaniesRetrieve(
         id: number,
     ): CancelablePromise<CSI300Company> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/csi300/api/companies/{id}/',
+            url: '/api/csi300/api/companies/{id}/',
             path: {
                 'id': id,
             },
@@ -71,12 +95,12 @@ export class Csi300Service {
      * @returns CSI300PeerComparisonResponse
      * @throws ApiError
      */
-    public static csi300ApiCompaniesIndustryPeersComparisonRetrieve(
+    public static apiCsi300ApiCompaniesIndustryPeersComparisonRetrieve(
         id: number,
     ): CancelablePromise<CSI300PeerComparisonResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/csi300/api/companies/{id}/industry_peers_comparison/',
+            url: '/api/csi300/api/companies/{id}/industry_peers_comparison/',
             path: {
                 'id': id,
             },
@@ -88,12 +112,12 @@ export class Csi300Service {
      * @returns CSI300InvestmentSummary
      * @throws ApiError
      */
-    public static csi300ApiCompaniesInvestmentSummaryRetrieve(
+    public static apiCsi300ApiCompaniesInvestmentSummaryRetrieve(
         id: number,
     ): CancelablePromise<CSI300InvestmentSummary> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/csi300/api/companies/{id}/investment_summary/',
+            url: '/api/csi300/api/companies/{id}/investment_summary/',
             path: {
                 'id': id,
             },
@@ -106,13 +130,13 @@ export class Csi300Service {
      * @returns CSI300FilterOptions
      * @throws ApiError
      */
-    public static csi300ApiCompaniesFilterOptionsRetrieve(
+    public static apiCsi300ApiCompaniesFilterOptionsRetrieve(
         imSector?: string,
         region?: string,
     ): CancelablePromise<CSI300FilterOptions> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/csi300/api/companies/filter_options/',
+            url: '/api/csi300/api/companies/filter_options/',
             query: {
                 'im_sector': imSector,
                 'region': region,
@@ -125,12 +149,12 @@ export class Csi300Service {
      * @returns GenerationTaskStartResponse
      * @throws ApiError
      */
-    public static csi300ApiCompaniesGenerateSummaryCreate(
+    public static apiCsi300ApiCompaniesGenerateSummaryCreate(
         requestBody: GenerateSummaryRequest,
     ): CancelablePromise<GenerationTaskStartResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/csi300/api/companies/generate-summary/',
+            url: '/api/csi300/api/companies/generate-summary/',
             body: requestBody,
             mediaType: 'application/json',
         });
@@ -140,10 +164,10 @@ export class Csi300Service {
      * @returns CSI300Company
      * @throws ApiError
      */
-    public static csi300ApiCompaniesHealthRetrieve(): CancelablePromise<CSI300Company> {
+    public static apiCsi300ApiCompaniesHealthRetrieve(): CancelablePromise<CSI300Company> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/csi300/api/companies/health/',
+            url: '/api/csi300/api/companies/health/',
         });
     }
     /**
@@ -154,14 +178,14 @@ export class Csi300Service {
      * @returns PaginatedCSI300CompanyListList
      * @throws ApiError
      */
-    public static csi300ApiCompaniesSearchList(
+    public static apiCsi300ApiCompaniesSearchList(
         q: string,
         page?: number,
         pageSize?: number,
     ): CancelablePromise<PaginatedCSI300CompanyListList> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/csi300/api/companies/search/',
+            url: '/api/csi300/api/companies/search/',
             query: {
                 'page': page,
                 'page_size': pageSize,
@@ -175,12 +199,12 @@ export class Csi300Service {
      * @returns GenerationTaskStatusResponse
      * @throws ApiError
      */
-    public static csi300ApiCompaniesTaskStatusRetrieve(
+    public static apiCsi300ApiCompaniesTaskStatusRetrieve(
         taskId: string,
     ): CancelablePromise<GenerationTaskStatusResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/csi300/api/companies/task-status/{task_id}/',
+            url: '/api/csi300/api/companies/task-status/{task_id}/',
             path: {
                 'task_id': taskId,
             },
@@ -192,12 +216,12 @@ export class Csi300Service {
      * @returns GenerationTaskStartResponse
      * @throws ApiError
      */
-    public static csi300ApiGenerateSummaryCreate(
+    public static apiCsi300ApiGenerateSummaryCreate(
         requestBody: GenerateInvestmentSummaryRequest,
     ): CancelablePromise<GenerationTaskStartResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/csi300/api/generate-summary/',
+            url: '/api/csi300/api/generate-summary/',
             body: requestBody,
             mediaType: 'application/json',
         });
@@ -209,12 +233,12 @@ export class Csi300Service {
      * @returns GenerationTaskStatusResponse
      * @throws ApiError
      */
-    public static csi300ApiTaskStatusRetrieve(
+    public static apiCsi300ApiTaskStatusRetrieve(
         taskId: string,
     ): CancelablePromise<GenerationTaskStatusResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/csi300/api/task-status/{task_id}/',
+            url: '/api/csi300/api/task-status/{task_id}/',
             path: {
                 'task_id': taskId,
             },
@@ -225,10 +249,10 @@ export class Csi300Service {
      * @returns CSI300HealthCheckResponse
      * @throws ApiError
      */
-    public static csi300HealthRetrieve(): CancelablePromise<CSI300HealthCheckResponse> {
+    public static apiCsi300HealthRetrieve(): CancelablePromise<CSI300HealthCheckResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/csi300/health/',
+            url: '/api/csi300/health/',
         });
     }
 }

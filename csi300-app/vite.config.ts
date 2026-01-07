@@ -78,7 +78,31 @@ export default defineConfig({
     fs: {
       // Allow serving files from legacy directory
       allow: ['..']
-    }
+    },
+    // Proxy API requests to Django backend during development
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+      },
+      '/ws': {
+        target: 'ws://localhost:8001',
+        ws: true,
+      },
+    },
+  },
+  preview: {
+    // Proxy API requests to Django backend during preview (vite preview)
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+      },
+      '/ws': {
+        target: 'ws://localhost:8001',
+        ws: true,
+      },
+    },
   },
   build: {
     // Keep React bundle output separate from legacy static files

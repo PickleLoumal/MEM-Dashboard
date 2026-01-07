@@ -6,7 +6,8 @@ import '@shared/styles/main.css';
 import './styles.css';
 
 // Configure OpenAPI base URL (must be done before any API calls)
-OpenAPI.BASE = (import.meta.env.VITE_API_BASE ?? (import.meta.env.MODE === 'development' ? 'http://localhost:8001' : '/api')).replace(/\/$/, '');
+// Production: empty string (generated paths already include /api prefix)
+OpenAPI.BASE = (import.meta.env.VITE_API_BASE ?? (import.meta.env.MODE === 'development' ? 'http://localhost:8001' : '')).replace(/\/$/, '');
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

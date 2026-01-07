@@ -37,7 +37,7 @@ paths:
       operationId: api_bea_retrieve
       description: BEA API首页 - 动态端点列表
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -52,7 +52,7 @@ paths:
       operationId: api_bea_all_indicators_retrieve
       description: 获取所有指标数据 - 动态处理
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -67,7 +67,7 @@ paths:
       operationId: api_bea_api_configs_list
       description: BEA指标配置ViewSet - 动态配置管理
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -83,7 +83,7 @@ paths:
       operationId: api_bea_api_configs_create
       description: BEA指标配置ViewSet - 动态配置管理
       tags:
-      - api
+      - bea
       requestBody:
         content:
           application/json:
@@ -117,7 +117,7 @@ paths:
         description: A unique integer value identifying this bea indicator config.
         required: true
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -138,7 +138,7 @@ paths:
         description: A unique integer value identifying this bea indicator config.
         required: true
       tags:
-      - api
+      - bea
       requestBody:
         content:
           application/json:
@@ -171,7 +171,7 @@ paths:
         description: A unique integer value identifying this bea indicator config.
         required: true
       tags:
-      - api
+      - bea
       requestBody:
         content:
           application/json:
@@ -203,7 +203,7 @@ paths:
         description: A unique integer value identifying this bea indicator config.
         required: true
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -221,7 +221,7 @@ paths:
         description: A unique integer value identifying this bea indicator config.
         required: true
       tags:
-      - api
+      - bea
       requestBody:
         content:
           application/json:
@@ -255,7 +255,7 @@ paths:
         description: A unique integer value identifying this bea indicator config.
         required: true
       tags:
-      - api
+      - bea
       requestBody:
         content:
           application/json:
@@ -282,7 +282,7 @@ paths:
       operationId: api_bea_api_configs_active_retrieve
       description: 获取所有激活的配置
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -297,7 +297,7 @@ paths:
       operationId: api_bea_api_configs_categories_retrieve
       description: 获取所有指标分类
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -312,7 +312,7 @@ paths:
       operationId: api_bea_api_data_list
       description: BEA指标数据ViewSet - 支持CRUD操作
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -328,7 +328,7 @@ paths:
       operationId: api_bea_api_data_create
       description: BEA指标数据ViewSet - 支持CRUD操作
       tags:
-      - api
+      - bea
       requestBody:
         content:
           application/json:
@@ -362,7 +362,7 @@ paths:
         description: A unique integer value identifying this bea indicator.
         required: true
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -383,7 +383,7 @@ paths:
         description: A unique integer value identifying this bea indicator.
         required: true
       tags:
-      - api
+      - bea
       requestBody:
         content:
           application/json:
@@ -416,7 +416,7 @@ paths:
         description: A unique integer value identifying this bea indicator.
         required: true
       tags:
-      - api
+      - bea
       requestBody:
         content:
           application/json:
@@ -448,7 +448,7 @@ paths:
         description: A unique integer value identifying this bea indicator.
         required: true
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -466,7 +466,7 @@ paths:
         description: Category name
         required: true
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -481,7 +481,7 @@ paths:
       operationId: api_bea_govt_investment_total_retrieve
       description: Gross Government Investment - GET /bea/govt-investment-total/
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -508,7 +508,7 @@ paths:
         description: Series ID
         required: true
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -523,7 +523,7 @@ paths:
       operationId: api_bea_investment_equipment_retrieve
       description: Equipment Investment - GET /bea/investment-equipment/
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -538,7 +538,7 @@ paths:
       operationId: api_bea_investment_fixed_retrieve
       description: Fixed Investment - GET /bea/investment-fixed/
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -553,7 +553,7 @@ paths:
       operationId: api_bea_investment_inventories_retrieve
       description: Change in Private Inventories - GET /bea/investment-inventories/
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -568,7 +568,7 @@ paths:
       operationId: api_bea_investment_ip_retrieve
       description: Intellectual Property Products Investment - GET /bea/investment-ip/
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -583,7 +583,7 @@ paths:
       operationId: api_bea_investment_net_retrieve
       description: Net Private Domestic Investment - GET /bea/investment-net/
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -598,7 +598,7 @@ paths:
       operationId: api_bea_investment_nonresidential_retrieve
       description: Nonresidential Investment - GET /bea/investment-nonresidential/
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -613,7 +613,7 @@ paths:
       operationId: api_bea_investment_residential_retrieve
       description: Residential Investment - GET /bea/investment-residential/
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -628,7 +628,7 @@ paths:
       operationId: api_bea_investment_structures_retrieve
       description: Structures Investment - GET /bea/investment-structures/
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -643,7 +643,7 @@ paths:
       operationId: api_bea_investment_total_retrieve
       description: Gross Private Domestic Investment - GET /bea/investment-total/
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -658,7 +658,7 @@ paths:
       operationId: api_bea_stats_retrieve
       description: BEA系统统计信息
       tags:
-      - api
+      - bea
       security:
       - {}
       responses:
@@ -673,7 +673,7 @@ paths:
       operationId: api_content_categories_list
       description: Content category API
       tags:
-      - api
+      - content
       security:
       - {}
       responses:
@@ -697,7 +697,7 @@ paths:
         description: A unique integer value identifying this Content Category.
         required: true
       tags:
-      - api
+      - content
       security:
       - {}
       responses:
@@ -712,7 +712,7 @@ paths:
       operationId: api_content_modals_list
       description: Modal content API
       tags:
-      - api
+      - content
       security:
       - {}
       responses:
@@ -736,7 +736,7 @@ paths:
         description: A unique integer value identifying this Modal Content.
         required: true
       tags:
-      - api
+      - content
       security:
       - {}
       responses:
@@ -751,7 +751,7 @@ paths:
       operationId: api_content_modals_all_content_retrieve
       description: Get all content - simplified version for batch retrieval
       tags:
-      - api
+      - content
       security:
       - {}
       responses:
@@ -766,7 +766,7 @@ paths:
       operationId: api_content_modals_by_modal_id_retrieve
       description: Get content by modal_id
       tags:
-      - api
+      - content
       security:
       - {}
       responses:
@@ -781,7 +781,7 @@ paths:
       operationId: api_csi300_retrieve
       description: CSI300 API 索引端点 (向后兼容)
       tags:
-      - api
+      - csi300
       security:
       - {}
       responses:
@@ -796,6 +796,36 @@ paths:
       operationId: api_csi300_api_companies_list
       description: 获取公司列表或 API 概览
       parameters:
+      - in: query
+        name: gics_industry
+        schema:
+          type: string
+        description: Filter by GICS industry (partial match)
+      - in: query
+        name: im_sector
+        schema:
+          type: string
+        description: Filter by Industry Matrix sector
+      - in: query
+        name: industry
+        schema:
+          type: string
+        description: Filter by industry name
+      - in: query
+        name: industry_search
+        schema:
+          type: string
+        description: Search by industry name (partial match)
+      - in: query
+        name: market_cap_max
+        schema:
+          type: number
+        description: Maximum market cap filter
+      - in: query
+        name: market_cap_min
+        schema:
+          type: number
+        description: Minimum market cap filter
       - name: page
         required: false
         in: query
@@ -808,8 +838,18 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
+      - in: query
+        name: region
+        schema:
+          type: string
+        description: Filter by region (e.g., 'Mainland China', 'Hong Kong')
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search by company name or ticker
       tags:
-      - api
+      - csi300
       security:
       - {}
       responses:
@@ -831,7 +871,7 @@ paths:
         description: A unique integer value identifying this CSI300 Company.
         required: true
       tags:
-      - api
+      - csi300
       security:
       - {}
       responses:
@@ -853,7 +893,7 @@ paths:
         description: A unique integer value identifying this CSI300 Company.
         required: true
       tags:
-      - api
+      - csi300
       security:
       - {}
       responses:
@@ -875,7 +915,7 @@ paths:
         description: A unique integer value identifying this CSI300 Company.
         required: true
       tags:
-      - api
+      - csi300
       security:
       - {}
       responses:
@@ -899,7 +939,7 @@ paths:
         schema:
           type: string
       tags:
-      - api
+      - csi300
       security:
       - {}
       responses:
@@ -915,7 +955,7 @@ paths:
       description: 异步启动 Investment Summary 生成任务。立即返回 task_id，前端可通过 task-status API
         轮询进度。
       tags:
-      - api
+      - csi300
       requestBody:
         content:
           application/json:
@@ -956,7 +996,7 @@ paths:
       operationId: api_csi300_api_companies_health_retrieve
       description: 健康检查端点
       tags:
-      - api
+      - csi300
       security:
       - {}
       responses:
@@ -989,7 +1029,7 @@ paths:
           type: string
         required: true
       tags:
-      - api
+      - csi300
       security:
       - {}
       responses:
@@ -1011,7 +1051,7 @@ paths:
         description: 任务 UUID
         required: true
       tags:
-      - api
+      - csi300
       security:
       - {}
       responses:
@@ -1040,7 +1080,7 @@ paths:
       operationId: api_csi300_api_generate_summary_create
       description: 异步启动 Investment Summary 生成任务 (向后兼容端点)
       tags:
-      - api
+      - csi300
       requestBody:
         content:
           application/json:
@@ -1089,7 +1129,7 @@ paths:
         description: 任务 UUID
         required: true
       tags:
-      - api
+      - csi300
       security:
       - {}
       responses:
@@ -1118,7 +1158,7 @@ paths:
       operationId: api_csi300_health_retrieve
       description: CSI300 API 健康检查端点 (向后兼容)
       tags:
-      - api
+      - csi300
       security:
       - {}
       responses:
@@ -1133,7 +1173,7 @@ paths:
       operationId: api_fred_list
       description: API 根端点 - 返回 API 概览信息
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1150,7 +1190,7 @@ paths:
       operationId: api_fred_jp_health_retrieve
       description: 日本FRED健康检查端点
       tags:
-      - api
+      - fred_jp
       security:
       - {}
       responses:
@@ -1165,7 +1205,7 @@ paths:
       operationId: api_fred_jp_indicators_list
       description: 日本FRED指标视图集 - 对应Flask API功能
       tags:
-      - api
+      - fred_jp
       security:
       - {}
       responses:
@@ -1188,7 +1228,7 @@ paths:
           type: string
         required: true
       tags:
-      - api
+      - fred_jp
       security:
       - {}
       responses:
@@ -1210,7 +1250,7 @@ paths:
         description: A unique integer value identifying this Japan FRED Indicator.
         required: true
       tags:
-      - api
+      - fred_jp
       security:
       - {}
       responses:
@@ -1225,7 +1265,7 @@ paths:
       operationId: api_fred_jp_indicators_status_retrieve
       description: 日本FRED系统状态
       tags:
-      - api
+      - fred_jp
       security:
       - {}
       responses:
@@ -1240,7 +1280,7 @@ paths:
       operationId: api_fred_jp_status_retrieve
       description: 日本FRED系统状态
       tags:
-      - api
+      - fred_jp
       security:
       - {}
       responses:
@@ -1255,7 +1295,7 @@ paths:
       operationId: api_fred_us_list
       description: API 根端点 - 返回 API 概览信息
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1288,7 +1328,7 @@ paths:
         description: A unique integer value identifying this US FRED Indicator.
         required: true
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1303,7 +1343,7 @@ paths:
       operationId: api_fred_us_aaa_corporate_bond_yield_retrieve
       description: 穆迪Aaa级企业债券收益率 - GET /api/fred-us/aaa-corporate-bond-yield/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1318,7 +1358,7 @@ paths:
       operationId: api_fred_us_all_indicators_retrieve
       description: 获取所有美国FRED指标概览
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1333,7 +1373,7 @@ paths:
       operationId: api_fred_us_average_hourly_earnings_retrieve
       description: 平均时薪增长 - GET /api/fred-us/average-hourly-earnings/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1348,7 +1388,7 @@ paths:
       operationId: api_fred_us_baa_corporate_bond_yield_retrieve
       description: 穆迪Baa级企业债券收益率 - GET /api/fred-us/baa-corporate-bond-yield/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1363,7 +1403,7 @@ paths:
       operationId: api_fred_us_bank_lending_standards_retrieve
       description: 银行贷款标准 - GET /api/fred-us/bank-lending-standards/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1378,7 +1418,7 @@ paths:
       operationId: api_fred_us_banking_commercial_loans_retrieve
       description: 商业银行贷款和租赁 - GET /api/fred-us/banking-commercial-loans/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1393,7 +1433,7 @@ paths:
       operationId: api_fred_us_banking_fed_balance_sheet_retrieve
       description: 美联储资产负债表总资产 - GET /api/fred-us/banking-fed-balance-sheet/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1408,7 +1448,7 @@ paths:
       operationId: api_fred_us_banking_federal_funds_rate_retrieve
       description: 联邦基金利率 (Banking) - GET /api/fred-us/banking-federal-funds-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1423,7 +1463,7 @@ paths:
       operationId: api_fred_us_banking_pce_inflation_retrieve
       description: PCE价格指数 (Banking) - GET /api/fred-us/banking-pce-inflation/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1438,7 +1478,7 @@ paths:
       operationId: api_fred_us_banking_prime_rate_retrieve
       description: 银行基准贷款利率 - GET /api/fred-us/banking-prime-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1453,7 +1493,7 @@ paths:
       operationId: api_fred_us_banking_reserve_balances_interest_retrieve
       description: 准备金余额利率 - GET /api/fred-us/banking-reserve-balances-interest/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1468,7 +1508,7 @@ paths:
       operationId: api_fred_us_banking_total_reserves_retrieve
       description: 总准备金余额 - GET /api/fred-us/banking-total-reserves/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1483,7 +1523,7 @@ paths:
       operationId: api_fred_us_banking_unemployment_rate_retrieve
       description: 失业率 (Banking) - GET /api/fred-us/banking-unemployment-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1498,7 +1538,7 @@ paths:
       operationId: api_fred_us_commercial_bank_loans_retrieve
       description: 商业银行贷款和租赁总额 - GET /api/fred-us/commercial-bank-loans/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1513,7 +1553,7 @@ paths:
       operationId: api_fred_us_consumer_credit_retrieve
       description: 总消费者信贷 - GET /api/fred-us/consumer-credit/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1528,7 +1568,7 @@ paths:
       operationId: api_fred_us_consumer_price_inflation_retrieve
       description: 消费者价格通胀率 - GET /api/fred-us/consumer-price-inflation/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1543,7 +1583,7 @@ paths:
       operationId: api_fred_us_corporate_debt_equity_ratio_retrieve
       description: 非金融企业债务占股权市值比例 - GET /api/fred-us/corporate-debt-equity-ratio/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1558,7 +1598,7 @@ paths:
       operationId: api_fred_us_corporate_debt_securities_retrieve
       description: 非金融企业：债券和贷款负债水平 - GET /api/fred-us/corporate-debt-securities/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1573,7 +1613,7 @@ paths:
       operationId: api_fred_us_cpi_retrieve
       description: 消费者价格指数 - GET /api/fred-us/cpi/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1588,7 +1628,7 @@ paths:
       operationId: api_fred_us_credit_card_debt_retrieve
       description: 信用卡债务余额 - GET /api/fred-us/credit-card-debt/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1603,7 +1643,7 @@ paths:
       operationId: api_fred_us_current_account_balance_retrieve
       description: 经常账户余额 - GET /api/fred-us/current-account-balance/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1618,7 +1658,7 @@ paths:
       operationId: api_fred_us_customs_duties_retrieve
       description: 关税收入 - GET /api/fred-us/customs-duties/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1633,7 +1673,7 @@ paths:
       operationId: api_fred_us_debt_service_ratio_retrieve
       description: 家庭债务偿还比率 - GET /api/fred-us/debt-service-ratio/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1648,7 +1688,7 @@ paths:
       operationId: api_fred_us_debt_to_gdp_retrieve
       description: 债务与GDP比率 - GET /api/fred-us/debt-to-gdp/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1663,7 +1703,7 @@ paths:
       operationId: api_fred_us_employment_cost_index_retrieve
       description: 就业成本指数 - GET /api/fred-us/employment-cost-index/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1678,7 +1718,7 @@ paths:
       operationId: api_fred_us_excess_reserves_retrieve
       description: 存款机构超额准备金 - GET /api/fred-us/excess-reserves/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1693,7 +1733,7 @@ paths:
       operationId: api_fred_us_fed_balance_sheet_retrieve
       description: 美联储资产负债表总资产 - GET /api/fred-us/fed-balance-sheet/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1708,7 +1748,7 @@ paths:
       operationId: api_fred_us_fed_funds_retrieve
       description: 联邦基金利率 - GET /api/fred-us/fed-funds/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1723,7 +1763,7 @@ paths:
       operationId: api_fred_us_federal_current_expenditures_retrieve
       description: 联邦政府当期支出 - GET /api/fred-us/federal-current-expenditures/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1738,7 +1778,7 @@ paths:
       operationId: api_fred_us_federal_current_receipts_retrieve
       description: 联邦政府当期收入 - GET /api/fred-us/federal-current-receipts/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1753,7 +1793,7 @@ paths:
       operationId: api_fred_us_federal_debt_gdp_ratio_retrieve
       description: 联邦债务占GDP比例 - GET /api/fred-us/federal-debt-gdp-ratio/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1768,7 +1808,7 @@ paths:
       operationId: api_fred_us_federal_debt_gdp_ratio_gdf_retrieve
       description: 联邦债务占GDP比例 (GDF) - GET /api/fred-us/federal-debt-gdp-ratio-gdf/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1783,7 +1823,7 @@ paths:
       operationId: api_fred_us_federal_debt_public_gdp_retrieve
       description: 联邦公共债务占GDP比例 - GET /api/fred-us/federal-debt-public-gdp/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1798,7 +1838,7 @@ paths:
       operationId: api_fred_us_federal_debt_total_retrieve
       description: 联邦债务总额 - GET /api/fred-us/federal-debt-total/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1813,7 +1853,7 @@ paths:
       operationId: api_fred_us_federal_debt_total_gdf_retrieve
       description: 联邦债务总额 (GDF) - GET /api/fred-us/federal-debt-total-gdf/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1828,7 +1868,7 @@ paths:
       operationId: api_fred_us_federal_funds_rate_retrieve
       description: 联邦基金利率 (Money Supply) - GET /api/fred-us/federal-funds-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1843,7 +1883,7 @@ paths:
       operationId: api_fred_us_federal_interest_gdp_retrieve
       description: 联邦利息支出占GDP比例 - GET /api/fred-us/federal-interest-gdp/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1858,7 +1898,7 @@ paths:
       operationId: api_fred_us_federal_net_outlays_retrieve
       description: 联邦净支出 - GET /api/fred-us/federal-net-outlays/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1873,7 +1913,7 @@ paths:
       operationId: api_fred_us_federal_surplus_deficit_retrieve
       description: 联邦盈余或赤字 - GET /api/fred-us/federal-surplus-deficit/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1888,7 +1928,7 @@ paths:
       operationId: api_fred_us_federal_surplus_deficit_gdf_retrieve
       description: 联邦盈余或赤字 (GDF) - GET /api/fred-us/federal-surplus-deficit-gdf/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1903,7 +1943,7 @@ paths:
       operationId: api_fred_us_federal_surplus_deficit_mts_retrieve
       description: 财政盈余/赤字 - GET /api/fred-us/federal-surplus-deficit-mts/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1918,7 +1958,7 @@ paths:
       operationId: api_fred_us_federal_tax_receipts_retrieve
       description: 联邦政府当期税收 - GET /api/fred-us/federal-tax-receipts/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1933,7 +1973,7 @@ paths:
       operationId: api_fred_us_fetch_data_create
       description: 手动获取美国FRED数据
       tags:
-      - api
+      - fred_us
       requestBody:
         content:
           application/json:
@@ -1960,7 +2000,7 @@ paths:
       operationId: api_fred_us_foreign_treasury_holdings_retrieve
       description: 外国持有的美国国债 - GET /api/fred-us/foreign-treasury-holdings/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1975,7 +2015,7 @@ paths:
       operationId: api_fred_us_government_consumer_credit_retrieve
       description: 政府消费者信贷 - GET /api/fred-us/government-consumer-credit/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -1990,7 +2030,7 @@ paths:
       operationId: api_fred_us_gross_federal_debt_retrieve
       description: 联邦总债务 - GET /api/fred-us/gross-federal-debt/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2005,7 +2045,7 @@ paths:
       operationId: api_fred_us_health_retrieve
       description: 健康检查端点
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2020,7 +2060,7 @@ paths:
       operationId: api_fred_us_high_yield_bond_spread_retrieve
       description: 高收益债券利差 - GET /api/fred-us/high-yield-bond-spread/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2035,7 +2075,7 @@ paths:
       operationId: api_fred_us_household_debt_gdp_retrieve
       description: 家庭债务占GDP比重 - GET /api/fred-us/household-debt-gdp/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2050,7 +2090,7 @@ paths:
       operationId: api_fred_us_housing_retrieve
       description: 房屋开工数 - GET /api/fred-us/housing/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2065,7 +2105,7 @@ paths:
       operationId: api_fred_us_indicator_retrieve
       description: 获取指定美国 FRED 指标数据
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2080,7 +2120,7 @@ paths:
       operationId: api_fred_us_inflation_breakeven_rate_retrieve
       description: 10年盈亏平衡通胀率 - GET /api/fred-us/inflation-breakeven-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2095,7 +2135,7 @@ paths:
       operationId: api_fred_us_inflation_consumer_price_index_retrieve
       description: 消费者价格指数 (CPI) - GET /api/fred-us/inflation-consumer-price-index/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2110,7 +2150,7 @@ paths:
       operationId: api_fred_us_inflation_core_pce_price_index_retrieve
       description: 核心PCE价格指数 - GET /api/fred-us/inflation-core-pce-price-index/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2125,7 +2165,7 @@ paths:
       operationId: api_fred_us_inflation_federal_funds_rate_retrieve
       description: 联邦基金利率 (Inflation) - GET /api/fred-us/inflation-federal-funds-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2140,7 +2180,7 @@ paths:
       operationId: api_fred_us_inflation_oil_prices_retrieve
       description: 原油价格 (WTI) - GET /api/fred-us/inflation-oil-prices/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2155,7 +2195,7 @@ paths:
       operationId: api_fred_us_inflation_producer_price_index_retrieve
       description: 生产者价格指数 - GET /api/fred-us/inflation-producer-price-index/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2170,7 +2210,7 @@ paths:
       operationId: api_fred_us_inflation_retail_sales_retrieve
       description: 零售销售 - GET /api/fred-us/inflation-retail-sales/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2185,7 +2225,7 @@ paths:
       operationId: api_fred_us_inflation_unemployment_rate_retrieve
       description: 失业率 (Inflation) - GET /api/fred-us/inflation-unemployment-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2200,7 +2240,7 @@ paths:
       operationId: api_fred_us_initial_jobless_claims_retrieve
       description: 首次申请失业救济人数 - GET /api/fred-us/initial-jobless-claims/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2215,7 +2255,7 @@ paths:
       operationId: api_fred_us_interest_rate_reserve_balances_retrieve
       description: 准备金余额利率 - GET /api/fred-us/interest-rate-reserve-balances/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2230,7 +2270,7 @@ paths:
       operationId: api_fred_us_job_openings_retrieve
       description: 职位空缺总数 - GET /api/fred-us/job-openings/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2245,7 +2285,7 @@ paths:
       operationId: api_fred_us_labor_force_participation_retrieve
       description: 劳动力参与率 - GET /api/fred-us/labor-force-participation/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2260,7 +2300,7 @@ paths:
       operationId: api_fred_us_m1_retrieve
       description: M1货币供应量 - GET /api/fred-us/m1/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2275,7 +2315,7 @@ paths:
       operationId: api_fred_us_m1_money_supply_retrieve
       description: M1货币供应量 - GET /api/fred-us/m1-money-supply/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2290,7 +2330,7 @@ paths:
       operationId: api_fred_us_m2_retrieve
       description: M2货币供应量 - GET /api/fred-us/m2/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2305,7 +2345,7 @@ paths:
       operationId: api_fred_us_m2_money_supply_retrieve
       description: M2货币供应量 - GET /api/fred-us/m2-money-supply/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2320,7 +2360,7 @@ paths:
       operationId: api_fred_us_m2v_retrieve
       description: M2货币流通速度 - GET /api/fred-us/m2v/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2335,7 +2375,7 @@ paths:
       operationId: api_fred_us_monetary_base_retrieve
       description: 货币基础 - GET /api/fred-us/monetary-base/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2350,7 +2390,7 @@ paths:
       operationId: api_fred_us_mortgage_30y_retrieve
       description: 30年固定抵押贷款利率 - GET /api/fred-us/mortgage-30y/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2365,7 +2405,7 @@ paths:
       operationId: api_fred_us_mortgage_debt_retrieve
       description: 抵押贷款债务未偿余额 - GET /api/fred-us/mortgage-debt/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2380,7 +2420,7 @@ paths:
       operationId: api_fred_us_nber_recession_indicator_retrieve
       description: NBER经济衰退指标 - GET /api/fred-us/nber-recession-indicator/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2395,7 +2435,7 @@ paths:
       operationId: api_fred_us_net_exports_retrieve
       description: 净出口 - GET /api/fred-us/net-exports/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2410,7 +2450,7 @@ paths:
       operationId: api_fred_us_nonfarm_payroll_retrieve
       description: 非农就业人数 - GET /api/fred-us/nonfarm-payroll/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2425,7 +2465,7 @@ paths:
       operationId: api_fred_us_overnight_reverse_repo_retrieve
       description: 隔夜逆回购协议 - GET /api/fred-us/overnight-reverse-repo/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2440,7 +2480,7 @@ paths:
       operationId: api_fred_us_pce_price_index_retrieve
       description: PCE价格指数 - GET /api/fred-us/pce-price-index/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2455,7 +2495,7 @@ paths:
       operationId: api_fred_us_population_55_over_retrieve
       description: 55岁及以上人口 - GET /api/fred-us/population-55-over/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2470,7 +2510,7 @@ paths:
       operationId: api_fred_us_primary_credit_loans_retrieve
       description: 主要信贷贷款 - GET /api/fred-us/primary-credit-loans/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2485,7 +2525,7 @@ paths:
       operationId: api_fred_us_quits_rate_retrieve
       description: 辞职率 - GET /api/fred-us/quits-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2500,7 +2540,7 @@ paths:
       operationId: api_fred_us_real_exports_retrieve
       description: 实际出口 - GET /api/fred-us/real-exports/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2515,7 +2555,7 @@ paths:
       operationId: api_fred_us_real_imports_retrieve
       description: 实际进口 - GET /api/fred-us/real-imports/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2530,7 +2570,7 @@ paths:
       operationId: api_fred_us_status_retrieve
       description: 获取美国FRED服务状态
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2545,7 +2585,7 @@ paths:
       operationId: api_fred_us_student_loans_retrieve
       description: 学生贷款 - GET /api/fred-us/student-loans/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2560,7 +2600,7 @@ paths:
       operationId: api_fred_us_total_debt_retrieve
       description: 家庭总债务 - GET /api/fred-us/total-debt/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2575,7 +2615,7 @@ paths:
       operationId: api_fred_us_trade_balance_goods_services_retrieve
       description: 贸易平衡 - GET /api/fred-us/trade-balance-goods-services/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2590,7 +2630,7 @@ paths:
       operationId: api_fred_us_treasury_10y_retrieve
       description: 10年期国债利率 - GET /api/fred-us/treasury-10y/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2605,7 +2645,7 @@ paths:
       operationId: api_fred_us_treasury_2y_retrieve
       description: 2年期国债利率 - GET /api/fred-us/treasury-2y/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2620,7 +2660,7 @@ paths:
       operationId: api_fred_us_treasury_3m_retrieve
       description: 3个月国债利率 - GET /api/fred-us/treasury-3m/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2635,7 +2675,7 @@ paths:
       operationId: api_fred_us_unemployment_retrieve
       description: 失业率 - GET /api/fred-us/unemployment/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2650,7 +2690,7 @@ paths:
       operationId: api_fred_us_unemployment_rate_retrieve
       description: 失业率 - GET /api/fred-us/unemployment-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2681,7 +2721,7 @@ paths:
         description: A unique integer value identifying this US FRED Indicator.
         required: true
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2696,7 +2736,7 @@ paths:
       operationId: api_fred_aaa_corporate_bond_yield_retrieve
       description: 穆迪Aaa级企业债券收益率 - GET /api/fred-us/aaa-corporate-bond-yield/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2711,7 +2751,7 @@ paths:
       operationId: api_fred_all_indicators_retrieve
       description: 获取所有美国FRED指标概览
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2726,7 +2766,7 @@ paths:
       operationId: api_fred_average_hourly_earnings_retrieve
       description: 平均时薪增长 - GET /api/fred-us/average-hourly-earnings/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2741,7 +2781,7 @@ paths:
       operationId: api_fred_baa_corporate_bond_yield_retrieve
       description: 穆迪Baa级企业债券收益率 - GET /api/fred-us/baa-corporate-bond-yield/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2756,7 +2796,7 @@ paths:
       operationId: api_fred_bank_lending_standards_retrieve
       description: 银行贷款标准 - GET /api/fred-us/bank-lending-standards/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2771,7 +2811,7 @@ paths:
       operationId: api_fred_banking_commercial_loans_retrieve
       description: 商业银行贷款和租赁 - GET /api/fred-us/banking-commercial-loans/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2786,7 +2826,7 @@ paths:
       operationId: api_fred_banking_fed_balance_sheet_retrieve
       description: 美联储资产负债表总资产 - GET /api/fred-us/banking-fed-balance-sheet/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2801,7 +2841,7 @@ paths:
       operationId: api_fred_banking_federal_funds_rate_retrieve
       description: 联邦基金利率 (Banking) - GET /api/fred-us/banking-federal-funds-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2816,7 +2856,7 @@ paths:
       operationId: api_fred_banking_pce_inflation_retrieve
       description: PCE价格指数 (Banking) - GET /api/fred-us/banking-pce-inflation/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2831,7 +2871,7 @@ paths:
       operationId: api_fred_banking_prime_rate_retrieve
       description: 银行基准贷款利率 - GET /api/fred-us/banking-prime-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2846,7 +2886,7 @@ paths:
       operationId: api_fred_banking_reserve_balances_interest_retrieve
       description: 准备金余额利率 - GET /api/fred-us/banking-reserve-balances-interest/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2861,7 +2901,7 @@ paths:
       operationId: api_fred_banking_total_reserves_retrieve
       description: 总准备金余额 - GET /api/fred-us/banking-total-reserves/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2876,7 +2916,7 @@ paths:
       operationId: api_fred_banking_unemployment_rate_retrieve
       description: 失业率 (Banking) - GET /api/fred-us/banking-unemployment-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2891,7 +2931,7 @@ paths:
       operationId: api_fred_commercial_bank_loans_retrieve
       description: 商业银行贷款和租赁总额 - GET /api/fred-us/commercial-bank-loans/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2906,7 +2946,7 @@ paths:
       operationId: api_fred_consumer_credit_retrieve
       description: 总消费者信贷 - GET /api/fred-us/consumer-credit/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2921,7 +2961,7 @@ paths:
       operationId: api_fred_consumer_price_inflation_retrieve
       description: 消费者价格通胀率 - GET /api/fred-us/consumer-price-inflation/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2936,7 +2976,7 @@ paths:
       operationId: api_fred_corporate_debt_equity_ratio_retrieve
       description: 非金融企业债务占股权市值比例 - GET /api/fred-us/corporate-debt-equity-ratio/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2951,7 +2991,7 @@ paths:
       operationId: api_fred_corporate_debt_securities_retrieve
       description: 非金融企业：债券和贷款负债水平 - GET /api/fred-us/corporate-debt-securities/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2966,7 +3006,7 @@ paths:
       operationId: api_fred_cpi_retrieve
       description: 消费者价格指数 - GET /api/fred-us/cpi/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2981,7 +3021,7 @@ paths:
       operationId: api_fred_credit_card_debt_retrieve
       description: 信用卡债务余额 - GET /api/fred-us/credit-card-debt/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -2996,7 +3036,7 @@ paths:
       operationId: api_fred_current_account_balance_retrieve
       description: 经常账户余额 - GET /api/fred-us/current-account-balance/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3011,7 +3051,7 @@ paths:
       operationId: api_fred_customs_duties_retrieve
       description: 关税收入 - GET /api/fred-us/customs-duties/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3026,7 +3066,7 @@ paths:
       operationId: api_fred_debt_service_ratio_retrieve
       description: 家庭债务偿还比率 - GET /api/fred-us/debt-service-ratio/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3041,7 +3081,7 @@ paths:
       operationId: api_fred_debt_to_gdp_retrieve
       description: 债务与GDP比率 - GET /api/fred-us/debt-to-gdp/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3056,7 +3096,7 @@ paths:
       operationId: api_fred_employment_cost_index_retrieve
       description: 就业成本指数 - GET /api/fred-us/employment-cost-index/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3071,7 +3111,7 @@ paths:
       operationId: api_fred_excess_reserves_retrieve
       description: 存款机构超额准备金 - GET /api/fred-us/excess-reserves/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3086,7 +3126,7 @@ paths:
       operationId: api_fred_fed_balance_sheet_retrieve
       description: 美联储资产负债表总资产 - GET /api/fred-us/fed-balance-sheet/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3101,7 +3141,7 @@ paths:
       operationId: api_fred_fed_funds_retrieve
       description: 联邦基金利率 - GET /api/fred-us/fed-funds/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3116,7 +3156,7 @@ paths:
       operationId: api_fred_federal_current_expenditures_retrieve
       description: 联邦政府当期支出 - GET /api/fred-us/federal-current-expenditures/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3131,7 +3171,7 @@ paths:
       operationId: api_fred_federal_current_receipts_retrieve
       description: 联邦政府当期收入 - GET /api/fred-us/federal-current-receipts/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3146,7 +3186,7 @@ paths:
       operationId: api_fred_federal_debt_gdp_ratio_retrieve
       description: 联邦债务占GDP比例 - GET /api/fred-us/federal-debt-gdp-ratio/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3161,7 +3201,7 @@ paths:
       operationId: api_fred_federal_debt_gdp_ratio_gdf_retrieve
       description: 联邦债务占GDP比例 (GDF) - GET /api/fred-us/federal-debt-gdp-ratio-gdf/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3176,7 +3216,7 @@ paths:
       operationId: api_fred_federal_debt_public_gdp_retrieve
       description: 联邦公共债务占GDP比例 - GET /api/fred-us/federal-debt-public-gdp/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3191,7 +3231,7 @@ paths:
       operationId: api_fred_federal_debt_total_retrieve
       description: 联邦债务总额 - GET /api/fred-us/federal-debt-total/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3206,7 +3246,7 @@ paths:
       operationId: api_fred_federal_debt_total_gdf_retrieve
       description: 联邦债务总额 (GDF) - GET /api/fred-us/federal-debt-total-gdf/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3221,7 +3261,7 @@ paths:
       operationId: api_fred_federal_funds_rate_retrieve
       description: 联邦基金利率 (Money Supply) - GET /api/fred-us/federal-funds-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3236,7 +3276,7 @@ paths:
       operationId: api_fred_federal_interest_gdp_retrieve
       description: 联邦利息支出占GDP比例 - GET /api/fred-us/federal-interest-gdp/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3251,7 +3291,7 @@ paths:
       operationId: api_fred_federal_net_outlays_retrieve
       description: 联邦净支出 - GET /api/fred-us/federal-net-outlays/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3266,7 +3306,7 @@ paths:
       operationId: api_fred_federal_surplus_deficit_retrieve
       description: 联邦盈余或赤字 - GET /api/fred-us/federal-surplus-deficit/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3281,7 +3321,7 @@ paths:
       operationId: api_fred_federal_surplus_deficit_gdf_retrieve
       description: 联邦盈余或赤字 (GDF) - GET /api/fred-us/federal-surplus-deficit-gdf/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3296,7 +3336,7 @@ paths:
       operationId: api_fred_federal_surplus_deficit_mts_retrieve
       description: 财政盈余/赤字 - GET /api/fred-us/federal-surplus-deficit-mts/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3311,7 +3351,7 @@ paths:
       operationId: api_fred_federal_tax_receipts_retrieve
       description: 联邦政府当期税收 - GET /api/fred-us/federal-tax-receipts/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3326,7 +3366,7 @@ paths:
       operationId: api_fred_fetch_data_create
       description: 手动获取美国FRED数据
       tags:
-      - api
+      - fred_us
       requestBody:
         content:
           application/json:
@@ -3353,7 +3393,7 @@ paths:
       operationId: api_fred_foreign_treasury_holdings_retrieve
       description: 外国持有的美国国债 - GET /api/fred-us/foreign-treasury-holdings/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3368,7 +3408,7 @@ paths:
       operationId: api_fred_government_consumer_credit_retrieve
       description: 政府消费者信贷 - GET /api/fred-us/government-consumer-credit/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3383,7 +3423,7 @@ paths:
       operationId: api_fred_gross_federal_debt_retrieve
       description: 联邦总债务 - GET /api/fred-us/gross-federal-debt/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3398,7 +3438,7 @@ paths:
       operationId: api_fred_health_retrieve
       description: 健康检查端点
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3413,7 +3453,7 @@ paths:
       operationId: api_fred_high_yield_bond_spread_retrieve
       description: 高收益债券利差 - GET /api/fred-us/high-yield-bond-spread/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3428,7 +3468,7 @@ paths:
       operationId: api_fred_household_debt_gdp_retrieve
       description: 家庭债务占GDP比重 - GET /api/fred-us/household-debt-gdp/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3443,7 +3483,7 @@ paths:
       operationId: api_fred_housing_retrieve
       description: 房屋开工数 - GET /api/fred-us/housing/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3458,7 +3498,7 @@ paths:
       operationId: api_fred_indicator_retrieve
       description: 获取指定美国 FRED 指标数据
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3473,7 +3513,7 @@ paths:
       operationId: api_fred_inflation_breakeven_rate_retrieve
       description: 10年盈亏平衡通胀率 - GET /api/fred-us/inflation-breakeven-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3488,7 +3528,7 @@ paths:
       operationId: api_fred_inflation_consumer_price_index_retrieve
       description: 消费者价格指数 (CPI) - GET /api/fred-us/inflation-consumer-price-index/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3503,7 +3543,7 @@ paths:
       operationId: api_fred_inflation_core_pce_price_index_retrieve
       description: 核心PCE价格指数 - GET /api/fred-us/inflation-core-pce-price-index/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3518,7 +3558,7 @@ paths:
       operationId: api_fred_inflation_federal_funds_rate_retrieve
       description: 联邦基金利率 (Inflation) - GET /api/fred-us/inflation-federal-funds-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3533,7 +3573,7 @@ paths:
       operationId: api_fred_inflation_oil_prices_retrieve
       description: 原油价格 (WTI) - GET /api/fred-us/inflation-oil-prices/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3548,7 +3588,7 @@ paths:
       operationId: api_fred_inflation_producer_price_index_retrieve
       description: 生产者价格指数 - GET /api/fred-us/inflation-producer-price-index/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3563,7 +3603,7 @@ paths:
       operationId: api_fred_inflation_retail_sales_retrieve
       description: 零售销售 - GET /api/fred-us/inflation-retail-sales/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3578,7 +3618,7 @@ paths:
       operationId: api_fred_inflation_unemployment_rate_retrieve
       description: 失业率 (Inflation) - GET /api/fred-us/inflation-unemployment-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3593,7 +3633,7 @@ paths:
       operationId: api_fred_initial_jobless_claims_retrieve
       description: 首次申请失业救济人数 - GET /api/fred-us/initial-jobless-claims/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3608,7 +3648,7 @@ paths:
       operationId: api_fred_interest_rate_reserve_balances_retrieve
       description: 准备金余额利率 - GET /api/fred-us/interest-rate-reserve-balances/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3623,7 +3663,7 @@ paths:
       operationId: api_fred_job_openings_retrieve
       description: 职位空缺总数 - GET /api/fred-us/job-openings/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3638,7 +3678,7 @@ paths:
       operationId: api_fred_labor_force_participation_retrieve
       description: 劳动力参与率 - GET /api/fred-us/labor-force-participation/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3653,7 +3693,7 @@ paths:
       operationId: api_fred_m1_retrieve
       description: M1货币供应量 - GET /api/fred-us/m1/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3668,7 +3708,7 @@ paths:
       operationId: api_fred_m1_money_supply_retrieve
       description: M1货币供应量 - GET /api/fred-us/m1-money-supply/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3683,7 +3723,7 @@ paths:
       operationId: api_fred_m2_retrieve
       description: M2货币供应量 - GET /api/fred-us/m2/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3698,7 +3738,7 @@ paths:
       operationId: api_fred_m2_money_supply_retrieve
       description: M2货币供应量 - GET /api/fred-us/m2-money-supply/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3713,7 +3753,7 @@ paths:
       operationId: api_fred_m2v_retrieve
       description: M2货币流通速度 - GET /api/fred-us/m2v/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3728,7 +3768,7 @@ paths:
       operationId: api_fred_monetary_base_retrieve
       description: 货币基础 - GET /api/fred-us/monetary-base/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3743,7 +3783,7 @@ paths:
       operationId: api_fred_mortgage_30y_retrieve
       description: 30年固定抵押贷款利率 - GET /api/fred-us/mortgage-30y/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3758,7 +3798,7 @@ paths:
       operationId: api_fred_mortgage_debt_retrieve
       description: 抵押贷款债务未偿余额 - GET /api/fred-us/mortgage-debt/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3773,7 +3813,7 @@ paths:
       operationId: api_fred_nber_recession_indicator_retrieve
       description: NBER经济衰退指标 - GET /api/fred-us/nber-recession-indicator/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3788,7 +3828,7 @@ paths:
       operationId: api_fred_net_exports_retrieve
       description: 净出口 - GET /api/fred-us/net-exports/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3803,7 +3843,7 @@ paths:
       operationId: api_fred_nonfarm_payroll_retrieve
       description: 非农就业人数 - GET /api/fred-us/nonfarm-payroll/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3818,7 +3858,7 @@ paths:
       operationId: api_fred_overnight_reverse_repo_retrieve
       description: 隔夜逆回购协议 - GET /api/fred-us/overnight-reverse-repo/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3833,7 +3873,7 @@ paths:
       operationId: api_fred_pce_price_index_retrieve
       description: PCE价格指数 - GET /api/fred-us/pce-price-index/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3848,7 +3888,7 @@ paths:
       operationId: api_fred_population_55_over_retrieve
       description: 55岁及以上人口 - GET /api/fred-us/population-55-over/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3863,7 +3903,7 @@ paths:
       operationId: api_fred_primary_credit_loans_retrieve
       description: 主要信贷贷款 - GET /api/fred-us/primary-credit-loans/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3878,7 +3918,7 @@ paths:
       operationId: api_fred_quits_rate_retrieve
       description: 辞职率 - GET /api/fred-us/quits-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3893,7 +3933,7 @@ paths:
       operationId: api_fred_real_exports_retrieve
       description: 实际出口 - GET /api/fred-us/real-exports/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3908,7 +3948,7 @@ paths:
       operationId: api_fred_real_imports_retrieve
       description: 实际进口 - GET /api/fred-us/real-imports/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3923,7 +3963,7 @@ paths:
       operationId: api_fred_status_retrieve
       description: 获取美国FRED服务状态
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3938,7 +3978,7 @@ paths:
       operationId: api_fred_student_loans_retrieve
       description: 学生贷款 - GET /api/fred-us/student-loans/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3953,7 +3993,7 @@ paths:
       operationId: api_fred_total_debt_retrieve
       description: 家庭总债务 - GET /api/fred-us/total-debt/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3968,7 +4008,7 @@ paths:
       operationId: api_fred_trade_balance_goods_services_retrieve
       description: 贸易平衡 - GET /api/fred-us/trade-balance-goods-services/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3983,7 +4023,7 @@ paths:
       operationId: api_fred_treasury_10y_retrieve
       description: 10年期国债利率 - GET /api/fred-us/treasury-10y/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -3998,7 +4038,7 @@ paths:
       operationId: api_fred_treasury_2y_retrieve
       description: 2年期国债利率 - GET /api/fred-us/treasury-2y/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -4013,7 +4053,7 @@ paths:
       operationId: api_fred_treasury_3m_retrieve
       description: 3个月国债利率 - GET /api/fred-us/treasury-3m/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -4028,7 +4068,7 @@ paths:
       operationId: api_fred_unemployment_retrieve
       description: 失业率 - GET /api/fred-us/unemployment/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -4043,7 +4083,7 @@ paths:
       operationId: api_fred_unemployment_rate_retrieve
       description: 失业率 - GET /api/fred-us/unemployment-rate/
       tags:
-      - api
+      - fred_us
       security:
       - {}
       responses:
@@ -4073,7 +4113,7 @@ paths:
       operationId: api_pdf_internal_callback_create
       description: Internal callback for LaTeX worker status updates
       tags:
-      - api
+      - pdf
       requestBody:
         content:
           application/json:
@@ -4110,7 +4150,7 @@ paths:
         description: Task UUID
         required: true
       tags:
-      - api
+      - pdf
       security:
       - {}
       responses:
@@ -4145,7 +4185,7 @@ paths:
           type: integer
         description: Optional company ID filter
       tags:
-      - api
+      - pdf
       security:
       - {}
       responses:
@@ -4162,7 +4202,7 @@ paths:
       operationId: api_pdf_tasks_request_create
       description: Request generation of a PDF report for a company
       tags:
-      - api
+      - pdf
       requestBody:
         content:
           application/json:
@@ -4210,7 +4250,7 @@ paths:
         description: Task UUID
         required: true
       tags:
-      - api
+      - pdf
       security:
       - {}
       responses:
@@ -4235,7 +4275,7 @@ paths:
 
         Provides read-only access to active templates for selection.
       tags:
-      - api
+      - pdf
       security:
       - {}
       responses:
@@ -4262,7 +4302,7 @@ paths:
         description: A unique integer value identifying this PDF Template.
         required: true
       tags:
-      - api
+      - pdf
       security:
       - {}
       responses:
@@ -4299,7 +4339,7 @@ paths:
           type: string
         description: Topic filters
       tags:
-      - api
+      - policy
       security:
       - {}
       responses:
@@ -4322,7 +4362,7 @@ paths:
         description: Reuters Instrument Code (e.g., 0425.SZ for XCMG)
         required: true
       tags:
-      - Refinitiv
+      - refinitiv
       security:
       - {}
       responses:
@@ -4351,7 +4391,7 @@ paths:
         description: 搜索关键词 (e.g., 'XCMG', 'construction machinery')
         required: true
       tags:
-      - Refinitiv
+      - refinitiv
       security:
       - {}
       responses:
@@ -4367,7 +4407,7 @@ paths:
       description: 测试与 Refinitiv Data Platform 的连接状态。
       summary: 测试 Refinitiv 连接
       tags:
-      - Refinitiv
+      - refinitiv
       security:
       - {}
       responses:
@@ -4396,7 +4436,7 @@ paths:
           type: string
         description: 'Chart type: intraday, cmf, obv'
       tags:
-      - api
+      - stocks
       security:
       - {}
       responses:
@@ -4411,7 +4451,7 @@ paths:
       operationId: api_stocks_fund_flow_retrieve
       description: Fund Flow页面 - 重定向到现有的HTML页面
       tags:
-      - api
+      - stocks
       security:
       - {}
       responses:
@@ -4448,7 +4488,7 @@ paths:
         description: Stock ticker symbol
         required: true
       tags:
-      - api
+      - stocks
       security:
       - {}
       responses:
@@ -4470,7 +4510,7 @@ paths:
         description: Stock ticker symbol
         required: true
       tags:
-      - api
+      - stocks
       security:
       - {}
       responses:
@@ -4485,7 +4525,7 @@ paths:
       operationId: api_stocks_list_retrieve
       description: 获取股票列表 - 从CSI300 Company表读取
       tags:
-      - api
+      - stocks
       security:
       - {}
       responses:
@@ -4500,7 +4540,7 @@ paths:
       operationId: api_stocks_score_generate_create
       description: Trigger a lightweight scoring run for a single ticker.
       tags:
-      - api
+      - stocks
       requestBody:
         content:
           application/json:
@@ -4527,7 +4567,7 @@ paths:
       operationId: api_stocks_score_generate_all_create
       description: Trigger scoring calculation for all stocks.
       tags:
-      - api
+      - stocks
       security:
       - {}
       responses:
@@ -4553,7 +4593,7 @@ paths:
           type: integer
         description: Number of results
       tags:
-      - api
+      - stocks
       security:
       - {}
       responses:
@@ -4581,7 +4621,7 @@ paths:
           type: integer
         description: Number of results
       tags:
-      - api
+      - stocks
       security:
       - {}
       responses:
@@ -4590,358 +4630,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TopPicksWithSparklinesResponse'
-          description: ''
-  /csi300/:
-    get:
-      operationId: csi300_retrieve
-      description: CSI300 API 索引端点 (向后兼容)
-      tags:
-      - csi300
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CSI300IndexResponse'
-          description: ''
-  /csi300/api/companies/:
-    get:
-      operationId: csi300_api_companies_list
-      description: 获取公司列表或 API 概览
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      tags:
-      - csi300
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedCSI300CompanyListList'
-          description: ''
-  /csi300/api/companies/{id}/:
-    get:
-      operationId: csi300_api_companies_retrieve
-      description: 获取单个公司详情
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this CSI300 Company.
-        required: true
-      tags:
-      - csi300
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CSI300Company'
-          description: ''
-  /csi300/api/companies/{id}/industry_peers_comparison/:
-    get:
-      operationId: csi300_api_companies_industry_peers_comparison_retrieve
-      description: 获取同行业公司对比数据
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this CSI300 Company.
-        required: true
-      tags:
-      - csi300
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CSI300PeerComparisonResponse'
-          description: ''
-  /csi300/api/companies/{id}/investment_summary/:
-    get:
-      operationId: csi300_api_companies_investment_summary_retrieve
-      description: 获取公司投资摘要
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this CSI300 Company.
-        required: true
-      tags:
-      - csi300
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CSI300InvestmentSummary'
-          description: ''
-  /csi300/api/companies/filter_options/:
-    get:
-      operationId: csi300_api_companies_filter_options_retrieve
-      description: 获取可用的筛选选项
-      parameters:
-      - in: query
-        name: im_sector
-        schema:
-          type: string
-      - in: query
-        name: region
-        schema:
-          type: string
-      tags:
-      - csi300
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CSI300FilterOptions'
-          description: ''
-  /csi300/api/companies/generate-summary/:
-    post:
-      operationId: csi300_api_companies_generate_summary_create
-      description: 异步启动 Investment Summary 生成任务。立即返回 task_id，前端可通过 task-status API
-        轮询进度。
-      tags:
-      - csi300
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GenerateSummaryRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/GenerateSummaryRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/GenerateSummaryRequest'
-        required: true
-      security:
-      - {}
-      responses:
-        '202':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenerationTaskStartResponse'
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-          description: ''
-  /csi300/api/companies/health/:
-    get:
-      operationId: csi300_api_companies_health_retrieve
-      description: 健康检查端点
-      tags:
-      - csi300
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CSI300Company'
-          description: ''
-  /csi300/api/companies/search/:
-    get:
-      operationId: csi300_api_companies_search_list
-      description: 搜索公司
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      - in: query
-        name: q
-        schema:
-          type: string
-        required: true
-      tags:
-      - csi300
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedCSI300CompanyListList'
-          description: ''
-  /csi300/api/companies/task-status/{task_id}/:
-    get:
-      operationId: csi300_api_companies_task_status_retrieve
-      description: 查询异步生成任务的状态和进度。前端轮询此 API 获取生成进度。
-      parameters:
-      - in: path
-        name: task_id
-        schema:
-          type: string
-        description: 任务 UUID
-        required: true
-      tags:
-      - csi300
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenerationTaskStatusResponse'
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-          description: ''
-  /csi300/api/generate-summary/:
-    post:
-      operationId: csi300_api_generate_summary_create
-      description: 异步启动 Investment Summary 生成任务 (向后兼容端点)
-      tags:
-      - csi300
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GenerateInvestmentSummaryRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/GenerateInvestmentSummaryRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/GenerateInvestmentSummaryRequest'
-        required: true
-      security:
-      - {}
-      responses:
-        '202':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenerationTaskStartResponse'
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-          description: ''
-  /csi300/api/task-status/{task_id}/:
-    get:
-      operationId: csi300_api_task_status_retrieve
-      description: 查询异步生成任务的状态和进度 (向后兼容端点)
-      summary: 查询任务状态
-      parameters:
-      - in: path
-        name: task_id
-        schema:
-          type: string
-        description: 任务 UUID
-        required: true
-      tags:
-      - csi300
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenerationTaskStatusResponse'
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-          description: ''
-  /csi300/health/:
-    get:
-      operationId: csi300_health_retrieve
-      description: CSI300 API 健康检查端点 (向后兼容)
-      tags:
-      - csi300
-      security:
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CSI300HealthCheckResponse'
           description: ''
 components:
   schemas:
@@ -6394,24 +6082,6 @@ components:
       - id
       - name
       - slug
-    ContentTypeEnum:
-      enum:
-      - consumer-spending
-      - motor-vehicles
-      - services-exports
-      - goods-exports
-      - economic-indicators
-      - investment-components
-      - market-analysis
-      type: string
-      description: |-
-        * `consumer-spending` - Consumer Spending
-        * `motor-vehicles` - Motor Vehicles
-        * `services-exports` - Services Exports
-        * `goods-exports` - Goods Exports
-        * `economic-indicators` - Economic Indicators
-        * `investment-components` - Investment Components
-        * `market-analysis` - Market Analysis
     FinancialContext:
       type: object
       description: |-
@@ -6660,8 +6330,11 @@ components:
         用于 POST /generate-summary/ 的响应
       properties:
         status:
-          allOf:
-          - $ref: '#/components/schemas/GenerationTaskStartResponseStatusEnum'
+          enum:
+          - accepted
+          - error
+          type: string
+          x-spec-enum-id: e7e1f89b85b8e0d8
           description: |-
             响应状态: 'accepted' 表示任务已接受, 'error' 表示错误
 
@@ -6675,6 +6348,14 @@ components:
           nullable: true
           description: 任务 UUID (仅当 status='accepted' 时返回)
         task_status:
+          enum:
+          - pending
+          - processing
+          - completed
+          - failed
+          - null
+          type: string
+          x-spec-enum-id: a8f61caf99619754
           nullable: true
           description: |-
             当前任务状态
@@ -6683,9 +6364,6 @@ components:
             * `processing` - Processing
             * `completed` - Completed
             * `failed` - Failed
-          oneOf:
-          - $ref: '#/components/schemas/TaskStatusEnum'
-          - $ref: '#/components/schemas/NullEnum'
         progress_percent:
           type: integer
           default: 0
@@ -6697,14 +6375,6 @@ components:
       required:
       - message
       - status
-    GenerationTaskStartResponseStatusEnum:
-      enum:
-      - accepted
-      - error
-      type: string
-      description: |-
-        * `accepted` - accepted
-        * `error` - error
     GenerationTaskStatusResponse:
       type: object
       description: |-
@@ -6713,8 +6383,11 @@ components:
         用于 GET /task-status/{task_id}/ 的响应
       properties:
         status:
-          allOf:
-          - $ref: '#/components/schemas/GenerationTaskStatusResponseStatusEnum'
+          enum:
+          - success
+          - error
+          type: string
+          x-spec-enum-id: 26abdcd90e9b4d60
           description: |-
             API 响应状态
 
@@ -6724,8 +6397,13 @@ components:
           type: string
           description: 任务 UUID
         task_status:
-          allOf:
-          - $ref: '#/components/schemas/TaskStatusEnum'
+          enum:
+          - pending
+          - processing
+          - completed
+          - failed
+          type: string
+          x-spec-enum-id: a8f61caf99619754
           description: |-
             任务执行状态: pending, processing, completed, failed
 
@@ -6781,14 +6459,6 @@ components:
       - task_id
       - task_status
       - updated_at
-    GenerationTaskStatusResponseStatusEnum:
-      enum:
-      - success
-      - error
-      type: string
-      description: |-
-        * `success` - success
-        * `error` - error
     GlobalHealthCheckResponse:
       type: object
       properties:
@@ -7022,8 +6692,16 @@ components:
           type: string
           readOnly: true
         content_type:
-          allOf:
-          - $ref: '#/components/schemas/ContentTypeEnum'
+          enum:
+          - consumer-spending
+          - motor-vehicles
+          - services-exports
+          - goods-exports
+          - economic-indicators
+          - investment-components
+          - market-analysis
+          type: string
+          x-spec-enum-id: 44e38ec12d0fac04
           description: |-
             Specific type of content
 
@@ -7068,9 +6746,6 @@ components:
       - source
       - title
       - updated_at
-    NullEnum:
-      enum:
-      - null
     PDFDownloadResponse:
       type: object
       description: Response serializer for download URL endpoint.
@@ -7136,8 +6811,16 @@ components:
           readOnly: true
           description: Template display name
         status:
-          allOf:
-          - $ref: '#/components/schemas/PDFTaskStatusEnum'
+          enum:
+          - pending
+          - processing
+          - generating_charts
+          - compiling
+          - uploading
+          - completed
+          - failed
+          type: string
+          x-spec-enum-id: be19177b51ec186b
           readOnly: true
           description: |-
             Current task status
@@ -7223,24 +6906,6 @@ components:
       - status
       - task_id
       - websocket_url
-    PDFTaskStatusEnum:
-      enum:
-      - pending
-      - processing
-      - generating_charts
-      - compiling
-      - uploading
-      - completed
-      - failed
-      type: string
-      description: |-
-        * `pending` - Pending
-        * `processing` - Processing
-        * `generating_charts` - Generating Charts
-        * `compiling` - Compiling LaTeX
-        * `uploading` - Uploading to S3
-        * `completed` - Completed
-        * `failed` - Failed
     PDFTemplate:
       type: object
       description: Serializer for PDF templates (read-only, for listing available
@@ -7623,18 +7288,6 @@ components:
       - count
       - stocks
       - success
-    TaskStatusEnum:
-      enum:
-      - pending
-      - processing
-      - completed
-      - failed
-      type: string
-      description: |-
-        * `pending` - Pending
-        * `processing` - Processing
-        * `completed` - Completed
-        * `failed` - Failed
     TopPicksResponse:
       type: object
       properties:

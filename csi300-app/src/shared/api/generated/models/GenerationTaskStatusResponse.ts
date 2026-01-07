@@ -2,8 +2,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { GenerationTaskStatusResponseStatusEnum } from './GenerationTaskStatusResponseStatusEnum';
-import type { TaskStatusEnum } from './TaskStatusEnum';
 /**
  * 任务状态查询响应序列化器
  *
@@ -16,7 +14,7 @@ export type GenerationTaskStatusResponse = {
      * * `success` - success
      * * `error` - error
      */
-    status: GenerationTaskStatusResponseStatusEnum;
+    status: GenerationTaskStatusResponse.status;
     /**
      * 任务 UUID
      */
@@ -29,7 +27,7 @@ export type GenerationTaskStatusResponse = {
      * * `completed` - Completed
      * * `failed` - Failed
      */
-    task_status: TaskStatusEnum;
+    task_status: GenerationTaskStatusResponse.task_status;
     /**
      * 进度百分比 (0-100)
      */
@@ -71,4 +69,30 @@ export type GenerationTaskStatusResponse = {
      */
     error?: string | null;
 };
+export namespace GenerationTaskStatusResponse {
+    /**
+     * API 响应状态
+     *
+     * * `success` - success
+     * * `error` - error
+     */
+    export enum status {
+        SUCCESS = 'success',
+        ERROR = 'error',
+    }
+    /**
+     * 任务执行状态: pending, processing, completed, failed
+     *
+     * * `pending` - Pending
+     * * `processing` - Processing
+     * * `completed` - Completed
+     * * `failed` - Failed
+     */
+    export enum task_status {
+        PENDING = 'pending',
+        PROCESSING = 'processing',
+        COMPLETED = 'completed',
+        FAILED = 'failed',
+    }
+}
 

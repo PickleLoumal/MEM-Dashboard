@@ -84,6 +84,7 @@ ruff>=0.8.0
 # Django Channels (WebSocket support for PDF generation progress)
 channels>=4.0.0
 channels-redis>=4.2.0
+daphne>=4.0.0  # ASGI server for WebSocket support in development
 
 # Jinja2 (for LaTeX template rendering in PDF service)
 Jinja2>=3.1.0

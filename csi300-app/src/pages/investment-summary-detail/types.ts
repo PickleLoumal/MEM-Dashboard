@@ -15,7 +15,8 @@ export type {
   GenerationTaskStatusResponse as TaskStatusResponse,
 } from '@shared/api/generated';
 
-export { TaskStatusEnum } from '@shared/api/generated';
+// TaskStatusEnum is now GenerationTaskStatusResponse.task_status
+// Re-export is handled in api.ts
 
 // Legacy type alias for backward compatibility
 export type TaskStatus = 'pending' | 'processing' | 'completed' | 'failed';
@@ -34,4 +35,5 @@ export type {
   PDFTemplateDetail,
 } from '@shared/api/generated';
 
-export { PDFTaskStatusEnum } from '@shared/api/generated';
+// PDFTaskStatusEnum is now PDFTask.status
+// Use: import { PDFTask } from '@shared/api/generated'; then PDFTask.status

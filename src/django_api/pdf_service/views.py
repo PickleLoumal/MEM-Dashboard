@@ -184,8 +184,18 @@ class PDFTaskViewSet(ErrorResponseMixin, viewsets.ViewSet):
         )
 
         # Build WebSocket URL
-        ws_protocol = "wss" if request.is_secure() else "ws"
+        # Determine if request is HTTPS:
+        # 1. request.is_secure() with SECURE_PROXY_SSL_HEADER in settings.py
+        # 2. X-Forwarded-Proto header (set by ALB/CloudFront)
+        # 3. CloudFront URLs are always HTTPS
         host = request.get_host()
+        is_https = (
+            request.is_secure()
+            or request.headers.get("X-Forwarded-Proto") == "https"
+            or "cloudfront.net" in host  # CloudFront URLs are always HTTPS
+            or request.headers.get("CloudFront-Forwarded-Proto") == "https"
+        )
+        ws_protocol = "wss" if is_https else "ws"
         websocket_url = f"{ws_protocol}://{host}/ws/pdf/{task.task_id}/"
 
         return Response(

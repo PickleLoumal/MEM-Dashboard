@@ -10,7 +10,7 @@ import {
   LineType,
 } from 'lightweight-charts';
 import { GlobalNav, GlobalNavProps } from '@shared/components/GlobalNav';
-import { ApiService } from '@shared/api/generated';
+import { StocksService } from '@shared/api/generated';
 import { convertToChartTime, formatNumber, formatLargeNumber, calculateMA } from './utils';
 
 // ============ Observability / Logging ============
@@ -221,7 +221,7 @@ export default function App() {
     const loadStockList = async () => {
       logger.info('Loading stock list...');
       try {
-        const response = await ApiService.apiStocksListRetrieve();
+        const response = await StocksService.apiStocksListRetrieve();
         logger.debug('Stock list response', response);
         if (response.success && response.stocks) {
           const stockList = response.stocks as Stock[];
@@ -262,8 +262,8 @@ export default function App() {
     logger.info('Loading top picks...');
     try {
       const [gainersRes, losersRes] = await Promise.all([
-        ApiService.apiStocksTopPicksFastRetrieve('buy', 5),
-        ApiService.apiStocksTopPicksFastRetrieve('sell', 5)
+        StocksService.apiStocksTopPicksFastRetrieve('buy', 5),
+        StocksService.apiStocksTopPicksFastRetrieve('sell', 5)
       ]);
 
       logger.debug('Top picks response', { gainers: gainersRes, losers: losersRes });
@@ -327,7 +327,7 @@ export default function App() {
 
         if (isIntraday) {
           // Use generated ApiService for intraday data
-          apiResponse = await ApiService.apiStocksIntradayRetrieve(currentStock.symbol);
+          apiResponse = await StocksService.apiStocksIntradayRetrieve(currentStock.symbol);
         } else {
           // Calculate days based on time range
           let days = 3650; // Default for 'All'
@@ -341,7 +341,7 @@ export default function App() {
           else if (timeRange === '5Y') days = 1825;
 
           // Use generated ApiService for historical data
-          apiResponse = await ApiService.apiStocksHistoricalRetrieve(
+          apiResponse = await StocksService.apiStocksHistoricalRetrieve(
             currentStock.symbol,
             days,
             config.interval,
@@ -751,7 +751,7 @@ export default function App() {
     logger.info('Generating scores for all stocks...');
     setGenerating(true);
     try {
-      const res = await ApiService.apiStocksScoreGenerateAllCreate();
+      const res = await StocksService.apiStocksScoreGenerateAllCreate();
       logger.debug('Generate all scores response', res);
       if (res.success) {
         logger.info('All scores generated successfully');
@@ -778,7 +778,7 @@ export default function App() {
     setOverlayError(false);
 
     try {
-      const res = await ApiService.apiStocksScoreGenerateCreate({ symbol: currentStock.symbol });
+      const res = await StocksService.apiStocksScoreGenerateCreate({ symbol: currentStock.symbol });
       logger.debug('Generate single score response', res);
 
       if (res.success) {

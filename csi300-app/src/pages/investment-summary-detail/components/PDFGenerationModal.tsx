@@ -18,7 +18,10 @@ import {
   X,
   Loader2,
 } from 'lucide-react';
-import { PDFTaskStatusEnum } from '@shared/api/generated';
+import { PDFTask } from '@shared/api/generated';
+
+// PDFTaskStatusEnum is now PDFTask.status
+const PDFTaskStatusEnum = PDFTask.status;
 
 // ==========================================
 // Types
@@ -28,7 +31,7 @@ export interface PDFGenerationModalProps {
   /** Whether modal is visible */
   isOpen: boolean;
   /** Current status */
-  status: PDFTaskStatusEnum | null;
+  status: PDFTask.status | null;
   /** Human-readable status */
   statusDisplay: string;
   /** Progress percentage (0-100) */
