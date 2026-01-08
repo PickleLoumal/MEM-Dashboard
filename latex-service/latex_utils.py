@@ -239,10 +239,8 @@ def escape_latex_preserve_newlines(text: str | None) -> str:
     """
     Convert Markdown to LaTeX and preserve paragraph breaks.
 
-    Converts double newlines to LaTeX paragraph breaks (\\par).
-    Single newlines are converted to spaces.
-    Handles Markdown formatting (bold, italic, links, citations).
-    Also handles JSON-formatted fields by extracting raw_text.
+    Uses pypandoc for all Markdown conversion (including lists).
+    Handles JSON-formatted fields by extracting raw_text.
 
     Args:
         text: Input text (may contain Markdown or JSON)
@@ -259,55 +257,12 @@ def escape_latex_preserve_newlines(text: str | None) -> str:
     # Extract text from JSON if applicable
     text = _extract_text_from_json(text)
 
-    if not text:
+    if not text or not text.strip():
         return ""
 
-    # Step 1: Handle bullet points - convert to LaTeX itemize
-    lines = text.split("\n")
-    processed_lines = []
-    in_list = False
-
-    for line in lines:
-        stripped = line.strip()
-        # Check for markdown bullet points
-        if stripped.startswith("- ") or stripped.startswith("* "):
-            if not in_list:
-                processed_lines.append("\\begin{itemize}[leftmargin=*,nosep]")
-                in_list = True
-            # Convert bullet to \item
-            item_content = stripped[2:]  # Remove "- " or "* "
-            processed_lines.append(f"\\item {markdown_to_latex(item_content)}")
-        else:
-            if in_list and stripped:
-                # End of list
-                processed_lines.append("\\end{itemize}")
-                in_list = False
-            processed_lines.append(line)
-
-    if in_list:
-        processed_lines.append("\\end{itemize}")
-
-    text = "\n".join(processed_lines)
-
-    # Step 2: Split into paragraphs
-    paragraphs = re.split(r"\n\s*\n", text)
-
-    # Step 3: Process each paragraph
-    escaped_paragraphs = []
-    for p in paragraphs:
-        p = p.strip()
-        if not p:
-            continue
-
-        # Check if this is an itemize block (already processed)
-        if p.startswith("\\begin{itemize}") or "\\item" in p:
-            escaped_paragraphs.append(p)
-        else:
-            # Regular paragraph: convert markdown and escape
-            escaped = markdown_to_latex(p.replace("\n", " "))
-            escaped_paragraphs.append(escaped)
-
-    return r"\par ".join(escaped_paragraphs)
+    # Use pypandoc to convert entire text (including lists) to LaTeX
+    # This handles all Markdown syntax uniformly
+    return markdown_to_latex(text)
 
 
 def format_number(value: float | int | None, decimals: int = 2) -> str:

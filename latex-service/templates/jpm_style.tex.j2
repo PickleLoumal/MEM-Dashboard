@@ -1,0 +1,125 @@
+% --- Title ---
+\title{\huge\color{myblack}{\VAR{ company.name | escape }}}
+\maketitle
+
+% --- Key Takeaways (directly after title, like JPM.tex line 82-83) ---
+\VAR{ summary.key_takeaways | escape_para }
+
+% --- First Two-Column Section ---
+\begin{paracol}{2}
+    \sloppy
+    \setlength{\columnsep}{12pt}
+
+    % --- LEFT COLUMN (65%): Executive Summary / Business Overview ---
+    \begin{leftcolumn}
+        \section*{Executive Summary}
+        \VAR{ summary.business_overview | escape_para }
+    \end{leftcolumn}
+
+    % --- RIGHT COLUMN (35%): Key Data ---
+    \begin{rightcolumn}
+        \section*{Overview}
+        \begin{tabularx}{\linewidth}{@{} l >{\raggedleft\arraybackslash}X @{}}
+            \textbf{\VAR{ report_date }} & \\
+            \\
+            \textbf{Close Price} & \textbf{\VAR{ company.previous_close | number }} \\
+            \textbf{Market Cap} & \textbf{\VAR{ summary.market_cap_display | escape }} \\
+            \\
+            Ticker & \VAR{ company.ticker | escape } \\
+            Sector & \VAR{ company.sector | escape } \\
+            Industry & \VAR{ company.industry | escape } \\
+            PE Ratio (TTM) & \VAR{ company.pe_ratio_trailing | number } \\
+            EPS (TTM) & \VAR{ company.eps_trailing | number } \\
+            ROE & \VAR{ company.roe_trailing | percentage } \\
+            Dividend Yield & \VAR{ company.dividend_yield_fy0 | percentage } \\
+        \end{tabularx}
+    \end{rightcolumn}
+\end{paracol}
+
+% --- Subsequent Sections (with left margin, matching JPM.tex style) ---
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Business Performance}
+\VAR{ summary.business_performance | escape_para }
+\end{minipage}
+
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Industry Context}
+\VAR{ summary.industry_context | escape_para }
+\end{minipage}
+
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Financial Stability and Debt Levels}
+\VAR{ summary.financial_stability | escape_para }
+\end{minipage}
+
+\newpage
+
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Key Financials and Valuation}
+\VAR{ summary.key_financials_valuation | escape_para }
+\end{minipage}
+
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Big Trends and Big Events}
+\VAR{ summary.big_trends_events | escape_para }
+\end{minipage}
+
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Customer Segments and Demand Trends}
+\VAR{ summary.customer_segments | escape_para }
+\end{minipage}
+
+\newpage
+
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Competitive Landscape}
+\VAR{ summary.competitive_landscape | escape_para }
+\end{minipage}
+
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Forecast and Outlook}
+\VAR{ summary.forecast_outlook | escape_para }
+\end{minipage}
+
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Leading Investment Firms and Views}
+\VAR{ summary.investment_firms_views | escape_para }
+\end{minipage}
+
+\newpage
+
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Recommended Action}
+\VAR{ summary.recommended_action_detail | escape_para }
+\end{minipage}
+
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Risks and Anomalies}
+\VAR{ summary.risks_anomalies | escape_para }
+\end{minipage}
+
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Industry Ratio and Metric Analysis}
+\VAR{ summary.industry_ratio_analysis | escape_para }
+\end{minipage}
+
+\BLOCK{ if summary.sources }
+\hfill
+\begin{minipage}[t]{0.8\linewidth}
+\section*{Sources}
+\small
+\VAR{ summary.sources | escape_para }
+\end{minipage}
+\BLOCK{ endif }
