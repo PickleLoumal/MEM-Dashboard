@@ -7,8 +7,8 @@
 # Build command (from project root):
 #   docker build -f dockerfile.aw/Dockerfile.latex-service -t alfie-latex-service .
 #
-# Image size: ~1.5GB (due to TeX Live)
-# Build time: ~5-10 minutes
+# Image size: ~4.5GB (full TeX Live)
+# Build time: ~15-25 minutes
 # =============================================================================
 
 FROM python:3.12-slim AS base
@@ -20,17 +20,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies and TeX Live
+# Install system dependencies and FULL TeX Live (~4GB)
+# This ensures ALL LaTeX packages are available, eliminating "package not found" errors
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # TeX Live core with XeLaTeX
-    texlive-xetex \
-    texlive-fonts-recommended \
-    texlive-fonts-extra \
-    texlive-latex-extra \
-    texlive-latex-recommended \
-    # CJK language support
-    texlive-lang-chinese \
-    texlive-lang-japanese \
+    # FULL TeX Live installation (includes everything: soul, framed, etc.)
+    texlive-full \
     # Fonts for CJK rendering
     fonts-noto-cjk \
     fonts-noto-cjk-extra \
@@ -43,7 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils \
     # Pandoc for Markdown to LaTeX conversion
     pandoc \
-    # Cleanup
+    # Cleanup apt cache
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

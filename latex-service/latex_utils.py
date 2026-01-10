@@ -265,6 +265,84 @@ def escape_latex_preserve_newlines(text: str | None) -> str:
     return markdown_to_latex(text)
 
 
+def escape_sources(text: str | None) -> str:
+    """
+    Format sources section for LaTeX with proper URL handling.
+
+    Truncates long URLs and formats as a numbered list.
+
+    Args:
+        text: Raw sources text with URLs
+
+    Returns:
+        LaTeX-formatted sources list
+    """
+    if text is None:
+        return ""
+
+    if not isinstance(text, str):
+        text = str(text)
+
+    text = text.strip()
+    if not text:
+        return ""
+
+    # Split by common separators (newlines, or URL patterns)
+    # Sources are typically: "Title | URL" or just URLs
+    lines = []
+    for line in text.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        lines.append(line)
+
+    if not lines:
+        # Try splitting by URL pattern if no newlines
+        parts = re.split(r'\s+(?=https?://)', text)
+        lines = [p.strip() for p in parts if p.strip()]
+
+    if not lines:
+        return escape_latex(text)
+
+    # Format as itemized list with truncated URLs
+    result = ["\\begin{itemize}[leftmargin=*, itemsep=0pt, parsep=0pt]"]
+
+    for line in lines[:20]:  # Limit to 20 sources
+        # Extract title and URL if in "Title | URL" format
+        if " | " in line:
+            parts = line.split(" | ", 1)
+            title = parts[0].strip()
+            url = parts[1].strip() if len(parts) > 1 else ""
+        elif line.startswith("http"):
+            title = ""
+            url = line
+        else:
+            title = line
+            url = ""
+
+        # Truncate long URLs for display
+        if url and len(url) > 60:
+            # Show domain + truncated path
+            url_display = url[:57] + "..."
+        else:
+            url_display = url
+
+        # Escape for LaTeX
+        title_escaped = escape_latex(title) if title else ""
+        url_escaped = escape_latex(url_display) if url_display else ""
+
+        if title_escaped and url_escaped:
+            result.append(f"\\item {title_escaped} \\texttt{{\\small {url_escaped}}}")
+        elif title_escaped:
+            result.append(f"\\item {title_escaped}")
+        elif url_escaped:
+            result.append(f"\\item \\texttt{{\\small {url_escaped}}}")
+
+    result.append("\\end{itemize}")
+
+    return "\n".join(result)
+
+
 def format_number(value: float | int | None, decimals: int = 2) -> str:
     """
     Format a number for LaTeX display.

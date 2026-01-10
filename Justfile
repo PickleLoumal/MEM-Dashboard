@@ -116,7 +116,7 @@ fix:
     @echo "✅ All fixes applied!"
 
 # 15. Deploy LaTeX Service: Deploy LaTeX PDF generation service to AWS ECS
-deploy-latex-service:
+deploy-latex-ecs:
     ./venv/bin/python scripts/active/deployment/deploy_latex_service.py
 
 # 16. Deploy LaTeX Service (skip Docker build): Update ECS only, use existing image

@@ -2,29 +2,28 @@
 \title{\huge\color{myblack}{\VAR{ company.name | escape }}}
 \maketitle
 
-% --- Key Takeaways (directly after title, like JPM.tex line 82-83) ---
+% --- Key Takeaways (directly after title) ---
 \VAR{ summary.key_takeaways | escape_para }
 
-% --- First Two-Column Section ---
+% --- First Two-Column Section (Overview left 35%, Executive Summary right 65%) ---
 \begin{paracol}{2}
     \sloppy
     \setlength{\columnsep}{12pt}
 
-    % --- LEFT COLUMN (65%): Executive Summary / Business Overview ---
+    % --- LEFT COLUMN (35%): Overview with Key Data ---
     \begin{leftcolumn}
-        \section*{Executive Summary}
-        \VAR{ summary.business_overview | escape_para }
-    \end{leftcolumn}
-
-    % --- RIGHT COLUMN (35%): Key Data ---
-    \begin{rightcolumn}
         \section*{Overview}
+        {\renewcommand{\arraystretch}{1.2}% Compact row spacing for Overview
         \begin{tabularx}{\linewidth}{@{} l >{\raggedleft\arraybackslash}X @{}}
             \textbf{\VAR{ report_date }} & \\
-            \\
+            \BLOCK{ if company.previous_close }
             \textbf{Close Price} & \textbf{\VAR{ company.previous_close | number }} \\
+            \BLOCK{ elif company.price_local_currency }
+            \textbf{Close Price} & \textbf{\VAR{ company.price_local_currency | number }} \\
+            \BLOCK{ else }
+            \textbf{Close Price} & \textbf{N/A} \\
+            \BLOCK{ endif }
             \textbf{Market Cap} & \textbf{\VAR{ summary.market_cap_display | escape }} \\
-            \\
             Ticker & \VAR{ company.ticker | escape } \\
             Sector & \VAR{ company.sector | escape } \\
             Industry & \VAR{ company.industry | escape } \\
@@ -33,93 +32,129 @@
             ROE & \VAR{ company.roe_trailing | percentage } \\
             Dividend Yield & \VAR{ company.dividend_yield_fy0 | percentage } \\
         \end{tabularx}
+        }% End compact spacing
+
+        \vspace{0.8em}
+
+        % --- Analyst Consensus (from JSON data) ---
+        \BLOCK{ if summary.consensus_rating }
+        \textbf{Analyst Consensus}
+        \vspace{0.3em}
+
+        {\renewcommand{\arraystretch}{1.2}% Compact row spacing
+        \begin{tabularx}{\linewidth}{@{} l >{\raggedleft\arraybackslash}X @{}}
+            Rating & \textbf{\VAR{ summary.consensus_rating | escape }} \\
+            \BLOCK{ if summary.buy_pct }
+            Buy & \VAR{ summary.buy_pct }\% \\
+            \BLOCK{ endif }
+            \BLOCK{ if summary.hold_pct }
+            Hold & \VAR{ summary.hold_pct }\% \\
+            \BLOCK{ endif }
+            \BLOCK{ if summary.sell_pct }
+            Sell & \VAR{ summary.sell_pct }\% \\
+            \BLOCK{ endif }
+            \BLOCK{ if summary.target_price_avg }
+            Target (Avg) & \VAR{ summary.target_price_avg | escape } \\
+            \BLOCK{ endif }
+            \BLOCK{ if summary.target_price_low and summary.target_price_high }
+            Target Range & \VAR{ summary.target_price_low | escape } -- \VAR{ summary.target_price_high | escape } \\
+            \BLOCK{ endif }
+            \BLOCK{ if summary.upside_pct }
+            Upside & \VAR{ summary.upside_pct | escape } \\
+            \BLOCK{ endif }
+        \end{tabularx}
+        }% End compact spacing
+        \BLOCK{ endif }
+    \end{leftcolumn}
+
+    % --- RIGHT COLUMN (65%): Executive Summary ---
+    \begin{rightcolumn}
+        \section*{Executive Summary}
+        \VAR{ summary.business_overview | escape_para }
     \end{rightcolumn}
 \end{paracol}
 
-% --- Subsequent Sections (with left margin, matching JPM.tex style) ---
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
+\vspace{1.5em}
+
+% --- Segment Performance (if divisions data available) ---
+\BLOCK{ if summary.divisions }
+\section*{Segment Performance}
+
+\begin{tabularx}{\linewidth}{@{} l >{\raggedleft\arraybackslash}X >{\raggedleft\arraybackslash}X @{}}
+\toprule
+\textbf{Segment} & \textbf{Revenue} & \textbf{Profit} \\
+\midrule
+\BLOCK{ for div in summary.divisions }
+\VAR{ div.name | escape } & \VAR{ div.sales_percentage | escape if div.sales_percentage else 'N/A' } & \VAR{ div.profit_percentage | escape if div.profit_percentage else 'N/A' } \\
+\BLOCK{ endfor }
+\bottomrule
+\end{tabularx}
+
+\vspace{1em}
+\BLOCK{ endif }
+
+% --- Subsequent Sections (full width, single column) ---
+
 \section*{Business Performance}
 \VAR{ summary.business_performance | escape_para }
-\end{minipage}
 
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
+\vspace{1em}
+
 \section*{Industry Context}
 \VAR{ summary.industry_context | escape_para }
-\end{minipage}
 
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
+\vspace{1em}
+
 \section*{Financial Stability and Debt Levels}
 \VAR{ summary.financial_stability | escape_para }
-\end{minipage}
 
-\newpage
+\vspace{1em}
 
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
 \section*{Key Financials and Valuation}
 \VAR{ summary.key_financials_valuation | escape_para }
-\end{minipage}
 
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
+\vspace{1em}
+
 \section*{Big Trends and Big Events}
 \VAR{ summary.big_trends_events | escape_para }
-\end{minipage}
 
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
+\vspace{1em}
+
 \section*{Customer Segments and Demand Trends}
 \VAR{ summary.customer_segments | escape_para }
-\end{minipage}
 
-\newpage
+\vspace{1em}
 
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
 \section*{Competitive Landscape}
 \VAR{ summary.competitive_landscape | escape_para }
-\end{minipage}
 
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
+\vspace{1em}
+
 \section*{Forecast and Outlook}
 \VAR{ summary.forecast_outlook | escape_para }
-\end{minipage}
 
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
+\vspace{1em}
+
 \section*{Leading Investment Firms and Views}
 \VAR{ summary.investment_firms_views | escape_para }
-\end{minipage}
 
-\newpage
+\vspace{1em}
 
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
 \section*{Recommended Action}
 \VAR{ summary.recommended_action_detail | escape_para }
-\end{minipage}
 
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
-\section*{Risks and Anomalies}
-\VAR{ summary.risks_anomalies | escape_para }
-\end{minipage}
+\vspace{1em}
 
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
 \section*{Industry Ratio and Metric Analysis}
 \VAR{ summary.industry_ratio_analysis | escape_para }
-\end{minipage}
 
+% --- Sources Section ---
 \BLOCK{ if summary.sources }
-\hfill
-\begin{minipage}[t]{0.8\linewidth}
+\vspace{2em}
+
 \section*{Sources}
-\small
-\VAR{ summary.sources | escape_para }
-\end{minipage}
+\footnotesize
+\raggedright
+\setlength{\parskip}{0.2em}
+\VAR{ summary.sources | escape_sources }
 \BLOCK{ endif }

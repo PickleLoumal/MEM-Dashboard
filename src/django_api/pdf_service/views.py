@@ -11,6 +11,8 @@ import contextlib
 import logging
 import os
 import uuid as uuid_module
+import json
+import re
 
 from csi300.models import CSI300Company, CSI300InvestmentSummary
 from django.db import transaction
@@ -210,8 +212,50 @@ class PDFTaskViewSet(ErrorResponseMixin, viewsets.ViewSet):
 
     def _prepare_summary_data(self, company: CSI300Company) -> dict:
         """Extract investment summary data for PDF generation."""
+
         try:
             summary = CSI300InvestmentSummary.objects.get(company=company)
+
+            # Parse analyst_consensus from investment_firms_views if present
+            analyst_consensus = {}
+            investment_firms_text = summary.investment_firms_views or ""
+
+            # Extract JSON block: analyst_consensus { ... }
+            consensus_match = re.search(
+                r'analyst_consensus\s*\{([^}]+)\}',
+                investment_firms_text,
+                re.IGNORECASE
+            )
+            if consensus_match:
+                try:
+                    json_str = '{' + consensus_match.group(1) + '}'
+                    json_str = json_str.replace("'", '"')
+                    analyst_consensus = json.loads(json_str)
+                    # Remove the JSON block from display text
+                    investment_firms_text = re.sub(
+                        r'analyst_consensus\s*\{[^}]+\}',
+                        '',
+                        investment_firms_text,
+                        flags=re.IGNORECASE
+                    ).strip()
+                except json.JSONDecodeError:
+                    pass  # Keep original text if parsing fails
+
+            # Parse business_overview JSON if present (contains divisions data)
+            business_overview_text = summary.business_overview or ""
+            divisions = []
+            key_metrics = {}
+
+            if business_overview_text.startswith('{'):
+                try:
+                    bo_data = json.loads(business_overview_text)
+                    business_overview_text = bo_data.get("raw_text", business_overview_text)
+                    parsed = bo_data.get("parsed", {})
+                    divisions = parsed.get("divisions", [])
+                    key_metrics = parsed.get("key_metrics", {})
+                except json.JSONDecodeError:
+                    pass  # Keep original text
+
             return {
                 # Required by LaTeX template (line 37)
                 "company_name": company.name,
@@ -220,7 +264,9 @@ class PDFTaskViewSet(ErrorResponseMixin, viewsets.ViewSet):
                 "market_cap_display": summary.market_cap_display,
                 "recommended_action": summary.recommended_action,
                 "recommended_action_detail": summary.recommended_action_detail,
-                "business_overview": summary.business_overview,
+                "business_overview": business_overview_text,  # Plain text only
+                "divisions": divisions,  # Segment performance data
+                "key_metrics": key_metrics,  # FY key metrics
                 "business_performance": summary.business_performance,
                 "industry_context": summary.industry_context,
                 "financial_stability": summary.financial_stability,
@@ -232,13 +278,22 @@ class PDFTaskViewSet(ErrorResponseMixin, viewsets.ViewSet):
                 "forecast_outlook": summary.forecast_outlook,
                 # Alias for template compatibility (line 268)
                 "growth_analysis": summary.forecast_outlook,
-                "investment_firms_views": summary.investment_firms_views,
+                "investment_firms_views": investment_firms_text,  # Cleaned text
                 "industry_ratio_analysis": summary.industry_ratio_analysis,
                 "tariffs_supply_chain_risks": summary.tariffs_supply_chain_risks,
                 "key_takeaways": summary.key_takeaways,
                 "sources": summary.sources,
                 # Risk factors list (template lines 232-241)
-                "risk_factors": [],  # Placeholder - can be populated from structured data
+                "risk_factors": [],
+                # Analyst consensus fields (parsed from JSON)
+                "consensus_rating": analyst_consensus.get("consensus_rating"),
+                "buy_pct": analyst_consensus.get("buy_pct"),
+                "hold_pct": analyst_consensus.get("hold_pct"),
+                "sell_pct": analyst_consensus.get("sell_pct"),
+                "target_price_low": analyst_consensus.get("target_price_low"),
+                "target_price_high": analyst_consensus.get("target_price_high"),
+                "target_price_avg": analyst_consensus.get("target_price_avg"),
+                "upside_pct": analyst_consensus.get("upside_pct"),
             }
         except CSI300InvestmentSummary.DoesNotExist:
             return {

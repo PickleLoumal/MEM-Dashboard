@@ -18,6 +18,7 @@ from chart_generator import ChartResult
 from latex_utils import (
     escape_latex,
     escape_latex_preserve_newlines,
+    escape_sources,
     format_currency,
     format_number,
     format_percentage,
@@ -34,6 +35,7 @@ def _register_filters(env: Environment) -> None:
     """Register custom LaTeX filters on a Jinja2 environment."""
     env.filters["escape"] = escape_latex
     env.filters["escape_para"] = escape_latex_preserve_newlines
+    env.filters["escape_sources"] = escape_sources  # Format sources with truncated URLs
     env.filters["markdown"] = markdown_to_latex  # Convert Markdown inline formatting
     env.filters["number"] = format_number
     env.filters["percentage"] = format_percentage
