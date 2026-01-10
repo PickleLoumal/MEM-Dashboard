@@ -71,6 +71,7 @@ src/backend/
 *.sh
 *.md
 !README.md
+!ABOUT.md
 verification_*/
 visualization/
 report_*.txt
