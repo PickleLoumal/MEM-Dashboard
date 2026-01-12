@@ -1,17 +1,30 @@
 """
 BEA API Django Views
 动态、数据库驱动的BEA指标API端点
+
+类型注解说明:
+- 所有公共方法都有完整的类型注解
+- 使用 shared_types 模块中定义的类型
+- Response 返回值类型为 rest_framework.response.Response
+
+对应前端类型: csi300-app/src/shared/api-types/bea.types.ts
 """
 
-import logging
+from __future__ import annotations
 
-from django.http import JsonResponse
+import logging
+from typing import Any
+
+from django.db.models.query import QuerySet
+from django.http import HttpRequest, JsonResponse
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
 from rest_framework import viewsets
 from rest_framework.decorators import action, api_view
+from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
 from .dynamic_config import DynamicBeaConfigManager
 from .indicator_processor import BeaCompatibilityProcessor, BeaIndicatorProcessor
@@ -25,14 +38,17 @@ from .serializers import (
 
 logger = logging.getLogger(__name__)
 
+# 类型别名
+SerializerClass = type[Serializer[Any]]
+
 
 class BeaIndicatorViewSet(viewsets.ModelViewSet):
     """BEA指标数据ViewSet - 支持CRUD操作"""
 
-    queryset = BeaIndicator.objects.all()
-    serializer_class = BeaIndicatorSerializer
+    queryset: QuerySet[BeaIndicator] = BeaIndicator.objects.all()
+    serializer_class: SerializerClass = BeaIndicatorSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[BeaIndicator]:
         """根据查询参数过滤数据"""
         queryset = super().get_queryset()
         series_id = self.request.query_params.get("series_id")
@@ -46,10 +62,10 @@ class BeaIndicatorViewSet(viewsets.ModelViewSet):
 class BeaConfigViewSet(viewsets.ModelViewSet):
     """BEA指标配置ViewSet - 动态配置管理"""
 
-    queryset = BeaIndicatorConfig.objects.all()
-    serializer_class = BeaIndicatorConfigSerializer
+    queryset: QuerySet[BeaIndicatorConfig] = BeaIndicatorConfig.objects.all()
+    serializer_class: SerializerClass = BeaIndicatorConfigSerializer
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> SerializerClass:
         """根据操作选择序列化器"""
         if self.action == "create":
             return BeaConfigCreateSerializer
@@ -58,20 +74,20 @@ class BeaConfigViewSet(viewsets.ModelViewSet):
         return BeaIndicatorConfigSerializer
 
     @action(detail=False, methods=["get"])
-    def active(self, request):
+    def active(self, request: Request) -> Response:
         """获取所有激活的配置"""
         active_configs = BeaIndicatorConfig.get_active_configs()
         serializer = self.get_serializer(active_configs, many=True)
         return Response({"success": True, "data": serializer.data, "count": len(serializer.data)})
 
     @action(detail=False, methods=["get"])
-    def categories(self, request):
+    def categories(self, request: Request) -> Response:
         """获取所有指标分类"""
         categories = BeaIndicatorConfig.objects.values_list("category", flat=True).distinct()
         return Response({"success": True, "data": list(categories), "count": len(categories)})
 
     @action(detail=True, methods=["post"])
-    def activate(self, request, pk=None):
+    def activate(self, request: Request, pk: int | None = None) -> Response:
         """激活指标配置"""
         config = self.get_object()
         config.is_active = True
@@ -85,7 +101,7 @@ class BeaConfigViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=True, methods=["post"])
-    def deactivate(self, request, pk=None):
+    def deactivate(self, request: Request, pk: int | None = None) -> Response:
         """停用指标配置"""
         config = self.get_object()
         config.is_active = False
@@ -117,7 +133,7 @@ class BeaConfigViewSet(viewsets.ModelViewSet):
     }
 )
 @api_view(["GET"])
-def index(request):
+def index(request: Request) -> Response:
     """BEA API首页 - 动态端点列表"""
     try:
         # 获取动态配置的端点
@@ -165,7 +181,7 @@ def index(request):
     }
 )
 @api_view(["GET"])
-def all_indicators(request):
+def all_indicators(request: Request) -> Response:
     """获取所有指标数据 - 动态处理"""
     try:
         result = BeaIndicatorProcessor.process_all_indicators()
@@ -193,7 +209,7 @@ def all_indicators(request):
     },
 )
 @api_view(["GET"])
-def category_indicators(request, category):
+def category_indicators(request: Request, category: str) -> Response:
     """按分类获取指标数据"""
     try:
         result = BeaIndicatorProcessor.process_category_indicators(category)
@@ -229,7 +245,7 @@ def category_indicators(request, category):
     },
 )
 @api_view(["GET"])
-def dynamic_indicator(request, series_id):
+def dynamic_indicator(request: Request, series_id: str) -> Response:
     """动态指标端点 - 根据series_id获取数据"""
     try:
         include_quarterly = request.GET.get("quarterly", "true").lower() == "true"
@@ -254,7 +270,7 @@ def dynamic_indicator(request, series_id):
     }
 )
 @api_view(["GET"])
-def stats(request):
+def stats(request: Request) -> Response:
     """BEA系统统计信息"""
     try:
         total_configs = BeaIndicatorConfig.objects.count()
@@ -288,7 +304,7 @@ def stats(request):
 
 
 # 兼容性端点 - 保持向后兼容
-def bea_indicators(request):
+def bea_indicators(request: HttpRequest) -> JsonResponse:
     """BEA指标数据端点 - 兼容性版本"""
     try:
         all_configs = DynamicBeaConfigManager.get_all_indicators()
@@ -309,7 +325,7 @@ def bea_indicators(request):
         return JsonResponse({"error": str(e), "status": "error"}, status=500)
 
 
-def motor_vehicles_data(request):
+def motor_vehicles_data(request: HttpRequest) -> JsonResponse:
     """Motor Vehicles数据端点 - 兼容Flask API格式"""
     try:
         result = BeaCompatibilityProcessor.get_motor_vehicles_data()
@@ -321,7 +337,7 @@ def motor_vehicles_data(request):
         )
 
 
-def recreational_goods_data(request):
+def recreational_goods_data(request: HttpRequest) -> JsonResponse:
     """Recreational Goods数据端点 - 兼容性版本"""
     try:
         result = BeaCompatibilityProcessor.get_recreational_goods_data()
@@ -333,7 +349,7 @@ def recreational_goods_data(request):
         )
 
 
-def health_check(request):
+def health_check(request: HttpRequest) -> JsonResponse:
     """BEA健康检查端点"""
     try:
         total_endpoints = BeaIndicatorConfig.objects.filter(is_active=True).count()
@@ -368,7 +384,7 @@ _investment_response_schema = inline_serializer(
 
 @extend_schema(responses={200: _investment_response_schema})
 @api_view(["GET"])
-def investment_total(request):
+def investment_total(request: Request) -> Response:
     """Gross Private Domestic Investment - GET /bea/investment-total/"""
     try:
         result = BeaIndicatorProcessor.process_indicator_data("INVESTMENT_TOTAL", True)
@@ -382,7 +398,7 @@ def investment_total(request):
 
 @extend_schema(responses={200: _investment_response_schema})
 @api_view(["GET"])
-def investment_fixed(request):
+def investment_fixed(request: Request) -> Response:
     """Fixed Investment - GET /bea/investment-fixed/"""
     try:
         result = BeaIndicatorProcessor.process_indicator_data("INVESTMENT_FIXED", True)
@@ -396,7 +412,7 @@ def investment_fixed(request):
 
 @extend_schema(responses={200: _investment_response_schema})
 @api_view(["GET"])
-def investment_nonresidential(request):
+def investment_nonresidential(request: Request) -> Response:
     """Nonresidential Investment - GET /bea/investment-nonresidential/"""
     try:
         result = BeaIndicatorProcessor.process_indicator_data("INVESTMENT_NONRESIDENTIAL", True)
@@ -411,7 +427,7 @@ def investment_nonresidential(request):
 
 @extend_schema(responses={200: _investment_response_schema})
 @api_view(["GET"])
-def investment_structures(request):
+def investment_structures(request: Request) -> Response:
     """Structures Investment - GET /bea/investment-structures/"""
     try:
         result = BeaIndicatorProcessor.process_indicator_data("INVESTMENT_STRUCTURES", True)
@@ -425,7 +441,7 @@ def investment_structures(request):
 
 @extend_schema(responses={200: _investment_response_schema})
 @api_view(["GET"])
-def investment_equipment(request):
+def investment_equipment(request: Request) -> Response:
     """Equipment Investment - GET /bea/investment-equipment/"""
     try:
         result = BeaIndicatorProcessor.process_indicator_data("INVESTMENT_EQUIPMENT", True)
@@ -439,7 +455,7 @@ def investment_equipment(request):
 
 @extend_schema(responses={200: _investment_response_schema})
 @api_view(["GET"])
-def investment_ip(request):
+def investment_ip(request: Request) -> Response:
     """Intellectual Property Products Investment - GET /bea/investment-ip/"""
     try:
         result = BeaIndicatorProcessor.process_indicator_data("INVESTMENT_IP", True)
@@ -453,7 +469,7 @@ def investment_ip(request):
 
 @extend_schema(responses={200: _investment_response_schema})
 @api_view(["GET"])
-def investment_residential(request):
+def investment_residential(request: Request) -> Response:
     """Residential Investment - GET /bea/investment-residential/"""
     try:
         result = BeaIndicatorProcessor.process_indicator_data("INVESTMENT_RESIDENTIAL", True)
@@ -467,7 +483,7 @@ def investment_residential(request):
 
 @extend_schema(responses={200: _investment_response_schema})
 @api_view(["GET"])
-def investment_inventories(request):
+def investment_inventories(request: Request) -> Response:
     """Change in Private Inventories - GET /bea/investment-inventories/"""
     try:
         result = BeaIndicatorProcessor.process_indicator_data("INVESTMENT_INVENTORIES", True)
@@ -481,7 +497,7 @@ def investment_inventories(request):
 
 @extend_schema(responses={200: _investment_response_schema})
 @api_view(["GET"])
-def investment_net(request):
+def investment_net(request: Request) -> Response:
     """Net Private Domestic Investment - GET /bea/investment-net/"""
     try:
         result = BeaIndicatorProcessor.process_indicator_data("INVESTMENT_NET", True)
@@ -495,7 +511,7 @@ def investment_net(request):
 
 @extend_schema(responses={200: _investment_response_schema})
 @api_view(["GET"])
-def govt_investment_total(request):
+def govt_investment_total(request: Request) -> Response:
     """Gross Government Investment - GET /bea/govt-investment-total/"""
     try:
         result = BeaIndicatorProcessor.process_indicator_data("GOVT_INVESTMENT_TOTAL", True)

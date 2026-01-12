@@ -1,17 +1,30 @@
 """
 Django REST Framework Views for Japan FRED API
 实现与美国FRED API完全相同的端点和响应格式，但针对日本经济指标
+
+类型注解说明:
+- 所有公共方法都有完整的类型注解
+- 使用 shared_types 模块中定义的类型
+- Response 返回值类型为 rest_framework.response.Response
+
+对应前端类型: csi300-app/src/shared/api-types/fred.types.ts
 """
+
+from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime
+from typing import Any
 
 from django.db import connection
+from django.db.models.query import QuerySet
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view
+from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
 from .config_manager import JapanFredConfigManager
 from .data_fetcher import JapanFredDataFetcher
@@ -23,19 +36,24 @@ from .serializers import (
 
 logger = logging.getLogger(__name__)
 
+# 类型别名
+SerializerClass = type[Serializer[Any]]
+
 
 class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
     """日本FRED指标视图集 - 对应Flask API功能"""
 
-    queryset = FredJpIndicator.objects.all()
-    serializer_class = FredJpLatestValueSerializer
+    queryset: QuerySet[FredJpIndicator] = FredJpIndicator.objects.all()
+    serializer_class: SerializerClass = FredJpLatestValueSerializer
+    data_fetcher: JapanFredDataFetcher | None
+    config_manager: JapanFredConfigManager
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.data_fetcher = None
         self.config_manager = JapanFredConfigManager()
 
-    def get_data_fetcher(self):
+    def get_data_fetcher(self) -> JapanFredDataFetcher | None:
         """获取数据获取器实例"""
         if not self.data_fetcher:
             try:
@@ -81,7 +99,7 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
         },
     }
 
-    def get_indicator_data(self, series_id: str, limit: int = 100):
+    def get_indicator_data(self, series_id: str, limit: int = 100) -> dict[str, Any] | None:
         """获取日本指标数据 - 核心数据获取逻辑"""
         try:
             # 从日本数据库表获取数据
@@ -95,7 +113,7 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
             observations_list = list(observations)
 
             # 计算年同比变化
-            yoy_change = None
+            yoy_change: float | None = None
             if len(observations_list) >= 13:  # 需要13个月数据计算年同比
                 try:
                     current_value = float(observations_list[0].value)
@@ -106,7 +124,7 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
 
             # 构建与Flask API相同的响应格式
             latest = observations_list[0]
-            data = {
+            data: dict[str, Any] = {
                 "value": float(latest.value),
                 "date": latest.date.isoformat(),
                 "formatted_date": latest.date.strftime("%b %Y"),
@@ -119,7 +137,7 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
             }
 
             # 观测数据数组
-            observations_data = []
+            observations_data: list[dict[str, Any]] = []
             for obs in observations_list:
                 observations_data.append(
                     {
@@ -134,7 +152,7 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
                 )
 
             # 元数据
-            meta = {
+            meta: dict[str, Any] = {
                 "series_id": series_id,
                 "total_records": len(observations_data),
                 "last_updated": latest.created_at.isoformat() if latest.created_at else None,
@@ -147,7 +165,7 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
             return None
 
     @action(detail=False, methods=["get"], url_path=r"(?P<indicator_name>[^/.]+)")
-    def get_indicator(self, request, indicator_name=None):
+    def get_indicator(self, request: Request, indicator_name: str | None = None) -> Response:
         """获取特定日本指标数据"""
         try:
             if not indicator_name:
@@ -221,7 +239,7 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
     @action(detail=False, methods=["get"])
-    def status(self, request):
+    def status(self, request: Request) -> Response:
         """日本FRED系统状态"""
         try:
             # 检查数据库连接
@@ -231,7 +249,7 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
         except Exception:
             database_available = False
 
-        status_data = {
+        status_data: dict[str, Any] = {
             "success": True,
             "system": "Japan FRED System (Django)",
             "database_available": database_available,
@@ -264,7 +282,7 @@ class FredJpIndicatorViewSet(viewsets.ReadOnlyModelViewSet):
     }
 )
 @api_view(["GET"])
-def health_check_jp(request):
+def health_check_jp(request: Request) -> Response:
     """日本FRED健康检查端点"""
     try:
         # 检查数据库连接
