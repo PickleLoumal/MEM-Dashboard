@@ -140,7 +140,7 @@ const COMPONENT_LABELS: Record<string, string> = {
   grid: 'Grid'
 };
 
-// Time Range Configuration - matches legacy exactly
+// Time Range Configuration
 const TIME_RANGES = ['1D', '6M', 'YTD', '1Y', '5Y', 'All'] as const;
 type TimeRangeValue = typeof TIME_RANGES[number];
 
@@ -486,7 +486,7 @@ export default function App() {
     };
 
     if (isIntraday) {
-      // INTRADAY: Use BaselineSeries (like legacy)
+      // INTRADAY: Use BaselineSeries to show price movement relative to previous close
       const previousClose = fullResponse.previous_close || dataPoints[0]?.open || 0;
 
       const baselineSeries = chart.addSeries(BaselineSeries, {
@@ -1013,7 +1013,7 @@ export default function App() {
 
         <div className="fund-flow-layout-wrapper">
           <main className="fund-flow-main" aria-live="polite">
-            {/* Search Section - ALWAYS visible (matches legacy) */}
+            {/* Search Section - Always visible for quick stock lookup */}
             <section className="fund-flow-control-card app-card" aria-label="Fund flow controls" id="stockSearchSection">
               <div className="fund-flow-field app-form-field fund-flow-search-field">
                 <label className="fund-flow-label app-label" htmlFor="stockSearch">Search Stocks</label>

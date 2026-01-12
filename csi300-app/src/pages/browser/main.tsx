@@ -72,7 +72,7 @@ function renderCellValue(column: ColumnDefinition, company: CSI300CompanyList): 
     return <span className="region-badge" data-region={attr}>{label}</span>;
   }
 
-  // Apply Formatting using Legacy Formatters
+  // Apply column-specific formatting
   let formatted = String(rawValue);
   const formatterName = column.format;
 
@@ -503,7 +503,7 @@ function BrowserPage() {
                 </thead>
                 <tbody id="companyTableBody">
                   {companies.map((c) => (
-                    <tr key={c.id} className="clickable-row" onClick={() => (window.location.href = `detail.html?id=${c.id}`)}>
+                    <tr key={c.id} className="clickable-row" onClick={() => (window.location.href = `/detail.html?id=${c.id}`)}>
                       {orderedColumns.map((col) => {
                         const isPinned = pinnedColumns.includes(col.id);
                         const alignClass = col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left';
@@ -526,7 +526,7 @@ function BrowserPage() {
 
               <div className="mobile-company-list" id="mobileCompanyList">
                 {companies.map((c) => (
-                  <div key={c.id} className="mobile-company-card" onClick={() => (window.location.href = `detail.html?id=${c.id}`)}>
+                  <div key={c.id} className="mobile-company-card" onClick={() => (window.location.href = `/detail.html?id=${c.id}`)}>
                     <div className="mobile-company-header">
                       <div className="mobile-company-name">{c.name}</div>
                       <div className="mobile-company-ticker">{c.ticker}</div>

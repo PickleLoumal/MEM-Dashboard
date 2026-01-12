@@ -101,12 +101,8 @@ function FilterPage() {
   const onChange = (field: keyof Filters) => (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) =>
     setFilters((prev) => ({ ...prev, [field]: e.target.value }));
 
-  // In Vite dev mode, pages are at /src/pages/xxx/index.html
-  // In production build, they're at /xxx.html (or configured output)
-  const getBrowserPath = () => {
-    const isDev = import.meta.env.MODE === 'development';
-    return isDev ? '/src/pages/browser/index.html' : '/browser.html';
-  };
+  // Vite's dev-server-rewrite middleware handles URL rewriting in dev mode
+  const getBrowserPath = () => '/browser.html';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

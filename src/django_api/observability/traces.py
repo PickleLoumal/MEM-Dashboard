@@ -4,19 +4,22 @@ OpenTelemetry Tracing Configuration
 Configures distributed tracing with support for:
 - AWS X-Ray (production)
 - OTLP exporter (generic/local)
-- Console exporter (development)
+- Pretty console exporter (development)
 """
 
 import logging
 import os
+import sys
+from collections.abc import Sequence
 
 from opentelemetry import trace
 from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export import (
     BatchSpanProcessor,
-    ConsoleSpanExporter,
     SimpleSpanProcessor,
+    SpanExporter,
+    SpanExportResult,
 )
 from opentelemetry.sdk.trace.sampling import (
     ALWAYS_ON,
@@ -25,6 +28,125 @@ from opentelemetry.sdk.trace.sampling import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+# ANSI color codes for pretty output
+class Colors:
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    BLUE = "\033[34m"
+    MAGENTA = "\033[35m"
+    CYAN = "\033[36m"
+    RED = "\033[31m"
+    GRAY = "\033[90m"
+
+
+class PrettySpanExporter(SpanExporter):
+    """
+    A development-friendly span exporter that outputs readable, colored logs.
+
+    Instead of dumping full JSON, shows concise span information:
+    - HTTP requests with method, path, status, duration
+    - Database queries (abbreviated)
+    - Custom spans with key attributes
+    """
+
+    def __init__(self, show_db_queries: bool = False):
+        self.show_db_queries = show_db_queries
+
+    def export(self, spans: Sequence[ReadableSpan]) -> SpanExportResult:
+        for span in spans:
+            self._print_span(span)
+        return SpanExportResult.SUCCESS
+
+    def _print_span(self, span: ReadableSpan) -> None:  # noqa: PLR0912
+        attrs = dict(span.attributes) if span.attributes else {}
+        name = span.name
+        duration_ns = span.end_time - span.start_time if span.end_time and span.start_time else 0
+        duration_ms = duration_ns / 1_000_000
+
+        # Skip internal/noisy spans
+        if name.startswith(("opentelemetry.", "_")):
+            return
+
+        # Database spans - optionally show abbreviated
+        if attrs.get("db.system") == "postgresql":
+            if not self.show_db_queries:
+                return  # Skip DB queries by default
+            statement = attrs.get("db.statement", "")
+            # Abbreviate long queries
+            if len(statement) > 80:
+                statement = statement[:77] + "..."
+            print(  # noqa: T201
+                f"{Colors.GRAY}   📊 DB {Colors.DIM}({duration_ms:.1f}ms){Colors.RESET} "
+                f"{Colors.GRAY}{statement}{Colors.RESET}",
+                file=sys.stderr,
+            )
+            return
+
+        # HTTP server spans
+        http_method = attrs.get("http.method") or attrs.get("http.request.method")
+        http_route = attrs.get("http.route") or attrs.get("http.target") or attrs.get("url.path")
+        http_status = attrs.get("http.status_code") or attrs.get("http.response.status_code")
+
+        if http_method and http_route:
+            # Skip static assets and health checks
+            if any(
+                skip in str(http_route) for skip in ["/static/", "favicon", "/__vite", "/health"]
+            ):
+                return
+
+            # Color code by status
+            if http_status:
+                status_int = int(http_status)
+                if status_int < 300:
+                    status_color = Colors.GREEN
+                elif status_int < 400:
+                    status_color = Colors.YELLOW
+                else:
+                    status_color = Colors.RED
+            else:
+                status_color = Colors.GRAY
+
+            print(  # noqa: T201
+                f"{Colors.CYAN}→{Colors.RESET} {Colors.BOLD}{http_method}{Colors.RESET} "
+                f"{http_route} "
+                f"{status_color}{http_status or '...'}{Colors.RESET} "
+                f"{Colors.DIM}({duration_ms:.0f}ms){Colors.RESET}",
+                file=sys.stderr,
+            )
+            return
+
+        # HTTP client spans (external API calls)
+        if "http.url" in attrs or "url.full" in attrs:
+            url = attrs.get("http.url") or attrs.get("url.full", "")
+            # Only show for external APIs, not localhost
+            if "localhost" not in str(url) and "127.0.0.1" not in str(url):
+                print(  # noqa: T201
+                    f"{Colors.MAGENTA}⇢{Colors.RESET} {Colors.DIM}External{Colors.RESET} "
+                    f"{url[:60]}{'...' if len(str(url)) > 60 else ''} "
+                    f"{Colors.DIM}({duration_ms:.0f}ms){Colors.RESET}",
+                    file=sys.stderr,
+                )
+            return
+
+        # Other custom spans - show if they took significant time
+        if duration_ms > 10:  # Only show spans > 10ms
+            print(  # noqa: T201
+                f"{Colors.BLUE}◆{Colors.RESET} {name} "
+                f"{Colors.DIM}({duration_ms:.0f}ms){Colors.RESET}",
+                file=sys.stderr,
+            )
+
+    def shutdown(self) -> None:
+        pass
+
+    def force_flush(self, timeout_millis: int = 30000) -> bool:
+        return True
+
 
 # Configuration from environment
 USE_AWS_XRAY = os.getenv("USE_AWS_XRAY", "false").lower() == "true"
@@ -94,9 +216,11 @@ def get_span_exporter():
         except ImportError as e:
             logger.warning(f"OTLP exporter not available: {e}, falling back to console")
 
-    # Console exporter (development fallback)
-    logger.info("Using Console span exporter (development mode)")
-    return ConsoleSpanExporter()
+    # Pretty console exporter for development
+    # Set OTEL_SHOW_DB_QUERIES=true to see database query spans
+    show_db = os.getenv("OTEL_SHOW_DB_QUERIES", "false").lower() == "true"
+    logger.info("Using Pretty console span exporter (development mode)")
+    return PrettySpanExporter(show_db_queries=show_db)
 
 
 def configure_tracing(resource: Resource) -> TracerProvider:

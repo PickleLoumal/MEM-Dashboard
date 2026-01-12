@@ -89,12 +89,12 @@ export function PeersComparisonModal({ isOpen, onClose, company }: PeersComparis
 
       {!loading && !error && data && (
         <>
-          {/* Visualization logic from legacy code */}
+          {/* Peer ranking visualization with percentile indicator */}
           {(() => {
             const currentRank = data.target_company.rank;
             const totalCompanies = data.total_companies_in_industry;
             const percentileBeat = Math.round(((totalCompanies - currentRank) / (totalCompanies - 1)) * 100);
-            
+
             let rankColor = '#e74c3c';
             if (percentileBeat >= 75) rankColor = '#27ae60';
             else if (percentileBeat >= 50) rankColor = '#f39c12';
@@ -125,19 +125,19 @@ export function PeersComparisonModal({ isOpen, onClose, company }: PeersComparis
                     const rank = totalCompanies - index;
                     const isCurrentCompany = rank === currentRank;
                     const distanceFromCurrent = Math.abs(rank - currentRank);
-                    
+
                     let barHeight = 8;
                     if (isCurrentCompany) barHeight = 35;
                     else if (distanceFromCurrent === 1) barHeight = 22;
                     else if (distanceFromCurrent === 2) barHeight = 14;
-                    
+
                     let barColor = '#e0e0e0';
                     if (isCurrentCompany) barColor = rankColor;
                     else if (distanceFromCurrent === 1) barColor = `${rankColor}80`;
                     else if (distanceFromCurrent === 2) barColor = `${rankColor}40`;
-                    
+
                     const barWidth = `calc((100% - ${(totalCompanies - 1) * 2}px) / ${totalCompanies})`;
-                    
+
                     return (
                       <div key={rank} style={{
                         width: barWidth,

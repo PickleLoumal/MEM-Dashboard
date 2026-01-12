@@ -1,31 +1,33 @@
-// Map of pages that have been migrated to React (for DEV mode only)
-export const REACT_PAGES: Record<string, string> = {
-  'index.html': '/src/pages/index/index.html',
-  'browser.html': '/src/pages/browser/index.html',
-  'detail.html': '/src/pages/detail/index.html',
-  'investment-summary-detail.html': '/src/pages/investment-summary-detail/index.html'
-};
-
+/**
+ * Resolve internal navigation links.
+ *
+ * All React pages use production-style URLs (e.g., /browser.html, /detail.html).
+ * In development mode, Vite's dev-server-rewrite middleware handles the
+ * URL rewriting to actual source paths automatically.
+ *
+ * @param path - The target path (e.g., 'browser.html', 'detail.html?id=123')
+ * @returns The resolved URL with leading slash
+ */
 export function resolveLink(path: string): string {
+  // Handle empty paths
   if (!path) return '#';
-  if (path.startsWith('#') || path.startsWith('mailto:') || /^(?:[a-z]+:)?\/\//i.test(path)) {
+
+  // Pass through special URLs unchanged
+  if (
+    path.startsWith('#') ||
+    path.startsWith('mailto:') ||
+    path.startsWith('tel:') ||
+    /^(?:[a-z]+:)?\/\//i.test(path) // absolute URLs (http://, https://, //)
+  ) {
     return path;
   }
 
-  // Use MODE to determine environment (more reliable than DEV)
-  // @ts-ignore  
-  const mode = import.meta.env.MODE;
-  const isDevMode = mode === 'development';
-  
-  // Remove query params for matching
-  const [basePath, query] = path.split('?');
-  
-  // DEV mode: use Vite dev server paths for migrated React pages
-  if (isDevMode && REACT_PAGES[basePath]) {
-    return `${REACT_PAGES[basePath]}${query ? '?' + query : ''}`;
+  // Already has leading slash - return as-is
+  if (path.startsWith('/')) {
+    return path;
   }
-  
-  // PRODUCTION mode: use flattened paths at root
+
+  // Add leading slash for relative paths
   return `/${path}`;
 }
 

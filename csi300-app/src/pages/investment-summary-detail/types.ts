@@ -18,9 +18,6 @@ export type {
 // TaskStatusEnum is now GenerationTaskStatusResponse.task_status
 // Re-export is handled in api.ts
 
-// Legacy type alias for backward compatibility
-export type TaskStatus = 'pending' | 'processing' | 'completed' | 'failed';
-
 // ==========================================
 // PDF Generation Types
 // ==========================================

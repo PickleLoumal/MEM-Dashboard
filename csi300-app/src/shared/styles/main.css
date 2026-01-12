@@ -1,10 +1,7 @@
-/* CSI300 React App – 主样式文件
-   一比一复刻 app-base.css 的所有样式 */
+/* CSI300 React App – 主样式文件 */
 
-/* Roboto font import removed - using SF Pro system fonts */
-
-/* Import legacy styles (global-nav only, column-selector uses React component) */
-@import url('/legacy/assets/css/global-nav.css');
+/* Global Navigation styles */
+@import './global-nav.css';
 
 @tailwind base;
 @tailwind components;

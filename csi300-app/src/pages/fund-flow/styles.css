@@ -1,6 +1,6 @@
 /* Fund Flow dashboard - Yahoo Finance inspired clean styling */
 
-/* Container - matches legacy inline styles */
+/* Main container with responsive max-width */
 .container {
     max-width: 1536px;
     margin: 0 auto;

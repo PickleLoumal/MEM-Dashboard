@@ -2,7 +2,7 @@
 
 set shell := ["bash", "-c"]
 
-# Start Django development server
+# Start Django development server only
 django:
     #!/bin/bash
     echo "🐍 Starting Django API server on http://localhost:8001..."
@@ -10,14 +10,18 @@ django:
     ./venv/bin/python src/django_api/manage.py migrate --verbosity=1
     ./venv/bin/python src/django_api/manage.py runserver 0.0.0.0:8001
 
-# Start full development environment (Django + React)
-dev:
+# Start full development environment (Django + React with HMR)
+start:
     bash scripts/active/production/dev-start-csi300.sh
 
-# Build and preview React frontend (production mode)
-start:
+# Build and preview React frontend (production simulation)
+preview:
     bash scripts/active/production/build_csi300_frontend.sh
     bash scripts/active/production/start_csi300_preview.sh
+
+# Alias for backwards compatibility
+dev:
+    bash scripts/active/production/dev-start-csi300.sh
 
 # 2. Install: Install Python dependencies from requirements.txt
 install:

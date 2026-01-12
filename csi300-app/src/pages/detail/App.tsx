@@ -19,7 +19,7 @@ export default function App() {
   const [company, setCompany] = useState<CompanyDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [isValueChainOpen, setIsValueChainOpen] = useState(false);
   const [isPeersOpen, setIsPeersOpen] = useState(false);
 
@@ -48,17 +48,6 @@ export default function App() {
 
   const handleInvestmentSummary = () => {
     if (!company) return;
-    // Directly link to the new React page, bypassing legacy redirect logic
-    // resolveLink will handle the dev/prod path differences
-    const targetPath = `investment-summary-detail.html?company=${encodeURIComponent(company.name)}&id=${company.id}`;
-    
-    // In dev mode, resolveLink maps 'investment-summary-detail.html' -> '/src/pages/investment-summary-detail/index.html'
-    // In prod mode, it maps to '/investment-summary-detail.html'
-    // But we can also just use the path directly if we trust our vite rewrite rules.
-    // Given resolveLink is available, let's use a direct window.location assignment with the correct logic.
-    
-    // Simplified: we know the dev server rewrites /investment-summary-detail.html to the source.
-    // So we can just use the root-relative path.
     window.location.href = `/investment-summary-detail.html?company=${encodeURIComponent(company.name)}&id=${company.id}`;
   };
 
@@ -111,7 +100,7 @@ export default function App() {
           imSector: company.im_sector
       } : undefined} />
       <div className="container app-shell" style={{ padding: '80px 24px 48px', maxWidth: '1536px', margin: '0 auto' }}>
-        
+
         <CompanyHeader company={company} />
 
         {company.business_description && (
@@ -168,16 +157,16 @@ export default function App() {
           {hasRiskData && <RiskSection company={company} />}
         </div>
 
-        <ValueChainModal 
-            isOpen={isValueChainOpen} 
-            onClose={() => setIsValueChainOpen(false)} 
-            company={company} 
+        <ValueChainModal
+            isOpen={isValueChainOpen}
+            onClose={() => setIsValueChainOpen(false)}
+            company={company}
         />
-        
-        <PeersComparisonModal 
-            isOpen={isPeersOpen} 
-            onClose={() => setIsPeersOpen(false)} 
-            company={company} 
+
+        <PeersComparisonModal
+            isOpen={isPeersOpen}
+            onClose={() => setIsPeersOpen(false)}
+            company={company}
         />
 
       </div>

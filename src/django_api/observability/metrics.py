@@ -4,7 +4,7 @@ OpenTelemetry Metrics Configuration
 Configures metrics collection with support for:
 - AWS CloudWatch (production)
 - OTLP exporter (generic/local)
-- Console exporter (development)
+- Quiet exporter (development - no console spam)
 
 Includes pre-defined metrics for common application patterns.
 """
@@ -15,12 +15,39 @@ import os
 from opentelemetry import metrics
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import (
-    ConsoleMetricExporter,
+    MetricExporter,
+    MetricExportResult,
+    MetricsData,
     PeriodicExportingMetricReader,
 )
 from opentelemetry.sdk.resources import Resource
 
 logger = logging.getLogger(__name__)
+
+
+class QuietMetricExporter(MetricExporter):
+    """
+    A silent metric exporter for development.
+
+    Metrics are still collected and available programmatically,
+    but not dumped to console to reduce noise.
+    """
+
+    def export(
+        self,
+        metrics_data: MetricsData,
+        timeout_millis: float = 10_000,
+        **kwargs,
+    ) -> MetricExportResult:
+        # Silently accept metrics without printing
+        return MetricExportResult.SUCCESS
+
+    def force_flush(self, timeout_millis: float = 10_000) -> bool:
+        return True
+
+    def shutdown(self, timeout_millis: float = 30_000, **kwargs) -> None:
+        pass
+
 
 # Configuration from environment
 USE_CLOUDWATCH = os.getenv("USE_CLOUDWATCH", "false").lower() == "true"
@@ -58,9 +85,9 @@ def get_metric_exporter():
         except ImportError as e:
             logger.warning(f"OTLP metrics exporter not available: {e}")
 
-    # Console exporter (development fallback)
-    logger.info("Using Console metrics exporter (development mode)")
-    return ConsoleMetricExporter()
+    # Quiet exporter for development (no console spam)
+    logger.info("Using Quiet metrics exporter (development mode)")
+    return QuietMetricExporter()
 
 
 def configure_metrics(resource: Resource) -> MeterProvider:

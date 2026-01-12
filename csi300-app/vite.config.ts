@@ -26,10 +26,6 @@ export default defineConfig({
             } else if (url === '/index.html' || url === '/') {
               req.url = '/src/pages/index/index.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
             }
-            // Map /assets requests to legacy assets folder
-            else if (req.url.startsWith('/assets/')) {
-              req.url = req.url.replace(/^\/assets\//, '/legacy/assets/');
-            }
           }
           next();
         });
@@ -67,18 +63,11 @@ export default defineConfig({
       '@styles': resolve(__dirname, 'src/shared/styles'),
       '@features': resolve(__dirname, 'src/features'),
       '@app': resolve(__dirname, 'src/app'),
-      '@pages': resolve(__dirname, 'src/pages'),
-      // Legacy code alias
-      '@legacy': resolve(__dirname, 'legacy')
+      '@pages': resolve(__dirname, 'src/pages')
     }
   },
-  // Serve legacy files during development
   publicDir: 'public',
   server: {
-    fs: {
-      // Allow serving files from legacy directory
-      allow: ['..']
-    },
     // Proxy API requests to Django backend during development
     proxy: {
       '/api': {
@@ -105,7 +94,6 @@ export default defineConfig({
     },
   },
   build: {
-    // Keep React bundle output separate from legacy static files
     outDir: 'dist/react',
     rollupOptions: {
       input: {

@@ -21,7 +21,6 @@ import { CompanyDetail, PeerComparisonData } from './types';
 import { Csi300Service } from '../../shared/api/generated';
 
 // Note: OpenAPI.BASE is configured in main.tsx before this module is imported
-// Csi300Service now generates paths with /api prefix (after removing legacy route)
 
 /**
  * 获取 CSI300 公司详细信息

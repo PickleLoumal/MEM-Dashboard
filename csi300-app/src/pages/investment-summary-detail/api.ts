@@ -22,7 +22,6 @@ export type { CSI300InvestmentSummary as InvestmentSummary } from '@shared/api/g
 export const TaskStatusEnum = GenerationTaskStatusResponse.task_status;
 
 // Note: OpenAPI.BASE is configured in main.tsx before this module is imported
-// Csi300Service now generates paths with /api prefix (after removing legacy route)
 
 // ==========================================
 // Type aliases for backward compatibility
