@@ -94,3 +94,27 @@ pypandoc>=1.13
 
 # Typing support
 typing-extensions>=4.9.0
+
+# =============================================================================
+# Automation Tools Dependencies
+# (Daily Briefing, Forensic Accounting, Data Scraping)
+# =============================================================================
+
+# Google APIs (Sheets, Drive)
+google-api-python-client>=2.154.0
+google-auth>=2.41.1
+google-auth-oauthlib>=1.2.3
+gspread>=6.2.1
+
+# Web Scraping (Selenium for Briefing.com)
+selenium>=4.36.0
+beautifulsoup4>=4.14.3
+lxml>=6.0.2
+
+# Document Generation (Word/DOCX)
+python-docx>=1.2.0
+
+# HTTP Client (for Perplexity API)
+# requests already included above
+
+# yfinance already included above (Stock Market Data section)
