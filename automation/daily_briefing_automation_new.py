@@ -57,15 +57,15 @@ class DailyBriefingAutomation:
         """Initialize with configuration from environment variables."""
         # Validate configuration
         _validate_config()
-        
+
         # URLs for Briefing.com pages
         self.page_one_url = "https://www.briefing.com/page-one"
         self.market_update_url = "https://www.briefing.com/stock-market-update"
         self.bond_update_url = "https://www.briefing.com/bond-market-update"
-        
+
         # Load from environment variables (required)
         self.spreadsheet_id = os.getenv("GOOGLE_SHEETS_SPREADSHEET_ID")
-        
+
         # Resolve credentials file path
         creds_file = credentials_file or os.getenv("GOOGLE_SHEETS_CREDENTIALS_FILE")
         script_dir = os.path.dirname(os.path.abspath(__file__))
