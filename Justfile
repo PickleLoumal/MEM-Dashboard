@@ -126,3 +126,23 @@ deploy-latex-ecs:
 # 16. Deploy LaTeX Service (skip Docker build): Update ECS only, use existing image
 deploy-latex-service-quick:
     ./venv/bin/python scripts/active/deployment/deploy_latex_service.py --skip-build -y
+
+# =============================================================================
+# Automation Service Infrastructure
+# =============================================================================
+
+# 17. Setup Automation Secrets: Configure Perplexity and Google API credentials
+setup-automation-secrets:
+    ./venv/bin/python scripts/active/deployment/setup_automation_secrets.py
+
+# 18. Setup ElastiCache Redis: Create Redis cluster for Celery broker
+setup-redis:
+    ./venv/bin/python scripts/active/deployment/setup_elasticache_redis.py
+
+# 19. Check Redis Status: Check existing ElastiCache Redis cluster status
+redis-status:
+    ./venv/bin/python scripts/active/deployment/setup_elasticache_redis.py --status-only
+
+# 20. Verify Automation Secrets: Verify existing secrets configuration
+verify-secrets:
+    ./venv/bin/python scripts/active/deployment/setup_automation_secrets.py --verify-only

@@ -1,0 +1,153 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "ElastiCache Redis cluster for Celery task queue and result backend",
+  "Parameters": {
+    "EnvironmentName": {
+      "Description": "Environment name prefix",
+      "Type": "String",
+      "Default": "mem-dashboard"
+    },
+    "VpcId": {
+      "Description": "VPC ID where ElastiCache will be deployed",
+      "Type": "AWS::EC2::VPC::Id"
+    },
+    "PrivateSubnet1": {
+      "Description": "First private subnet for ElastiCache",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "PrivateSubnet2": {
+      "Description": "Second private subnet for ElastiCache",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "EcsSecurityGroupId": {
+      "Description": "Security group ID of ECS tasks (to allow inbound from ECS)",
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+    "NodeType": {
+      "Description": "ElastiCache node type",
+      "Type": "String",
+      "Default": "cache.t3.micro",
+      "AllowedValues": [
+        "cache.t3.micro",
+        "cache.t3.small",
+        "cache.t3.medium"
+      ]
+    },
+    "NumCacheNodes": {
+      "Description": "Number of cache nodes (1 for dev, 2 for prod HA)",
+      "Type": "Number",
+      "Default": 1,
+      "MinValue": 1,
+      "MaxValue": 6
+    },
+    "EngineVersion": {
+      "Description": "Redis engine version",
+      "Type": "String",
+      "Default": "7.1"
+    }
+  },
+  "Resources": {
+    "RedisSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for ElastiCache Redis cluster",
+        "GroupName": {"Fn::Sub": "${EnvironmentName}-redis-sg"},
+        "VpcId": {"Ref": "VpcId"},
+        "SecurityGroupIngress": [
+          {
+            "Description": "Allow Redis access from ECS tasks",
+            "IpProtocol": "tcp",
+            "FromPort": 6379,
+            "ToPort": 6379,
+            "SourceSecurityGroupId": {"Ref": "EcsSecurityGroupId"}
+          }
+        ],
+        "Tags": [
+          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-redis-sg"}},
+          {"Key": "Project", "Value": {"Ref": "EnvironmentName"}},
+          {"Key": "Component", "Value": "elasticache"}
+        ]
+      }
+    },
+    "RedisSubnetGroup": {
+      "Type": "AWS::ElastiCache::SubnetGroup",
+      "Properties": {
+        "CacheSubnetGroupName": {"Fn::Sub": "${EnvironmentName}-redis-subnet-group"},
+        "Description": "Subnet group for ElastiCache Redis in private subnets",
+        "SubnetIds": [
+          {"Ref": "PrivateSubnet1"},
+          {"Ref": "PrivateSubnet2"}
+        ],
+        "Tags": [
+          {"Key": "Project", "Value": {"Ref": "EnvironmentName"}},
+          {"Key": "Component", "Value": "elasticache"}
+        ]
+      }
+    },
+    "RedisParameterGroup": {
+      "Type": "AWS::ElastiCache::ParameterGroup",
+      "Properties": {
+        "CacheParameterGroupFamily": "redis7",
+        "Description": "Custom parameter group for Celery Redis broker",
+        "Properties": {
+          "maxmemory-policy": "volatile-lru",
+          "timeout": "0"
+        },
+        "Tags": [
+          {"Key": "Project", "Value": {"Ref": "EnvironmentName"}},
+          {"Key": "Component", "Value": "elasticache"}
+        ]
+      }
+    },
+    "RedisCluster": {
+      "Type": "AWS::ElastiCache::CacheCluster",
+      "Properties": {
+        "ClusterName": {"Fn::Sub": "${EnvironmentName}-redis"},
+        "Engine": "redis",
+        "EngineVersion": {"Ref": "EngineVersion"},
+        "CacheNodeType": {"Ref": "NodeType"},
+        "NumCacheNodes": {"Ref": "NumCacheNodes"},
+        "CacheSubnetGroupName": {"Ref": "RedisSubnetGroup"},
+        "CacheParameterGroupName": {"Ref": "RedisParameterGroup"},
+        "VpcSecurityGroupIds": [
+          {"Fn::GetAtt": ["RedisSecurityGroup", "GroupId"]}
+        ],
+        "Port": 6379,
+        "PreferredMaintenanceWindow": "sun:05:00-sun:06:00",
+        "SnapshotRetentionLimit": 1,
+        "SnapshotWindow": "04:00-05:00",
+        "AutoMinorVersionUpgrade": true,
+        "Tags": [
+          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-redis"}},
+          {"Key": "Project", "Value": {"Ref": "EnvironmentName"}},
+          {"Key": "Component", "Value": "celery-broker"},
+          {"Key": "Environment", "Value": "production"}
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "RedisEndpoint": {
+      "Description": "Redis cluster endpoint address",
+      "Value": {"Fn::GetAtt": ["RedisCluster", "RedisEndpoint.Address"]},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-RedisEndpoint"}}
+    },
+    "RedisPort": {
+      "Description": "Redis cluster port",
+      "Value": {"Fn::GetAtt": ["RedisCluster", "RedisEndpoint.Port"]},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-RedisPort"}}
+    },
+    "RedisConnectionUrl": {
+      "Description": "Full Redis connection URL for Celery broker",
+      "Value": {
+        "Fn::Sub": "redis://${RedisCluster.RedisEndpoint.Address}:${RedisCluster.RedisEndpoint.Port}/0"
+      },
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-RedisConnectionUrl"}}
+    },
+    "RedisSecurityGroupId": {
+      "Description": "Security group ID for Redis cluster",
+      "Value": {"Fn::GetAtt": ["RedisSecurityGroup", "GroupId"]},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-RedisSecurityGroupId"}}
+    }
+  }
+}
