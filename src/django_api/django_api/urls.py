@@ -47,4 +47,6 @@ urlpatterns = [
     path("", include("content.urls")),
     # PDF Generation Service
     path("api/pdf/", include("pdf_service.urls", namespace="pdf_service")),
+    # Automation Services (Daily Briefing, Forensic Accounting)
+    path("api/automation/", include("automation.urls", namespace="automation")),
 ]

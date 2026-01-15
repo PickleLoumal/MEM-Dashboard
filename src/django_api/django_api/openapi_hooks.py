@@ -25,6 +25,7 @@ URL_PREFIX_TO_TAG = {
     "/api/policy/": "policy",
     "/api/refinitiv/": "refinitiv",
     "/api/content/": "content",
+    "/api/automation/": "automation",  # Automation services (Daily Briefing, Forensic Accounting)
 }
 
 

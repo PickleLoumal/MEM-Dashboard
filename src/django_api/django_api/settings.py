@@ -115,6 +115,7 @@ INSTALLED_APPS = [
     "policy_updates",  # Federal Register integration
     "refinitiv",  # Refinitiv Data Platform integration
     "pdf_service",  # PDF Report Generation Service
+    "automation",  # Automation services (Daily Briefing, Forensic Accounting)
     # Django Channels for WebSocket support (optional, graceful fallback if not installed)
 ]
 
