@@ -49,16 +49,12 @@ class GoogleSheetsService:
             # Handle credentials from file path or JSON string/dict
             if isinstance(self.credentials_json, dict):
                 # Already a dict
-                creds = Credentials.from_service_account_info(
-                    self.credentials_json,
-                    scopes=scopes
-                )
+                creds = Credentials.from_service_account_info(self.credentials_json, scopes=scopes)
             elif isinstance(self.credentials_json, str):
                 if os.path.exists(self.credentials_json):
                     # It's a file path
                     creds = Credentials.from_service_account_file(
-                        self.credentials_json,
-                        scopes=scopes
+                        self.credentials_json, scopes=scopes
                     )
                 else:
                     # Try to find file relative to automation folder
@@ -67,17 +63,13 @@ class GoogleSheetsService:
 
                     if creds_path.exists():
                         creds = Credentials.from_service_account_file(
-                            str(creds_path),
-                            scopes=scopes
+                            str(creds_path), scopes=scopes
                         )
                     else:
                         # Try to parse as JSON string
                         try:
                             creds_dict = json.loads(self.credentials_json)
-                            creds = Credentials.from_service_account_info(
-                                creds_dict,
-                                scopes=scopes
-                            )
+                            creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
                         except json.JSONDecodeError:
                             raise FileNotFoundError(
                                 f"Credentials file not found: {self.credentials_json}"
@@ -91,15 +83,12 @@ class GoogleSheetsService:
 
             logger.info(
                 "Google Sheets authentication successful",
-                extra={"spreadsheet_id": self.spreadsheet_id}
+                extra={"spreadsheet_id": self.spreadsheet_id},
             )
             return True
 
         except Exception as e:
-            logger.exception(
-                "Google Sheets authentication failed",
-                extra={"error": str(e)}
-            )
+            logger.exception("Google Sheets authentication failed", extra={"error": str(e)})
             return False
 
     def read_all_data(self) -> str | None:
@@ -124,16 +113,13 @@ class GoogleSheetsService:
 
             logger.info(
                 "Google Sheets data read successfully",
-                extra={"rows_read": len(all_values), "rows_included": min(50, len(all_values))}
+                extra={"rows_read": len(all_values), "rows_included": min(50, len(all_values))},
             )
 
             return sheet_data
 
         except Exception as e:
-            logger.exception(
-                "Failed to read data from Google Sheets",
-                extra={"error": str(e)}
-            )
+            logger.exception("Failed to read data from Google Sheets", extra={"error": str(e)})
             return None
 
     def write_cell(self, cell: str, content: str, description: str = "") -> bool:
@@ -157,20 +143,18 @@ class GoogleSheetsService:
 
             logger.info(
                 "Writing to Google Sheets cell",
-                extra={"cell": cell, "description": description, "content_length": len(content)}
+                extra={"cell": cell, "description": description, "content_length": len(content)},
             )
 
             self.sheet.update(range_name=cell, values=[[content]])
 
             logger.info(
-                "Google Sheets write successful",
-                extra={"cell": cell, "description": description}
+                "Google Sheets write successful", extra={"cell": cell, "description": description}
             )
             return True
 
         except Exception as e:
             logger.exception(
-                "Failed to write to Google Sheets",
-                extra={"cell": cell, "error": str(e)}
+                "Failed to write to Google Sheets", extra={"cell": cell, "error": str(e)}
             )
             return False

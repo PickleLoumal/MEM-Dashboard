@@ -1,6 +1,7 @@
 import re
-from docx.shared import Pt, Inches, RGBColor
+
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.shared import Inches, Pt, RGBColor
 
 
 def add_formatted_text(paragraph, text):
@@ -15,11 +16,7 @@ def add_formatted_text(paragraph, text):
             bold_parts = re.split(r"(\*\*[^*]*\*\*)", code_part)
 
             for bold_part in bold_parts:
-                if (
-                    bold_part.startswith("**")
-                    and bold_part.endswith("**")
-                    and len(bold_part) >= 4
-                ):
+                if bold_part.startswith("**") and bold_part.endswith("**") and len(bold_part) >= 4:
                     bold_content = bold_part[2:-2]
                     italic_parts = re.split(r"(\*[^*]+\*)", bold_content)
 
@@ -32,10 +29,9 @@ def add_formatted_text(paragraph, text):
                             run = paragraph.add_run(italic_part[1:-1])
                             run.bold = True
                             run.italic = True
-                        else:
-                            if italic_part:
-                                run = paragraph.add_run(italic_part)
-                                run.bold = True
+                        elif italic_part:
+                            run = paragraph.add_run(italic_part)
+                            run.bold = True
                 else:
                     italic_parts = re.split(r"(\*[^*]+\*)", bold_part)
 
@@ -47,9 +43,8 @@ def add_formatted_text(paragraph, text):
                         ):
                             run = paragraph.add_run(italic_part[1:-1])
                             run.italic = True
-                        else:
-                            if italic_part:
-                                paragraph.add_run(italic_part)
+                        elif italic_part:
+                            paragraph.add_run(italic_part)
 
 
 def convert_markdown_to_word(markdown_text, doc):
@@ -81,9 +76,7 @@ def convert_markdown_to_word(markdown_text, doc):
                 table_obj.style = "Table Grid"
                 for i, cell_text in enumerate(cells):
                     table_obj.rows[0].cells[i].text = cell_text
-            elif (
-                line.strip().replace("|", "").replace("-", "").replace(" ", "") == ""
-            ):  # Separator
+            elif line.strip().replace("|", "").replace("-", "").replace(" ", "") == "":  # Separator
                 continue
             else:
                 cells = [cell.strip() for cell in line.strip().split("|")[1:-1]]
@@ -92,10 +85,9 @@ def convert_markdown_to_word(markdown_text, doc):
                     if i < len(row_cells):
                         row_cells[i].text = cell_text
             continue
-        else:
-            if in_table:
-                in_table = False
-                table_obj = None
+        if in_table:
+            in_table = False
+            table_obj = None
 
         # Empty lines
         if not line.strip():
@@ -135,9 +127,8 @@ def convert_markdown_to_word(markdown_text, doc):
             add_formatted_text(p, quote_text)
 
         # Normal text
-        else:
-            if line.strip():
-                p = doc.add_paragraph()
-                add_formatted_text(p, line.strip())
+        elif line.strip():
+            p = doc.add_paragraph()
+            add_formatted_text(p, line.strip())
 
     return doc

@@ -1,6 +1,6 @@
-from .markdown_converter import convert_markdown_to_word, add_formatted_text
+from .markdown_converter import add_formatted_text, convert_markdown_to_word
 
 __all__ = [
-    "convert_markdown_to_word",
     "add_formatted_text",
+    "convert_markdown_to_word",
 ]

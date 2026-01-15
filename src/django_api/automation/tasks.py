@@ -29,7 +29,7 @@ def run_daily_briefing_scraper(self, task_id: str):
 
         logger.info(
             "Starting Daily Briefing Stage 1 (Scraping)",
-            extra={"task_id": task_id, "celery_task_id": self.request.id}
+            extra={"task_id": task_id, "celery_task_id": self.request.id},
         )
 
         service = BriefingScraperService()
@@ -49,26 +49,19 @@ def run_daily_briefing_scraper(self, task_id: str):
             extra={
                 "task_id": task_id,
                 "stage2_delay_seconds": STAGE2_DELAY_SECONDS,
-                "stage2_scheduled_at": scheduled_time.isoformat()
-            }
+                "stage2_scheduled_at": scheduled_time.isoformat(),
+            },
         )
 
         # Schedule Stage 2 with delay
-        run_daily_briefing_generator.apply_async(
-            args=[task_id],
-            countdown=STAGE2_DELAY_SECONDS
-        )
+        run_daily_briefing_generator.apply_async(args=[task_id], countdown=STAGE2_DELAY_SECONDS)
 
     except AutomationTask.DoesNotExist:
-        logger.error(
-            "Task not found for Daily Briefing scraper",
-            extra={"task_id": task_id}
-        )
+        logger.error("Task not found for Daily Briefing scraper", extra={"task_id": task_id})
         raise
     except Exception as e:
         logger.exception(
-            "Daily Briefing Stage 1 failed",
-            extra={"task_id": task_id, "error": str(e)}
+            "Daily Briefing Stage 1 failed", extra={"task_id": task_id, "error": str(e)}
         )
         if task is not None:
             task.status = "failed"
@@ -93,7 +86,7 @@ def run_daily_briefing_generator(self, task_id: str):
 
         logger.info(
             "Starting Daily Briefing Stage 2 (AI Generation)",
-            extra={"task_id": task_id, "celery_task_id": self.request.id}
+            extra={"task_id": task_id, "celery_task_id": self.request.id},
         )
 
         service = DailyBriefingService()
@@ -106,22 +99,15 @@ def run_daily_briefing_generator(self, task_id: str):
 
         logger.info(
             "Daily Briefing Stage 2 completed",
-            extra={
-                "task_id": task_id,
-                "result_urls": result_urls
-            }
+            extra={"task_id": task_id, "result_urls": result_urls},
         )
 
     except AutomationTask.DoesNotExist:
-        logger.error(
-            "Task not found for Daily Briefing generator",
-            extra={"task_id": task_id}
-        )
+        logger.error("Task not found for Daily Briefing generator", extra={"task_id": task_id})
         raise
     except Exception as e:
         logger.exception(
-            "Daily Briefing Stage 2 failed",
-            extra={"task_id": task_id, "error": str(e)}
+            "Daily Briefing Stage 2 failed", extra={"task_id": task_id, "error": str(e)}
         )
         if task is not None:
             task.status = "failed"
@@ -138,7 +124,7 @@ def run_daily_briefing_full(self, task_id: str):
     """
     logger.info(
         "Triggering full Daily Briefing workflow",
-        extra={"task_id": task_id, "celery_task_id": self.request.id}
+        extra={"task_id": task_id, "celery_task_id": self.request.id},
     )
     run_daily_briefing_scraper.delay(task_id)
 
@@ -163,8 +149,8 @@ def run_forensic_accounting(self, task_id: str, companies: list[dict]):
             extra={
                 "task_id": task_id,
                 "celery_task_id": self.request.id,
-                "company_count": len(companies)
-            }
+                "company_count": len(companies),
+            },
         )
 
         service = ForensicAccountingService()
@@ -179,20 +165,16 @@ def run_forensic_accounting(self, task_id: str, companies: list[dict]):
             "Forensic Accounting analysis completed",
             extra={
                 "task_id": task_id,
-                "reports_generated": len([r for r in results if r.get("status") == "success"])
-            }
+                "reports_generated": len([r for r in results if r.get("status") == "success"]),
+            },
         )
 
     except AutomationTask.DoesNotExist:
-        logger.error(
-            "Task not found for Forensic Accounting",
-            extra={"task_id": task_id}
-        )
+        logger.error("Task not found for Forensic Accounting", extra={"task_id": task_id})
         raise
     except Exception as e:
         logger.exception(
-            "Forensic Accounting analysis failed",
-            extra={"task_id": task_id, "error": str(e)}
+            "Forensic Accounting analysis failed", extra={"task_id": task_id, "error": str(e)}
         )
         if task is not None:
             task.status = "failed"

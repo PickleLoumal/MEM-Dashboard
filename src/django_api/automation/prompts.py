@@ -24,9 +24,7 @@ def get_daily_briefing_prompt(sheet_url: str = None) -> str:
     sheet_url = sheet_url or default_sheet_url
 
     return DAILY_BRIEFING_PROMPT_TEMPLATE.format(
-        today_hkt=today_hkt,
-        today_et=today_et,
-        sheet_url=sheet_url
+        today_hkt=today_hkt, today_et=today_et, sheet_url=sheet_url
     )
 
 
@@ -292,7 +290,7 @@ def get_quick_version_prompt(original_content: str) -> str:
     """
     return QUICK_VERSION_PROMPT_TEMPLATE.format(
         content_length=len(original_content),
-        original_content=original_content[:20000]  # Truncate if too long
+        original_content=original_content[:20000],  # Truncate if too long
     )
 
 
@@ -412,5 +410,5 @@ def get_forensic_accounting_prompt(
         today=today,
         price=price,
         market_cap=market_cap,
-        currency=currency
+        currency=currency,
     )

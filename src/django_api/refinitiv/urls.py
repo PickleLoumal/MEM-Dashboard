@@ -10,4 +10,3 @@ router = DefaultRouter()
 router.register(r"refinitiv", RefinitivViewSet, basename="refinitiv")
 
 urlpatterns = router.urls
-

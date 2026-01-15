@@ -28,7 +28,9 @@ class SegmentDataSerializer(serializers.Serializer):
 class AnalystConsensusSerializer(serializers.Serializer):
     """分析师一致预期序列化器。"""
 
-    consensus_rating = serializers.CharField(allow_null=True, required=False, help_text="共识评级 (Buy/Hold/Sell)")
+    consensus_rating = serializers.CharField(
+        allow_null=True, required=False, help_text="共识评级 (Buy/Hold/Sell)"
+    )
     buy_pct = serializers.IntegerField(allow_null=True, required=False, help_text="买入评级占比")
     hold_pct = serializers.IntegerField(allow_null=True, required=False, help_text="持有评级占比")
     sell_pct = serializers.IntegerField(allow_null=True, required=False, help_text="卖出评级占比")
@@ -64,19 +66,31 @@ class KeyMetricsSerializer(serializers.Serializer):
         max_digits=18, decimal_places=2, allow_null=True, required=False, help_text="营业收入"
     )
     operating_income_yoy = serializers.DecimalField(
-        max_digits=8, decimal_places=4, allow_null=True, required=False, help_text="营业收入同比增长率"
+        max_digits=8,
+        decimal_places=4,
+        allow_null=True,
+        required=False,
+        help_text="营业收入同比增长率",
     )
     net_income = serializers.DecimalField(
         max_digits=18, decimal_places=2, allow_null=True, required=False, help_text="净利润"
     )
     net_income_yoy = serializers.DecimalField(
-        max_digits=8, decimal_places=4, allow_null=True, required=False, help_text="净利润同比增长率"
+        max_digits=8,
+        decimal_places=4,
+        allow_null=True,
+        required=False,
+        help_text="净利润同比增长率",
     )
     operating_margin = serializers.DecimalField(
         max_digits=6, decimal_places=4, allow_null=True, required=False, help_text="营业利润率"
     )
     operating_margin_yoy = serializers.DecimalField(
-        max_digits=6, decimal_places=4, allow_null=True, required=False, help_text="营业利润率同比变化"
+        max_digits=6,
+        decimal_places=4,
+        allow_null=True,
+        required=False,
+        help_text="营业利润率同比变化",
     )
     gross_margin = serializers.DecimalField(
         max_digits=6, decimal_places=4, allow_null=True, required=False, help_text="毛利率"
@@ -192,11 +206,17 @@ class FinancialContextSerializer(serializers.Serializer):
     pricing = PricingDataSerializer(allow_null=True, required=False, help_text="股价数据")
     key_metrics = KeyMetricsSerializer(allow_null=True, required=False, help_text="关键指标")
     valuation = ValuationMetricsSerializer(allow_null=True, required=False, help_text="估值指标")
-    balance_sheet = BalanceSheetMetricsSerializer(allow_null=True, required=False, help_text="资产负债表指标")
-    profitability = ProfitabilityMetricsSerializer(allow_null=True, required=False, help_text="盈利能力指标")
+    balance_sheet = BalanceSheetMetricsSerializer(
+        allow_null=True, required=False, help_text="资产负债表指标"
+    )
+    profitability = ProfitabilityMetricsSerializer(
+        allow_null=True, required=False, help_text="盈利能力指标"
+    )
 
     # 分析师预期
-    analyst_consensus = AnalystConsensusSerializer(allow_null=True, required=False, help_text="分析师共识")
+    analyst_consensus = AnalystConsensusSerializer(
+        allow_null=True, required=False, help_text="分析师共识"
+    )
 
     # 分部业绩
     segments = SegmentDataSerializer(many=True, required=False, help_text="业务分部")
@@ -242,4 +262,3 @@ __all__ = [
     "SegmentDataSerializer",
     "ValuationMetricsSerializer",
 ]
-

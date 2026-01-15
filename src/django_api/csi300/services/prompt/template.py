@@ -25,4 +25,3 @@ PROMPT_TEMPLATE = (
 
 
 __all__ = ["PROMPT_TEMPLATE"]
-

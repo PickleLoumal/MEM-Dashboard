@@ -9,8 +9,9 @@ import datetime
 import logging
 import random
 import re
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Callable
+from typing import Any
 from urllib.parse import urlparse
 
 from asgiref.sync import sync_to_async
@@ -230,7 +231,9 @@ async def process_company_ai(
 
                     # 记录 chunk 级别的 inline citations
                     if chunk_inline_citations:
-                        logger.info(f"Collected {len(chunk_inline_citations)} inline citations from chunks")
+                        logger.info(
+                            f"Collected {len(chunk_inline_citations)} inline citations from chunks"
+                        )
 
                     return final_response
 
@@ -257,14 +260,13 @@ async def process_company_ai(
                                 elif cit.HasField("x_citation"):
                                     url = cit.x_citation.url
                                     title = getattr(cit.x_citation, "title", None) or "X Post"
-                            else:
-                                # 兼容非 protobuf 对象
-                                if hasattr(cit, "web_citation") and cit.web_citation:
-                                    url = cit.web_citation.url
-                                    title = getattr(cit.web_citation, "title", None)
-                                elif hasattr(cit, "x_citation") and cit.x_citation:
-                                    url = cit.x_citation.url
-                                    title = getattr(cit.x_citation, "title", None) or "X Post"
+                            # 兼容非 protobuf 对象
+                            elif hasattr(cit, "web_citation") and cit.web_citation:
+                                url = cit.web_citation.url
+                                title = getattr(cit.web_citation, "title", None)
+                            elif hasattr(cit, "x_citation") and cit.x_citation:
+                                url = cit.x_citation.url
+                                title = getattr(cit.x_citation, "title", None) or "X Post"
 
                             if url:
                                 # 确保 title 是有效值，否则从 URL 提取域名
@@ -303,8 +305,16 @@ async def process_company_ai(
                                                 path_parts = path.split("/")
                                                 last_part = path_parts[-1] if path_parts else ""
                                                 # 清理并格式化
-                                                title = last_part.replace("-", " ").replace("_", " ").replace(".html", "").replace(".pdf", " (PDF)").replace(".PDF", " (PDF)")
-                                                title = " ".join(word.capitalize() for word in title.split()[:6])  # 限制长度
+                                                title = (
+                                                    last_part.replace("-", " ")
+                                                    .replace("_", " ")
+                                                    .replace(".html", "")
+                                                    .replace(".pdf", " (PDF)")
+                                                    .replace(".PDF", " (PDF)")
+                                                )
+                                                title = " ".join(
+                                                    word.capitalize() for word in title.split()[:6]
+                                                )  # 限制长度
                                                 if not title or title.isdigit():
                                                     title = domain
                                             else:
@@ -317,7 +327,7 @@ async def process_company_ai(
                                         live_citations.append(cit)
                                     else:
                                         # 其他格式，尝试提取 URL
-                                        url_match = re.search(r'https?://[^\s]+', cit)
+                                        url_match = re.search(r"https?://[^\s]+", cit)
                                         if url_match:
                                             url = url_match.group(0)
                                             title = cit.replace(url, "").strip() or "Source"
@@ -343,7 +353,9 @@ async def process_company_ai(
 
                 # 方法3: 从 response 中提取 tool_results (Agentic API 可能在这里返回搜索结果)
                 if not live_citations:
-                    tool_results = getattr(response, "tool_results", None) or getattr(response, "tool_calls", None)
+                    tool_results = getattr(response, "tool_results", None) or getattr(
+                        response, "tool_calls", None
+                    )
                     if tool_results:
                         logger.info(f"Found tool_results/tool_calls: {type(tool_results)}")
 
@@ -399,7 +411,9 @@ async def process_company_ai(
                     raw_key_takeaways
                 )
                 final_sources = extracted_sources
-            logger.warning(f"No Live Search citations for {company_name}, using AI-generated sources")
+            logger.warning(
+                f"No Live Search citations for {company_name}, using AI-generated sources"
+            )
 
         summary_data = {
             "report_date": today_date,

@@ -62,7 +62,7 @@ class PrettySpanExporter(SpanExporter):
             self._print_span(span)
         return SpanExportResult.SUCCESS
 
-    def _print_span(self, span: ReadableSpan) -> None:  # noqa: PLR0912
+    def _print_span(self, span: ReadableSpan) -> None:
         attrs = dict(span.attributes) if span.attributes else {}
         name = span.name
         duration_ns = span.end_time - span.start_time if span.end_time and span.start_time else 0

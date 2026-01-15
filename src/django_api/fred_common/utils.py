@@ -29,9 +29,7 @@ def format_date(date_input: str | datetime, output_format: str = DISPLAY_DATE_FO
     try:
         if isinstance(date_input, str):
             # 尝试解析字符串日期
-            date_obj = datetime.strptime(date_input, DEFAULT_DATE_FORMAT).replace(
-                tzinfo=UTC
-            )
+            date_obj = datetime.strptime(date_input, DEFAULT_DATE_FORMAT).replace(tzinfo=UTC)
         elif isinstance(date_input, datetime):
             date_obj = date_input
         else:

@@ -31,15 +31,16 @@ def get_application():
         from channels.auth import AuthMiddlewareStack
         from channels.routing import ProtocolTypeRouter, URLRouter
         from channels.security.websocket import AllowedHostsOriginValidator
-
         from pdf_service.routing import websocket_urlpatterns
 
-        return ProtocolTypeRouter({
-            "http": django_asgi_app,
-            "websocket": AllowedHostsOriginValidator(
-                AuthMiddlewareStack(URLRouter(websocket_urlpatterns))
-            ),
-        })
+        return ProtocolTypeRouter(
+            {
+                "http": django_asgi_app,
+                "websocket": AllowedHostsOriginValidator(
+                    AuthMiddlewareStack(URLRouter(websocket_urlpatterns))
+                ),
+            }
+        )
     except ImportError:
         # Channels not installed, return standard Django application
         return django_asgi_app

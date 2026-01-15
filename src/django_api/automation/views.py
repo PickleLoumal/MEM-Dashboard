@@ -1,9 +1,7 @@
-import logging
-from rest_framework import viewsets, status, mixins
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema, OpenApiResponse
-from drf_spectacular.types import OpenApiTypes
 
 from observability import get_logger
 
@@ -11,14 +9,14 @@ from .models import AutomationTask
 from .serializers import (
     AutomationTaskSerializer,
     DailyBriefingTriggerSerializer,
-    ForensicAccountingTriggerSerializer,
     ErrorResponseSerializer,
+    ForensicAccountingTriggerSerializer,
 )
 from .tasks import (
     run_daily_briefing_full,
-    run_forensic_accounting,
-    run_daily_briefing_scraper,
     run_daily_briefing_generator,
+    run_daily_briefing_scraper,
+    run_forensic_accounting,
 )
 
 logger = get_logger(__name__)
@@ -41,11 +39,10 @@ class AutomationTaskViewSet(
         responses={
             202: OpenApiResponse(
                 response=AutomationTaskSerializer,
-                description="Task successfully created and queued"
+                description="Task successfully created and queued",
             ),
             400: OpenApiResponse(
-                response=ErrorResponseSerializer,
-                description="Invalid request parameters"
+                response=ErrorResponseSerializer, description="Invalid request parameters"
             ),
         },
         description="Trigger full Daily Briefing workflow (Stage 1: Scraping + Stage 2: AI Generation)",
@@ -60,12 +57,12 @@ class AutomationTaskViewSet(
         task = AutomationTask.objects.create(
             task_type="daily_briefing",
             status="pending",
-            created_by=request.user.username if request.user.is_authenticated else "api"
+            created_by=request.user.username if request.user.is_authenticated else "api",
         )
 
         logger.info(
             "Daily Briefing task created",
-            extra={"task_id": str(task.id), "task_type": "daily_briefing"}
+            extra={"task_id": str(task.id), "task_type": "daily_briefing"},
         )
 
         # Trigger Celery task
@@ -74,20 +71,17 @@ class AutomationTaskViewSet(
         task.celery_task_id = celery_task.id
         task.save()
 
-        return Response(
-            AutomationTaskSerializer(task).data, status=status.HTTP_202_ACCEPTED
-        )
+        return Response(AutomationTaskSerializer(task).data, status=status.HTTP_202_ACCEPTED)
 
     @extend_schema(
         request=DailyBriefingTriggerSerializer,
         responses={
             202: OpenApiResponse(
                 response=AutomationTaskSerializer,
-                description="Scraping task successfully created and queued"
+                description="Scraping task successfully created and queued",
             ),
             400: OpenApiResponse(
-                response=ErrorResponseSerializer,
-                description="Invalid request parameters"
+                response=ErrorResponseSerializer, description="Invalid request parameters"
             ),
         },
         description="Trigger only Stage 1 (Scraping from Briefing.com to Google Sheets)",
@@ -102,12 +96,12 @@ class AutomationTaskViewSet(
         task = AutomationTask.objects.create(
             task_type="daily_briefing",
             status="pending",
-            created_by=request.user.username if request.user.is_authenticated else "api"
+            created_by=request.user.username if request.user.is_authenticated else "api",
         )
 
         logger.info(
             "Daily Briefing scrape-only task created",
-            extra={"task_id": str(task.id), "task_type": "daily_briefing_scrape"}
+            extra={"task_id": str(task.id), "task_type": "daily_briefing_scrape"},
         )
 
         # Trigger Celery task
@@ -116,20 +110,17 @@ class AutomationTaskViewSet(
         task.celery_task_id = celery_task.id
         task.save()
 
-        return Response(
-            AutomationTaskSerializer(task).data, status=status.HTTP_202_ACCEPTED
-        )
+        return Response(AutomationTaskSerializer(task).data, status=status.HTTP_202_ACCEPTED)
 
     @extend_schema(
         request=DailyBriefingTriggerSerializer,
         responses={
             202: OpenApiResponse(
                 response=AutomationTaskSerializer,
-                description="Generation task successfully created and queued"
+                description="Generation task successfully created and queued",
             ),
             400: OpenApiResponse(
-                response=ErrorResponseSerializer,
-                description="Invalid request parameters"
+                response=ErrorResponseSerializer, description="Invalid request parameters"
             ),
         },
         description="Trigger only Stage 2 (AI Report Generation, skipping scraping delay)",
@@ -144,12 +135,12 @@ class AutomationTaskViewSet(
         task = AutomationTask.objects.create(
             task_type="daily_briefing",
             status="pending",
-            created_by=request.user.username if request.user.is_authenticated else "api"
+            created_by=request.user.username if request.user.is_authenticated else "api",
         )
 
         logger.info(
             "Daily Briefing generate-only task created",
-            extra={"task_id": str(task.id), "task_type": "daily_briefing_generate"}
+            extra={"task_id": str(task.id), "task_type": "daily_briefing_generate"},
         )
 
         # Trigger Celery task
@@ -158,20 +149,18 @@ class AutomationTaskViewSet(
         task.celery_task_id = celery_task.id
         task.save()
 
-        return Response(
-            AutomationTaskSerializer(task).data, status=status.HTTP_202_ACCEPTED
-        )
+        return Response(AutomationTaskSerializer(task).data, status=status.HTTP_202_ACCEPTED)
 
     @extend_schema(
         request=ForensicAccountingTriggerSerializer,
         responses={
             202: OpenApiResponse(
                 response=AutomationTaskSerializer,
-                description="Forensic Accounting task successfully created and queued"
+                description="Forensic Accounting task successfully created and queued",
             ),
             400: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                description="Invalid request parameters or no companies provided"
+                description="Invalid request parameters or no companies provided",
             ),
         },
         description="Trigger Forensic Accounting analysis for a list of companies",
@@ -188,17 +177,14 @@ class AutomationTaskViewSet(
         if not companies:
             logger.warning(
                 "Forensic Accounting trigger rejected: no companies provided",
-                extra={"request_data": request.data}
+                extra={"request_data": request.data},
             )
-            return Response(
-                {"error": "No companies provided"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "No companies provided"}, status=status.HTTP_400_BAD_REQUEST)
 
         task = AutomationTask.objects.create(
             task_type="forensic_accounting",
             status="pending",
-            created_by=request.user.username if request.user.is_authenticated else "api"
+            created_by=request.user.username if request.user.is_authenticated else "api",
         )
 
         logger.info(
@@ -206,8 +192,8 @@ class AutomationTaskViewSet(
             extra={
                 "task_id": str(task.id),
                 "task_type": "forensic_accounting",
-                "company_count": len(companies)
-            }
+                "company_count": len(companies),
+            },
         )
 
         # Trigger Celery task
@@ -216,6 +202,4 @@ class AutomationTaskViewSet(
         task.celery_task_id = celery_task.id
         task.save()
 
-        return Response(
-            AutomationTaskSerializer(task).data, status=status.HTTP_202_ACCEPTED
-        )
+        return Response(AutomationTaskSerializer(task).data, status=status.HTTP_202_ACCEPTED)

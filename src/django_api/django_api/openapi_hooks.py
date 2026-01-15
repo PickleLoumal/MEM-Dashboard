@@ -29,7 +29,9 @@ URL_PREFIX_TO_TAG = {
 }
 
 
-def preprocess_schema(endpoints: list[tuple[str, str, str, Any]]) -> list[tuple[str, str, str, Any]]:
+def preprocess_schema(
+    endpoints: list[tuple[str, str, str, Any]],
+) -> list[tuple[str, str, str, Any]]:
     """
     Preprocess OpenAPI endpoints before schema generation.
 
@@ -46,7 +48,9 @@ def preprocess_schema(endpoints: list[tuple[str, str, str, Any]]) -> list[tuple[
     return endpoints
 
 
-def postprocess_schema(result: dict[str, Any], generator: Any, request: Any, public: bool) -> dict[str, Any]:
+def postprocess_schema(
+    result: dict[str, Any], generator: Any, request: Any, public: bool
+) -> dict[str, Any]:
     """
     Postprocess the generated OpenAPI schema.
 
@@ -85,4 +89,3 @@ def postprocess_schema(result: dict[str, Any], generator: Any, request: Any, pub
                 operation["tags"] = [new_tag]
 
     return result
-

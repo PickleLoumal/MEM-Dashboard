@@ -35,15 +35,12 @@ class ForensicAccountingService:
         ticker = company_info.get("ticker")
 
         if not company_name or not ticker:
-            logger.error(
-                "Invalid company info provided",
-                extra={"company_info": company_info}
-            )
+            logger.error("Invalid company info provided", extra={"company_info": company_info})
             return None
 
         logger.info(
             "Processing company for forensic accounting",
-            extra={"company": company_name, "ticker": ticker}
+            extra={"company": company_name, "ticker": ticker},
         )
 
         # 1. Fetch stock data
@@ -59,12 +56,12 @@ class ForensicAccountingService:
             ticker=ticker,
             price=price_str,
             market_cap=market_cap_str,
-            currency=currency_str
+            currency=currency_str,
         )
 
         logger.info(
             "Calling Perplexity API for forensic accounting report",
-            extra={"company": company_name, "ticker": ticker}
+            extra={"company": company_name, "ticker": ticker},
         )
 
         content = self.perplexity_client.generate_report(prompt)
@@ -72,7 +69,7 @@ class ForensicAccountingService:
         if not content:
             logger.error(
                 "Failed to generate forensic accounting report",
-                extra={"company": company_name, "ticker": ticker}
+                extra={"company": company_name, "ticker": ticker},
             )
             return None
 
@@ -89,8 +86,8 @@ class ForensicAccountingService:
                 "company": company_name,
                 "ticker": ticker,
                 "file_path": str(file_path),
-                "content_length": len(content)
-            }
+                "content_length": len(content),
+            },
         )
         return str(file_path)
 
@@ -105,8 +102,7 @@ class ForensicAccountingService:
             List of result dictionaries with status for each company.
         """
         logger.info(
-            "Starting forensic accounting batch process",
-            extra={"company_count": len(companies)}
+            "Starting forensic accounting batch process", extra={"company_count": len(companies)}
         )
 
         results = []
@@ -114,33 +110,39 @@ class ForensicAccountingService:
             try:
                 report_path = self.process_company(company)
                 if report_path:
-                    results.append({
-                        "company": company.get("name"),
-                        "ticker": company.get("ticker"),
-                        "status": "success",
-                        "report_path": report_path
-                    })
+                    results.append(
+                        {
+                            "company": company.get("name"),
+                            "ticker": company.get("ticker"),
+                            "status": "success",
+                            "report_path": report_path,
+                        }
+                    )
                 else:
-                    results.append({
-                        "company": company.get("name"),
-                        "ticker": company.get("ticker"),
-                        "status": "failed"
-                    })
+                    results.append(
+                        {
+                            "company": company.get("name"),
+                            "ticker": company.get("ticker"),
+                            "status": "failed",
+                        }
+                    )
             except Exception as e:
                 logger.exception(
                     "Error processing company for forensic accounting",
                     extra={
                         "company": company.get("name"),
                         "ticker": company.get("ticker"),
-                        "error": str(e)
+                        "error": str(e),
+                    },
+                )
+                results.append(
+                    {
+                        "company": company.get("name"),
+                        "ticker": company.get("ticker"),
+                        "status": "error",
+                        "error": str(e),
                     }
                 )
-                results.append({
-                    "company": company.get("name"),
-                    "ticker": company.get("ticker"),
-                    "status": "error",
-                    "error": str(e)
-                })
 
         success_count = len([r for r in results if r.get("status") == "success"])
         logger.info(
@@ -148,8 +150,8 @@ class ForensicAccountingService:
             extra={
                 "total": len(companies),
                 "success": success_count,
-                "failed": len(companies) - success_count
-            }
+                "failed": len(companies) - success_count,
+            },
         )
 
         return results

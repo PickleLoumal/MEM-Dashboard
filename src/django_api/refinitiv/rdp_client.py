@@ -680,11 +680,13 @@ class RDPClient:
         }
 
         # Check credentials
-        result["credentials_configured"] = all([
-            self.client_id,
-            self.username,
-            self.password,
-        ])
+        result["credentials_configured"] = all(
+            [
+                self.client_id,
+                self.username,
+                self.password,
+            ]
+        )
 
         if not result["credentials_configured"]:
             result["error"] = "Missing credentials. Check REFINITIV_* env vars."

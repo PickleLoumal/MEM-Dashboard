@@ -236,7 +236,9 @@ class CSI300SummaryMixin:
             task.status = GenerationTask.Status.PROCESSING
             task.progress_message = "正在调用 AI 服务..."
             task.progress_percent = 10
-            task.save(update_fields=["status", "progress_message", "progress_percent", "updated_at"])
+            task.save(
+                update_fields=["status", "progress_message", "progress_percent", "updated_at"]
+            )
 
             # 导入并调用生成服务
             from .services import generate_company_summary

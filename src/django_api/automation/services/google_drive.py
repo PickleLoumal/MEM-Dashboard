@@ -3,7 +3,6 @@ import pickle
 from pathlib import Path
 
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
@@ -17,7 +16,9 @@ class GoogleDriveService:
     """Service for interacting with Google Drive API using OAuth 2.0"""
 
     def __init__(self):
-        self.oauth_credentials_file = os.getenv("GOOGLE_OAUTH_CREDENTIALS_FILE", "oauth_credentials.json")
+        self.oauth_credentials_file = os.getenv(
+            "GOOGLE_OAUTH_CREDENTIALS_FILE", "oauth_credentials.json"
+        )
         self.token_file = os.getenv("GOOGLE_OAUTH_TOKEN_FILE", "oauth_token.pickle")
         self.folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
         self.creds = None
@@ -53,7 +54,7 @@ class GoogleDriveService:
 
             # Try to load from token file first
             if token_path.exists():
-                with open(token_path, 'rb') as token:
+                with open(token_path, "rb") as token:
                     self.creds = pickle.load(token)
                 logger.info("Loaded existing OAuth token")
 
@@ -71,31 +72,24 @@ class GoogleDriveService:
 
                     logger.info("Starting OAuth flow - browser authorization required")
                     flow = InstalledAppFlow.from_client_secrets_file(
-                        str(oauth_path),
-                        scopes=['https://www.googleapis.com/auth/drive.file']
+                        str(oauth_path), scopes=["https://www.googleapis.com/auth/drive.file"]
                     )
                     self.creds = flow.run_local_server(port=0)
                     logger.info("OAuth authorization completed")
 
                 # Save token for next use
-                with open(token_path, 'wb') as token:
+                with open(token_path, "wb") as token:
                     pickle.dump(self.creds, token)
-                logger.info(
-                    "OAuth token saved",
-                    extra={"token_path": str(token_path)}
-                )
+                logger.info("OAuth token saved", extra={"token_path": str(token_path)})
 
             # Create Drive service
-            self._service = build('drive', 'v3', credentials=self.creds)
+            self._service = build("drive", "v3", credentials=self.creds)
 
             logger.info("Google Drive authentication successful")
             return True
 
         except Exception as e:
-            logger.exception(
-                "Google Drive authentication failed",
-                extra={"error": str(e)}
-            )
+            logger.exception("Google Drive authentication failed", extra={"error": str(e)})
             return False
 
     def upload_file(self, file_path: str, folder_id: str | None = None) -> dict | None:
@@ -119,51 +113,45 @@ class GoogleDriveService:
 
             logger.info(
                 "Uploading file to Google Drive",
-                extra={
-                    "filename": filename,
-                    "file_path": file_path,
-                    "folder_id": folder_id
-                }
+                extra={"filename": filename, "file_path": file_path, "folder_id": folder_id},
             )
 
             # File metadata
             file_metadata = {
-                'name': filename,
+                "name": filename,
             }
 
             # Set parent folder if specified
             if folder_id:
-                file_metadata['parents'] = [folder_id]
+                file_metadata["parents"] = [folder_id]
 
             # Determine MIME type based on file extension
-            mime_type = 'application/octet-stream'
-            if file_path.endswith('.docx'):
-                mime_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            elif file_path.endswith('.pdf'):
-                mime_type = 'application/pdf'
-            elif file_path.endswith('.xlsx'):
-                mime_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            mime_type = "application/octet-stream"
+            if file_path.endswith(".docx"):
+                mime_type = (
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
+            elif file_path.endswith(".pdf"):
+                mime_type = "application/pdf"
+            elif file_path.endswith(".xlsx"):
+                mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
             # Upload file
-            media = MediaFileUpload(
-                file_path,
-                mimetype=mime_type,
-                resumable=True
-            )
+            media = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
 
-            file = self._service.files().create(
-                body=file_metadata,
-                media_body=media,
-                fields='id, name, webViewLink'
-            ).execute()
+            file = (
+                self._service.files()
+                .create(body=file_metadata, media_body=media, fields="id, name, webViewLink")
+                .execute()
+            )
 
             logger.info(
                 "File uploaded to Google Drive successfully",
                 extra={
-                    "file_id": file.get('id'),
-                    "filename": file.get('name'),
-                    "web_link": file.get('webViewLink')
-                }
+                    "file_id": file.get("id"),
+                    "filename": file.get("name"),
+                    "web_link": file.get("webViewLink"),
+                },
             )
 
             return file
@@ -171,6 +159,6 @@ class GoogleDriveService:
         except Exception as e:
             logger.exception(
                 "Failed to upload file to Google Drive",
-                extra={"file_path": file_path, "error": str(e)}
+                extra={"file_path": file_path, "error": str(e)},
             )
             return None

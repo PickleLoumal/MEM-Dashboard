@@ -56,10 +56,7 @@ class BriefingScraperService:
             The scraped content with timestamp header, or None on failure.
         """
         try:
-            logger.info(
-                "Scraping Briefing.com Page One",
-                extra={"url": self.page_one_url}
-            )
+            logger.info("Scraping Briefing.com Page One", extra={"url": self.page_one_url})
             self._init_driver()
             self.driver.get(self.page_one_url)
             time.sleep(5)  # Wait for JavaScript rendering
@@ -73,10 +70,7 @@ class BriefingScraperService:
                 final_content += f"Source: {self.page_one_url}\n\n"
                 final_content += content[:5000]
 
-                logger.info(
-                    "Page One scrape successful",
-                    extra={"content_length": len(content)}
-                )
+                logger.info("Page One scrape successful", extra={"content_length": len(content)})
                 return final_content
 
             logger.warning("Page One content empty or too short")
@@ -84,8 +78,7 @@ class BriefingScraperService:
 
         except Exception as e:
             logger.exception(
-                "Failed to scrape Page One",
-                extra={"url": self.page_one_url, "error": str(e)}
+                "Failed to scrape Page One", extra={"url": self.page_one_url, "error": str(e)}
             )
             return None
 
@@ -98,8 +91,7 @@ class BriefingScraperService:
         """
         try:
             logger.info(
-                "Scraping Briefing.com Stock Market Update",
-                extra={"url": self.market_update_url}
+                "Scraping Briefing.com Stock Market Update", extra={"url": self.market_update_url}
             )
             self._init_driver()
             self.driver.get(self.market_update_url)
@@ -114,7 +106,7 @@ class BriefingScraperService:
 
                 logger.info(
                     "Stock Market Update scrape successful",
-                    extra={"content_length": len(full_content)}
+                    extra={"content_length": len(full_content)},
                 )
                 return result
 
@@ -124,7 +116,7 @@ class BriefingScraperService:
         except Exception as e:
             logger.exception(
                 "Failed to scrape Stock Market Update",
-                extra={"url": self.market_update_url, "error": str(e)}
+                extra={"url": self.market_update_url, "error": str(e)},
             )
             return None
 
@@ -137,8 +129,7 @@ class BriefingScraperService:
         """
         try:
             logger.info(
-                "Scraping Briefing.com Bond Market Update",
-                extra={"url": self.bond_update_url}
+                "Scraping Briefing.com Bond Market Update", extra={"url": self.bond_update_url}
             )
             self._init_driver()
             self.driver.get(self.bond_update_url)
@@ -153,7 +144,7 @@ class BriefingScraperService:
 
                 logger.info(
                     "Bond Market Update scrape successful",
-                    extra={"content_length": len(full_content)}
+                    extra={"content_length": len(full_content)},
                 )
                 return result
 
@@ -163,7 +154,7 @@ class BriefingScraperService:
         except Exception as e:
             logger.exception(
                 "Failed to scrape Bond Market Update",
-                extra={"url": self.bond_update_url, "error": str(e)}
+                extra={"url": self.bond_update_url, "error": str(e)},
             )
             return None
 
@@ -207,7 +198,7 @@ class BriefingScraperService:
 
             logger.info(
                 "Briefing.com scraping workflow completed",
-                extra={"success_count": success_count, "total_pages": 3}
+                extra={"success_count": success_count, "total_pages": 3},
             )
             return success_count > 0
 

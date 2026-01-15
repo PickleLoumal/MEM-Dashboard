@@ -29,7 +29,7 @@ class PerplexityClient:
         prompt: str,
         model: str = "sonar-deep-research",
         max_retries: int = 3,
-        timeout: int = 3600
+        timeout: int = 3600,
     ) -> str | None:
         """
         Generate a report using Perplexity AI API.
@@ -46,23 +46,17 @@ class PerplexityClient:
         Raises:
             Exception: If all retry attempts fail.
         """
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
 
         data = {
             "model": model,
             "messages": [
                 {
                     "role": "system",
-                    "content": "You are a highly intelligent AI financial analyst with deep research capabilities."
+                    "content": "You are a highly intelligent AI financial analyst with deep research capabilities.",
                 },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
+                {"role": "user", "content": prompt},
+            ],
         }
 
         for attempt in range(max_retries):
@@ -73,42 +67,30 @@ class PerplexityClient:
                         "attempt": attempt + 1,
                         "max_retries": max_retries,
                         "model": model,
-                        "prompt_length": len(prompt)
-                    }
+                        "prompt_length": len(prompt),
+                    },
                 )
 
-                response = requests.post(
-                    self.api_url,
-                    headers=headers,
-                    json=data,
-                    timeout=timeout
-                )
+                response = requests.post(self.api_url, headers=headers, json=data, timeout=timeout)
                 response.raise_for_status()
                 result = response.json()
 
                 if result and "choices" in result and len(result["choices"]) > 0:
                     content = result["choices"][0]["message"]["content"]
                     # Remove <think> tags if present (internal reasoning)
-                    content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
+                    content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL)
 
                     logger.info(
                         "Perplexity API call successful",
-                        extra={
-                            "response_length": len(content),
-                            "model": model
-                        }
+                        extra={"response_length": len(content), "model": model},
                     )
                     return content.strip()
-                else:
-                    raise ValueError("Invalid API response format: missing 'choices' field")
+                raise ValueError("Invalid API response format: missing 'choices' field")
 
             except requests.Timeout:
                 logger.warning(
                     "Perplexity API request timed out",
-                    extra={
-                        "attempt": attempt + 1,
-                        "timeout_seconds": timeout
-                    }
+                    extra={"attempt": attempt + 1, "timeout_seconds": timeout},
                 )
                 if attempt < max_retries - 1:
                     backoff_time = 30 * (attempt + 1)
@@ -124,8 +106,8 @@ class PerplexityClient:
                     extra={
                         "attempt": attempt + 1,
                         "status_code": e.response.status_code if e.response else None,
-                        "error": str(e)
-                    }
+                        "error": str(e),
+                    },
                 )
                 if attempt < max_retries - 1:
                     backoff_time = 10 * (attempt + 1)
@@ -136,11 +118,7 @@ class PerplexityClient:
 
             except Exception as e:
                 logger.exception(
-                    "Perplexity API call failed",
-                    extra={
-                        "attempt": attempt + 1,
-                        "error": str(e)
-                    }
+                    "Perplexity API call failed", extra={"attempt": attempt + 1, "error": str(e)}
                 )
                 if attempt < max_retries - 1:
                     backoff_time = 10 * (attempt + 1)

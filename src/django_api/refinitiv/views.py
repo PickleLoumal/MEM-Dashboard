@@ -129,4 +129,3 @@ class RefinitivViewSet(viewsets.ViewSet):
             result = client.search_symbology(query, limit=limit)
 
         return Response(result or {"results": []})
-

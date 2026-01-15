@@ -157,24 +157,40 @@ class FinancialContext:
         if self.pricing:
             lines.append("**Market Data:**")
             if self.pricing.price_close:
-                lines.append(f"- Stock Price (Previous Close): {self.pricing.price_close} {self.pricing.currency}")
+                lines.append(
+                    f"- Stock Price (Previous Close): {self.pricing.price_close} {self.pricing.currency}"
+                )
             if self.pricing.market_cap_display:
                 lines.append(f"- Market Cap: {self.pricing.market_cap_display}")
             if self.pricing.week_52_high and self.pricing.week_52_low:
-                lines.append(f"- 52-Week Range: {self.pricing.week_52_low} - {self.pricing.week_52_high}")
+                lines.append(
+                    f"- 52-Week Range: {self.pricing.week_52_low} - {self.pricing.week_52_high}"
+                )
             lines.append("")
 
         # Key Metrics
         if self.key_metrics:
             lines.append("**Key Financial Metrics:**")
             if self.key_metrics.total_revenue:
-                yoy = f" ({self.key_metrics.total_revenue_yoy:+.1%})" if self.key_metrics.total_revenue_yoy else ""
+                yoy = (
+                    f" ({self.key_metrics.total_revenue_yoy:+.1%})"
+                    if self.key_metrics.total_revenue_yoy
+                    else ""
+                )
                 lines.append(f"- Total Revenue: {self.key_metrics.total_revenue}{yoy}")
             if self.key_metrics.operating_income:
-                yoy = f" ({self.key_metrics.operating_income_yoy:+.1%})" if self.key_metrics.operating_income_yoy else ""
+                yoy = (
+                    f" ({self.key_metrics.operating_income_yoy:+.1%})"
+                    if self.key_metrics.operating_income_yoy
+                    else ""
+                )
                 lines.append(f"- Operating Income: {self.key_metrics.operating_income}{yoy}")
             if self.key_metrics.net_income:
-                yoy = f" ({self.key_metrics.net_income_yoy:+.1%})" if self.key_metrics.net_income_yoy else ""
+                yoy = (
+                    f" ({self.key_metrics.net_income_yoy:+.1%})"
+                    if self.key_metrics.net_income_yoy
+                    else ""
+                )
                 lines.append(f"- Net Income: {self.key_metrics.net_income}{yoy}")
             if self.key_metrics.operating_margin:
                 lines.append(f"- Operating Margin: {self.key_metrics.operating_margin:.1%}")
@@ -256,20 +272,38 @@ class FinancialContext:
             "company_name": self.company_name,
             "ticker": self.ticker,
             "pricing": {
-                "price_close": float(self.pricing.price_close) if self.pricing and self.pricing.price_close else None,
+                "price_close": float(self.pricing.price_close)
+                if self.pricing and self.pricing.price_close
+                else None,
                 "market_cap": self.pricing.market_cap_display if self.pricing else None,
-                "52_week_high": float(self.pricing.week_52_high) if self.pricing and self.pricing.week_52_high else None,
-                "52_week_low": float(self.pricing.week_52_low) if self.pricing and self.pricing.week_52_low else None,
+                "52_week_high": float(self.pricing.week_52_high)
+                if self.pricing and self.pricing.week_52_high
+                else None,
+                "52_week_low": float(self.pricing.week_52_low)
+                if self.pricing and self.pricing.week_52_low
+                else None,
             },
             "key_metrics": {
-                "total_revenue": float(self.key_metrics.total_revenue) if self.key_metrics and self.key_metrics.total_revenue else None,
-                "operating_income": float(self.key_metrics.operating_income) if self.key_metrics and self.key_metrics.operating_income else None,
-                "net_income": float(self.key_metrics.net_income) if self.key_metrics and self.key_metrics.net_income else None,
-                "operating_margin": float(self.key_metrics.operating_margin) if self.key_metrics and self.key_metrics.operating_margin else None,
+                "total_revenue": float(self.key_metrics.total_revenue)
+                if self.key_metrics and self.key_metrics.total_revenue
+                else None,
+                "operating_income": float(self.key_metrics.operating_income)
+                if self.key_metrics and self.key_metrics.operating_income
+                else None,
+                "net_income": float(self.key_metrics.net_income)
+                if self.key_metrics and self.key_metrics.net_income
+                else None,
+                "operating_margin": float(self.key_metrics.operating_margin)
+                if self.key_metrics and self.key_metrics.operating_margin
+                else None,
             },
             "analyst_consensus": {
-                "rating": self.analyst_consensus.consensus_rating if self.analyst_consensus else None,
-                "target_price_avg": float(self.analyst_consensus.target_price_avg) if self.analyst_consensus and self.analyst_consensus.target_price_avg else None,
+                "rating": self.analyst_consensus.consensus_rating
+                if self.analyst_consensus
+                else None,
+                "target_price_avg": float(self.analyst_consensus.target_price_avg)
+                if self.analyst_consensus and self.analyst_consensus.target_price_avg
+                else None,
             },
             "segments": [
                 {
@@ -294,4 +328,3 @@ __all__ = [
     "SegmentData",
     "ValuationMetrics",
 ]
-

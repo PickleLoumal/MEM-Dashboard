@@ -405,6 +405,53 @@ else:
     }
 
 # =============================================================================
+# Celery Configuration (Async Task Queue)
+# =============================================================================
+# Celery is used for asynchronous task processing in the automation module.
+# Redis is used as both the message broker and result backend.
+
+# Broker and result backend URLs
+# In production: redis://<elasticache-endpoint>:6379/0
+# In development: redis://localhost:6379/0 (or in-memory if Redis not available)
+CELERY_BROKER_URL = os.getenv(
+    "CELERY_BROKER_URL",
+    f"redis://{REDIS_HOST}:{REDIS_PORT}/0" if REDIS_HOST else "memory://",
+)
+CELERY_RESULT_BACKEND = os.getenv(
+    "CELERY_RESULT_BACKEND",
+    f"redis://{REDIS_HOST}:{REDIS_PORT}/0" if REDIS_HOST else "cache+memory://",
+)
+
+# Serialization settings (JSON for security and interoperability)
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+
+# Timezone configuration (align with HK business hours)
+CELERY_TIMEZONE = "Asia/Hong_Kong"
+CELERY_ENABLE_UTC = True
+
+# Task execution limits
+CELERY_TASK_SOFT_TIME_LIMIT = 1800  # 30 minutes soft limit (raises SoftTimeLimitExceeded)
+CELERY_TASK_TIME_LIMIT = 3600  # 60 minutes hard limit (kills the task)
+
+# Task result expiration (24 hours)
+CELERY_RESULT_EXPIRES = 86400
+
+# Task acknowledgment settings (for reliability)
+CELERY_TASK_ACKS_LATE = True  # Acknowledge after task completion
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1  # Fetch one task at a time
+
+# Task tracking
+CELERY_TASK_TRACK_STARTED = True
+
+# =============================================================================
+# Automation Module Configuration
+# =============================================================================
+# Daily Briefing Stage 2 delay (wait for Briefing.com data to settle)
+DAILY_BRIEFING_STAGE2_DELAY = int(os.getenv("DAILY_BRIEFING_STAGE2_DELAY", "600"))  # 10 minutes
+
+# =============================================================================
 # PDF Service Configuration
 # =============================================================================
 

@@ -44,4 +44,3 @@ __all__ = [
     "SECTION_SOURCES",
     "SECTION_TRENDS_COMPETITION",
 ]
-

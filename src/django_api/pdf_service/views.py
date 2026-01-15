@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import json
 import logging
 import os
-import uuid as uuid_module
-import json
 import re
+import uuid as uuid_module
 
 from csi300.models import CSI300Company, CSI300InvestmentSummary
 from django.db import transaction
@@ -222,21 +222,19 @@ class PDFTaskViewSet(ErrorResponseMixin, viewsets.ViewSet):
 
             # Extract JSON block: analyst_consensus { ... }
             consensus_match = re.search(
-                r'analyst_consensus\s*\{([^}]+)\}',
-                investment_firms_text,
-                re.IGNORECASE
+                r"analyst_consensus\s*\{([^}]+)\}", investment_firms_text, re.IGNORECASE
             )
             if consensus_match:
                 try:
-                    json_str = '{' + consensus_match.group(1) + '}'
+                    json_str = "{" + consensus_match.group(1) + "}"
                     json_str = json_str.replace("'", '"')
                     analyst_consensus = json.loads(json_str)
                     # Remove the JSON block from display text
                     investment_firms_text = re.sub(
-                        r'analyst_consensus\s*\{[^}]+\}',
-                        '',
+                        r"analyst_consensus\s*\{[^}]+\}",
+                        "",
                         investment_firms_text,
-                        flags=re.IGNORECASE
+                        flags=re.IGNORECASE,
                     ).strip()
                 except json.JSONDecodeError:
                     pass  # Keep original text if parsing fails
@@ -246,7 +244,7 @@ class PDFTaskViewSet(ErrorResponseMixin, viewsets.ViewSet):
             divisions = []
             key_metrics = {}
 
-            if business_overview_text.startswith('{'):
+            if business_overview_text.startswith("{"):
                 try:
                     bo_data = json.loads(business_overview_text)
                     business_overview_text = bo_data.get("raw_text", business_overview_text)
@@ -319,7 +317,9 @@ class PDFTaskViewSet(ErrorResponseMixin, viewsets.ViewSet):
             "price_local_currency": float(company.price_local_currency or 0),
             "previous_close": float(company.previous_close or 0),
             "currency": company.currency,
-            "price_date": str(company.last_trade_date) if company.last_trade_date else "",  # Line 87
+            "price_date": str(company.last_trade_date)
+            if company.last_trade_date
+            else "",  # Line 87
             "price_52w_low": float(company.price_52w_low or 0),  # Line 89
             "price_52w_high": float(company.price_52w_high or 0),  # Line 89
             # Market Cap

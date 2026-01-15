@@ -373,11 +373,12 @@ def parse_analyst_consensus(investment_firms_content: str) -> dict[str, Any] | N
         # Validate required fields
         required_fields = ["consensus_rating", "buy_pct", "hold_pct", "sell_pct"]
         if all(field in consensus_data for field in required_fields):
-            logger.info(f"Successfully extracted analyst consensus: {consensus_data.get('consensus_rating')}")
+            logger.info(
+                f"Successfully extracted analyst consensus: {consensus_data.get('consensus_rating')}"
+            )
             return consensus_data
-        else:
-            logger.warning("Analyst consensus JSON missing required fields")
-            return None
+        logger.warning("Analyst consensus JSON missing required fields")
+        return None
 
     except (json.JSONDecodeError, KeyError, TypeError) as e:
         logger.warning(f"Failed to parse analyst_consensus JSON: {e}")
@@ -398,7 +399,7 @@ def extract_risk_severity(risks_content: str) -> list[dict[str, str]]:
     # Pattern to match [HIGH], [MEDIUM], [LOW] prefixed risks
     severity_pattern = re.compile(
         r"\*?\*?\[?(HIGH|MEDIUM|LOW)\]?\*?\*?\s*[-:]*\s*(.+?)(?=\n\*?\*?\[?(?:HIGH|MEDIUM|LOW)|\n\n|\Z)",
-        re.IGNORECASE | re.DOTALL
+        re.IGNORECASE | re.DOTALL,
     )
 
     for match in severity_pattern.finditer(risks_content):
@@ -409,10 +410,12 @@ def extract_risk_severity(risks_content: str) -> list[dict[str, str]]:
         text = re.sub(r"\s+", " ", text).strip()
 
         if text and len(text) > 20:
-            risks.append({
-                "text": text[:200] + ("..." if len(text) > 200 else ""),
-                "severity": severity.lower()
-            })
+            risks.append(
+                {
+                    "text": text[:200] + ("..." if len(text) > 200 else ""),
+                    "severity": severity.lower(),
+                }
+            )
 
     # If no severity markers found, fall back to extracting bullet points
     if not risks:
@@ -424,10 +427,9 @@ def extract_risk_severity(risks_content: str) -> list[dict[str, str]]:
 
             if text and len(text) > 20:
                 # Default to medium severity if not specified
-                risks.append({
-                    "text": text[:200] + ("..." if len(text) > 200 else ""),
-                    "severity": "medium"
-                })
+                risks.append(
+                    {"text": text[:200] + ("..." if len(text) > 200 else ""), "severity": "medium"}
+                )
 
     return risks[:5]  # Limit to top 5 risks
 
@@ -436,8 +438,8 @@ __all__ = [
     "BO_PATTERNS",
     "SECTION_PATTERNS",
     "extract_ai_content_sections",
-    "extract_sources_from_key_takeaways",
-    "parse_business_overview_to_json",
-    "parse_analyst_consensus",
     "extract_risk_severity",
+    "extract_sources_from_key_takeaways",
+    "parse_analyst_consensus",
+    "parse_business_overview_to_json",
 ]

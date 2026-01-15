@@ -20,6 +20,9 @@ psycopg2-binary>=2.9.10
 redis==5.0.4
 django-redis==5.3.0
 
+# Celery (Async Task Queue)
+celery[redis]==5.4.0
+
 # Environment & Configuration
 python-dotenv==1.0.0
 requests==2.31.0
@@ -47,6 +50,7 @@ opentelemetry-instrumentation-psycopg2>=0.48b0
 opentelemetry-instrumentation-redis>=0.48b0
 opentelemetry-instrumentation-requests>=0.48b0
 opentelemetry-instrumentation-logging>=0.48b0
+opentelemetry-instrumentation-celery>=0.48b0
 
 # OpenTelemetry - Exporters
 opentelemetry-exporter-otlp>=1.27.0

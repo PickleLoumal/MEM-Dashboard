@@ -53,10 +53,7 @@ class DailyBriefingService:
             logger.error("Failed to read data from Google Sheets")
             raise ValueError("Failed to read data from Google Sheets")
 
-        logger.info(
-            "Google Sheets data loaded",
-            extra={"data_length": len(sheet_data)}
-        )
+        logger.info("Google Sheets data loaded", extra={"data_length": len(sheet_data)})
 
         # 2. Generate Long Version
         logger.info("Generating Long Version report with Perplexity AI")
@@ -69,10 +66,7 @@ class DailyBriefingService:
             logger.error("Perplexity AI returned empty content for long report")
             raise ValueError("Failed to generate long report content")
 
-        logger.info(
-            "Long Version content generated",
-            extra={"content_length": len(long_content)}
-        )
+        logger.info("Long Version content generated", extra={"content_length": len(long_content)})
 
         # Save Long Version DOCX
         long_filename = f"Daily Briefing {today}_Long Version.docx"
@@ -81,10 +75,7 @@ class DailyBriefingService:
         convert_markdown_to_word(long_content, doc_long)
         doc_long.save(long_path)
 
-        logger.info(
-            "Long Version DOCX saved",
-            extra={"path": str(long_path)}
-        )
+        logger.info("Long Version DOCX saved", extra={"path": str(long_path)})
 
         # Upload Long Version
         self.drive_service.authenticate()
@@ -93,7 +84,7 @@ class DailyBriefingService:
             result_urls["long_version"] = long_file.get("webViewLink")
             logger.info(
                 "Long Version uploaded to Google Drive",
-                extra={"file_id": long_file.get("id"), "url": result_urls["long_version"]}
+                extra={"file_id": long_file.get("id"), "url": result_urls["long_version"]},
             )
 
         # 3. Generate Quick Version
@@ -104,8 +95,7 @@ class DailyBriefingService:
 
         if quick_content:
             logger.info(
-                "Quick Version content generated",
-                extra={"content_length": len(quick_content)}
+                "Quick Version content generated", extra={"content_length": len(quick_content)}
             )
 
             # Save Quick Version DOCX
@@ -115,10 +105,7 @@ class DailyBriefingService:
             convert_markdown_to_word(quick_content, doc_quick)
             doc_quick.save(quick_path)
 
-            logger.info(
-                "Quick Version DOCX saved",
-                extra={"path": str(quick_path)}
-            )
+            logger.info("Quick Version DOCX saved", extra={"path": str(quick_path)})
 
             # Upload Quick Version
             quick_file = self.drive_service.upload_file(str(quick_path))
@@ -126,14 +113,13 @@ class DailyBriefingService:
                 result_urls["quick_version"] = quick_file.get("webViewLink")
                 logger.info(
                     "Quick Version uploaded to Google Drive",
-                    extra={"file_id": quick_file.get("id"), "url": result_urls["quick_version"]}
+                    extra={"file_id": quick_file.get("id"), "url": result_urls["quick_version"]},
                 )
         else:
             logger.warning("Failed to generate Quick Version, only Long Version available")
 
         logger.info(
-            "Daily Briefing report generation completed",
-            extra={"result_urls": result_urls}
+            "Daily Briefing report generation completed", extra={"result_urls": result_urls}
         )
 
         return result_urls
