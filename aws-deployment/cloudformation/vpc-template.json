@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "MEM Dashboard VPC and networking infrastructure",
+  "Description": "MEM Dashboard VPC and networking infrastructure with NAT Gateway",
   "Parameters": {
     "EnvironmentName": {
       "Description": "Environment name prefix",
@@ -48,7 +48,7 @@
         "CidrBlock": "10.0.1.0/24",
         "MapPublicIpOnLaunch": true,
         "Tags": [
-          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-Public-Subnet-AZ1"}}
+          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-public-subnet-a"}}
         ]
       }
     },
@@ -60,7 +60,7 @@
         "CidrBlock": "10.0.2.0/24",
         "MapPublicIpOnLaunch": true,
         "Tags": [
-          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-Public-Subnet-AZ2"}}
+          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-public-subnet-b"}}
         ]
       }
     },
@@ -71,7 +71,7 @@
         "AvailabilityZone": {"Fn::Select": [0, {"Fn::GetAZs": ""}]},
         "CidrBlock": "10.0.3.0/24",
         "Tags": [
-          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-Private-Subnet-AZ1"}}
+          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-private-subnet-a"}}
         ]
       }
     },
@@ -82,8 +82,91 @@
         "AvailabilityZone": {"Fn::Select": [1, {"Fn::GetAZs": ""}]},
         "CidrBlock": "10.0.4.0/24",
         "Tags": [
-          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-Private-Subnet-AZ2"}}
+          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-private-subnet-b"}}
         ]
+      }
+    },
+    "NatGatewayEIP": {
+      "Type": "AWS::EC2::EIP",
+      "DependsOn": "InternetGatewayAttachment",
+      "Properties": {
+        "Domain": "vpc",
+        "Tags": [
+          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-nat-eip"}}
+        ]
+      }
+    },
+    "NatGateway": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {"Fn::GetAtt": ["NatGatewayEIP", "AllocationId"]},
+        "SubnetId": {"Ref": "PublicSubnet1"},
+        "Tags": [
+          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-nat-gateway"}}
+        ]
+      }
+    },
+    "PublicRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {"Ref": "VPC"},
+        "Tags": [
+          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-public-rt"}}
+        ]
+      }
+    },
+    "PublicRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "InternetGatewayAttachment",
+      "Properties": {
+        "RouteTableId": {"Ref": "PublicRouteTable"},
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {"Ref": "InternetGateway"}
+      }
+    },
+    "PublicSubnet1RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {"Ref": "PublicSubnet1"},
+        "RouteTableId": {"Ref": "PublicRouteTable"}
+      }
+    },
+    "PublicSubnet2RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {"Ref": "PublicSubnet2"},
+        "RouteTableId": {"Ref": "PublicRouteTable"}
+      }
+    },
+    "PrivateRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {"Ref": "VPC"},
+        "Tags": [
+          {"Key": "Name", "Value": {"Fn::Sub": "${EnvironmentName}-private-rt"}}
+        ]
+      }
+    },
+    "PrivateRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {"Ref": "PrivateRouteTable"},
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {"Ref": "NatGateway"}
+      }
+    },
+    "PrivateSubnet1RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {"Ref": "PrivateSubnet1"},
+        "RouteTableId": {"Ref": "PrivateRouteTable"}
+      }
+    },
+    "PrivateSubnet2RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {"Ref": "PrivateSubnet2"},
+        "RouteTableId": {"Ref": "PrivateRouteTable"}
       }
     }
   },
@@ -99,9 +182,24 @@
       "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-PublicSubnets"}}
     },
     "PrivateSubnets": {
-      "Description": "Private subnets", 
+      "Description": "Private subnets",
       "Value": {"Fn::Join": [",", [{"Ref": "PrivateSubnet1"}, {"Ref": "PrivateSubnet2"}]]},
       "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-PrivateSubnets"}}
+    },
+    "NatGateway": {
+      "Description": "NAT Gateway ID",
+      "Value": {"Ref": "NatGateway"},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-NatGateway"}}
+    },
+    "PublicRouteTable": {
+      "Description": "Public Route Table ID",
+      "Value": {"Ref": "PublicRouteTable"},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-PublicRouteTable"}}
+    },
+    "PrivateRouteTable": {
+      "Description": "Private Route Table ID",
+      "Value": {"Ref": "PrivateRouteTable"},
+      "Export": {"Name": {"Fn::Sub": "${EnvironmentName}-PrivateRouteTable"}}
     }
   }
 }

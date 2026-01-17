@@ -3,9 +3,11 @@
 !.env.*
 
 
-# Allow Cursor to access and modify .cursor/rules directory
+# Allow Cursor to access and modify .cursor directory
 !.cursor/
 !.cursor/**
 !.cursor/rules/
 !.cursor/rules/**
+!.cursor/plans/
+!.cursor/plans/**
 !.cursor/mcp.json
