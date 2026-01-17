@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import AutomationTask
+from .models import AutomationTask, DailyBriefingData, DailyBriefingReport
 
 
 class AutomationTaskSerializer(serializers.ModelSerializer):
@@ -92,3 +92,88 @@ class ErrorResponseSerializer(serializers.Serializer):
 
     error = serializers.CharField(help_text="Error message describing what went wrong")
     detail = serializers.CharField(required=False, help_text="Additional error details")
+
+
+class DailyBriefingDataSerializer(serializers.ModelSerializer):
+    """
+    Serializer for DailyBriefingData model.
+
+    Used for API responses when querying scraped briefing data.
+    """
+
+    source_type = serializers.ChoiceField(
+        choices=DailyBriefingData.SOURCE_TYPES,
+        help_text="Type of source: page_one, stock_market, or bond_market",
+    )
+    source_type_display = serializers.CharField(
+        source="get_source_type_display",
+        read_only=True,
+        help_text="Human-readable source type name",
+    )
+
+    class Meta:
+        model = DailyBriefingData
+        fields = [
+            "id",
+            "date",
+            "source_type",
+            "source_type_display",
+            "source_url",
+            "content",
+            "content_length",
+            "scraped_at",
+        ]
+        read_only_fields = [
+            "id",
+            "date",
+            "source_type",
+            "source_url",
+            "content",
+            "content_length",
+            "scraped_at",
+        ]
+
+
+class DailyBriefingReportSerializer(serializers.ModelSerializer):
+    """
+    Serializer for DailyBriefingReport model.
+
+    Used for API responses when querying generated briefing reports.
+    """
+
+    report_type = serializers.ChoiceField(
+        choices=DailyBriefingReport.REPORT_TYPES,
+        help_text="Type of report: long_version or quick_version",
+    )
+    report_type_display = serializers.CharField(
+        source="get_report_type_display",
+        read_only=True,
+        help_text="Human-readable report type name",
+    )
+    task_id = serializers.IntegerField(
+        source="task.id",
+        read_only=True,
+        help_text="ID of the automation task that generated this report",
+    )
+
+    class Meta:
+        model = DailyBriefingReport
+        fields = [
+            "id",
+            "task_id",
+            "date",
+            "report_type",
+            "report_type_display",
+            "content",
+            "drive_url",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "task_id",
+            "date",
+            "report_type",
+            "content",
+            "drive_url",
+            "created_at",
+        ]

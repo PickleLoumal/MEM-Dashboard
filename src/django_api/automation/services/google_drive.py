@@ -52,8 +52,10 @@ class GoogleDriveService:
         self.creds = None
         self._service = None
 
-        # Resolve paths relative to automation folder (for local development)
-        self._automation_dir = Path(__file__).resolve().parents[3] / "automation"
+        # Resolve paths relative to Django automation app folder (for local development)
+        # google_drive.py is at: src/django_api/automation/services/google_drive.py
+        # parents[1] = src/django_api/automation (the Django app folder)
+        self._automation_dir = Path(__file__).resolve().parents[1]
 
         # S3 client (lazy initialization)
         self._s3_client = None
@@ -307,7 +309,7 @@ class GoogleDriveService:
 
             logger.info(
                 "Uploading file to Google Drive",
-                extra={"filename": filename, "file_path": file_path, "folder_id": folder_id},
+                extra={"file_name": filename, "file_path": file_path, "folder_id": folder_id},
             )
 
             # File metadata
@@ -343,7 +345,7 @@ class GoogleDriveService:
                 "File uploaded to Google Drive successfully",
                 extra={
                     "file_id": file.get("id"),
-                    "filename": file.get("name"),
+                    "file_name": file.get("name"),
                     "web_link": file.get("webViewLink"),
                 },
             )

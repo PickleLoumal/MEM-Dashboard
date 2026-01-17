@@ -15,7 +15,7 @@ STAGE2_DELAY_SECONDS = getattr(settings, "DAILY_BRIEFING_STAGE2_DELAY", 600)  # 
 @shared_task(bind=True, max_retries=2)
 def run_daily_briefing_scraper(self, task_id: str):
     """
-    Stage 1: Scrape Briefing.com and write to Google Sheets.
+    Stage 1: Scrape Briefing.com and write to database.
     Upon completion, automatically schedules Stage 2 with a 10-minute delay.
     """
     from .services.briefing_scraper import BriefingScraperService
@@ -73,7 +73,7 @@ def run_daily_briefing_scraper(self, task_id: str):
 @shared_task(bind=True, max_retries=2, soft_time_limit=2700, time_limit=3600)
 def run_daily_briefing_generator(self, task_id: str):
     """
-    Stage 2: Read from Sheets, generate AI report, upload to Drive.
+    Stage 2: Read from database, generate AI report, upload to Drive.
     Requires longer timeout as Perplexity Deep Research may take 15-30 minutes.
     """
     from .services.daily_briefing import DailyBriefingService
@@ -89,7 +89,7 @@ def run_daily_briefing_generator(self, task_id: str):
             extra={"task_id": task_id, "celery_task_id": self.request.id},
         )
 
-        service = DailyBriefingService()
+        service = DailyBriefingService(task=task)
         result_urls = service.run()
 
         task.status = "completed"
