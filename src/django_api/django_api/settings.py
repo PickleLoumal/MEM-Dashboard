@@ -15,24 +15,32 @@ import os
 import sys
 from pathlib import Path
 
-# 尝试加载环境变量（如果dotenv可用）
-try:
-    from dotenv import load_dotenv
+# 尝试加载环境变量（如果dotenv可用且不在生产环境）
+# 生产环境 (Docker/ECS) 中环境变量由容器运行时提供，不需要 dotenv
+if os.getenv("ENVIRONMENT") != "production":
+    try:
+        from dotenv import load_dotenv
 
-    # 项目根目录: src/django_api/django_api/settings.py -> project_root/
-    _project_root = Path(__file__).resolve().parents[3]
-    _env_local_path = _project_root / ".env.local"
-    _env_path = _project_root / ".env"
+        # 项目根目录: src/django_api/django_api/settings.py -> project_root/
+        # 本地开发: parents[3] = /Volumes/.../ALFIE
+        # Docker: parents 可能不够深，需要安全处理
+        _settings_path = Path(__file__).resolve()
+        _parents = _settings_path.parents
 
-    # 检查是否在本地开发环境（ENVIRONMENT != production）
-    # .env.local 用 override=True 覆盖 shell 环境变量，方便本地开发
-    if _env_local_path.exists() and os.getenv("ENVIRONMENT") != "production":
-        load_dotenv(dotenv_path=_env_local_path, override=True)
-    if _env_path.exists():
-        load_dotenv(dotenv_path=_env_path)  # 作为fallback加载默认.env
-except ImportError:
-    # dotenv不可用时，使用环境变量
-    pass
+        # 安全获取项目根目录 (仅用于本地开发)
+        if len(_parents) > 3:
+            _project_root = _parents[3]
+            _env_local_path = _project_root / ".env.local"
+            _env_path = _project_root / ".env"
+
+            # .env.local 用 override=True 覆盖 shell 环境变量，方便本地开发
+            if _env_local_path.exists():
+                load_dotenv(dotenv_path=_env_local_path, override=True)
+            if _env_path.exists():
+                load_dotenv(dotenv_path=_env_path)  # 作为fallback加载默认.env
+    except ImportError:
+        # dotenv不可用时，使用环境变量
+        pass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -279,14 +287,58 @@ CORS_ALLOW_HEADERS = [*list(default_headers), "x-trace-id", "x-span-id", "x-requ
 # When OTEL_ENABLED=true, logging is configured by OpenTelemetry (observability module)
 # This Django LOGGING config serves as a fallback when OpenTelemetry is disabled
 
-LOG_DIR = PROJECT_ROOT / "logs"
-LOG_DIR.mkdir(parents=True, exist_ok=True)
-
 # Log level from environment
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
+# In production (containers), use only console logging (CloudWatch captures stdout/stderr)
+# In development, also write to log files
+IS_PRODUCTION = os.getenv("ENVIRONMENT") == "production"
+
+# Only create LOG_DIR in development (containers don't need file logging)
+LOG_DIR = None
+if not IS_PRODUCTION:
+    LOG_DIR = PROJECT_ROOT / "logs"
+    try:
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        LOG_DIR = None  # Fall back to console-only logging
+
 if not OTEL_ENABLED:
     # Fallback logging configuration when OpenTelemetry is disabled
+    _handlers = {
+        "console": {
+            "level": LOG_LEVEL,
+            "class": "logging.StreamHandler",
+            "formatter": "verbose" if not IS_PRODUCTION else "json",
+        },
+    }
+
+    # Add file handlers only in development with valid LOG_DIR
+    if LOG_DIR is not None:
+        _handlers["file"] = {
+            "level": LOG_LEVEL,
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(LOG_DIR / "dashboard.log"),
+            "maxBytes": 10 * 1024 * 1024,  # 10MB
+            "backupCount": 5,
+            "formatter": "verbose",
+        }
+        _handlers["error_file"] = {
+            "level": "ERROR",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(LOG_DIR / "dashboard.error.log"),
+            "maxBytes": 10 * 1024 * 1024,  # 10MB
+            "backupCount": 5,
+            "formatter": "verbose",
+        }
+
+    # Determine which handlers to use
+    _root_handlers = ["console"]
+    _django_handlers = ["console"]
+    if LOG_DIR is not None:
+        _root_handlers.extend(["file", "error_file"])
+        _django_handlers.append("file")
+
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -301,41 +353,19 @@ if not OTEL_ENABLED:
                 "datefmt": "%Y-%m-%dT%H:%M:%SZ",
             },
         },
-        "handlers": {
-            "console": {
-                "level": LOG_LEVEL,
-                "class": "logging.StreamHandler",
-                "formatter": "verbose",
-            },
-            "file": {
-                "level": LOG_LEVEL,
-                "class": "logging.handlers.RotatingFileHandler",
-                "filename": str(LOG_DIR / "dashboard.log"),
-                "maxBytes": 10 * 1024 * 1024,  # 10MB
-                "backupCount": 5,
-                "formatter": "verbose",
-            },
-            "error_file": {
-                "level": "ERROR",
-                "class": "logging.handlers.RotatingFileHandler",
-                "filename": str(LOG_DIR / "dashboard.error.log"),
-                "maxBytes": 10 * 1024 * 1024,  # 10MB
-                "backupCount": 5,
-                "formatter": "verbose",
-            },
-        },
+        "handlers": _handlers,
         "root": {
-            "handlers": ["console", "file", "error_file"],
+            "handlers": _root_handlers,
             "level": LOG_LEVEL,
         },
         "loggers": {
             "django": {
-                "handlers": ["console", "file"],
+                "handlers": _django_handlers,
                 "level": LOG_LEVEL,
                 "propagate": False,
             },
             "django.request": {
-                "handlers": ["console", "file", "error_file"],
+                "handlers": _root_handlers,  # Use dynamic handler list
                 "level": "INFO",
                 "propagate": False,
             },

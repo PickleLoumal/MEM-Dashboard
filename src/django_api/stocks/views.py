@@ -22,19 +22,30 @@ from .services import VWAPCalculationService
 
 logger = logging.getLogger(__name__)
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-if str(PROJECT_ROOT) not in sys.path:
+# PROJECT_ROOT calculation - safe for both local development and Docker
+# Local: /Volumes/.../ALFIE/src/django_api/stocks/views.py -> parents[3] = ALFIE
+# Docker: /app/stocks/views.py -> only 2 parents, use None
+_views_path = Path(__file__).resolve()
+PROJECT_ROOT = _views_path.parents[3] if len(_views_path.parents) > 3 else None
+
+# Only add to sys.path in local development
+if PROJECT_ROOT is not None and str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
-try:  # pragma: no cover - optional dependency in Django runtime
-    from scripts.active import daily_score_calculator_db as score_calculator
-except Exception as exc:  # pragma: no cover
-    logger.warning("Unable to import scoring script: %s", exc)
-    score_calculator = None
+# Scoring script is only available in local development (not in Docker)
+score_calculator = None
+if PROJECT_ROOT is not None:
+    try:  # pragma: no cover - optional dependency in Django runtime
+        from scripts.active import daily_score_calculator_db as score_calculator
+    except Exception as exc:  # pragma: no cover
+        logger.warning("Unable to import scoring script: %s", exc)
 
 
 def _run_scoring_subprocess(symbol: str):
     """Fallback to running the scoring script via subprocess when import fails."""
+    if PROJECT_ROOT is None:
+        msg = "Scoring script not available in production environment"
+        raise RuntimeError(msg)
     script_path = PROJECT_ROOT / "scripts" / "active" / "daily_score_calculator_db.py"
     if not script_path.exists():
         msg = f"Scoring script not found at {script_path}"
@@ -303,11 +314,15 @@ def historical_data(request):
 @permission_classes([AllowAny])
 def fund_flow_page(request):
     """Fund Flow页面 - 重定向到现有的HTML页面"""
-    from pathlib import Path
+    from django.http import FileResponse, HttpResponseNotFound
 
-    from django.http import FileResponse
+    # This endpoint only works in local development where csi300-app exists
+    if PROJECT_ROOT is None:
+        return HttpResponseNotFound("Fund flow page not available in production")
 
-    html_path = Path(__file__).resolve().parents[3] / "csi300-app" / "fund-flow.html"
+    html_path = PROJECT_ROOT / "csi300-app" / "fund-flow.html"
+    if not html_path.exists():
+        return HttpResponseNotFound(f"Fund flow page not found: {html_path}")
 
     return FileResponse(html_path.open("rb"), content_type="text/html")
 
