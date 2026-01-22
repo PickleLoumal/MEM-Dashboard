@@ -32,6 +32,182 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiOverviewResponse'
           description: ''
+  /api/automation/tasks/:
+    get:
+      operationId: api_automation_tasks_list
+      description: |-
+        ViewSet for managing automation tasks.
+
+        Provides endpoints for triggering automation workflows and querying task status.
+      tags:
+      - automation
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AutomationTask'
+          description: ''
+  /api/automation/tasks/{id}/:
+    get:
+      operationId: api_automation_tasks_retrieve
+      description: |-
+        ViewSet for managing automation tasks.
+
+        Provides endpoints for triggering automation workflows and querying task status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this automation task.
+        required: true
+      tags:
+      - automation
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutomationTask'
+          description: ''
+  /api/automation/tasks/daily-briefing/generate/:
+    post:
+      operationId: api_automation_tasks_daily_briefing_generate_create
+      description: Trigger only Stage 2 (AI Report Generation, skipping scraping delay)
+      tags:
+      - automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DailyBriefingTrigger'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DailyBriefingTrigger'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DailyBriefingTrigger'
+      security:
+      - {}
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutomationTask'
+          description: Generation task successfully created and queued
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request parameters
+  /api/automation/tasks/daily-briefing/scrape/:
+    post:
+      operationId: api_automation_tasks_daily_briefing_scrape_create
+      description: Trigger only Stage 1 (Scraping from Briefing.com to database).
+        By default, scrape_only=True so Stage 2 will NOT be triggered. Set scrape_only=False
+        to auto-trigger Stage 2 after 10 minutes.
+      tags:
+      - automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DailyBriefingTrigger'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DailyBriefingTrigger'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DailyBriefingTrigger'
+      security:
+      - {}
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutomationTask'
+          description: Scraping task successfully created and queued
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request parameters
+  /api/automation/tasks/daily-briefing/trigger/:
+    post:
+      operationId: api_automation_tasks_daily_briefing_trigger_create
+      description: 'Trigger full Daily Briefing workflow (Stage 1: Scraping + Stage
+        2: AI Generation)'
+      tags:
+      - automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DailyBriefingTrigger'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DailyBriefingTrigger'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DailyBriefingTrigger'
+      security:
+      - {}
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutomationTask'
+          description: Task successfully created and queued
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request parameters
+  /api/automation/tasks/forensic-accounting/trigger/:
+    post:
+      operationId: api_automation_tasks_forensic_accounting_trigger_create
+      description: Trigger Forensic Accounting analysis for a list of companies
+      tags:
+      - automation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForensicAccountingTrigger'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ForensicAccountingTrigger'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ForensicAccountingTrigger'
+      security:
+      - {}
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutomationTask'
+          description: Forensic Accounting task successfully created and queued
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request parameters or no companies provided
   /api/bea/:
     get:
       operationId: api_bea_retrieve
@@ -797,6 +973,15 @@ paths:
       description: 获取公司列表或 API 概览
       parameters:
       - in: query
+        name: exchange
+        schema:
+          type: string
+          enum:
+          - HKEX
+          - SSE
+          - SZSE
+        description: Filter by exchange (SSE, SZSE, HKEX)
+      - in: query
         name: gics_industry
         schema:
           type: string
@@ -842,7 +1027,7 @@ paths:
         name: region
         schema:
           type: string
-        description: Filter by region (e.g., 'Mainland China', 'Hong Kong')
+        description: Filter by region (legacy, prefer using 'exchange')
       - in: query
         name: search
         schema:
@@ -857,7 +1042,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedCSI300CompanyListList'
+                $ref: '#/components/schemas/PaginatedCompanyListList'
           description: ''
   /api/csi300/api/companies/{id}/:
     get:
@@ -868,7 +1053,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this CSI300 Company.
+        description: A unique integer value identifying this Company.
         required: true
       tags:
       - csi300
@@ -879,7 +1064,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CSI300Company'
+                $ref: '#/components/schemas/Company'
           description: ''
   /api/csi300/api/companies/{id}/industry_peers_comparison/:
     get:
@@ -890,7 +1075,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this CSI300 Company.
+        description: A unique integer value identifying this Company.
         required: true
       tags:
       - csi300
@@ -901,7 +1086,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CSI300PeerComparisonResponse'
+                $ref: '#/components/schemas/PeerComparisonResponse'
           description: ''
   /api/csi300/api/companies/{id}/investment_summary/:
     get:
@@ -912,7 +1097,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this CSI300 Company.
+        description: A unique integer value identifying this Company.
         required: true
       tags:
       - csi300
@@ -923,13 +1108,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CSI300InvestmentSummary'
+                $ref: '#/components/schemas/InvestmentSummary'
           description: ''
   /api/csi300/api/companies/filter_options/:
     get:
       operationId: api_csi300_api_companies_filter_options_retrieve
       description: 获取可用的筛选选项
       parameters:
+      - in: query
+        name: exchange
+        schema:
+          type: string
+          enum:
+          - HKEX
+          - SSE
+          - SZSE
       - in: query
         name: im_sector
         schema:
@@ -947,7 +1140,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CSI300FilterOptions'
+                $ref: '#/components/schemas/FilterOptions'
           description: ''
   /api/csi300/api/companies/generate-summary/:
     post:
@@ -1004,13 +1197,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CSI300Company'
+                $ref: '#/components/schemas/Company'
           description: ''
   /api/csi300/api/companies/search/:
     get:
       operationId: api_csi300_api_companies_search_list
       description: 搜索公司
       parameters:
+      - in: query
+        name: exchange
+        schema:
+          type: string
+          enum:
+          - HKEX
+          - SSE
+          - SZSE
       - name: page
         required: false
         in: query
@@ -1037,7 +1238,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedCSI300CompanyListList'
+                $ref: '#/components/schemas/PaginatedCompanyListList'
           description: ''
   /api/csi300/api/companies/task-status/{task_id}/:
     get:
@@ -4732,6 +4933,104 @@ components:
       - status
       - timestamp
       - version
+    AutomationTask:
+      type: object
+      description: |-
+        Serializer for AutomationTask model.
+        Used for task status responses in all automation endpoints.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        task_type:
+          enum:
+          - daily_briefing
+          - forensic_accounting
+          type: string
+          x-spec-enum-id: d79edc787088d1f9
+          description: |-
+            Type of automation task: daily_briefing or forensic_accounting
+
+            * `daily_briefing` - Daily Briefing
+            * `forensic_accounting` - Forensic Accounting
+        celery_task_id:
+          type: string
+          readOnly: true
+          nullable: true
+        status:
+          enum:
+          - pending
+          - scraping
+          - waiting_stage2
+          - generating
+          - uploading
+          - completed
+          - failed
+          type: string
+          x-spec-enum-id: 0cef795a6bab349e
+          readOnly: true
+          description: |-
+            Current task status: pending, scraping, waiting_stage2, generating, uploading, completed, or failed
+
+            * `pending` - Pending
+            * `scraping` - Scraping Data
+            * `waiting_stage2` - Waiting for Stage 2
+            * `generating` - Generating Report
+            * `uploading` - Uploading
+            * `completed` - Completed
+            * `failed` - Failed
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        stage1_completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        stage2_scheduled_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        stage2_countdown_remaining:
+          type: integer
+          readOnly: true
+          description: Seconds remaining until Stage 2 starts (only present when status
+            is waiting_stage2)
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        error_message:
+          type: string
+          readOnly: true
+          nullable: true
+        result_urls:
+          readOnly: true
+        created_by:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - celery_task_id
+      - completed_at
+      - created_at
+      - created_by
+      - error_message
+      - id
+      - result_urls
+      - stage1_completed_at
+      - stage2_countdown_remaining
+      - stage2_scheduled_at
+      - started_at
+      - status
+      - task_type
     BalanceSheetMetrics:
       type: object
       description: 资产负债表指标序列化器。
@@ -5068,13 +5367,64 @@ components:
       - data
       - success
       - timestamp
-    CSI300Company:
+    CSI300HealthCheckResponse:
       type: object
-      description: CSI300 Company serializer for API responses
+      properties:
+        status:
+          type: string
+        service:
+          type: string
+        total_companies:
+          type: integer
+        database_available:
+          type: boolean
+      required:
+      - database_available
+      - service
+      - status
+      - total_companies
+    CSI300IndexResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        version:
+          type: string
+        supported_exchanges:
+          type: array
+          items:
+            type: string
+        endpoints:
+          type: object
+          additionalProperties: {}
+        total_companies:
+          type: integer
+      required:
+      - endpoints
+      - message
+      - supported_exchanges
+      - total_companies
+      - version
+    Company:
+      type: object
+      description: Company serializer for API responses - includes all fields.
       properties:
         id:
           type: integer
           readOnly: true
+        exchange:
+          enum:
+          - SSE
+          - SZSE
+          - HKEX
+          type: string
+          x-spec-enum-id: 0f30ec5ffb690d0e
+          description: |-
+            Stock exchange code (SSE, SZSE, HKEX)
+
+            * `SSE` - 上海证券交易所
+            * `SZSE` - 深圳证券交易所
+            * `HKEX` - 香港交易所
         name:
           type: string
           description: Company name
@@ -5426,14 +5776,39 @@ components:
       - id
       - name
       - updated_at
-    CSI300CompanyList:
+    CompanyInfo:
       type: object
-      description: Serializer for company list view - includes all fields that exist
-        in the database model
+      description: Serializer for company information in Forensic Accounting requests
+      properties:
+        name:
+          type: string
+          description: Company name (e.g., 'Apple Inc.')
+        ticker:
+          type: string
+          description: Stock ticker symbol (e.g., 'AAPL')
+      required:
+      - name
+      - ticker
+    CompanyList:
+      type: object
+      description: Serializer for company list view - includes commonly used fields.
       properties:
         id:
           type: integer
           readOnly: true
+        exchange:
+          enum:
+          - SSE
+          - SZSE
+          - HKEX
+          type: string
+          x-spec-enum-id: 0f30ec5ffb690d0e
+          description: |-
+            Stock exchange code (SSE, SZSE, HKEX)
+
+            * `SSE` - 上海证券交易所
+            * `SZSE` - 深圳证券交易所
+            * `HKEX` - 香港交易所
         ticker:
           type: string
           nullable: true
@@ -5502,6 +5877,12 @@ components:
           pattern: ^-?\d{0,14}(?:\.\d{0,6})?$
           nullable: true
           description: Price in local currency (Open)
+        previous_close:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,6})?$
+          nullable: true
+          description: Previous close price
         market_cap_local:
           type: string
           format: decimal
@@ -5769,295 +6150,6 @@ components:
       required:
       - id
       - name
-    CSI300FilterOptions:
-      type: object
-      description: Serializer for filter options
-      properties:
-        regions:
-          type: array
-          items:
-            type: string
-        im_sectors:
-          type: array
-          items:
-            type: string
-        industries:
-          type: array
-          items:
-            type: string
-        gics_industries:
-          type: array
-          items:
-            type: string
-        market_cap_range:
-          type: object
-          additionalProperties: {}
-        filtered_by_region:
-          type: boolean
-        filtered_by_sector:
-          type: boolean
-        region_filter:
-          type: string
-          nullable: true
-        sector_filter:
-          type: string
-          nullable: true
-      required:
-      - gics_industries
-      - im_sectors
-      - industries
-      - market_cap_range
-    CSI300HealthCheckResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        service:
-          type: string
-        total_companies:
-          type: integer
-        database_available:
-          type: boolean
-      required:
-      - database_available
-      - service
-      - status
-      - total_companies
-    CSI300IndexResponse:
-      type: object
-      properties:
-        message:
-          type: string
-        version:
-          type: string
-        endpoints:
-          type: object
-          additionalProperties: {}
-        total_companies:
-          type: integer
-      required:
-      - endpoints
-      - message
-      - total_companies
-      - version
-    CSI300InvestmentSummary:
-      type: object
-      description: CSI300 Investment Summary serializer
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        company_name:
-          type: string
-          readOnly: true
-        company_ticker:
-          type: string
-          readOnly: true
-        im_sector:
-          type: string
-          readOnly: true
-        industry:
-          type: string
-          readOnly: true
-        report_date:
-          type: string
-          format: date
-          description: Report date
-        stock_price_previous_close:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
-          description: Previous close price
-        market_cap_display:
-          type: string
-          description: Market cap display format
-          maxLength: 200
-        recommended_action:
-          type: string
-          description: Investment recommendation
-          maxLength: 50
-        recommended_action_detail:
-          type: string
-          description: Detailed recommendation
-        business_overview:
-          type: string
-          description: Business overview
-        business_performance:
-          type: string
-          description: Business performance analysis
-        industry_context:
-          type: string
-          description: Industry context
-        financial_stability:
-          type: string
-          description: Financial stability analysis
-        key_financials_valuation:
-          type: string
-          description: Key financials and valuation
-        big_trends_events:
-          type: string
-          description: Big trends and events
-        customer_segments:
-          type: string
-          description: Customer segments analysis
-        competitive_landscape:
-          type: string
-          description: Competitive landscape
-        risks_anomalies:
-          type: string
-          description: Risks and anomalies
-        forecast_outlook:
-          type: string
-          description: Forecast and outlook
-        investment_firms_views:
-          type: string
-          description: Investment firms views
-        industry_ratio_analysis:
-          type: string
-          description: Industry ratio analysis
-        tariffs_supply_chain_risks:
-          type: string
-          description: Tariffs and supply chain risks
-        key_takeaways:
-          type: string
-          description: Key takeaways
-        sources:
-          type: string
-          description: Data sources
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-        company:
-          type: integer
-      required:
-      - company
-      - company_name
-      - company_ticker
-      - created_at
-      - id
-      - im_sector
-      - industry
-      - report_date
-      - updated_at
-    CSI300PeerComparisonItem:
-      type: object
-      description: Serializer for a single peer comparison item with extra fields
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        ticker:
-          type: string
-          nullable: true
-          description: Stock ticker
-          maxLength: 20
-        name:
-          type: string
-          description: Company name
-          maxLength: 200
-        im_sector:
-          type: string
-          nullable: true
-          description: IM Sector (combined from im_code and industry)
-          maxLength: 150
-        market_cap_local:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
-          nullable: true
-          description: Market cap (local)
-        market_cap_usd:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
-          nullable: true
-          description: Market cap (USD)
-        market_cap_display:
-          type: string
-          description: Format market cap for display
-          readOnly: true
-        pe_ratio_trailing:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
-          nullable: true
-          description: P/E ratio trailing
-        pe_ratio_display:
-          type: string
-          description: Format P/E ratio for display
-          readOnly: true
-        pb_ratio_display:
-          type: string
-          description: Calculate and format P/B ratio for display
-          readOnly: true
-        roe_trailing:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
-          nullable: true
-          description: ROE trailing
-        roe_display:
-          type: string
-          description: Format ROE for display
-          readOnly: true
-        revenue_growth_display:
-          type: string
-          description: Calculate revenue growth for display
-          readOnly: true
-        operating_margin_trailing:
-          type: string
-          format: decimal
-          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
-          nullable: true
-          description: Operating margin (trailing)
-        operating_margin_display:
-          type: string
-          description: Format Operating Margin for display
-          readOnly: true
-        rank:
-          type: integer
-          readOnly: true
-        is_current_company:
-          type: boolean
-          readOnly: true
-      required:
-      - id
-      - is_current_company
-      - market_cap_display
-      - name
-      - operating_margin_display
-      - pb_ratio_display
-      - pe_ratio_display
-      - rank
-      - revenue_growth_display
-      - roe_display
-    CSI300PeerComparisonResponse:
-      type: object
-      description: Serializer for the full peer comparison response
-      properties:
-        target_company:
-          $ref: '#/components/schemas/CSI300PeerComparisonItem'
-        industry:
-          type: string
-        comparison_data:
-          type: array
-          items:
-            $ref: '#/components/schemas/CSI300PeerComparisonItem'
-        total_top_companies_shown:
-          type: integer
-        total_companies_in_industry:
-          type: integer
-      required:
-      - comparison_data
-      - industry
-      - target_company
-      - total_companies_in_industry
-      - total_top_companies_shown
     ContentCategory:
       type: object
       description: Content category serializer
@@ -6082,6 +6174,87 @@ components:
       - id
       - name
       - slug
+    DailyBriefingTrigger:
+      type: object
+      description: Request serializer for triggering Daily Briefing workflow
+      properties:
+        scrape_only:
+          type: boolean
+          default: false
+          description: If true, only run Stage 1 (scraping) without triggering Stage
+            2 (AI generation)
+    ErrorResponse:
+      type: object
+      description: Standard error response serializer for OpenAPI documentation
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+        detail:
+          type: string
+          description: Additional error details
+      required:
+      - error
+    FilterOptions:
+      type: object
+      description: Serializer for filter options response.
+      properties:
+        exchanges:
+          type: array
+          items:
+            type: string
+          description: Available exchange codes (SSE, SZSE, HKEX)
+        regions:
+          type: array
+          items:
+            type: string
+          description: Available regions
+        im_sectors:
+          type: array
+          items:
+            type: string
+          description: Available IM sectors
+        industries:
+          type: array
+          items:
+            type: string
+          description: Available industries
+        gics_industries:
+          type: array
+          items:
+            type: string
+          description: Available GICS industries
+        market_cap_range:
+          type: object
+          additionalProperties: {}
+          description: Market cap range (min/max)
+        filtered_by_exchange:
+          type: boolean
+          description: Whether filtered by exchange
+        filtered_by_region:
+          type: boolean
+          description: Whether filtered by region
+        filtered_by_sector:
+          type: boolean
+          description: Whether filtered by sector
+        exchange_filter:
+          type: string
+          nullable: true
+          description: Current exchange filter
+        region_filter:
+          type: string
+          nullable: true
+          description: Current region filter
+        sector_filter:
+          type: string
+          nullable: true
+          description: Current sector filter
+      required:
+      - exchanges
+      - gics_industries
+      - im_sectors
+      - industries
+      - market_cap_range
     FinancialContext:
       type: object
       description: |-
@@ -6174,6 +6347,16 @@ components:
           description: 错误信息列表
       required:
       - ric
+    ForensicAccountingTrigger:
+      type: object
+      description: Request serializer for triggering Forensic Accounting analysis
+      properties:
+        companies:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyInfo'
+          description: List of companies to analyze, each with 'name' and 'ticker'
+            fields
     FredJpHealthCheckResponse:
       type: object
       properties:
@@ -6428,6 +6611,9 @@ components:
         company_ticker:
           type: string
           description: 公司股票代码
+        exchange:
+          type: string
+          description: 交易所代码 (SSE, SZSE, HKEX)
         created_at:
           type: string
           format: date-time
@@ -6568,6 +6754,114 @@ components:
           type: string
       required:
       - success
+    InvestmentSummary:
+      type: object
+      description: Investment Summary serializer with company details.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        company_name:
+          type: string
+          readOnly: true
+        company_ticker:
+          type: string
+          readOnly: true
+        exchange:
+          type: string
+          readOnly: true
+        im_sector:
+          type: string
+          readOnly: true
+        industry:
+          type: string
+          readOnly: true
+        report_date:
+          type: string
+          format: date
+          description: Report date
+        stock_price_previous_close:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          description: Previous close price
+        market_cap_display:
+          type: string
+          description: Market cap display format
+          maxLength: 200
+        recommended_action:
+          type: string
+          description: Investment recommendation
+          maxLength: 50
+        recommended_action_detail:
+          type: string
+          description: Detailed recommendation
+        business_overview:
+          type: string
+          description: Business overview
+        business_performance:
+          type: string
+          description: Business performance analysis
+        industry_context:
+          type: string
+          description: Industry context
+        financial_stability:
+          type: string
+          description: Financial stability analysis
+        key_financials_valuation:
+          type: string
+          description: Key financials and valuation
+        big_trends_events:
+          type: string
+          description: Big trends and events
+        customer_segments:
+          type: string
+          description: Customer segments analysis
+        competitive_landscape:
+          type: string
+          description: Competitive landscape
+        risks_anomalies:
+          type: string
+          description: Risks and anomalies
+        forecast_outlook:
+          type: string
+          description: Forecast and outlook
+        investment_firms_views:
+          type: string
+          description: Investment firms views
+        industry_ratio_analysis:
+          type: string
+          description: Industry ratio analysis
+        tariffs_supply_chain_risks:
+          type: string
+          description: Tariffs and supply chain risks
+        key_takeaways:
+          type: string
+          description: Key takeaways
+        sources:
+          type: string
+          description: Data sources
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        company:
+          type: integer
+      required:
+      - company
+      - company_name
+      - company_ticker
+      - created_at
+      - exchange
+      - id
+      - im_sector
+      - industry
+      - report_date
+      - updated_at
     KeyMetrics:
       type: object
       description: 关键财务指标序列化器。
@@ -7019,7 +7313,7 @@ components:
       - page_size
       - updated_at
       - version
-    PaginatedCSI300CompanyListList:
+    PaginatedCompanyListList:
       type: object
       properties:
         count:
@@ -7038,7 +7332,7 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/CSI300CompanyList'
+            $ref: '#/components/schemas/CompanyList'
     PatchedBeaConfigUpdate:
       type: object
       description: 更新BEA配置的序列化器
@@ -7109,6 +7403,133 @@ components:
           format: double
           nullable: true
           readOnly: true
+    PeerComparisonItem:
+      type: object
+      description: Serializer for a single peer comparison item with extra fields.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        exchange:
+          enum:
+          - SSE
+          - SZSE
+          - HKEX
+          type: string
+          x-spec-enum-id: 0f30ec5ffb690d0e
+          description: |-
+            Stock exchange code (SSE, SZSE, HKEX)
+
+            * `SSE` - 上海证券交易所
+            * `SZSE` - 深圳证券交易所
+            * `HKEX` - 香港交易所
+        ticker:
+          type: string
+          nullable: true
+          description: Stock ticker
+          maxLength: 20
+        name:
+          type: string
+          description: Company name
+          maxLength: 200
+        im_sector:
+          type: string
+          nullable: true
+          description: IM Sector (combined from im_code and industry)
+          maxLength: 150
+        market_cap_local:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Market cap (local)
+        market_cap_usd:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,2})?$
+          nullable: true
+          description: Market cap (USD)
+        market_cap_display:
+          type: string
+          description: Format market cap for display.
+          readOnly: true
+        pe_ratio_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: P/E ratio trailing
+        pe_ratio_display:
+          type: string
+          description: Format P/E ratio for display.
+          readOnly: true
+        pb_ratio_display:
+          type: string
+          description: Calculate and format P/B ratio for display.
+          readOnly: true
+        roe_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: ROE trailing
+        roe_display:
+          type: string
+          description: Format ROE for display.
+          readOnly: true
+        revenue_growth_display:
+          type: string
+          description: Calculate revenue growth for display.
+          readOnly: true
+        operating_margin_trailing:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,6})?$
+          nullable: true
+          description: Operating margin (trailing)
+        operating_margin_display:
+          type: string
+          description: Format Operating Margin for display.
+          readOnly: true
+        rank:
+          type: integer
+          readOnly: true
+        is_current_company:
+          type: boolean
+          readOnly: true
+      required:
+      - id
+      - is_current_company
+      - market_cap_display
+      - name
+      - operating_margin_display
+      - pb_ratio_display
+      - pe_ratio_display
+      - rank
+      - revenue_growth_display
+      - roe_display
+    PeerComparisonResponse:
+      type: object
+      description: Serializer for the full peer comparison response.
+      properties:
+        target_company:
+          $ref: '#/components/schemas/PeerComparisonItem'
+        industry:
+          type: string
+        comparison_data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PeerComparisonItem'
+        total_top_companies_shown:
+          type: integer
+        total_companies_in_industry:
+          type: integer
+      required:
+      - comparison_data
+      - industry
+      - target_company
+      - total_companies_in_industry
+      - total_top_companies_shown
     PolicyUpdatesResponse:
       type: object
       properties:

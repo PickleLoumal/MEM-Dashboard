@@ -27,15 +27,23 @@ from .common import ISODateString, ISODateTimeString
 
 class CSI300CompanyDict(TypedDict, total=False):
     """
-    CSI300 公司完整详情字典类型
+    公司完整详情字典类型 (统一模型，支持多交易所)
 
     对应:
-    - Model: csi300/models.py::CSI300Company
-    - Serializer: csi300/serializers.py::CSI300CompanySerializer
-    - TypeScript: CSI300Company
+    - Model: csi300/models.py::Company
+    - Serializer: csi300/serializers.py::CompanySerializer
+    - TypeScript: CSI300Company (legacy) / Company (new)
+
+    支持的交易所:
+    - SSE: 上海证券交易所
+    - SZSE: 深圳证券交易所
+    - HKEX: 香港交易所
     """
 
     id: int
+
+    # 交易所标识
+    exchange: Literal["SSE", "SZSE", "HKEX"]
 
     # 基本信息
     name: str

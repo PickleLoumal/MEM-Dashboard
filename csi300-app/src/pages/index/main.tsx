@@ -4,7 +4,7 @@ import { GlobalNav } from '@shared/components/GlobalNav';
 import {
   Csi300Service,
   OpenAPI,
-  type CSI300FilterOptions,
+  type FilterOptions,
 } from '@shared/api/generated';
 import '@shared/styles/main.css';
 import './styles.css';
@@ -25,7 +25,7 @@ type Filters = {
 };
 
 function useFilterOptions(initialSector: string) {
-  const [data, setData] = useState<CSI300FilterOptions | null>(null);
+  const [data, setData] = useState<FilterOptions | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,8 +34,9 @@ function useFilterOptions(initialSector: string) {
     setLoading(true);
 
     Csi300Service.apiCsi300ApiCompaniesFilterOptionsRetrieve(
+      undefined, // exchange
       initialSector || undefined,
-      undefined // region
+      undefined // TODO: Remove legacy region parameter after full migration to exchange
     )
       .then((res) => {
         if (ignore) return;
@@ -59,19 +60,19 @@ function useFilterOptions(initialSector: string) {
   return { data, loading, error };
 }
 
-function getTotalCount(data: CSI300FilterOptions | null): number | null {
+function getTotalCount(data: FilterOptions | null): number | null {
   if (!data) return null;
-  // Note: CSI300FilterOptions doesn't have total_count, but we can estimate from market_cap_range
+  // Note: FilterOptions doesn't have total_count, but we can estimate from market_cap_range
   // or fetch company count separately if needed
   return null;
 }
 
-function deriveSectors(data: CSI300FilterOptions | null): string[] {
+function deriveSectors(data: FilterOptions | null): string[] {
   if (!data) return [];
   return data.im_sectors || [];
 }
 
-function deriveIndustries(data: CSI300FilterOptions | null): string[] {
+function deriveIndustries(data: FilterOptions | null): string[] {
   if (!data) return [];
   return data.industries || [];
 }
@@ -126,8 +127,9 @@ function FilterPage() {
     setIndustryLoading(true);
     try {
       const res = await Csi300Service.apiCsi300ApiCompaniesFilterOptionsRetrieve(
+        undefined, // exchange
         value || undefined,
-        undefined
+        undefined // TODO: Remove legacy region parameter after full migration to exchange
       );
       setIndustryOptions(deriveIndustries(res));
     } catch (err) {

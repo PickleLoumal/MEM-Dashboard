@@ -3,10 +3,18 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Serializer for a single peer comparison item with extra fields
+ * Serializer for a single peer comparison item with extra fields.
  */
-export type CSI300PeerComparisonItem = {
+export type PeerComparisonItem = {
     readonly id: number;
+    /**
+     * Stock exchange code (SSE, SZSE, HKEX)
+     *
+     * * `SSE` - 上海证券交易所
+     * * `SZSE` - 深圳证券交易所
+     * * `HKEX` - 香港交易所
+     */
+    exchange?: PeerComparisonItem.exchange;
     /**
      * Stock ticker
      */
@@ -28,7 +36,7 @@ export type CSI300PeerComparisonItem = {
      */
     market_cap_usd?: string | null;
     /**
-     * Format market cap for display
+     * Format market cap for display.
      */
     readonly market_cap_display: string;
     /**
@@ -36,11 +44,11 @@ export type CSI300PeerComparisonItem = {
      */
     pe_ratio_trailing?: string | null;
     /**
-     * Format P/E ratio for display
+     * Format P/E ratio for display.
      */
     readonly pe_ratio_display: string;
     /**
-     * Calculate and format P/B ratio for display
+     * Calculate and format P/B ratio for display.
      */
     readonly pb_ratio_display: string;
     /**
@@ -48,11 +56,11 @@ export type CSI300PeerComparisonItem = {
      */
     roe_trailing?: string | null;
     /**
-     * Format ROE for display
+     * Format ROE for display.
      */
     readonly roe_display: string;
     /**
-     * Calculate revenue growth for display
+     * Calculate revenue growth for display.
      */
     readonly revenue_growth_display: string;
     /**
@@ -60,10 +68,24 @@ export type CSI300PeerComparisonItem = {
      */
     operating_margin_trailing?: string | null;
     /**
-     * Format Operating Margin for display
+     * Format Operating Margin for display.
      */
     readonly operating_margin_display: string;
     readonly rank: number;
     readonly is_current_company: boolean;
 };
+export namespace PeerComparisonItem {
+    /**
+     * Stock exchange code (SSE, SZSE, HKEX)
+     *
+     * * `SSE` - 上海证券交易所
+     * * `SZSE` - 深圳证券交易所
+     * * `HKEX` - 香港交易所
+     */
+    export enum exchange {
+        SSE = 'SSE',
+        SZSE = 'SZSE',
+        HKEX = 'HKEX',
+    }
+}
 

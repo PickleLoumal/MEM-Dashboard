@@ -1,4 +1,3 @@
-import io
 import json
 import os
 import pickle
@@ -202,13 +201,10 @@ class GoogleDriveService:
         oauth_path = None
 
         # Try absolute path
-        if os.path.isabs(self.oauth_credentials_file) and os.path.exists(
-            self.oauth_credentials_file
-        ):
-            oauth_path = Path(self.oauth_credentials_file)
-
-        # Try relative path in current directory
-        elif os.path.exists(self.oauth_credentials_file):
+        if (
+            os.path.isabs(self.oauth_credentials_file)
+            and os.path.exists(self.oauth_credentials_file)
+        ) or os.path.exists(self.oauth_credentials_file):
             oauth_path = Path(self.oauth_credentials_file)
 
         # Try relative to automation folder

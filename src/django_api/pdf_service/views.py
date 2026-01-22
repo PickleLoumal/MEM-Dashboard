@@ -14,7 +14,7 @@ import os
 import re
 import uuid as uuid_module
 
-from csi300.models import CSI300Company, CSI300InvestmentSummary
+from csi300.models import Company, InvestmentSummary
 from django.db import transaction
 from django.db.models import QuerySet
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -38,6 +38,10 @@ from .serializers import (
 from .tasks import generate_presigned_download_url, publish_pdf_task, update_task_status_from_worker
 
 logger = logging.getLogger(__name__)
+
+# Backward compatibility aliases
+CSI300Company = Company
+CSI300InvestmentSummary = InvestmentSummary
 
 
 class PDFTemplateViewSet(viewsets.ReadOnlyModelViewSet):

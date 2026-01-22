@@ -1,9 +1,10 @@
 """
-Django management command to update market cap data for CSI300 companies
+Django management command to update market cap data for companies
 from JSON export file.
 
 Usage:
-    python manage.py update_market_cap --json-file /path/to/csi300_companies.json
+    python manage.py update_market_cap --json-file /path/to/companies.json
+    python manage.py update_market_cap --json-file /path/to/hk_companies.json --exchange HKEX
 """
 
 import json
@@ -11,13 +12,13 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 import boto3
-from csi300.models import CSI300Company
+from csi300.models import Company
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 
 class Command(BaseCommand):
-    help = "Update market cap data for CSI300 companies from JSON export file"
+    help = "Update market cap data for companies from JSON export file"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -33,6 +34,13 @@ class Command(BaseCommand):
             "--s3-key", type=str, default="csi300_companies.json", help="S3 key for JSON file"
         )
         parser.add_argument(
+            "--exchange",
+            type=str,
+            choices=["SSE", "SZSE", "HKEX"],
+            default=None,
+            help="Filter by exchange (SSE, SZSE, HKEX)",
+        )
+        parser.add_argument(
             "--dry-run",
             action="store_true",
             help="Show what would be updated without making changes",
@@ -45,7 +53,11 @@ class Command(BaseCommand):
         if not json_data:
             raise CommandError("No data loaded from JSON file")
 
-        self.update_market_cap_data(json_data, options["dry_run"])
+        exchange_filter = options.get("exchange")
+        if exchange_filter:
+            self.stdout.write(f"Filtering by exchange: {exchange_filter}")
+
+        self.update_market_cap_data(json_data, options["dry_run"], exchange_filter)
 
     def load_json_data(self, options):
         """Load JSON data from file or S3"""
@@ -94,19 +106,21 @@ class Command(BaseCommand):
         except (InvalidOperation, ValueError):
             return None
 
-    def update_market_cap_data(self, json_data, dry_run=False):
+    def update_market_cap_data(self, json_data, dry_run=False, exchange_filter=None):
         """Update market cap data for all companies"""
         total_companies = len(json_data)
         updated_count = 0
         error_count = 0
 
         self.stdout.write(
-            f"\n{'DRY RUN: ' if dry_run else ''}Processing {total_companies} companies..."
+            f"\n{'DRY RUN: ' if dry_run else ''}Processing {total_companies} records..."
         )
 
         with transaction.atomic():
             for item in json_data:
-                if item.get("model") != "csi300.csi300company":
+                # Support both old format (csi300.csi300company) and new format (csi300.company)
+                model_name = item.get("model", "")
+                if model_name not in ["csi300.csi300company", "csi300.company"]:
                     continue
 
                 try:
@@ -131,7 +145,11 @@ class Command(BaseCommand):
 
                     # Find company in database
                     try:
-                        company = CSI300Company.objects.get(ticker=ticker)
+                        queryset = Company.objects.all()
+                        if exchange_filter:
+                            queryset = queryset.filter(exchange=exchange_filter)
+
+                        company = queryset.get(ticker=ticker)
 
                         # Check if update is needed
                         needs_update = False
@@ -155,15 +173,26 @@ class Command(BaseCommand):
                             updated_count += 1
                             self.stdout.write(
                                 self.style.SUCCESS(
-                                    f"{'[DRY RUN] ' if dry_run else ''}Updated {ticker} ({company.name}):\n"
-                                    f"  Local: {old_local} → {market_cap_local}\n"
-                                    f"  USD: {old_usd} → {market_cap_usd}"
+                                    f"{'[DRY RUN] ' if dry_run else ''}"
+                                    f"Updated {ticker} ({company.name}) [{company.exchange}]:\n"
+                                    f"  Local: {old_local} -> {market_cap_local}\n"
+                                    f"  USD: {old_usd} -> {market_cap_usd}"
                                 )
                             )
 
-                    except CSI300Company.DoesNotExist:
+                    except Company.DoesNotExist:
                         self.stdout.write(
                             self.style.WARNING(f"Company not found in database: {ticker}")
+                        )
+                        error_count += 1
+                        continue
+                    except Company.MultipleObjectsReturned:
+                        # If multiple companies with same ticker exist (different exchanges)
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"Multiple companies found for {ticker}. "
+                                "Use --exchange to specify which one."
+                            )
                         )
                         error_count += 1
                         continue
@@ -181,7 +210,7 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"\n{'DRY RUN ' if dry_run else ''}SUMMARY:\n"
-                f"Total companies processed: {total_companies}\n"
+                f"Total records processed: {total_companies}\n"
                 f"Companies updated: {updated_count}\n"
                 f"Errors: {error_count}"
             )

@@ -3,12 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * CSI300 Investment Summary serializer
+ * Investment Summary serializer with company details.
  */
-export type CSI300InvestmentSummary = {
+export type InvestmentSummary = {
     readonly id: number;
     readonly company_name: string;
     readonly company_ticker: string;
+    readonly exchange: string;
     readonly im_sector: string;
     readonly industry: string;
     /**

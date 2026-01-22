@@ -38,12 +38,12 @@ from docx.shared import Inches, Pt, RGBColor
 from observability import get_logger
 
 if TYPE_CHECKING:
-    from docx import Document
+    pass
 
 logger = get_logger(__name__)
 
 # 导出的公共接口
-__all__ = ["markdown_to_docx", "convert_markdown_to_word"]
+__all__ = ["convert_markdown_to_word", "markdown_to_docx"]
 
 # 检查 pypandoc 是否可用
 _PYPANDOC_AVAILABLE = False
@@ -118,32 +118,33 @@ def markdown_to_docx(
                 extra={"output_path": str(output_path), "content_length": len(markdown_text)},
             )
             return None
-        else:
-            # 输出到临时文件，然后读取字节
-            with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
-                tmp_path = tmp.name
+        # 输出到临时文件，然后读取字节
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
+            tmp_path = tmp.name
 
-            pypandoc.convert_text(
-                markdown_text,
-                "docx",
-                format="markdown",
-                outputfile=tmp_path,
-                extra_args=extra_args,
-            )
+        pypandoc.convert_text(
+            markdown_text,
+            "docx",
+            format="markdown",
+            outputfile=tmp_path,
+            extra_args=extra_args,
+        )
 
-            with open(tmp_path, "rb") as f:
-                docx_bytes = f.read()
+        with open(tmp_path, "rb") as f:
+            docx_bytes = f.read()
 
-            Path(tmp_path).unlink()  # 删除临时文件
+        Path(tmp_path).unlink()  # 删除临时文件
 
-            logger.info(
-                "Markdown converted to DOCX bytes using Pandoc",
-                extra={"bytes_size": len(docx_bytes), "content_length": len(markdown_text)},
-            )
-            return docx_bytes
+        logger.info(
+            "Markdown converted to DOCX bytes using Pandoc",
+            extra={"bytes_size": len(docx_bytes), "content_length": len(markdown_text)},
+        )
+        return docx_bytes
 
     except Exception as e:
-        logger.exception("Pandoc conversion failed, using built-in converter", extra={"error": str(e)})
+        logger.exception(
+            "Pandoc conversion failed, using built-in converter", extra={"error": str(e)}
+        )
         return _builtin_markdown_to_docx(markdown_text, output_path)
 
 
@@ -175,11 +176,10 @@ def _builtin_markdown_to_docx(
             extra={"output_path": str(output_path), "content_length": len(markdown_text)},
         )
         return None
-    else:
-        buffer = BytesIO()
-        doc.save(buffer)
-        buffer.seek(0)
-        return buffer.read()
+    buffer = BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer.read()
 
 
 def add_formatted_text(paragraph, text: str) -> None:
@@ -205,12 +205,18 @@ def add_formatted_text(paragraph, text: str) -> None:
 
             for bold_part in bold_parts:
                 # 处理 ***bold and italic***
-                if bold_part.startswith("***") and bold_part.endswith("***") and len(bold_part) >= 7:
+                if (
+                    bold_part.startswith("***")
+                    and bold_part.endswith("***")
+                    and len(bold_part) >= 7
+                ):
                     run = paragraph.add_run(bold_part[3:-3])
                     run.bold = True
                     run.italic = True
                 # 处理 **bold**
-                elif bold_part.startswith("**") and bold_part.endswith("**") and len(bold_part) >= 5:
+                elif (
+                    bold_part.startswith("**") and bold_part.endswith("**") and len(bold_part) >= 5
+                ):
                     bold_content = bold_part[2:-2]
                     run = paragraph.add_run(bold_content)
                     run.bold = True
@@ -282,7 +288,10 @@ def convert_markdown_to_word(markdown_text, doc):
                     # Add formatted text to table cell (supports bold/italic)
                     cell_paragraph = table_obj.rows[0].cells[i].paragraphs[0]
                     add_formatted_text(cell_paragraph, cell_text)
-            elif line.strip().replace("|", "").replace("-", "").replace(" ", "").replace(":", "") == "":  # Separator
+            elif (
+                line.strip().replace("|", "").replace("-", "").replace(" ", "").replace(":", "")
+                == ""
+            ):  # Separator
                 continue
             else:
                 cells = [cell.strip() for cell in line.strip().split("|")[1:-1]]

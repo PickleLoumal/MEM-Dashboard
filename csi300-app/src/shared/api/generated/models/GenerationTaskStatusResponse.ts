@@ -49,6 +49,10 @@ export type GenerationTaskStatusResponse = {
      */
     company_ticker: string;
     /**
+     * 交易所代码 (SSE, SZSE, HKEX)
+     */
+    exchange?: string;
+    /**
      * 任务创建时间
      */
     created_at: string;

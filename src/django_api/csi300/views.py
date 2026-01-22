@@ -1,7 +1,7 @@
 """
-CSI300 API Views
+CSI300 API Views - Unified Company Architecture
 
-提供 CSI300 指数成分股的 REST API 端点。
+提供统一公司数据的 REST API 端点，支持多交易所 (SSE, SZSE, HKEX)。
 
 类型注解说明:
 - 所有公共方法都有完整的类型注解
@@ -28,25 +28,36 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
-from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary, GenerationTask
+# Backward compatibility imports
+from .models import (
+    Company,
+    GenerationTask,
+    InvestmentSummary,
+)
 from .serializers import (
-    CSI300CompanyListSerializer,
-    CSI300CompanySerializer,
-    CSI300FilterOptionsSerializer,
-    CSI300HSharesCompanyListSerializer,
-    CSI300HSharesCompanySerializer,
-    CSI300IndustryPeersComparisonSerializer,
-    CSI300InvestmentSummarySerializer,
-    CSI300PeerComparisonResponseSerializer,
+    CompanyListSerializer,
+    CompanySerializer,
+    FilterOptionsSerializer,
     GenerationTaskStartResponseSerializer,
     GenerationTaskStatusResponseSerializer,
+    IndustryPeersComparisonSerializer,
+    InvestmentSummarySerializer,
+    PeerComparisonResponseSerializer,
 )
+
+# TODO: Remove backward compatibility aliases after full migration to unified Company model
+CSI300CompanySerializer = CompanySerializer
+CSI300CompanyListSerializer = CompanyListSerializer
+CSI300FilterOptionsSerializer = FilterOptionsSerializer
+CSI300InvestmentSummarySerializer = InvestmentSummarySerializer
+CSI300IndustryPeersComparisonSerializer = IndustryPeersComparisonSerializer
+CSI300PeerComparisonResponseSerializer = PeerComparisonResponseSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -54,16 +65,20 @@ logger = logging.getLogger(__name__)
 SerializerClass = type[Serializer[Any]]
 
 
-class CSI300Pagination(PageNumberPagination):
-    """CSI300 API 分页配置"""
+class CompanyPagination(PageNumberPagination):
+    """Company API 分页配置"""
 
     page_size: int = 20
     page_size_query_param: str = "page_size"
     max_page_size: int = 100
 
 
-class CSI300HealthMixin:
-    """CSI300 健康检查 Mixin"""
+# TODO: Remove backward compatibility alias after full migration
+CSI300Pagination = CompanyPagination
+
+
+class HealthMixin:
+    """健康检查 Mixin"""
 
     @action(detail=False, methods=["get"], url_path="health")
     def health(self, request: Request) -> Response:
@@ -76,23 +91,30 @@ class CSI300HealthMixin:
             except Exception:
                 database_available = False
 
-            count = CSI300Company.objects.count() if database_available else 0
+            count = Company.objects.count() if database_available else 0
+
+            # Count by exchange
+            exchange_counts = {}
+            if database_available:
+                for exchange in Company.Exchange.values:
+                    exchange_counts[exchange] = Company.objects.filter(exchange=exchange).count()
 
             return Response(
                 {
                     "status": "healthy" if database_available else "degraded",
-                    "service": "CSI300 API",
+                    "service": "Company API",
                     "total_companies": count,
+                    "exchange_counts": exchange_counts,
                     "database_available": database_available,
                     "timestamp": datetime.now(tz=UTC).isoformat(),
                 }
             )
         except Exception as e:
-            logger.exception("CSI300 health check failed")
+            logger.exception("Health check failed")
             return Response(
                 {
                     "status": "error",
-                    "service": "CSI300 API",
+                    "service": "Company API",
                     "error": str(e),
                     "database_available": False,
                 },
@@ -100,8 +122,12 @@ class CSI300HealthMixin:
             )
 
 
-class CSI300SummaryMixin:
-    """CSI300 摘要生成 Mixin - 异步模式"""
+# TODO: Remove backward compatibility alias after full migration
+CSI300HealthMixin = HealthMixin
+
+
+class SummaryGenerationMixin:
+    """摘要生成 Mixin - 异步模式"""
 
     @extend_schema(
         request=inline_serializer(
@@ -123,6 +149,7 @@ class CSI300SummaryMixin:
         异步启动 Investment Summary 生成任务
 
         立即返回 task_id，前端可通过 task-status API 轮询进度。
+        支持所有交易所的公司 (SSE, SZSE, HKEX)。
         """
         company_id_raw = request.data.get("company_id")
 
@@ -140,10 +167,10 @@ class CSI300SummaryMixin:
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # 验证公司存在
+        # 验证公司存在 (支持所有交易所)
         try:
-            company = CSI300Company.objects.get(id=company_id)
-        except CSI300Company.DoesNotExist:
+            company = Company.objects.get(id=company_id)
+        except Company.DoesNotExist:
             return Response(
                 {"status": "error", "message": f"公司 ID {company_id} 不存在"},
                 status=status.HTTP_404_NOT_FOUND,
@@ -204,7 +231,10 @@ class CSI300SummaryMixin:
         )
         thread.start()
 
-        logger.info(f"Started async generation task {task_id} for company {company.ticker}")
+        logger.info(
+            f"Started async generation task {task_id} for company "
+            f"{company.ticker} ({company.exchange})"
+        )
 
         return Response(
             {
@@ -329,6 +359,7 @@ class CSI300SummaryMixin:
             "company_id": task.company_id,
             "company_name": task.company.name,
             "company_ticker": task.company.ticker,
+            "exchange": task.company.exchange,
             "created_at": task.created_at.isoformat() if task.created_at else None,
             "updated_at": task.updated_at.isoformat() if task.updated_at else None,
         }
@@ -347,12 +378,16 @@ class CSI300SummaryMixin:
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadOnlyModelViewSet):
-    """
-    CSI300 公司数据 ViewSet
+# TODO: Remove backward compatibility alias after full migration
+CSI300SummaryMixin = SummaryGenerationMixin
 
-    提供 CSI300 指数成分股的只读 API 端点:
-    - list: 获取公司列表 (支持筛选和分页)
+
+class CompanyViewSet(HealthMixin, SummaryGenerationMixin, viewsets.ReadOnlyModelViewSet):
+    """
+    公司数据 ViewSet - 支持多交易所
+
+    提供统一的公司数据 API 端点:
+    - list: 获取公司列表 (支持按 exchange 筛选)
     - retrieve: 获取单个公司详情
     - filter_options: 获取筛选选项
     - search: 搜索公司
@@ -362,19 +397,15 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
     - generate_summary: 生成投资摘要
     """
 
-    queryset: QuerySet[CSI300Company] = CSI300Company.objects.all()
-    serializer_class: SerializerClass = CSI300CompanySerializer
-    pagination_class: type[PageNumberPagination] = CSI300Pagination
+    queryset: QuerySet[Company] = Company.objects.all()
+    serializer_class: SerializerClass = CompanySerializer
+    pagination_class: type[PageNumberPagination] = CompanyPagination
 
     def get_serializer_class(self) -> SerializerClass:
         """根据请求动态返回序列化器类"""
         if self.action == "list":
-            if self._is_hshares_request():
-                return CSI300HSharesCompanyListSerializer
-            return CSI300CompanyListSerializer
-        if self.action == "retrieve" and self._is_hshares_request():
-            return CSI300HSharesCompanySerializer
-        return CSI300CompanySerializer
+            return CompanyListSerializer
+        return CompanySerializer
 
     def _normalize_region(self, region_value: str | None) -> str | None:
         """标准化地区参数值"""
@@ -385,20 +416,38 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
             return "Hong Kong"
         return normalized
 
-    def _is_hshares_request(self) -> bool:
-        """判断当前请求是否为 H股数据请求"""
-        region = self._normalize_region(self.request.query_params.get("region"))
+    def _get_exchange_filter(self) -> str | None:
+        """从请求参数获取交易所过滤值"""
+        exchange = self.request.query_params.get("exchange")
+        if exchange:
+            exchange_upper = exchange.upper()
+            if exchange_upper in Company.Exchange.values:
+                return exchange_upper
+        return None
+
+    def _region_to_exchange(self, region: str | None) -> str | None:
+        """将 region 参数映射到 exchange (向后兼容)"""
         if not region:
-            return False
-        return region.lower() == "hong kong"
+            return None
+        region_lower = region.lower()
+        if "hong kong" in region_lower:
+            return Company.Exchange.HKEX
+        return None
 
     @extend_schema(
         parameters=[
             OpenApiParameter(
+                name="exchange",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Filter by exchange (SSE, SZSE, HKEX)",
+                enum=["SSE", "SZSE", "HKEX"],
+            ),
+            OpenApiParameter(
                 name="region",
                 type=OpenApiTypes.STR,
                 location=OpenApiParameter.QUERY,
-                description="Filter by region (e.g., 'Mainland China', 'Hong Kong')",
+                description="Filter by region (legacy, prefer using 'exchange')",
             ),
             OpenApiParameter(
                 name="im_sector",
@@ -453,11 +502,16 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
 
     def _api_overview(self, request: Request) -> Response:
         """返回 API 概览信息"""
-        total_companies = CSI300Company.objects.count()
+        total_companies = Company.objects.count()
+        exchange_counts = {
+            exchange: Company.objects.filter(exchange=exchange).count()
+            for exchange in Company.Exchange.values
+        }
         return Response(
             {
-                "message": "CSI300 Companies API",
-                "version": "1.0.0",
+                "message": "Company API (Multi-Exchange)",
+                "version": "2.0.0",
+                "supported_exchanges": list(Company.Exchange.values),
                 "endpoints": {
                     "companies": "/api/csi300/api/companies/",
                     "company_detail": "/api/csi300/api/companies/{id}/",
@@ -467,47 +521,52 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
                     "generate_summary": "/api/csi300/api/companies/generate-summary/",
                 },
                 "total_companies": total_companies,
+                "exchange_counts": exchange_counts,
             }
         )
 
     def get_queryset(self) -> Any:
         """获取查询集，根据请求参数动态筛选"""
-        use_hshares: bool = self._is_hshares_request()
-        queryset = (
-            CSI300HSharesCompany.objects.all() if use_hshares else CSI300Company.objects.all()
-        )
+        queryset = Company.objects.all()
 
-        # 获取筛选参数
+        # Exchange filter (new parameter)
+        exchange = self._get_exchange_filter()
+        if exchange:
+            queryset = queryset.filter(exchange=exchange)
+
+        # TODO: Remove legacy region filter after full migration to exchange
+        # Region filter (backward compatibility - maps to exchange)
         region = self._normalize_region(self.request.query_params.get("region"))
+        if region and not exchange:
+            # Map region to exchange for backward compatibility (deprecated)
+            mapped_exchange = self._region_to_exchange(region)
+            if mapped_exchange:
+                queryset = queryset.filter(exchange=mapped_exchange)
+            else:
+                # Filter by region field directly
+                queryset = queryset.filter(region__iexact=region)
+
+        # IM Sector filter
         im_sector = self.request.query_params.get("im_sector")
+        if im_sector:
+            queryset = queryset.filter(im_sector__exact=im_sector)
+
+        # Industry filter
         industry = self.request.query_params.get("industry")
         legacy_sub_industry = self.request.query_params.get("sub_industry")
         if not industry and legacy_sub_industry:
             industry = legacy_sub_industry
-        gics_industry = self.request.query_params.get("gics_industry")
-        market_cap_min = self.request.query_params.get("market_cap_min")
-        market_cap_max = self.request.query_params.get("market_cap_max")
-        search = self.request.query_params.get("search")
-        industry_search = self.request.query_params.get("industry_search")
-
-        logger.debug(
-            f"Filtering: im_sector='{im_sector}', industry='{industry}', industry_search='{industry_search}'"
-        )
-
-        if region:
-            queryset = queryset.filter(region__iexact=region)
-            logger.debug(f"After Region filter ('{region}'): {queryset.count()} companies")
-
-        if im_sector:
-            queryset = queryset.filter(im_sector__exact=im_sector)
-            logger.debug(f"After IM Sector filter: {queryset.count()} companies")
-
         if industry:
             queryset = queryset.filter(industry__exact=industry)
-            logger.debug(f"After Industry filter: {queryset.count()} companies")
 
+        # GICS Industry filter
+        gics_industry = self.request.query_params.get("gics_industry")
         if gics_industry:
             queryset = queryset.filter(gics_industry__icontains=gics_industry)
+
+        # Market cap filters
+        market_cap_min = self.request.query_params.get("market_cap_min")
+        market_cap_max = self.request.query_params.get("market_cap_max")
 
         if market_cap_min:
             with contextlib.suppress(ValueError, TypeError):
@@ -517,6 +576,8 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
             with contextlib.suppress(ValueError, TypeError):
                 queryset = queryset.filter(market_cap_local__lte=float(market_cap_max))
 
+        # Text search
+        search = self.request.query_params.get("search")
         if search:
             queryset = queryset.filter(
                 Q(name__icontains=search)
@@ -524,11 +585,12 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
                 | Q(naming__icontains=search)
             )
 
+        # Industry search
+        industry_search = self.request.query_params.get("industry_search")
         if industry_search:
             queryset = queryset.filter(Q(industry__icontains=industry_search))
-            logger.debug(f"After Industry search filter: {queryset.count()} companies")
 
-        return queryset.order_by("ticker")
+        return queryset.order_by("exchange", "ticker")
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """获取单个公司详情"""
@@ -536,54 +598,60 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
         if pk is None:
             raise Http404("Company identifier is required")
 
-        region = self._normalize_region(request.query_params.get("region"))
-        prefer_hshares: bool = bool(region and region.lower() == "hong kong")
-
-        primary_model = CSI300HSharesCompany if prefer_hshares else CSI300Company
-        primary_serializer = (
-            CSI300HSharesCompanySerializer if prefer_hshares else CSI300CompanySerializer
-        )
-        fallback_model = CSI300Company if prefer_hshares else CSI300HSharesCompany
-        fallback_serializer = (
-            CSI300CompanySerializer if prefer_hshares else CSI300HSharesCompanySerializer
-        )
-
-        instance = primary_model.objects.filter(pk=pk).first()
-        serializer_class = primary_serializer
-
-        if instance is None:
-            instance = fallback_model.objects.filter(pk=pk).first()
-            serializer_class = fallback_serializer if instance else primary_serializer
-
+        instance = Company.objects.filter(pk=pk).first()
         if instance is None:
             raise Http404("Company not found")
 
-        serializer = serializer_class(instance, context=self.get_serializer_context())
+        serializer = CompanySerializer(instance, context=self.get_serializer_context())
         return Response(serializer.data)
 
     @extend_schema(
-        responses={200: CSI300FilterOptionsSerializer},
+        responses={200: FilterOptionsSerializer},
         parameters=[
-            OpenApiParameter(name="region", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY),
             OpenApiParameter(
-                name="im_sector", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY
+                name="exchange",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                enum=["SSE", "SZSE", "HKEX"],
+            ),
+            OpenApiParameter(
+                name="region",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+            ),
+            OpenApiParameter(
+                name="im_sector",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
             ),
         ],
     )
     @action(detail=False, methods=["get"])
     def filter_options(self, request: Request) -> Response:
         """获取可用的筛选选项"""
+        exchange_filter = self._get_exchange_filter()
         region_filter = self._normalize_region(request.query_params.get("region"))
         im_sector_filter = request.query_params.get("im_sector")
-        base_queryset = (
-            CSI300HSharesCompany.objects.all()
-            if region_filter and region_filter.lower() == "hong kong"
-            else CSI300Company.objects.all()
+
+        base_queryset = Company.objects.all()
+
+        # Apply exchange filter
+        if exchange_filter:
+            base_queryset = base_queryset.filter(exchange=exchange_filter)
+        elif region_filter:
+            # TODO: Remove legacy region filter after full migration to exchange
+            mapped_exchange = self._region_to_exchange(region_filter)
+            if mapped_exchange:
+                base_queryset = base_queryset.filter(exchange=mapped_exchange)
+            else:
+                base_queryset = base_queryset.filter(region__iexact=region_filter)
+
+        # Get available exchanges
+        exchanges = list(
+            Company.objects.values_list("exchange", flat=True).distinct().order_by("exchange")
         )
 
-        if region_filter:
-            base_queryset = base_queryset.filter(region__iexact=region_filter)
-
+        # Get IM sectors
         im_sectors = list(
             base_queryset.exclude(im_sector__isnull=True)
             .exclude(im_sector__exact="")
@@ -592,8 +660,8 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
             .order_by("im_sector")
         )
 
+        # Get industries (optionally filtered by im_sector)
         industry_queryset = base_queryset.exclude(industry__isnull=True).exclude(industry__exact="")
-
         if im_sector_filter:
             industry_queryset = industry_queryset.filter(im_sector=im_sector_filter)
 
@@ -601,6 +669,7 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
             industry_queryset.values_list("industry", flat=True).distinct().order_by("industry")
         )
 
+        # Get GICS industries
         gics_industries = list(
             base_queryset.exclude(gics_industry__isnull=True)
             .exclude(gics_industry__exact="")
@@ -609,26 +678,23 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
             .order_by("gics_industry")
         )
 
+        # Get market cap range
         market_cap_range = base_queryset.exclude(market_cap_local__isnull=True).aggregate(
             min_cap=Min("market_cap_local"), max_cap=Max("market_cap_local")
         )
 
-        region_values = set(
-            CSI300Company.objects.exclude(region__isnull=True)
+        # TODO: Remove legacy regions field after full migration to exchange
+        regions = list(
+            Company.objects.exclude(region__isnull=True)
             .exclude(region__exact="")
             .values_list("region", flat=True)
+            .distinct()
+            .order_by("region")
         )
-
-        region_values.update(
-            CSI300HSharesCompany.objects.exclude(region__isnull=True)
-            .exclude(region__exact="")
-            .values_list("region", flat=True)
-        )
-
-        regions = sorted(region_values, key=lambda value: value.lower())
 
         return Response(
             {
+                "exchanges": exchanges,
                 "regions": regions,
                 "im_sectors": im_sectors,
                 "industries": industries,
@@ -637,6 +703,8 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
                     "min": float(market_cap_range["min_cap"]) if market_cap_range["min_cap"] else 0,
                     "max": float(market_cap_range["max_cap"]) if market_cap_range["max_cap"] else 0,
                 },
+                "filtered_by_exchange": bool(exchange_filter),
+                "exchange_filter": exchange_filter,
                 "filtered_by_region": bool(region_filter),
                 "region_filter": region_filter,
                 "filtered_by_sector": bool(im_sector_filter),
@@ -645,10 +713,19 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
         )
 
     @extend_schema(
-        responses={200: CSI300CompanyListSerializer(many=True)},
+        responses={200: CompanyListSerializer(many=True)},
         parameters=[
             OpenApiParameter(
-                name="q", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=True
+                name="q",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=True,
+            ),
+            OpenApiParameter(
+                name="exchange",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                enum=["SSE", "SZSE", "HKEX"],
             ),
         ],
     )
@@ -662,20 +739,27 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
                 {"error": "Search query is required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        companies = CSI300Company.objects.filter(
+        queryset = Company.objects.filter(
             Q(name__icontains=query) | Q(ticker__icontains=query) | Q(naming__icontains=query)
-        ).order_by("ticker")[:10]
+        )
 
-        serializer = CSI300CompanyListSerializer(companies, many=True)
+        # Optional exchange filter
+        exchange = self._get_exchange_filter()
+        if exchange:
+            queryset = queryset.filter(exchange=exchange)
+
+        companies = queryset.order_by("exchange", "ticker")[:10]
+
+        serializer = CompanyListSerializer(companies, many=True)
         return Response(serializer.data)
 
-    @extend_schema(responses={200: CSI300InvestmentSummarySerializer})
+    @extend_schema(responses={200: InvestmentSummarySerializer})
     @action(detail=True, methods=["get"])
     def investment_summary(self, request: Request, pk: str | None = None) -> Response:
         """获取公司投资摘要"""
         try:
             company = self.get_object()
-            summary = CSI300InvestmentSummary.objects.filter(company=company).first()
+            summary = InvestmentSummary.objects.filter(company=company).first()
 
             if not summary:
                 return Response(
@@ -683,13 +767,13 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            serializer = CSI300InvestmentSummarySerializer(summary)
+            serializer = InvestmentSummarySerializer(summary)
             return Response(serializer.data)
 
         except Exception:
             return Response({"error": "Company not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    @extend_schema(responses={200: CSI300PeerComparisonResponseSerializer})
+    @extend_schema(responses={200: PeerComparisonResponseSerializer})
     @action(detail=True, methods=["get"])
     def industry_peers_comparison(self, request: Request, pk: str | None = None) -> Response:
         """获取同行业公司对比数据"""
@@ -702,8 +786,9 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
+            # Get all companies in the same im_sector (across all exchanges)
             all_industry_companies = (
-                CSI300Company.objects.filter(im_sector=company.im_sector)
+                Company.objects.filter(im_sector=company.im_sector)
                 .exclude(market_cap_local__isnull=True)
                 .order_by("-market_cap_local")
             )
@@ -724,14 +809,14 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
 
             comparison_data: list[dict[str, Any]] = []
 
-            company_serializer = CSI300IndustryPeersComparisonSerializer(company)
+            company_serializer = IndustryPeersComparisonSerializer(company)
             company_data: dict[str, Any] = company_serializer.data
             company_data["rank"] = current_company_rank
             company_data["is_current_company"] = True
             comparison_data.append(company_data)
 
             for idx, top_company in enumerate(top_3_companies, 1):
-                top_serializer = CSI300IndustryPeersComparisonSerializer(top_company)
+                top_serializer = IndustryPeersComparisonSerializer(top_company)
                 top_data: dict[str, Any] = top_serializer.data
                 top_data["rank"] = idx
                 top_data["is_current_company"] = top_company.id == company.id
@@ -741,6 +826,7 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
                 {
                     "target_company": {
                         "id": company.id,
+                        "exchange": company.exchange,
                         "name": company.name,
                         "ticker": company.ticker,
                         "im_sector": company.im_sector,
@@ -757,11 +843,13 @@ class CSI300CompanyViewSet(CSI300HealthMixin, CSI300SummaryMixin, viewsets.ReadO
             return Response({"error": "Company not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
+# TODO: Remove backward compatibility alias after full migration
+CSI300CompanyViewSet = CompanyViewSet
+
+
 # ==========================================
 # 向后兼容的独立函数视图 (保持旧 URL 可用)
 # ==========================================
-
-from rest_framework.decorators import api_view
 
 
 @extend_schema(
@@ -771,6 +859,7 @@ from rest_framework.decorators import api_view
             fields={
                 "message": drf_serializers.CharField(),
                 "version": drf_serializers.CharField(),
+                "supported_exchanges": drf_serializers.ListField(child=drf_serializers.CharField()),
                 "endpoints": drf_serializers.DictField(),
                 "total_companies": drf_serializers.IntegerField(),
             },
@@ -780,12 +869,13 @@ from rest_framework.decorators import api_view
 @api_view(["GET"])
 def csi300_index(request: Request) -> Response:
     """CSI300 API 索引端点 (向后兼容)"""
-    total_companies = CSI300Company.objects.count()
+    total_companies = Company.objects.count()
 
     return Response(
         {
-            "message": "CSI300 Companies API",
-            "version": "1.0.0",
+            "message": "Company API (Multi-Exchange)",
+            "version": "2.0.0",
+            "supported_exchanges": list(Company.Exchange.values),
             "endpoints": {
                 "companies": "/api/csi300/api/companies/",
                 "company_detail": "/api/csi300/api/companies/{id}/",
@@ -815,11 +905,11 @@ def csi300_index(request: Request) -> Response:
 def health_check(request: Request) -> Response:
     """CSI300 API 健康检查端点 (向后兼容)"""
     try:
-        count = CSI300Company.objects.count()
+        count = Company.objects.count()
         return Response(
             {
                 "status": "healthy",
-                "service": "CSI300 API",
+                "service": "Company API",
                 "total_companies": count,
                 "database_available": True,
             }
@@ -828,7 +918,7 @@ def health_check(request: Request) -> Response:
         return Response(
             {
                 "status": "error",
-                "service": "CSI300 API",
+                "service": "Company API",
                 "error": str(e),
                 "database_available": False,
             },
@@ -854,7 +944,7 @@ def health_check(request: Request) -> Response:
 def generate_investment_summary(request: Request) -> Response:
     """生成指定公司的 Investment Summary (向后兼容)"""
     # 委托给 ViewSet 的实现
-    viewset = CSI300CompanyViewSet()
+    viewset = CompanyViewSet()
     viewset.request = request
     viewset.format_kwarg = None
     return viewset.generate_summary(request)
@@ -881,7 +971,7 @@ def generate_investment_summary(request: Request) -> Response:
 def task_status_view(request: Request, task_id: str) -> Response:
     """查询任务状态 (向后兼容)"""
     # 委托给 ViewSet 的实现
-    viewset = CSI300CompanyViewSet()
+    viewset = CompanyViewSet()
     viewset.request = request
     viewset.format_kwarg = None
     return viewset.task_status(request, task_id=task_id)

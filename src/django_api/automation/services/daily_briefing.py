@@ -224,9 +224,7 @@ class DailyBriefingService:
             )
 
         # Save Long Version to database
-        self._save_report_to_database(
-            today_date, "long_version", long_content, long_drive_url
-        )
+        self._save_report_to_database(today_date, "long_version", long_content, long_drive_url)
 
         # 3. Generate Quick Version
         logger.info("Generating Quick Version report (5-page summary)")

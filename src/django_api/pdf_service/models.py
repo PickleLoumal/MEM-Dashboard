@@ -162,7 +162,7 @@ class PDFTask(models.Model):
 
     # Related entities
     company = models.ForeignKey(
-        "csi300.CSI300Company",
+        "csi300.Company",
         on_delete=models.CASCADE,
         related_name="pdf_tasks",
         help_text="Company for which PDF is being generated",

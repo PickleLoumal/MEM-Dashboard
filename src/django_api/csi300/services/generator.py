@@ -31,8 +31,14 @@ logger = logging.getLogger(__name__)
 
 # Django Models (延迟导入以避免循环依赖)
 try:
-    from csi300.models import CSI300Company, CSI300InvestmentSummary
+    from csi300.models import Company, InvestmentSummary
+
+    # TODO: Remove backward compatibility aliases after full migration
+    CSI300Company = Company
+    CSI300InvestmentSummary = InvestmentSummary
 except ImportError:
+    Company = None
+    InvestmentSummary = None
     CSI300Company = None
     CSI300InvestmentSummary = None
 

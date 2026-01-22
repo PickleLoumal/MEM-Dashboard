@@ -5,6 +5,7 @@
 export type CSI300IndexResponse = {
     message: string;
     version: string;
+    supported_exchanges: Array<string>;
     endpoints: Record<string, any>;
     total_companies: number;
 };

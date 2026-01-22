@@ -2,17 +2,17 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { CSI300Company } from '../models/CSI300Company';
-import type { CSI300FilterOptions } from '../models/CSI300FilterOptions';
+import type { Company } from '../models/Company';
 import type { CSI300HealthCheckResponse } from '../models/CSI300HealthCheckResponse';
 import type { CSI300IndexResponse } from '../models/CSI300IndexResponse';
-import type { CSI300InvestmentSummary } from '../models/CSI300InvestmentSummary';
-import type { CSI300PeerComparisonResponse } from '../models/CSI300PeerComparisonResponse';
+import type { FilterOptions } from '../models/FilterOptions';
 import type { GenerateInvestmentSummaryRequest } from '../models/GenerateInvestmentSummaryRequest';
 import type { GenerateSummaryRequest } from '../models/GenerateSummaryRequest';
 import type { GenerationTaskStartResponse } from '../models/GenerationTaskStartResponse';
 import type { GenerationTaskStatusResponse } from '../models/GenerationTaskStatusResponse';
-import type { PaginatedCSI300CompanyListList } from '../models/PaginatedCSI300CompanyListList';
+import type { InvestmentSummary } from '../models/InvestmentSummary';
+import type { PaginatedCompanyListList } from '../models/PaginatedCompanyListList';
+import type { PeerComparisonResponse } from '../models/PeerComparisonResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -30,6 +30,7 @@ export class Csi300Service {
     }
     /**
      * 获取公司列表或 API 概览
+     * @param exchange Filter by exchange (SSE, SZSE, HKEX)
      * @param gicsIndustry Filter by GICS industry (partial match)
      * @param imSector Filter by Industry Matrix sector
      * @param industry Filter by industry name
@@ -38,12 +39,13 @@ export class Csi300Service {
      * @param marketCapMin Minimum market cap filter
      * @param page A page number within the paginated result set.
      * @param pageSize Number of results to return per page.
-     * @param region Filter by region (e.g., 'Mainland China', 'Hong Kong')
+     * @param region Filter by region (legacy, prefer using 'exchange')
      * @param search Search by company name or ticker
-     * @returns PaginatedCSI300CompanyListList
+     * @returns PaginatedCompanyListList
      * @throws ApiError
      */
     public static apiCsi300ApiCompaniesList(
+        exchange?: 'HKEX' | 'SSE' | 'SZSE',
         gicsIndustry?: string,
         imSector?: string,
         industry?: string,
@@ -54,11 +56,12 @@ export class Csi300Service {
         pageSize?: number,
         region?: string,
         search?: string,
-    ): CancelablePromise<PaginatedCSI300CompanyListList> {
+    ): CancelablePromise<PaginatedCompanyListList> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/csi300/api/companies/',
             query: {
+                'exchange': exchange,
                 'gics_industry': gicsIndustry,
                 'im_sector': imSector,
                 'industry': industry,
@@ -74,13 +77,13 @@ export class Csi300Service {
     }
     /**
      * 获取单个公司详情
-     * @param id A unique integer value identifying this CSI300 Company.
-     * @returns CSI300Company
+     * @param id A unique integer value identifying this Company.
+     * @returns Company
      * @throws ApiError
      */
     public static apiCsi300ApiCompaniesRetrieve(
         id: number,
-    ): CancelablePromise<CSI300Company> {
+    ): CancelablePromise<Company> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/csi300/api/companies/{id}/',
@@ -91,13 +94,13 @@ export class Csi300Service {
     }
     /**
      * 获取同行业公司对比数据
-     * @param id A unique integer value identifying this CSI300 Company.
-     * @returns CSI300PeerComparisonResponse
+     * @param id A unique integer value identifying this Company.
+     * @returns PeerComparisonResponse
      * @throws ApiError
      */
     public static apiCsi300ApiCompaniesIndustryPeersComparisonRetrieve(
         id: number,
-    ): CancelablePromise<CSI300PeerComparisonResponse> {
+    ): CancelablePromise<PeerComparisonResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/csi300/api/companies/{id}/industry_peers_comparison/',
@@ -108,13 +111,13 @@ export class Csi300Service {
     }
     /**
      * 获取公司投资摘要
-     * @param id A unique integer value identifying this CSI300 Company.
-     * @returns CSI300InvestmentSummary
+     * @param id A unique integer value identifying this Company.
+     * @returns InvestmentSummary
      * @throws ApiError
      */
     public static apiCsi300ApiCompaniesInvestmentSummaryRetrieve(
         id: number,
-    ): CancelablePromise<CSI300InvestmentSummary> {
+    ): CancelablePromise<InvestmentSummary> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/csi300/api/companies/{id}/investment_summary/',
@@ -125,19 +128,22 @@ export class Csi300Service {
     }
     /**
      * 获取可用的筛选选项
+     * @param exchange
      * @param imSector
      * @param region
-     * @returns CSI300FilterOptions
+     * @returns FilterOptions
      * @throws ApiError
      */
     public static apiCsi300ApiCompaniesFilterOptionsRetrieve(
+        exchange?: 'HKEX' | 'SSE' | 'SZSE',
         imSector?: string,
         region?: string,
-    ): CancelablePromise<CSI300FilterOptions> {
+    ): CancelablePromise<FilterOptions> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/csi300/api/companies/filter_options/',
             query: {
+                'exchange': exchange,
                 'im_sector': imSector,
                 'region': region,
             },
@@ -161,10 +167,10 @@ export class Csi300Service {
     }
     /**
      * 健康检查端点
-     * @returns CSI300Company
+     * @returns Company
      * @throws ApiError
      */
-    public static apiCsi300ApiCompaniesHealthRetrieve(): CancelablePromise<CSI300Company> {
+    public static apiCsi300ApiCompaniesHealthRetrieve(): CancelablePromise<Company> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/csi300/api/companies/health/',
@@ -173,20 +179,23 @@ export class Csi300Service {
     /**
      * 搜索公司
      * @param q
+     * @param exchange
      * @param page A page number within the paginated result set.
      * @param pageSize Number of results to return per page.
-     * @returns PaginatedCSI300CompanyListList
+     * @returns PaginatedCompanyListList
      * @throws ApiError
      */
     public static apiCsi300ApiCompaniesSearchList(
         q: string,
+        exchange?: 'HKEX' | 'SSE' | 'SZSE',
         page?: number,
         pageSize?: number,
-    ): CancelablePromise<PaginatedCSI300CompanyListList> {
+    ): CancelablePromise<PaginatedCompanyListList> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/csi300/api/companies/search/',
             query: {
+                'exchange': exchange,
                 'page': page,
                 'page_size': pageSize,
                 'q': q,

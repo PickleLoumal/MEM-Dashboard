@@ -1,13 +1,16 @@
 """
 Django management command to update stock prices daily
-Usage: python manage.py update_stock_prices
+Usage:
+    python manage.py update_stock_prices
+    python manage.py update_stock_prices --exchange HKEX
+    python manage.py update_stock_prices --symbol 0700.HK
 """
 
 import logging
 from datetime import UTC, datetime, timedelta
 
 import pandas as pd
-from csi300.models import CSI300Company
+from csi300.models import Company
 from django.core.management.base import BaseCommand
 from stocks.akshare_client import get_daily_data, normalize_symbol
 
@@ -15,13 +18,20 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Update stock prices (open, previous close, 52w high/low, last trade date) for all CSI300 companies"
+    help = "Update stock prices (open, previous close, 52w high/low, last trade date) for all companies"
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--symbol",
             type=str,
-            help="Update specific symbol only (e.g., 000002.SZ)",
+            help="Update specific symbol only (e.g., 000002.SZ, 0700.HK)",
+        )
+        parser.add_argument(
+            "--exchange",
+            type=str,
+            choices=["SSE", "SZSE", "HKEX"],
+            default=None,
+            help="Filter by exchange (SSE, SZSE, HKEX)",
         )
         parser.add_argument(
             "--dry-run",
@@ -62,37 +72,41 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         symbol_filter = options.get("symbol")
+        exchange_filter = options.get("exchange")
         dry_run = options.get("dry_run", False)
 
         if dry_run:
-            self.stdout.write(self.style.WARNING("🔍 DRY RUN MODE - No changes will be saved"))
+            self.stdout.write(self.style.WARNING("DRY RUN MODE - No changes will be saved"))
 
         # Get companies to update
-        if symbol_filter:
-            companies = CSI300Company.objects.filter(ticker=symbol_filter)
-            if not companies.exists():
-                self.stdout.write(self.style.ERROR(f"❌ Symbol {symbol_filter} not found"))
-                return
-        else:
-            companies = CSI300Company.objects.all()
+        queryset = Company.objects.all()
 
+        if symbol_filter:
+            queryset = queryset.filter(ticker=symbol_filter)
+            if not queryset.exists():
+                self.stdout.write(self.style.ERROR(f"Symbol {symbol_filter} not found"))
+                return
+
+        if exchange_filter:
+            queryset = queryset.filter(exchange=exchange_filter)
+            self.stdout.write(f"Filtering by exchange: {exchange_filter}")
+
+        companies = queryset
         total = companies.count()
         updated = 0
         failed = 0
 
-        self.stdout.write(self.style.SUCCESS(f"📊 Updating {total} companies..."))
+        self.stdout.write(self.style.SUCCESS(f"Updating {total} companies..."))
 
         for company in companies:
             try:
                 if not company.ticker:
-                    self.stdout.write(self.style.WARNING(f"⚠️  Skipping {company.name}: No ticker"))
+                    self.stdout.write(self.style.WARNING(f"Skipping {company.name}: No ticker"))
                     continue
 
                 if not normalize_symbol(company.ticker):
                     self.stdout.write(
-                        self.style.ERROR(
-                            f"❌ {company.ticker}: Unsupported ticker format for AkShare"
-                        )
+                        self.style.ERROR(f"{company.ticker}: Unsupported ticker format for AkShare")
                     )
                     failed += 1
                     continue
@@ -100,7 +114,7 @@ class Command(BaseCommand):
                 hist = self.fetch_daily_bars(company.ticker)
                 if hist.empty:
                     self.stdout.write(
-                        self.style.WARNING(f"⚠️  {company.ticker}: No AkShare data returned")
+                        self.style.WARNING(f"{company.ticker}: No AkShare data returned")
                     )
                     failed += 1
                     continue
@@ -168,7 +182,7 @@ class Command(BaseCommand):
                 low_str = f"{fifty_two_week_low:.2f}" if fifty_two_week_low is not None else "N/A"
 
                 self.stdout.write(
-                    f"✅ {company.ticker} ({company.name[:30]}): "
+                    f"{company.ticker} ({company.name[:30]}) [{company.exchange}]: "
                     f"Open={open_str}, "
                     f"Prev Close={prev_close_str}, "
                     f"52W H/L={high_str}/{low_str}, "
@@ -184,16 +198,16 @@ class Command(BaseCommand):
                 updated += 1
 
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f"❌ {company.ticker}: {e!s}"))
-                logger.exception("Failed to update {company.ticker}")
+                self.stdout.write(self.style.ERROR(f"{company.ticker}: {e!s}"))
+                logger.exception("Failed to update %s", company.ticker)
                 failed += 1
 
         # Summary
-        self.stdout.write(self.style.SUCCESS("\n📈 Update Summary:"))
+        self.stdout.write(self.style.SUCCESS("\nUpdate Summary:"))
         self.stdout.write(f"   Total: {total}")
-        self.stdout.write(self.style.SUCCESS(f"   ✅ Updated: {updated}"))
+        self.stdout.write(self.style.SUCCESS(f"   Updated: {updated}"))
         if failed > 0:
-            self.stdout.write(self.style.ERROR(f"   ❌ Failed: {failed}"))
+            self.stdout.write(self.style.ERROR(f"   Failed: {failed}"))
 
         if dry_run:
-            self.stdout.write(self.style.WARNING("\n🔍 DRY RUN COMPLETE - No changes were saved"))
+            self.stdout.write(self.style.WARNING("\nDRY RUN COMPLETE - No changes were saved"))

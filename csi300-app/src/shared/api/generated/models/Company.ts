@@ -3,18 +3,26 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Serializer for company list view - includes all fields that exist in the database model
+ * Company serializer for API responses - includes all fields.
  */
-export type CSI300CompanyList = {
+export type Company = {
     readonly id: number;
     /**
-     * Stock ticker
+     * Stock exchange code (SSE, SZSE, HKEX)
+     *
+     * * `SSE` - 上海证券交易所
+     * * `SZSE` - 深圳证券交易所
+     * * `HKEX` - 香港交易所
      */
-    ticker?: string | null;
+    exchange?: Company.exchange;
     /**
      * Company name
      */
     name: string;
+    /**
+     * Stock ticker
+     */
+    ticker?: string | null;
     /**
      * Region (e.g., Mainland China, Hong Kong)
      */
@@ -52,25 +60,25 @@ export type CSI300CompanyList = {
      */
     directors?: string | null;
     /**
-     * Currency
-     */
-    currency?: string | null;
-    /**
-     * Last trade date
-     */
-    last_trade_date?: string | null;
-    /**
      * Price in local currency (Open)
      */
     price_local_currency?: string | null;
     /**
-     * Market cap (local)
+     * Previous close price
      */
-    market_cap_local?: string | null;
+    previous_close?: string | null;
     /**
-     * Market cap (USD)
+     * Currency
      */
-    market_cap_usd?: string | null;
+    currency?: string | null;
+    /**
+     * Total return 2018-2025
+     */
+    total_return_2018_to_2025?: string | null;
+    /**
+     * Last trade date
+     */
+    last_trade_date?: string | null;
     /**
      * 52-week high
      */
@@ -80,9 +88,13 @@ export type CSI300CompanyList = {
      */
     price_52w_low?: string | null;
     /**
-     * Total return 2018-2025
+     * Market cap (local)
      */
-    total_return_2018_to_2025?: string | null;
+    market_cap_local?: string | null;
+    /**
+     * Market cap (USD)
+     */
+    market_cap_usd?: string | null;
     /**
      * Total revenue (local)
      */
@@ -120,14 +132,6 @@ export type CSI300CompanyList = {
      */
     operating_profits_per_share?: string | null;
     /**
-     * ROE trailing
-     */
-    roe_trailing?: string | null;
-    /**
-     * ROA trailing
-     */
-    roa_trailing?: string | null;
-    /**
      * EPS trailing
      */
     eps_trailing?: string | null;
@@ -147,6 +151,14 @@ export type CSI300CompanyList = {
      * Asset turnover LTM
      */
     asset_turnover_ltm?: string | null;
+    /**
+     * ROA trailing
+     */
+    roa_trailing?: string | null;
+    /**
+     * ROE trailing
+     */
+    roe_trailing?: string | null;
     /**
      * Operating leverage
      */
@@ -239,5 +251,21 @@ export type CSI300CompanyList = {
      * Dividend 10yr CAGR
      */
     dividend_10yr_cagr?: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
 };
+export namespace Company {
+    /**
+     * Stock exchange code (SSE, SZSE, HKEX)
+     *
+     * * `SSE` - 上海证券交易所
+     * * `SZSE` - 深圳证券交易所
+     * * `HKEX` - 香港交易所
+     */
+    export enum exchange {
+        SSE = 'SSE',
+        SZSE = 'SZSE',
+        HKEX = 'HKEX',
+    }
+}
 

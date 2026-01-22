@@ -1,6 +1,6 @@
 """
 Django management command to import Investment Summary from CSV
-Usage: python manage.py import_investment_summary /path/to/output.csv
+Usage: python manage.py import_investment_summary /path/to/output.csv --exchange HKEX
 """
 
 import csv
@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-from csi300.models import CSI300Company, CSI300InvestmentSummary
+from csi300.models import Company, InvestmentSummary
 from django.core.management.base import BaseCommand
 
 logger = logging.getLogger(__name__)
@@ -24,6 +24,13 @@ class Command(BaseCommand):
             "csv_file",
             type=str,
             help="Path to the CSV file to import",
+        )
+        parser.add_argument(
+            "--exchange",
+            type=str,
+            choices=["SSE", "SZSE", "HKEX"],
+            default=None,
+            help="Target exchange for new companies (SSE, SZSE, HKEX). If not specified, inferred from ticker.",
         )
         parser.add_argument(
             "--dry-run",
@@ -68,13 +75,36 @@ class Command(BaseCommand):
             except ValueError:
                 return datetime.now(tz=UTC).date()
 
+    @staticmethod
+    def infer_exchange(ticker: str | None, region: str | None = None) -> str:
+        """Infer exchange from ticker suffix or region."""
+        if ticker:
+            ticker_upper = ticker.upper()
+            if ticker_upper.endswith((".SH", ".SS")):
+                return Company.Exchange.SSE
+            if ticker_upper.endswith(".SZ"):
+                return Company.Exchange.SZSE
+            if ticker_upper.endswith(".HK"):
+                return Company.Exchange.HKEX
+
+        if region:
+            region_lower = region.lower()
+            if "hong kong" in region_lower:
+                return Company.Exchange.HKEX
+
+        return Company.Exchange.SSE  # Default
+
     def handle(self, *args, **options):
         csv_file = options["csv_file"]
         dry_run = options.get("dry_run", False)
         update_existing = options.get("update", False)
+        target_exchange = options.get("exchange")
 
         if dry_run:
-            self.stdout.write(self.style.WARNING("🔍 DRY RUN MODE - No changes will be saved"))
+            self.stdout.write(self.style.WARNING("DRY RUN MODE - No changes will be saved"))
+
+        if target_exchange:
+            self.stdout.write(f"Target exchange: {target_exchange}")
 
         # CSV column to model field mapping (for reference)
         _field_mapping = {
@@ -113,40 +143,53 @@ class Command(BaseCommand):
                 for row in reader:
                     total += 1
                     company_name = row.get("Company", "").strip()
+                    ticker = row.get("Ticker", "").strip() if row.get("Ticker") else None
 
                     if not company_name:
                         self.stdout.write(
-                            self.style.WARNING(f"⚠️  Row {total}: Empty company name, skipping")
+                            self.style.WARNING(f"Row {total}: Empty company name, skipping")
                         )
                         skipped += 1
                         continue
 
                     try:
+                        # Build query - optionally filter by exchange
+                        queryset = Company.objects.all()
+                        if target_exchange:
+                            queryset = queryset.filter(exchange=target_exchange)
+
                         # Try to find existing company by name
-                        company = CSI300Company.objects.filter(name__iexact=company_name).first()
+                        company = queryset.filter(name__iexact=company_name).first()
 
                         if not company:
                             # Try partial match
-                            company = CSI300Company.objects.filter(
-                                name__icontains=company_name
-                            ).first()
+                            company = queryset.filter(name__icontains=company_name).first()
 
                         if not company:
+                            # Determine exchange for new company
+                            exchange = target_exchange or self.infer_exchange(
+                                ticker, row.get("Region")
+                            )
+
                             # Create new company
                             if not dry_run:
-                                company = CSI300Company.objects.create(
+                                company = Company.objects.create(
                                     name=company_name,
+                                    ticker=ticker,
+                                    exchange=exchange,
                                     industry=row.get("Industry", "")[:500]
                                     if row.get("Industry")
                                     else None,
                                 )
                                 self.stdout.write(
-                                    self.style.SUCCESS(f"   📝 Created company: {company_name}")
+                                    self.style.SUCCESS(
+                                        f"   Created company: {company_name} ({exchange})"
+                                    )
                                 )
                             else:
                                 self.stdout.write(
                                     self.style.WARNING(
-                                        f"   📝 Would create company: {company_name}"
+                                        f"   Would create company: {company_name} ({exchange})"
                                     )
                                 )
                                 skipped += 1
@@ -182,9 +225,7 @@ class Command(BaseCommand):
                         }
 
                         # Check if summary already exists
-                        existing_summary = CSI300InvestmentSummary.objects.filter(
-                            company=company
-                        ).first()
+                        existing_summary = InvestmentSummary.objects.filter(company=company).first()
 
                         if existing_summary:
                             if update_existing:
@@ -193,46 +234,52 @@ class Command(BaseCommand):
                                         setattr(existing_summary, field, value)
                                     existing_summary.save()
                                     updated += 1
-                                    self.stdout.write(f"✅ Updated: {company_name}")
+                                    self.stdout.write(
+                                        f"Updated: {company_name} ({company.exchange})"
+                                    )
                                 else:
-                                    self.stdout.write(f"🔄 Would update: {company_name}")
+                                    self.stdout.write(
+                                        f"Would update: {company_name} ({company.exchange})"
+                                    )
                                     updated += 1
                             else:
                                 self.stdout.write(
-                                    self.style.WARNING(f"⏭️  Skipped (exists): {company_name}")
+                                    self.style.WARNING(
+                                        f"Skipped (exists): {company_name} ({company.exchange})"
+                                    )
                                 )
                                 skipped += 1
                         elif not dry_run:
-                            CSI300InvestmentSummary.objects.create(company=company, **summary_data)
+                            InvestmentSummary.objects.create(company=company, **summary_data)
                             created += 1
-                            self.stdout.write(self.style.SUCCESS(f"✅ Created: {company_name}"))
+                            self.stdout.write(
+                                self.style.SUCCESS(f"Created: {company_name} ({company.exchange})")
+                            )
                         else:
-                            self.stdout.write(f"📝 Would create: {company_name}")
+                            self.stdout.write(f"Would create: {company_name} ({company.exchange})")
                             created += 1
 
                     except Exception as e:
-                        self.stdout.write(
-                            self.style.ERROR(f"❌ Row {total} ({company_name}): {e!s}")
-                        )
-                        logger.exception("Failed to import {company_name}")
+                        self.stdout.write(self.style.ERROR(f"Row {total} ({company_name}): {e!s}"))
+                        logger.exception("Failed to import %s", company_name)
                         failed += 1
 
                 # Summary
-                self.stdout.write(self.style.SUCCESS("\n📊 Import Summary:"))
+                self.stdout.write(self.style.SUCCESS("\nImport Summary:"))
                 self.stdout.write(f"   Total rows: {total}")
-                self.stdout.write(self.style.SUCCESS(f"   ✅ Created: {created}"))
-                self.stdout.write(self.style.SUCCESS(f"   🔄 Updated: {updated}"))
-                self.stdout.write(self.style.WARNING(f"   ⏭️  Skipped: {skipped}"))
+                self.stdout.write(self.style.SUCCESS(f"   Created: {created}"))
+                self.stdout.write(self.style.SUCCESS(f"   Updated: {updated}"))
+                self.stdout.write(self.style.WARNING(f"   Skipped: {skipped}"))
                 if failed > 0:
-                    self.stdout.write(self.style.ERROR(f"   ❌ Failed: {failed}"))
+                    self.stdout.write(self.style.ERROR(f"   Failed: {failed}"))
 
                 if dry_run:
                     self.stdout.write(
-                        self.style.WARNING("\n🔍 DRY RUN COMPLETE - No changes were saved")
+                        self.style.WARNING("\nDRY RUN COMPLETE - No changes were saved")
                     )
 
         except FileNotFoundError:
-            self.stdout.write(self.style.ERROR(f"❌ File not found: {csv_file}"))
+            self.stdout.write(self.style.ERROR(f"File not found: {csv_file}"))
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"❌ Error reading CSV: {e!s}"))
+            self.stdout.write(self.style.ERROR(f"Error reading CSV: {e!s}"))
             logger.exception("CSV import error")

@@ -79,7 +79,10 @@ class BriefingScraperService:
 
                 logger.info(
                     "Page One scrape successful",
-                    extra={"content_length": len(content), "truncated": len(content) > self.MAX_CONTENT_LENGTH},
+                    extra={
+                        "content_length": len(content),
+                        "truncated": len(content) > self.MAX_CONTENT_LENGTH,
+                    },
                 )
                 return final_content
 
@@ -117,7 +120,10 @@ class BriefingScraperService:
 
                 logger.info(
                     "Stock Market Update scrape successful",
-                    extra={"content_length": len(full_content), "truncated": len(full_content) > self.MAX_CONTENT_LENGTH},
+                    extra={
+                        "content_length": len(full_content),
+                        "truncated": len(full_content) > self.MAX_CONTENT_LENGTH,
+                    },
                 )
                 return result
 
@@ -156,7 +162,10 @@ class BriefingScraperService:
 
                 logger.info(
                     "Bond Market Update scrape successful",
-                    extra={"content_length": len(full_content), "truncated": len(full_content) > self.MAX_CONTENT_LENGTH},
+                    extra={
+                        "content_length": len(full_content),
+                        "truncated": len(full_content) > self.MAX_CONTENT_LENGTH,
+                    },
                 )
                 return result
 

@@ -1,20 +1,33 @@
+"""
+CSI300 Serializers - Unified Company Architecture
+
+Serializers for the unified Company model supporting multiple exchanges.
+"""
+
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from .models import CSI300Company, CSI300HSharesCompany, CSI300InvestmentSummary, GenerationTask
+from .models import Company, GenerationTask, InvestmentSummary
+
+# TODO: Remove backward compatibility aliases after full migration to unified Company model
+CSI300Company = Company
+CSI300HSharesCompany = Company
+CSI300InvestmentSummary = InvestmentSummary
 
 
-class CSI300CompanySerializer(serializers.ModelSerializer):
-    """CSI300 Company serializer for API responses"""
+class CompanySerializer(serializers.ModelSerializer):
+    """Company serializer for API responses - includes all fields."""
 
     class Meta:
-        model = CSI300Company
+        model = Company
         fields = "__all__"
 
 
-CSI300_COMPANY_LIST_FIELDS = [
-    # Basic Information
+# Fields for list view - commonly used subset
+COMPANY_LIST_FIELDS = [
+    # Identification
     "id",
+    "exchange",
     "ticker",
     "name",
     "region",
@@ -30,6 +43,7 @@ CSI300_COMPANY_LIST_FIELDS = [
     "last_trade_date",
     # Market Data
     "price_local_currency",
+    "previous_close",
     "market_cap_local",
     "market_cap_usd",
     "price_52w_high",
@@ -88,59 +102,86 @@ CSI300_COMPANY_LIST_FIELDS = [
 ]
 
 
-class CSI300CompanyListSerializer(serializers.ModelSerializer):
-    """Serializer for company list view - includes all fields that exist in the database model"""
+class CompanyListSerializer(serializers.ModelSerializer):
+    """Serializer for company list view - includes commonly used fields."""
 
     class Meta:
-        model = CSI300Company
-        fields = CSI300_COMPANY_LIST_FIELDS
+        model = Company
+        fields = COMPANY_LIST_FIELDS
 
 
-class CSI300HSharesCompanySerializer(serializers.ModelSerializer):
-    """Serializer for H-shares company detail responses"""
+class FilterOptionsSerializer(serializers.Serializer):
+    """Serializer for filter options response."""
 
-    class Meta:
-        model = CSI300HSharesCompany
-        fields = "__all__"
+    exchanges = serializers.ListField(
+        child=serializers.CharField(),
+        help_text="Available exchange codes (SSE, SZSE, HKEX)",
+    )
+    regions = serializers.ListField(
+        child=serializers.CharField(),
+        required=False,
+        help_text="Available regions",
+    )
+    im_sectors = serializers.ListField(
+        child=serializers.CharField(),
+        help_text="Available IM sectors",
+    )
+    industries = serializers.ListField(
+        child=serializers.CharField(),
+        help_text="Available industries",
+    )
+    gics_industries = serializers.ListField(
+        child=serializers.CharField(),
+        help_text="Available GICS industries",
+    )
+    market_cap_range = serializers.DictField(
+        help_text="Market cap range (min/max)",
+    )
+    filtered_by_exchange = serializers.BooleanField(
+        required=False,
+        help_text="Whether filtered by exchange",
+    )
+    filtered_by_region = serializers.BooleanField(
+        required=False,
+        help_text="Whether filtered by region",
+    )
+    filtered_by_sector = serializers.BooleanField(
+        required=False,
+        help_text="Whether filtered by sector",
+    )
+    exchange_filter = serializers.CharField(
+        required=False,
+        allow_null=True,
+        help_text="Current exchange filter",
+    )
+    region_filter = serializers.CharField(
+        required=False,
+        allow_null=True,
+        help_text="Current region filter",
+    )
+    sector_filter = serializers.CharField(
+        required=False,
+        allow_null=True,
+        help_text="Current sector filter",
+    )
 
 
-class CSI300HSharesCompanyListSerializer(serializers.ModelSerializer):
-    """Serializer for H-shares list responses"""
-
-    class Meta:
-        model = CSI300HSharesCompany
-        fields = CSI300_COMPANY_LIST_FIELDS
-
-
-class CSI300FilterOptionsSerializer(serializers.Serializer):
-    """Serializer for filter options"""
-
-    regions = serializers.ListField(child=serializers.CharField(), required=False)
-    im_sectors = serializers.ListField(child=serializers.CharField())
-    industries = serializers.ListField(child=serializers.CharField())
-    gics_industries = serializers.ListField(child=serializers.CharField())
-    market_cap_range = serializers.DictField()
-    filtered_by_region = serializers.BooleanField(required=False)
-    filtered_by_sector = serializers.BooleanField(required=False)
-    region_filter = serializers.CharField(required=False, allow_null=True)
-    sector_filter = serializers.CharField(required=False, allow_null=True)
-
-
-class CSI300InvestmentSummarySerializer(serializers.ModelSerializer):
-    """CSI300 Investment Summary serializer"""
+class InvestmentSummarySerializer(serializers.ModelSerializer):
+    """Investment Summary serializer with company details."""
 
     company_name = serializers.CharField(source="company.name", read_only=True)
     company_ticker = serializers.CharField(source="company.ticker", read_only=True)
+    exchange = serializers.CharField(source="company.exchange", read_only=True)
     im_sector = serializers.CharField(source="company.im_sector", read_only=True)
     industry = serializers.CharField(source="company.industry", read_only=True)
 
     class Meta:
-        model = CSI300InvestmentSummary
+        model = InvestmentSummary
         fields = "__all__"
 
 
-class CSI300IndustryPeersComparisonSerializer(serializers.ModelSerializer):
-    """Serializer for industry peers comparison data (single item)"""
+class IndustryPeersComparisonSerializer(serializers.ModelSerializer):
+    """Serializer for industry peers comparison data (single item)."""
 
     market_cap_display = serializers.SerializerMethodField()
     pe_ratio_display = serializers.SerializerMethodField()
@@ -150,9 +191,10 @@ class CSI300IndustryPeersComparisonSerializer(serializers.ModelSerializer):
     operating_margin_display = serializers.SerializerMethodField()
 
     class Meta:
-        model = CSI300Company
+        model = Company
         fields = [
             "id",
+            "exchange",
             "ticker",
             "name",
             "im_sector",
@@ -171,7 +213,7 @@ class CSI300IndustryPeersComparisonSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(str)
     def get_market_cap_display(self, obj):
-        """Format market cap for display"""
+        """Format market cap for display."""
         if obj.market_cap_local:
             if obj.market_cap_local >= 1000000000000:  # Trillion
                 return f"{obj.market_cap_local / 1000000000000:.2f}T"
@@ -184,67 +226,63 @@ class CSI300IndustryPeersComparisonSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(str)
     def get_pe_ratio_display(self, obj):
-        """Format P/E ratio for display"""
+        """Format P/E ratio for display."""
         if obj.pe_ratio_trailing:
             return f"{obj.pe_ratio_trailing:.2f}"
         return "N/A"
 
     @extend_schema_field(str)
     def get_pb_ratio_display(self, obj):
-        """Calculate and format P/B ratio for display"""
-        # Note: P/B ratio calculation would need book value per share
-        # For now, return placeholder
+        """Calculate and format P/B ratio for display."""
         return "N/A"
 
     @extend_schema_field(str)
     def get_roe_display(self, obj):
-        """Format ROE for display"""
+        """Format ROE for display."""
         if obj.roe_trailing:
             return f"{obj.roe_trailing:.2f}%"
         return "N/A"
 
     @extend_schema_field(str)
     def get_revenue_growth_display(self, obj):
-        """Calculate revenue growth for display"""
-        # Revenue growth calculation would need historical data
-        # For now, return placeholder
+        """Calculate revenue growth for display."""
         return "N/A"
 
     @extend_schema_field(str)
     def get_operating_margin_display(self, obj):
-        """Format Operating Margin for display"""
+        """Format Operating Margin for display."""
         if obj.operating_margin_trailing:
             return f"{obj.operating_margin_trailing:.2f}%"
         return "N/A"
 
 
-class CSI300PeerComparisonItemSerializer(CSI300IndustryPeersComparisonSerializer):
-    """Serializer for a single peer comparison item with extra fields"""
+class PeerComparisonItemSerializer(IndustryPeersComparisonSerializer):
+    """Serializer for a single peer comparison item with extra fields."""
 
     rank = serializers.IntegerField(read_only=True)
     is_current_company = serializers.BooleanField(read_only=True)
 
-    class Meta(CSI300IndustryPeersComparisonSerializer.Meta):
+    class Meta(IndustryPeersComparisonSerializer.Meta):
         fields = [
-            *CSI300IndustryPeersComparisonSerializer.Meta.fields,
+            *IndustryPeersComparisonSerializer.Meta.fields,
             "rank",
             "is_current_company",
         ]
 
 
-class CSI300PeerComparisonResponseSerializer(serializers.Serializer):
-    """Serializer for the full peer comparison response"""
+class PeerComparisonResponseSerializer(serializers.Serializer):
+    """Serializer for the full peer comparison response."""
 
-    target_company = CSI300PeerComparisonItemSerializer()
+    target_company = PeerComparisonItemSerializer()
     industry = serializers.CharField()
-    comparison_data = CSI300PeerComparisonItemSerializer(many=True)
+    comparison_data = PeerComparisonItemSerializer(many=True)
     total_top_companies_shown = serializers.IntegerField()
     total_companies_in_industry = serializers.IntegerField()
 
 
-# ============================================
+# =============================================================================
 # Generation Task Serializers (异步任务相关)
-# ============================================
+# =============================================================================
 
 
 class TaskStatusEnum(serializers.ChoiceField):
@@ -314,6 +352,10 @@ class GenerationTaskStatusResponseSerializer(serializers.Serializer):
     company_id = serializers.IntegerField(help_text="公司 ID")
     company_name = serializers.CharField(help_text="公司名称")
     company_ticker = serializers.CharField(help_text="公司股票代码")
+    exchange = serializers.CharField(
+        help_text="交易所代码 (SSE, SZSE, HKEX)",
+        required=False,
+    )
     created_at = serializers.DateTimeField(help_text="任务创建时间")
     updated_at = serializers.DateTimeField(help_text="任务最后更新时间")
     completed_at = serializers.DateTimeField(
@@ -331,3 +373,38 @@ class GenerationTaskStatusResponseSerializer(serializers.Serializer):
         allow_null=True,
         help_text="错误消息 (仅当 task_status='failed' 时返回)",
     )
+
+
+# =============================================================================
+# Backward Compatibility Aliases (Deprecated)
+# =============================================================================
+
+# Deprecated: Use CompanySerializer instead
+CSI300CompanySerializer = CompanySerializer
+
+# Deprecated: Use CompanyListSerializer instead
+CSI300CompanyListSerializer = CompanyListSerializer
+
+# Deprecated: Use CompanyListSerializer instead (H-shares now identified by exchange='HKEX')
+CSI300HSharesCompanySerializer = CompanySerializer
+
+# Deprecated: Use CompanyListSerializer instead
+CSI300HSharesCompanyListSerializer = CompanyListSerializer
+
+# Deprecated: Use FilterOptionsSerializer instead
+CSI300FilterOptionsSerializer = FilterOptionsSerializer
+
+# Deprecated: Use InvestmentSummarySerializer instead
+CSI300InvestmentSummarySerializer = InvestmentSummarySerializer
+
+# Deprecated: Use IndustryPeersComparisonSerializer instead
+CSI300IndustryPeersComparisonSerializer = IndustryPeersComparisonSerializer
+
+# Deprecated: Use PeerComparisonItemSerializer instead
+CSI300PeerComparisonItemSerializer = PeerComparisonItemSerializer
+
+# Deprecated: Use PeerComparisonResponseSerializer instead
+CSI300PeerComparisonResponseSerializer = PeerComparisonResponseSerializer
+
+# For backward compatibility - old field list name
+CSI300_COMPANY_LIST_FIELDS = COMPANY_LIST_FIELDS

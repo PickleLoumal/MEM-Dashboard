@@ -7,8 +7,8 @@ import type { ColumnChangeData, ColumnDefinition } from '@shared/components/Colu
 import {
   Csi300Service,
   OpenAPI,
-  type CSI300FilterOptions,
-  type CSI300CompanyList,
+  type FilterOptions,
+  type CompanyList,
 } from '@shared/api/generated';
 import '@shared/styles/main.css';
 import './styles.css';
@@ -26,7 +26,7 @@ type Filters = {
   industry: string;
   company_search: string;
   industry_search: string;
-  region: string;
+  exchange: string; // SSE, SZSE, HKEX
 };
 
 // Column type now imported from types.ts
@@ -35,26 +35,31 @@ const DEFAULT_COLUMNS = columnManifest.columns.filter(col => col.defaultVisible)
 
 const SEARCH_DEBOUNCE_MS = 300;
 
-function deriveRegions(data: CSI300FilterOptions | null): string[] {
-  if (!data?.regions?.length) {
-    return ['Mainland China', 'Hong Kong'];
+function deriveExchanges(data: FilterOptions | null): string[] {
+  if (!data?.exchanges?.length) {
+    return ['SSE', 'SZSE', 'HKEX'];
   }
-  return [...new Set(data.regions.filter(Boolean))].sort((a, b) =>
-    a.toLowerCase().localeCompare(b.toLowerCase())
-  );
+  return [...new Set(data.exchanges.filter(Boolean))].sort();
 }
 
-function deriveSectors(data: CSI300FilterOptions | null): string[] {
+// Exchange display names
+const EXCHANGE_LABELS: Record<string, string> = {
+  'SSE': '上海证券交易所 (SSE)',
+  'SZSE': '深圳证券交易所 (SZSE)',
+  'HKEX': '香港交易所 (HKEX)',
+};
+
+function deriveSectors(data: FilterOptions | null): string[] {
   if (!data) return [];
   return data.im_sectors || [];
 }
 
-function deriveIndustries(data: CSI300FilterOptions | null): string[] {
+function deriveIndustries(data: FilterOptions | null): string[] {
   if (!data) return [];
   return data.industries || [];
 }
 
-function renderCellValue(column: ColumnDefinition, company: CSI300CompanyList): React.ReactNode {
+function renderCellValue(column: ColumnDefinition, company: CompanyList): React.ReactNode {
   const field = FieldMap[column.id] || column.id;
   let rawValue = (company as Record<string, unknown>)[field];
 
@@ -67,9 +72,13 @@ function renderCellValue(column: ColumnDefinition, company: CSI300CompanyList): 
     return <span style={{ color: '#9ca3af' }}>-</span>;
   }
 
+  if (column.id === 'exchange') {
+    const { label, attr } = getExchangeBadge(rawValue as string);
+    return <span className="exchange-badge" data-exchange={attr}>{label}</span>;
+  }
+
   if (column.id === 'region') {
-    const { label, attr } = getRegionBadge(rawValue as string);
-    return <span className="region-badge" data-region={attr}>{label}</span>;
+    return <span className="region-text">{rawValue as string}</span>;
   }
 
   // Apply column-specific formatting
@@ -102,12 +111,14 @@ function renderCellValue(column: ColumnDefinition, company: CSI300CompanyList): 
   return formatted;
 }
 
-function getRegionBadge(region?: string) {
-  if (!region) return { label: 'All Regions', attr: 'all' };
-  const normalized = region.toLowerCase();
-  if (normalized.includes('hong')) return { label: 'Hong Kong', attr: 'hong-kong' };
-  if (normalized.includes('china')) return { label: 'Mainland China', attr: 'mainland-china' };
-  return { label: region, attr: 'unknown' };
+function getExchangeBadge(exchange?: string) {
+  if (!exchange) return { label: 'All Exchanges', attr: 'all' };
+  switch (exchange) {
+    case 'SSE': return { label: 'SSE', attr: 'sse' };
+    case 'SZSE': return { label: 'SZSE', attr: 'szse' };
+    case 'HKEX': return { label: 'HKEX', attr: 'hkex' };
+    default: return { label: exchange, attr: 'unknown' };
+  }
 }
 
 // Pagination component
@@ -154,18 +165,18 @@ function BrowserPage() {
     industry: '',
     company_search: '',
     industry_search: '',
-    region: ''
+    exchange: ''
   });
   const [pendingCompanySearch, setPendingCompanySearch] = useState('');
   const [pendingIndustrySearch, setPendingIndustrySearch] = useState('');
   const searchDebounceRef = useRef<number | null>(null);
   const industrySearchDebounceRef = useRef<number | null>(null);
-  const [filterData, setFilterData] = useState<CSI300FilterOptions | null>(null);
+  const [filterData, setFilterData] = useState<FilterOptions | null>(null);
   const [industryOptions, setIndustryOptions] = useState<string[]>([]);
-  const [regions, setRegions] = useState<string[]>([]);
+  const [exchanges, setExchanges] = useState<string[]>([]);
   const [loadingFilters, setLoadingFilters] = useState(false);
 
-  const [companies, setCompanies] = useState<CSI300CompanyList[]>([]);
+  const [companies, setCompanies] = useState<CompanyList[]>([]);
   const [totalResults, setTotalResults] = useState(0);
   const [page, setPage] = useState(1);
   const pageSize = 20;
@@ -191,7 +202,7 @@ function BrowserPage() {
       industry: params.get('industry') || params.get('sub_industry') || '',
       company_search: params.get('company_search') || params.get('search') || '',
       industry_search: params.get('industry_search') || '',
-      region: params.get('region') || ''
+      exchange: params.get('exchange') || ''
     };
     setFilters(next);
     setPendingCompanySearch(next.company_search);
@@ -204,14 +215,15 @@ function BrowserPage() {
     setLoadingFilters(true);
 
     Csi300Service.apiCsi300ApiCompaniesFilterOptionsRetrieve(
+      (filters.exchange as 'SSE' | 'SZSE' | 'HKEX' | undefined) || undefined,
       filters.im_sector || undefined,
-      undefined // region
+      undefined // TODO: Remove legacy region parameter after full migration to exchange
     )
       .then((data) => {
         if (ignore) return;
         setFilterData(data);
         setIndustryOptions(deriveIndustries(data));
-        setRegions(deriveRegions(data));
+        setExchanges(deriveExchanges(data));
       })
       .catch((err) => {
         if (ignore) return;
@@ -225,7 +237,7 @@ function BrowserPage() {
     return () => {
       ignore = true;
     };
-  }, [filters.im_sector]);
+  }, [filters.im_sector, filters.exchange]);
 
   // Fetch companies using generated API
   useEffect(() => {
@@ -233,20 +245,20 @@ function BrowserPage() {
     setLoading(true);
     setError(null);
 
-    // Clean region value (remove count suffix like "Hong Kong (123)")
-    const cleanRegion = filters.region ? filters.region.replace(/\s*\(.*\)$/, '') : undefined;
-
+    // API parameter order: exchange, gicsIndustry, imSector, industry, industrySearch, 
+    // marketCapMax, marketCapMin, page, pageSize, region, search
     Csi300Service.apiCsi300ApiCompaniesList(
+      (filters.exchange as 'SSE' | 'SZSE' | 'HKEX' | undefined) || undefined, // exchange
       undefined, // gicsIndustry
-      filters.im_sector || undefined,
-      filters.industry || undefined,
-      filters.industry_search || undefined,
+      filters.im_sector || undefined, // imSector
+      filters.industry || undefined, // industry
+      filters.industry_search || undefined, // industrySearch
       undefined, // marketCapMax
       undefined, // marketCapMin
-      page,
-      pageSize,
-      cleanRegion,
-      filters.company_search || undefined
+      page, // page
+      pageSize, // pageSize
+      undefined, // TODO: Remove legacy region parameter after full migration to exchange
+      filters.company_search || undefined // search
     )
       .then((res) => {
         if (ignore) return;
@@ -282,12 +294,13 @@ function BrowserPage() {
     try {
       setLoadingFilters(true);
       const res = await Csi300Service.apiCsi300ApiCompaniesFilterOptionsRetrieve(
+        (filters.exchange as 'SSE' | 'SZSE' | 'HKEX' | undefined) || undefined,
         value || undefined,
-        undefined
+        undefined // TODO: Remove legacy region parameter after full migration to exchange
       );
       setFilterData(res);
       setIndustryOptions(deriveIndustries(res));
-      setRegions(deriveRegions(res));
+      setExchanges(deriveExchanges(res));
     } catch (err) {
       console.error('Sector change load failed', err);
     } finally {
@@ -310,7 +323,7 @@ function BrowserPage() {
   };
 
   const handleClear = () => {
-    setFilters({ im_sector: '', industry: '', company_search: '', industry_search: '', region: '' });
+    setFilters({ im_sector: '', industry: '', company_search: '', industry_search: '', exchange: '' });
     setPendingCompanySearch('');
     setPendingIndustrySearch('');
     setPage(1);
@@ -382,21 +395,21 @@ function BrowserPage() {
             </div>
 
             <div className="filter-group app-form-field">
-              <label className="filter-label app-label">Region</label>
+              <label className="filter-label app-label">Exchange</label>
               <select
-                name="region"
-                value={filters.region}
-                onChange={onFilterChange('region')}
+                name="exchange"
+                value={filters.exchange}
+                onChange={onFilterChange('exchange')}
                 className="filter-select app-select"
               >
-                <option value="">All Regions</option>
-                {regions.map((region) => (
-                  <option key={region} value={region}>
-                    {region}
+                <option value="">All Exchanges</option>
+                {exchanges.map((exchange) => (
+                  <option key={exchange} value={exchange}>
+                    {EXCHANGE_LABELS[exchange] || exchange}
                   </option>
                 ))}
               </select>
-              <p className="filter-help">Hong Kong reflects the latest H-shares dataset.</p>
+              <p className="filter-help">Filter by stock exchange: SSE (Shanghai), SZSE (Shenzhen), HKEX (Hong Kong)</p>
             </div>
 
             <div className="filter-group app-form-field">
@@ -460,9 +473,9 @@ function BrowserPage() {
             </div>
             <div className="results-meta">
               {(() => {
-                const badge = getRegionBadge(filters.region);
+                const badge = getExchangeBadge(filters.exchange);
                 return (
-                  <span className="region-badge" data-region={badge.attr}>
+                  <span className="exchange-badge" data-exchange={badge.attr}>
                     {badge.label}
                   </span>
                 );
