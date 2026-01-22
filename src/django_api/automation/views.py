@@ -84,14 +84,25 @@ class AutomationTaskViewSet(
                 response=ErrorResponseSerializer, description="Invalid request parameters"
             ),
         },
-        description="Trigger only Stage 1 (Scraping from Briefing.com to Google Sheets)",
+        description="Trigger only Stage 1 (Scraping from Briefing.com to database). "
+        "By default, scrape_only=True so Stage 2 will NOT be triggered. "
+        "Set scrape_only=False to auto-trigger Stage 2 after 10 minutes.",
         tags=["automation"],
     )
     @action(detail=False, methods=["post"], url_path="daily-briefing/scrape")
     def trigger_daily_briefing_scrape(self, request):
-        """Trigger only Stage 1 (Scraping)"""
+        """Trigger only Stage 1 (Scraping)
+
+        By default, this endpoint only runs scraping (scrape_only=True).
+        Stage 2 will NOT be automatically triggered.
+
+        To enable auto-triggering of Stage 2, pass {"scrape_only": false} in the request body.
+        """
         serializer = DailyBriefingTriggerSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        # Default to scrape_only=True for this endpoint (unless explicitly set to False)
+        scrape_only = serializer.validated_data.get("scrape_only", True)
 
         task = AutomationTask.objects.create(
             task_type="daily_briefing",
@@ -100,12 +111,16 @@ class AutomationTaskViewSet(
         )
 
         logger.info(
-            "Daily Briefing scrape-only task created",
-            extra={"task_id": str(task.id), "task_type": "daily_briefing_scrape"},
+            "Daily Briefing scrape task created",
+            extra={
+                "task_id": str(task.id),
+                "task_type": "daily_briefing_scrape",
+                "scrape_only": scrape_only,
+            },
         )
 
-        # Trigger Celery task
-        celery_task = run_daily_briefing_scraper.delay(str(task.id))
+        # Trigger Celery task with scrape_only parameter
+        celery_task = run_daily_briefing_scraper.delay(str(task.id), scrape_only=scrape_only)
 
         task.celery_task_id = celery_task.id
         task.save()

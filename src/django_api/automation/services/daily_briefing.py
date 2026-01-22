@@ -1,10 +1,14 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
+from zoneinfo import ZoneInfo
 
 from observability import get_logger
+
+# Hong Kong timezone for consistent date handling
+HKT = ZoneInfo("Asia/Hong_Kong")
 
 from ..models import DailyBriefingData, DailyBriefingReport
 from ..prompts import get_daily_briefing_prompt, get_quick_version_prompt
@@ -84,6 +88,19 @@ class DailyBriefingService:
             )
             return None
 
+        # Log content length before save
+        content_length_before = len(content)
+        logger.info(
+            "Saving report to database",
+            extra={
+                "date": str(target_date),
+                "report_type": report_type,
+                "content_length_before_save": content_length_before,
+                "content_preview_start": content[:100] if content else "",
+                "content_preview_end": content[-100:] if content else "",
+            },
+        )
+
         try:
             report, created = DailyBriefingReport.objects.update_or_create(
                 date=target_date,
@@ -95,14 +112,32 @@ class DailyBriefingService:
                 },
             )
             action = "created" if created else "updated"
+
+            # Verify content after save by re-reading from database
+            report.refresh_from_db()
+            content_length_after = len(report.content)
+
             logger.info(
                 f"Report {action} in database",
                 extra={
                     "date": str(target_date),
                     "report_type": report_type,
                     "report_id": report.id,
+                    "content_length_before_save": content_length_before,
+                    "content_length_after_save": content_length_after,
+                    "content_truncated": content_length_after < content_length_before,
                 },
             )
+
+            if content_length_after < content_length_before:
+                logger.error(
+                    "CONTENT TRUNCATION DETECTED during database save!",
+                    extra={
+                        "report_type": report_type,
+                        "lost_characters": content_length_before - content_length_after,
+                    },
+                )
+
             return report
         except Exception as e:
             logger.exception(
@@ -131,7 +166,9 @@ class DailyBriefingService:
         Raises:
             ValueError: If data read or report generation fails.
         """
-        today_date = date.today()
+        # Use Hong Kong time for consistent date handling
+        now_hkt = datetime.now(HKT)
+        today_date = now_hkt.date()
         today_str = today_date.strftime("%Y-%m-%d")
         result_urls = {}
 
@@ -153,6 +190,8 @@ class DailyBriefingService:
         prompt = get_daily_briefing_prompt()
         full_prompt = prompt + f"\n\n[Additional Context from Briefing.com]:\n{briefing_data}\n"
 
+        # Don't set max_tokens - let the API decide the natural output length
+        # Setting max_tokens can cause premature truncation (see original script for comparison)
         long_content = self.perplexity_client.generate_report(full_prompt)
 
         if not long_content:
@@ -193,6 +232,7 @@ class DailyBriefingService:
         logger.info("Generating Quick Version report (5-page summary)")
         summarize_prompt = get_quick_version_prompt(long_content)
 
+        # Quick Version is a shorter summary (~5 pages), also no max_tokens limit
         quick_content = self.perplexity_client.generate_report(summarize_prompt)
 
         if quick_content:

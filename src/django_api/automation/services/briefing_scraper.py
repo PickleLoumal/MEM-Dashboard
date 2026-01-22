@@ -1,5 +1,6 @@
 import time
 from datetime import date, datetime
+from zoneinfo import ZoneInfo
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -11,9 +12,16 @@ from ..models import DailyBriefingData
 
 logger = get_logger(__name__)
 
+# Hong Kong timezone for consistent date handling
+HKT = ZoneInfo("Asia/Hong_Kong")
+
 
 class BriefingScraperService:
     """Service for scraping Briefing.com and storing data in the database"""
+
+    # Maximum content length per page (characters)
+    # Set high enough to capture full content without truncation
+    MAX_CONTENT_LENGTH = 50000
 
     def __init__(self):
         self.page_one_url = "https://www.briefing.com/page-one"
@@ -64,12 +72,15 @@ class BriefingScraperService:
             content = app_root.text
 
             if content and len(content) > 100:
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                timestamp = datetime.now(HKT).strftime("%Y-%m-%d %H:%M:%S HKT")
                 final_content = f"=== Daily Briefing Page One - {timestamp} ===\n"
                 final_content += f"Source: {self.page_one_url}\n\n"
-                final_content += content[:5000]
+                final_content += content[: self.MAX_CONTENT_LENGTH]
 
-                logger.info("Page One scrape successful", extra={"content_length": len(content)})
+                logger.info(
+                    "Page One scrape successful",
+                    extra={"content_length": len(content), "truncated": len(content) > self.MAX_CONTENT_LENGTH},
+                )
                 return final_content
 
             logger.warning("Page One content empty or too short")
@@ -100,12 +111,13 @@ class BriefingScraperService:
             full_content = app_root.text
 
             if full_content:
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                result = f"=== Stock Market Update - {timestamp} ===\n{full_content[:5000]}"
+                timestamp = datetime.now(HKT).strftime("%Y-%m-%d %H:%M:%S HKT")
+                truncated_content = full_content[: self.MAX_CONTENT_LENGTH]
+                result = f"=== Stock Market Update - {timestamp} ===\n{truncated_content}"
 
                 logger.info(
                     "Stock Market Update scrape successful",
-                    extra={"content_length": len(full_content)},
+                    extra={"content_length": len(full_content), "truncated": len(full_content) > self.MAX_CONTENT_LENGTH},
                 )
                 return result
 
@@ -138,12 +150,13 @@ class BriefingScraperService:
             full_content = app_root.text
 
             if full_content:
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                result = f"=== Bond Market Update - {timestamp} ===\n{full_content[:5000]}"
+                timestamp = datetime.now(HKT).strftime("%Y-%m-%d %H:%M:%S HKT")
+                truncated_content = full_content[: self.MAX_CONTENT_LENGTH]
+                result = f"=== Bond Market Update - {timestamp} ===\n{truncated_content}"
 
                 logger.info(
                     "Bond Market Update scrape successful",
-                    extra={"content_length": len(full_content)},
+                    extra={"content_length": len(full_content), "truncated": len(full_content) > self.MAX_CONTENT_LENGTH},
                 )
                 return result
 
@@ -211,7 +224,8 @@ class BriefingScraperService:
             True if at least one page was successfully scraped and saved.
         """
         success_count = 0
-        today = date.today()
+        # Use Hong Kong time for consistent date handling
+        today = datetime.now(HKT).date()
 
         try:
             logger.info("Starting Briefing.com scraping workflow", extra={"date": str(today)})

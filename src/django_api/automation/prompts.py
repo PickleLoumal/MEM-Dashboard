@@ -5,6 +5,11 @@ This module contains all the prompt templates used by the automation services.
 """
 
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
+# Timezone definitions
+HKT = ZoneInfo("Asia/Hong_Kong")
+ET = ZoneInfo("America/New_York")
 
 
 def get_daily_briefing_prompt(sheet_url: str = None) -> str:
@@ -17,8 +22,13 @@ def get_daily_briefing_prompt(sheet_url: str = None) -> str:
     Returns:
         The complete prompt string with current date
     """
-    today_hkt = datetime.now().strftime("%B %d, %Y")
-    today_et = datetime.now().strftime("%B %d, %Y")  # Simplified; in production, handle timezone
+    # Get current time in Hong Kong timezone
+    now_hkt = datetime.now(HKT)
+    now_et = datetime.now(ET)
+
+    # Format: "Monday, January 20, 2026, 05:35 HKT"
+    today_hkt = now_hkt.strftime("%A, %B %d, %Y, %H:%M HKT")
+    today_et = now_et.strftime("%A, %B %d, %Y, %H:%M ET")
 
     default_sheet_url = "https://docs.google.com/spreadsheets/d/1cS4iSRck__DHXh1U7PfqfSmVxc_Aa_Tw2qbs35wI4i4/edit?gid=0#gid=0"
     sheet_url = sheet_url or default_sheet_url
@@ -403,7 +413,7 @@ def get_forensic_accounting_prompt(
     Returns:
         The complete forensic accounting prompt
     """
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now(HKT).strftime("%Y-%m-%d")
     return FORENSIC_ACCOUNTING_PROMPT_TEMPLATE.format(
         company=company,
         ticker=ticker,

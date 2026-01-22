@@ -60,11 +60,10 @@ class AutomationTaskSerializer(serializers.ModelSerializer):
 class DailyBriefingTriggerSerializer(serializers.Serializer):
     """Request serializer for triggering Daily Briefing workflow"""
 
-    # No parameters needed for now, but structure is ready for future options
-    skip_scraping = serializers.BooleanField(
+    scrape_only = serializers.BooleanField(
         required=False,
         default=False,
-        help_text="If true, skip Stage 1 scraping and proceed directly to report generation",
+        help_text="If true, only run Stage 1 (scraping) without triggering Stage 2 (AI generation)",
     )
 
 

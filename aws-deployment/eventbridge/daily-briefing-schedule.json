@@ -1,0 +1,31 @@
+{
+  "Name": "daily-briefing-schedule",
+  "Description": "Trigger Daily Briefing automation at 09:00 HKT (01:00 UTC) on weekdays",
+  "ScheduleExpression": "cron(0 1 ? * MON-FRI *)",
+  "State": "ENABLED",
+  "EventBusName": "default",
+  "Tags": [
+    {
+      "Key": "Project",
+      "Value": "ALFIE"
+    },
+    {
+      "Key": "Service",
+      "Value": "automation"
+    },
+    {
+      "Key": "Purpose",
+      "Value": "DailyBriefing"
+    },
+    {
+      "Key": "Environment",
+      "Value": "production"
+    }
+  ],
+  "_comment": {
+    "aws_region": "ap-east-1",
+    "aws_account_id": "952189540759",
+    "target_api": "https://d3ex2kglhlhbyr.cloudfront.net/api/automation/tasks/daily-briefing/trigger/",
+    "timezone_note": "cron uses UTC. 01:00 UTC = 09:00 HKT (Asia/Hong_Kong)"
+  }
+}

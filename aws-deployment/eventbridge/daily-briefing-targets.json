@@ -1,0 +1,18 @@
+[
+  {
+    "Id": "daily-briefing-api-trigger",
+    "Arn": "arn:aws:events:ap-east-1:952189540759:api-destination/alfie-django-api/*",
+    "RoleArn": "arn:aws:iam::952189540759:role/EventBridgeAutomationRole",
+    "HttpParameters": {
+      "HeaderParameters": {
+        "Content-Type": "application/json",
+        "X-EventBridge-Source": "daily-briefing-schedule"
+      }
+    },
+    "Input": "{\"triggered_by\": \"eventbridge\", \"schedule_name\": \"daily-briefing-schedule\"}",
+    "RetryPolicy": {
+      "MaximumEventAgeInSeconds": 3600,
+      "MaximumRetryAttempts": 3
+    }
+  }
+]

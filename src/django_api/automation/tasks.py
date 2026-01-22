@@ -13,10 +13,14 @@ STAGE2_DELAY_SECONDS = getattr(settings, "DAILY_BRIEFING_STAGE2_DELAY", 600)  # 
 
 
 @shared_task(bind=True, max_retries=2)
-def run_daily_briefing_scraper(self, task_id: str):
+def run_daily_briefing_scraper(self, task_id: str, scrape_only: bool = False):
     """
     Stage 1: Scrape Briefing.com and write to database.
-    Upon completion, automatically schedules Stage 2 with a 10-minute delay.
+
+    Args:
+        task_id: The AutomationTask ID
+        scrape_only: If True, only run scraping without scheduling Stage 2.
+                     If False (default), automatically schedule Stage 2 after 10-minute delay.
     """
     from .services.briefing_scraper import BriefingScraperService
 
@@ -29,32 +33,48 @@ def run_daily_briefing_scraper(self, task_id: str):
 
         logger.info(
             "Starting Daily Briefing Stage 1 (Scraping)",
-            extra={"task_id": task_id, "celery_task_id": self.request.id},
+            extra={
+                "task_id": task_id,
+                "celery_task_id": self.request.id,
+                "scrape_only": scrape_only,
+            },
         )
 
         service = BriefingScraperService()
         service.run()
 
-        # Update status to waiting for Stage 2
-        task.status = "waiting_stage2"
         task.stage1_completed_at = timezone.now()
 
-        # Calculate scheduled time for Stage 2
-        scheduled_time = timezone.now() + timezone.timedelta(seconds=STAGE2_DELAY_SECONDS)
-        task.stage2_scheduled_at = scheduled_time
-        task.save()
+        if scrape_only:
+            # Scrape only mode: mark as completed, don't schedule Stage 2
+            task.status = "completed"
+            task.completed_at = timezone.now()
+            task.save()
 
-        logger.info(
-            "Daily Briefing Stage 1 completed, scheduling Stage 2",
-            extra={
-                "task_id": task_id,
-                "stage2_delay_seconds": STAGE2_DELAY_SECONDS,
-                "stage2_scheduled_at": scheduled_time.isoformat(),
-            },
-        )
+            logger.info(
+                "Daily Briefing Stage 1 completed (scrape_only mode, Stage 2 skipped)",
+                extra={"task_id": task_id},
+            )
+        else:
+            # Full mode: schedule Stage 2 with delay
+            task.status = "waiting_stage2"
 
-        # Schedule Stage 2 with delay
-        run_daily_briefing_generator.apply_async(args=[task_id], countdown=STAGE2_DELAY_SECONDS)
+            # Calculate scheduled time for Stage 2
+            scheduled_time = timezone.now() + timezone.timedelta(seconds=STAGE2_DELAY_SECONDS)
+            task.stage2_scheduled_at = scheduled_time
+            task.save()
+
+            logger.info(
+                "Daily Briefing Stage 1 completed, scheduling Stage 2",
+                extra={
+                    "task_id": task_id,
+                    "stage2_delay_seconds": STAGE2_DELAY_SECONDS,
+                    "stage2_scheduled_at": scheduled_time.isoformat(),
+                },
+            )
+
+            # Schedule Stage 2 with delay
+            run_daily_briefing_generator.apply_async(args=[task_id], countdown=STAGE2_DELAY_SECONDS)
 
     except AutomationTask.DoesNotExist:
         logger.error("Task not found for Daily Briefing scraper", extra={"task_id": task_id})
@@ -70,11 +90,15 @@ def run_daily_briefing_scraper(self, task_id: str):
         raise
 
 
-@shared_task(bind=True, max_retries=2, soft_time_limit=2700, time_limit=3600)
+@shared_task(bind=True, max_retries=2, soft_time_limit=3600, time_limit=4200)
 def run_daily_briefing_generator(self, task_id: str):
     """
     Stage 2: Read from database, generate AI report, upload to Drive.
-    Requires longer timeout as Perplexity Deep Research may take 15-30 minutes.
+    Requires longer timeout as Perplexity Deep Research may take 30-60 minutes.
+
+    Timeouts:
+    - soft_time_limit=3600 (60 min): raises SoftTimeLimitExceeded
+    - time_limit=4200 (70 min): hard kill
     """
     from .services.daily_briefing import DailyBriefingService
 

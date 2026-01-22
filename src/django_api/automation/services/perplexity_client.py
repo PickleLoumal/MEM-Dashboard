@@ -28,6 +28,7 @@ class PerplexityClient:
         self,
         prompt: str,
         model: str = "sonar-deep-research",
+        max_tokens: int | None = None,
         max_retries: int = 3,
         timeout: int = 3600,
     ) -> str | None:
@@ -37,6 +38,7 @@ class PerplexityClient:
         Args:
             prompt: The prompt to send to the API.
             model: The model to use (default: sonar-deep-research).
+            max_tokens: Maximum tokens in response. If None, API uses default (may truncate long outputs).
             max_retries: Maximum number of retry attempts.
             timeout: Request timeout in seconds (default: 1 hour for deep research).
 
@@ -59,6 +61,10 @@ class PerplexityClient:
             ],
         }
 
+        # Add max_tokens if specified (prevents output truncation)
+        if max_tokens is not None:
+            data["max_tokens"] = max_tokens
+
         for attempt in range(max_retries):
             try:
                 logger.info(
@@ -76,14 +82,37 @@ class PerplexityClient:
                 result = response.json()
 
                 if result and "choices" in result and len(result["choices"]) > 0:
-                    content = result["choices"][0]["message"]["content"]
+                    choice = result["choices"][0]
+                    content = choice["message"]["content"]
+                    finish_reason = choice.get("finish_reason", "unknown")
+
                     # Remove <think> tags if present (internal reasoning)
                     content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL)
 
+                    # Log usage info if available (helps diagnose token limits)
+                    usage = result.get("usage", {})
+
+                    # Log finish_reason to detect truncation
+                    # "stop" = normal completion, "length" = truncated due to max_tokens
                     logger.info(
                         "Perplexity API call successful",
-                        extra={"response_length": len(content), "model": model},
+                        extra={
+                            "response_length": len(content),
+                            "model": model,
+                            "finish_reason": finish_reason,
+                            "truncated_by_tokens": finish_reason == "length",
+                            "prompt_tokens": usage.get("prompt_tokens"),
+                            "completion_tokens": usage.get("completion_tokens"),
+                            "total_tokens": usage.get("total_tokens"),
+                        },
                     )
+
+                    if finish_reason == "length":
+                        logger.warning(
+                            "Perplexity API output was TRUNCATED due to max_tokens limit!",
+                            extra={"response_length": len(content)},
+                        )
+
                     return content.strip()
                 raise ValueError("Invalid API response format: missing 'choices' field")
 
