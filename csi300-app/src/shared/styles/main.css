@@ -298,7 +298,26 @@ textarea {
   color: var(--app-text-subtle);
 }
 
-/* ===== 响应式布局 ===== */
+/* Beta Tag for Page Titles */
+.app-beta-tag {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 12px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--app-text-subtle);
+  background: transparent;
+  border: 1px solid var(--app-border);
+  border-radius: 6px;
+  line-height: 1.4;
+  position: relative;
+  top: -2px;
+}
+
+/* 响应式布局 */
 @media (max-width: 1024px) {
   .app-shell {
     margin-top: 72px;

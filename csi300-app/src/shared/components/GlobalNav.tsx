@@ -323,6 +323,7 @@ export function GlobalNav({ companyContext }: GlobalNavProps) {
       <div className="globalnav-content">
         <a href={resolveLink('index.html')} className="globalnav-brand">
           Chinese Stock Dashboard
+          <span className="globalnav-beta-tag">Beta</span>
         </a>
 
         <ul className="globalnav-list">

@@ -245,7 +245,7 @@ function BrowserPage() {
     setLoading(true);
     setError(null);
 
-    // API parameter order: exchange, gicsIndustry, imSector, industry, industrySearch, 
+    // API parameter order: exchange, gicsIndustry, imSector, industry, industrySearch,
     // marketCapMax, marketCapMin, page, pageSize, region, search
     Csi300Service.apiCsi300ApiCompaniesList(
       (filters.exchange as 'SSE' | 'SZSE' | 'HKEX' | undefined) || undefined, // exchange

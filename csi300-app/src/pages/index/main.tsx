@@ -144,7 +144,10 @@ function FilterPage() {
       <GlobalNav />
       <main className="page-shell app-shell">
         <div className="page-header">
-          <h1 className="page-title">Chinese Stock Dashboard</h1>
+          <h1 className="page-title">
+            Chinese Stock Dashboard
+            <span className="app-beta-tag">Beta</span>
+          </h1>
           <p className="page-subtitle">Filter and browse Chinese stock companies</p>
         </div>
 

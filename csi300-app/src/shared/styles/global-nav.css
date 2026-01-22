@@ -315,6 +315,30 @@ body.container {
     color: #000000;
 }
 
+/* Beta Tag Styles */
+.globalnav-beta-tag {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 8px;
+    padding: 1px 6px;
+    font-size: 10px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #86868b;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    line-height: 1.2;
+    position: relative;
+    top: -1px;
+}
+
+.globalnav-brand:hover .globalnav-beta-tag {
+    color: #1d1d1f;
+    border-color: rgba(0, 0, 0, 0.3);
+}
+
 /* Mobile menu overlay */
 .globalnav-mobile-overlay {
     display: none;
