@@ -43,14 +43,16 @@ export function DebtSection({ company }: SectionProps) {
 }
 
 export function RatioSection({ company }: SectionProps) {
+  // Note: roe_trailing, roa_trailing, operating_margin_trailing are already in percentage format
+  // e.g., 10.599 means 10.599%, NOT 0.10599
   const roe = company.roe_trailing;
-  const roeClass = roe && roe > 0.15 ? 'positive' : roe && roe < 0.05 ? 'negative' : '';
+  const roeClass = roe && roe > 15 ? 'positive' : roe && roe < 5 ? 'negative' : '';
 
   const roa = company.roa_trailing;
-  const roaClass = roa && roa > 0.05 ? 'positive' : roa && roa < 0.02 ? 'negative' : '';
+  const roaClass = roa && roa > 5 ? 'positive' : roa && roa < 2 ? 'negative' : '';
 
   const opMargin = company.operating_margin_trailing;
-  const opMarginClass = opMargin && opMargin > 0.1 ? 'positive' : opMargin && opMargin < 0.05 ? 'negative' : '';
+  const opMarginClass = opMargin && opMargin > 10 ? 'positive' : opMargin && opMargin < 5 ? 'negative' : '';
 
   return (
     <DetailSection title="Valuation & Profitability Ratios">
@@ -59,17 +61,17 @@ export function RatioSection({ company }: SectionProps) {
       <FieldRow label="PEG Ratio" value={formatNumber(company.peg_ratio, 2)} />
       <FieldRow 
         label="ROE (TTM)" 
-        value={roe ? `${formatNumber(roe * 100, 2)}%` : '-'} 
+        value={roe ? `${formatNumber(roe, 2)}%` : '-'} 
         valueClass={roeClass}
       />
       <FieldRow 
         label="ROA (TTM)" 
-        value={roa ? `${formatNumber(roa * 100, 2)}%` : '-'} 
+        value={roa ? `${formatNumber(roa, 2)}%` : '-'} 
         valueClass={roaClass}
       />
       <FieldRow 
         label="Operating Margin (TTM)" 
-        value={opMargin ? `${formatNumber(opMargin * 100, 2)}%` : '-'} 
+        value={opMargin ? `${formatNumber(opMargin, 2)}%` : '-'} 
         valueClass={opMarginClass}
       />
       <FieldRow label="Operating Profits/Share" value={formatNumber(company.operating_profits_per_share, 2)} />
