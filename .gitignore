@@ -38,6 +38,12 @@ build/
 *.p12
 *.pfx
 
+# OAuth tokens (NEVER commit!)
+*.pickle
+oauth_token.pickle
+credentials.json
+token.json
+
 # Database
 *.db
 *.sqlite3
